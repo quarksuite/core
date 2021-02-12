@@ -3,6 +3,7 @@
 #+DATE: 2021-02-08
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
+#+PROPERTY: header-args:shell :results output code :export results
 
 * Summary :noexport:
 
