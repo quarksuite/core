@@ -3,7 +3,7 @@
 #+DATE: 2021-02-08
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
-#+PROPERTY: header-args:shell :results output code :export results
+#+PROPERTY: header-args:shell :results output code :exports results
 
 * Summary :noexport:
 
@@ -53,8 +53,8 @@ Each section is broken down into four main topics:
 - [[#api][API]]
   - [[#utilities-srcutilitiesindexjs][Utilities (=src/utilities/index.js=)]]
     - [[#compose-srcutilitiescomposejs][compose (=src/utilities/compose.js=)]]
-    - [[#bind-srcutilitiesbindjs][bind (=src/utilities/bind.js=)]]
     - [[#pipe-srcutilitiespipejs][pipe (=src/utilities/pipe.js=)]]
+    - [[#bind-srcutilitiesbindjs][bind (=src/utilities/bind.js=)]]
     - [[#tests][Tests]]
     - [[#scenarios][Scenarios]]
 
@@ -63,8 +63,9 @@ Each section is broken down into four main topics:
 #+BEGIN_SRC deno :tangle "./src/utilities/index.js" :comments link
 /** Functional Utilities */
 export * from "./compose.js";
-export * from "./bind.js";
 export * from "./pipe.js";
+export * from "./bind.js";
+
 #+END_SRC
 
 QuarkSuite is functional at its very core. It uses a data-last architecture and the following
@@ -123,8 +124,32 @@ export function compose(...operators) {
 }
 #+END_SRC
 
-Function composition leads down many roads in a programming language. I'm going for a simple
-implementation specifically for composing data operations.
+Two conditions must be met for compose to work:
+
++ all operators must be functions
++ all operations must have a signature of =(x: unknown) => unknown=
+
+*** pipe (=src/utilities/pipe.js=)
+
++ =(data, ...operators) => unknown=
++ =data: unknown=: the data to pass through the pipeline
++ =...operators: Array<(data: unknown) => unknown>=: a sequence of data operators
+
+#+BEGIN_SRC deno :tangle "./src/utilities/pipe.js" :comments link
+import { compose } from "./compose.js";
+
+/** A data transformation utility */
+export function pipe(data, ...operators) {
+  return compose(...operators)(data);
+}
+#+END_SRC
+
+=pipe= inverts the relationship between data and its operators. This is crucial: data pipelines,
+because of the way they're defined can /themselves/ be bound. Data, rather than being the remaining
+argument, becomes the /initial/ argument and its operators can be applied freely after.
+
+As you can see, it's a reimplementation of =compose= but with the data as the initial argument and
+immediately executes on call.
 
 *** bind (=src/utilities/bind.js=)
 
@@ -136,8 +161,8 @@ implementation specifically for composing data operations.
 #+BEGIN_SRC deno :tangle "./src/utilities/bind.js" :comments link
 #+END_SRC
 
-Composition works out of the box for simple unary functions, but what about functions with more than
-one argument?
+Composition and data piping works out of the box for simple unary functions, but what about
+functions with more than one argument?
 
 In a data-last architecture, the final argument of a function is /always/ its data.
 
@@ -148,26 +173,13 @@ y) => (x) => any= or =(z) => (y) => (x) => any=.
 
 The remaining data operation satisfies the =arity = 1= clause for composition.
 
-*** pipe (=src/utilities/pipe.js=)
-
-#+BEGIN_SRC deno :tangle "./src/utilities/pipe.js" :comments link
-#+END_SRC
-
-I've heard piping explained often as function composition from the opposite direction. This utility
-is not that kind of pipe.
-
-Instead, =pipe= is a data /transformer/.
-
-=pipe= inverts the relationship between data and its operators. This is crucial: data pipelines,
-because of the way they're defined can /themselves/ be bound. Data, rather than being the remaining
-argument, becomes the /initial/ argument and its operators can be applied freely after.
-
 *** Tests
 
 **** assertions
 
 #+BEGIN_SRC deno :tangle "./src/utilities/index_test.js" :comments link
-import { compose } from "./index.js";
+import { compose, pipe } from "./index.js";
+
 import {
   assertEquals,
   assertThrows,
@@ -221,6 +233,24 @@ Deno.test(
     );
   },
 );
+
+Deno.test("SPEC pipe: can transform data", function () {
+  assertEquals(pipe("hello", upper), "HELLO");
+});
+
+Deno.test("SPEC pipe: can chain operators", function () {
+  assertEquals(
+    pipe(
+      "hello",
+      split,
+      (x) => x.map((xs) => xs.charCodeAt(0)),
+      (x) => x.map((xs) => xs + 16),
+      (x) => x.map((xs) => String.fromCharCode(xs)),
+      (x) => x.join(""),
+    ),
+    "xu||\x7f",
+  );
+});
 #+END_SRC
 
 **** results
@@ -231,13 +261,15 @@ printf '%s\n' (NO_COLOR=true deno test ./src/utilities/index_test.js)
 
 #+RESULTS:
 #+begin_src shell
-running 4 tests
-test SPEC compose: combines two data operators ... ok (3ms)
-test SPEC compose: can combine a chain of data operators ... ok (1ms)
-test EDGE compose: rejects values that are not functions ... ok (2ms)
-test EDGE compose: rejects functions that are not data operators ... ok (0ms)
+running 6 tests
+test SPEC compose: combines two data operators ... ok (6ms)
+test SPEC compose: can combine a chain of data operators ... ok (3ms)
+test EDGE compose: rejects values that are not functions ... ok (3ms)
+test EDGE compose: rejects functions that are not data operators ... ok (2ms)
+test SPEC pipe: can transform data ... ok (2ms)
+test SPEC pipe: can chain operators ... ok (2ms)
 
-test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (9ms)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (20ms)
 
 #+end_src
 

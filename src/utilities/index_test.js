@@ -1,5 +1,6 @@
 // [[file:~/Code/project/@quarksuite/core/README.org::*assertions][assertions:1]]
-import { compose } from "./index.js";
+import { compose, pipe } from "./index.js";
+
 import {
   assertEquals,
   assertThrows,
@@ -53,4 +54,22 @@ Deno.test(
     );
   },
 );
+
+Deno.test("SPEC pipe: can transform data", function () {
+  assertEquals(pipe("hello", upper), "HELLO");
+});
+
+Deno.test("SPEC pipe: can chain operators", function () {
+  assertEquals(
+    pipe(
+      "hello",
+      split,
+      (x) => x.map((xs) => xs.charCodeAt(0)),
+      (x) => x.map((xs) => xs + 16),
+      (x) => x.map((xs) => String.fromCharCode(xs)),
+      (x) => x.join(""),
+    ),
+    "xu||\x7f",
+  );
+});
 // assertions:1 ends here
