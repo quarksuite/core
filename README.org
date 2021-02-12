@@ -225,7 +225,7 @@ Deno.test(
 
 **** results
 
-#+BEGIN_SRC shell :results output code
+#+BEGIN_SRC shell
 printf '%s\n' (NO_COLOR=true deno test ./src/utilities/index_test.js)
 #+END_SRC
 
