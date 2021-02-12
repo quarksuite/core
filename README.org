@@ -1,0 +1,286 @@
+#+TITLE: QuarkSuite Core
+#+AUTHOR: Chatman R. Jr
+#+DATE: 2021-02-08
+#+PROPERTY: header-args :mkdirp yes
+#+PROPERTY: header-args:deno :results output none
+
+* Summary :noexport:
+
+QuarkSuite is a toolkit for creating, assembling, and distributing design languages. Driven by web
+technologies
+
+This repository contains the =core= of QuarkSuite written as a literate program. Other appendages of
+the QuarkSuite project include:
+
++ Quarks System Language (=qsl=): A domain-specific language for defining a shared design language
+  in a plaintext declarative language
++ QuarkSuite UI (=qsui=): A UI kit for design token documentation and visual development
++ Quarks Development Environment (=qdev=): A complete development environment for authoring design
+  tokens to scale
+
+The core module is the oldest and most mature part of the project. QuarkSuite 2 refines it further
+to serve as the engine of the whole kit. It can be used on its own for the simplest of prototypes
+or if you prefer absolute control over how your tokens are built.
+
+The entire core is written in vanilla, modern, self-contained JavaScript.
+
+If you're interested in how this project evolved, feel free to browse the legacy repo.
+
+* Installation :noexport:
+* Features :noexport:
+* API
+
+The API is organized by the kind of data each of the functions accepts.
+
+This means you can jump right to the section for what you need to do. The literate style isn't for
+everyone, so headings are appropriately marked with their source location in the repo if you prefer
+to get right into code.
+
+#+BEGIN_QUOTE
+Internal functions are /not/ public. These are prefixed with =_=.
+#+END_QUOTE
+
+** How to Read the API :noexport:
+
+Each section is broken down into four main topics:
+
++ functions: the actual function definitions with developer commentary
++ Tests: proving each function does its job and doesn't choke on the unexpected
++ Scenarios: demonstrating use and applicable design patterns
+
+** Index                                                             :TOC@3:
+- [[#api][API]]
+  - [[#utilities-srcutilitiesindexjs][Utilities (=src/utilities/index.js=)]]
+    - [[#compose-srcutilitiescomposejs][compose (=src/utilities/compose.js=)]]
+    - [[#bind-srcutilitiesbindjs][bind (=src/utilities/bind.js=)]]
+    - [[#pipe-srcutilitiespipejs][pipe (=src/utilities/pipe.js=)]]
+    - [[#tests][Tests]]
+    - [[#scenarios][Scenarios]]
+
+** Utilities (=src/utilities/index.js=)
+
+#+BEGIN_SRC deno :tangle "./src/utilities/index.js" :comments link
+/** Functional Utilities */
+export * from "./compose.js";
+export * from "./bind.js";
+export * from "./pipe.js";
+#+END_SRC
+
+QuarkSuite is functional at its very core. It uses a data-last architecture and the following
+utilities are designed to take full advantage of that.
+
+*** compose (=src/utilities/compose.js=)
+
++ =compose: (...operators) => (data) => unknown=
++ =operators: Array<(data: unknown) => unknown>=: a sequence of data operators
++ =data: unknown=: the data to process
+
+#+BEGIN_SRC deno :tangle "./src/utilities/compose.js" :comments link
+import { ErrorTemplate } from "../internals/error.js";
+
+// Error handling
+const isFunction = (x) => typeof x === "function";
+const hasArity1 = (x) => x.length === 1;
+
+/** Error thrown when value is not a function. */
+const FuncError = (output) =>
+  ErrorTemplate({
+    message: "not a function",
+    reason: `
+This error indicates that one or more of the values is not a
+function, so it can't be composed.
+`,
+    suggestion: `
+Check that every value in your composition chain is a function.
+`,
+    output,
+  });
+
+/** A predicate for stating that x has a single argument. */
+const ArityError = (output) =>
+  ErrorTemplate({
+    message: "not a data operator",
+    reason: `
+This error indicates that one or more of the functions is
+not a data operator. That is, not a single argument function.
+`,
+    suggestion: `
+Check that every function in your composition chain has an arity of 1.
+Ex: (data: any) => any
+`,
+    output,
+  });
+
+/** A variadic functional composition */
+export function compose(...operators) {
+  return (data) =>
+    operators.reduce((value, func) => {
+      if (!isFunction(func)) return FuncError(func);
+      if (!hasArity1(func)) return ArityError(func);
+      return func(value);
+    }, data);
+}
+#+END_SRC
+
+Function composition leads down many roads in a programming language. I'm going for a simple
+implementation specifically for composing data operations.
+
+*** bind (=src/utilities/bind.js=)
+
++ =(func, ...initial) => (...remaining) => unknown=
++ =func: (...args: unknown) => unknown=: the function to initialize
++ =initial: unknown[]=: the initial arguments to bind
++ =remaining: unknown[]=: the remaining arguments to bind
+
+#+BEGIN_SRC deno :tangle "./src/utilities/bind.js" :comments link
+#+END_SRC
+
+Composition works out of the box for simple unary functions, but what about functions with more than
+one argument?
+
+In a data-last architecture, the final argument of a function is /always/ its data.
+
+Any proceding arguments are *data modifiers*.
+
+Using the =bind= utility, a function with a signature of =(z, y, x) => any= will break down to: =(z,
+y) => (x) => any= or =(z) => (y) => (x) => any=.
+
+The remaining data operation satisfies the =arity = 1= clause for composition.
+
+*** pipe (=src/utilities/pipe.js=)
+
+#+BEGIN_SRC deno :tangle "./src/utilities/pipe.js" :comments link
+#+END_SRC
+
+I've heard piping explained often as function composition from the opposite direction. This utility
+is not that kind of pipe.
+
+Instead, =pipe= is a data /transformer/.
+
+=pipe= inverts the relationship between data and its operators. This is crucial: data pipelines,
+because of the way they're defined can /themselves/ be bound. Data, rather than being the remaining
+argument, becomes the /initial/ argument and its operators can be applied freely after.
+
+*** Tests
+
+**** assertions
+
+#+BEGIN_SRC deno :tangle "./src/utilities/index_test.js" :comments link
+import { compose } from "./index.js";
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+const isString = (x) => typeof x === "string";
+const isArray = (x) => Array.isArray(x);
+
+const upper = (x) => isString(x) && x.toUpperCase();
+const lower = (x) => isString(x) && x.toLowerCase();
+
+const trim = (x) => isString(x) && x.trim();
+
+const split = (x) => isString(x) && x.split("");
+
+const box = (x) => [x];
+const unbox = (x) => isArray(x) && x.toString();
+
+Deno.test("SPEC compose: combines two data operators", function () {
+  const splitSafe = compose(split, unbox);
+  assertEquals(splitSafe("hello"), "h,e,l,l,o");
+});
+
+Deno.test("SPEC compose: can combine a chain of data operators", function () {
+  const upperSplitSafe = compose(trim, upper, split);
+  assertEquals(upperSplitSafe("   hello      "), ["H", "E", "L", "L", "O"]);
+});
+
+Deno.test("EDGE compose: rejects values that are not functions", function () {
+  const failsFuncClause = compose(split, 5);
+  assertThrows(
+    () => {
+      throw failsFuncClause("hello");
+    },
+    undefined,
+    "not a function",
+  );
+});
+
+Deno.test(
+  "EDGE compose: rejects functions that are not data operators",
+  function () {
+    const add = (y, x) => x + y;
+    const failsUnaryClause = compose(split, upper, add);
+    assertThrows(
+      () => {
+        throw failsUnaryClause("hello");
+      },
+      undefined,
+      "not a data operator",
+    );
+  },
+);
+#+END_SRC
+
+**** results
+
+#+BEGIN_SRC shell :results output code
+printf '%s\n' (NO_COLOR=true deno test ./src/utilities/index_test.js)
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+running 4 tests
+test SPEC compose: combines two data operators ... ok (3ms)
+test SPEC compose: can combine a chain of data operators ... ok (1ms)
+test EDGE compose: rejects values that are not functions ... ok (2ms)
+test EDGE compose: rejects functions that are not data operators ... ok (0ms)
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (9ms)
+
+#+end_src
+
+*** Scenarios
+* Internals (=src/internals/index.js=) :noexport:
+
+This section documents and implements useful internal functions that aid in developing the core
+itself. They are not publicly accessible. The only reason you'd want to read this section is if
+you're interested in the nuts and bolts of this project.
+
+** error (=src/internals/error.js=)
+
+#+BEGIN_SRC deno :tangle "./src/internals/error.js" :comments link
+/** Error message template */
+export function ErrorTemplate(
+  { message, reason, suggestion, output } = {
+    message: "something went wrong",
+    reason: "here's why",
+    suggestion: "try this",
+    output: undefined,
+  },
+) {
+  throw new Error(`
+ERROR: ${message.trimEnd()}
+${"=".repeat(60)}
+REASON: ${reason.trimEnd()}
+TRY: ${suggestion.trimEnd()}
+${"-".repeat(60)}
+OUTPUT: ${output};
+`);
+}
+#+END_SRC
+
+I believe in the power of good error messages in helping developers solve their own problems. Human readable errors also decrease the likelihood that you'll need to consult documentation during your workflow.
+
+The format of  error messages thrown by the core is straightforward.
+
+#+BEGIN_SRC text
+
+ERROR: something went wrong
+============================================================
+REASON: here's why
+TRY: troubleshooting suggestions
+------------------------------------------------------------
+OUTPUT: "and what actually happened";
+
+#+END_SRC
