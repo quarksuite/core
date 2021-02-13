@@ -3,7 +3,7 @@
 #+DATE: 2021-02-08
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
-#+PROPERTY: header-args:shell :results output code :exports results
+#+PROPERTY: header-args:shell :results output code
 
 * Summary :noexport:
 
@@ -159,9 +159,15 @@ immediately executes on call.
 + =remaining: unknown[]=: the remaining arguments to bind
 
 #+BEGIN_SRC deno :tangle "./src/utilities/bind.js" :comments link
+/** A function decomposition utility */
+export function bind(func, ...initial) {
+  return (func.length === initial.length)
+    ? func(...initial)
+    : ((...remaining) => func(...initial, ...remaining));
+}
 #+END_SRC
 
-Composition and data piping works out of the box for simple unary functions, but what about
+Composition and data piping work out of the box for simple unary functions, but what about
 functions with more than one argument?
 
 In a data-last architecture, the final argument of a function is /always/ its data.
@@ -178,7 +184,7 @@ The remaining data operation satisfies the =arity = 1= clause for composition.
 **** assertions
 
 #+BEGIN_SRC deno :tangle "./src/utilities/index_test.js" :comments link
-import { compose, pipe } from "./index.js";
+import { bind, compose, pipe } from "./index.js";
 
 import {
   assertEquals,
@@ -251,6 +257,33 @@ Deno.test("SPEC pipe: can chain operators", function () {
     "xu||\x7f",
   );
 });
+
+const splitWith = (delimiter, x) => isString(x) && x.split(delimiter);
+const filterAs = (condition, x) => isArray(x) && x.filter(condition);
+const map = (transform, x) => box(x).map(transform);
+
+const normalize = (b, a, x) => Math.round(Math.min(Math.max(x, a), b));
+
+Deno.test("SPEC bind: can initialize arguments and wait for remaining", function () {
+  const filterEven = bind(filterAs, (x) => x % 2 === 0);
+  assertEquals(filterEven([1, 2, 3, 4, 5, 6, 7, 8, 9]), [2, 4, 6, 8]);
+});
+
+Deno.test("SPEC bind: initialize arguments in sequence for a full curry", function () {
+  const limit = bind(normalize, 240);
+  const threshold = bind(limit, 160);
+  assertEquals(threshold(320), 240);
+});
+
+Deno.test("SPEC bind: when initial arguments match function arity, simply execute", function () {
+  const boundMap = bind(map, (x, i) => `mapped ${x} at ${i}`, [
+    ...Array(8).fill("hi"),
+  ]);
+  const standardMap = map((x, i) => `mapped ${x} at ${i}`, [
+    ...Array(8).fill("hi"),
+  ]);
+  assertEquals(boundMap, standardMap);
+});
 #+END_SRC
 
 **** results
@@ -259,17 +292,19 @@ Deno.test("SPEC pipe: can chain operators", function () {
 printf '%s\n' (NO_COLOR=true deno test ./src/utilities/index_test.js)
 #+END_SRC
 
-#+RESULTS:
 #+begin_src shell
-running 6 tests
-test SPEC compose: combines two data operators ... ok (6ms)
-test SPEC compose: can combine a chain of data operators ... ok (3ms)
-test EDGE compose: rejects values that are not functions ... ok (3ms)
+running 9 tests
+test SPEC compose: combines two data operators ... ok (4ms)
+test SPEC compose: can combine a chain of data operators ... ok (1ms)
+test EDGE compose: rejects values that are not functions ... ok (2ms)
 test EDGE compose: rejects functions that are not data operators ... ok (2ms)
 test SPEC pipe: can transform data ... ok (2ms)
-test SPEC pipe: can chain operators ... ok (2ms)
+test SPEC pipe: can chain operators ... ok (1ms)
+test SPEC bind: can initialize arguments and wait for remaining ... ok (2ms)
+test SPEC bind: initialize arguments in sequence for a full curry ... ok (1ms)
+test SPEC bind: when initial arguments match function arity, simply execute ... ok (2ms)
 
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (20ms)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (20ms)
 
 #+end_src
 

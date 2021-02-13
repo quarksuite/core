@@ -1,5 +1,5 @@
 // [[file:~/Code/project/@quarksuite/core/README.org::*assertions][assertions:1]]
-import { compose, pipe } from "./index.js";
+import { bind, compose, pipe } from "./index.js";
 
 import {
   assertEquals,
@@ -72,4 +72,32 @@ Deno.test("SPEC pipe: can chain operators", function () {
     "xu||\x7f",
   );
 });
+
+const splitWith = (delimiter, x) => isString(x) && x.split(delimiter);
+const filterAs = (condition, x) => isArray(x) && x.filter(condition);
+const map = (transform, x) => box(x).map(transform);
+
+const normalize = (b, a, x) => Math.round(Math.min(Math.max(x, a), b));
+
+Deno.test("SPEC bind: can initialize arguments and wait for remaining", function () {
+  const filterEven = bind(filterAs, (x) => x % 2 === 0);
+  assertEquals(filterEven([1, 2, 3, 4, 5, 6, 7, 8, 9]), [2, 4, 6, 8]);
+});
+
+Deno.test("SPEC bind: initialize arguments in sequence for a full curry", function () {
+  const limit = bind(normalize, 240);
+  const threshold = bind(limit, 160);
+  assertEquals(threshold(320), 240);
+});
+
+Deno.test("SPEC bind: when initial arguments match function arity, simply execute", function () {
+  const boundMap = bind(map, (x, i) => `mapped ${x} at ${i}`, [
+    ...Array(8).fill("hi"),
+  ]);
+  const standardMap = map((x, i) => `mapped ${x} at ${i}`, [
+    ...Array(8).fill("hi"),
+  ]);
+  assertEquals(boundMap, standardMap);
+});
+
 // assertions:1 ends here
