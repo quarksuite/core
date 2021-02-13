@@ -8,7 +8,7 @@
 * Summary :noexport:
 
 QuarkSuite is a toolkit for creating, assembling, and distributing design languages. Driven by web
-technologies
+technologies.
 
 This repository contains the =core= of QuarkSuite written as a literate program. Other appendages of
 the QuarkSuite project include:
@@ -73,8 +73,8 @@ utilities are designed to take full advantage of that.
 
 *** compose (=src/utilities/compose.js=)
 
-+ =compose: (...operators) => (data) => unknown=
-+ =operators: Array<(data: unknown) => unknown>=: a sequence of data operators
++ =compose: (...operators) → (data) → unknown=
++ =operators: Array<(data: unknown) → unknown>=: a sequence of data operators
 + =data: unknown=: the data to process
 
 #+BEGIN_SRC deno :tangle "./src/utilities/compose.js" :comments link
@@ -127,13 +127,13 @@ export function compose(...operators) {
 Two conditions must be met for compose to work:
 
 + all operators must be functions
-+ all operations must have a signature of =(x: unknown) => unknown=
++ all operations must have a signature of =(x: unknown) → unknown=
 
 *** pipe (=src/utilities/pipe.js=)
 
-+ =(data, ...operators) => unknown=
++ =(data, ...operators) → unknown=
 + =data: unknown=: the data to pass through the pipeline
-+ =...operators: Array<(data: unknown) => unknown>=: a sequence of data operators
++ =...operators: Array<(data: unknown) → unknown>=: a sequence of data operators
 
 #+BEGIN_SRC deno :tangle "./src/utilities/pipe.js" :comments link
 import { compose } from "./compose.js";
@@ -153,8 +153,8 @@ immediately executes on call.
 
 *** bind (=src/utilities/bind.js=)
 
-+ =(func, ...initial) => (...remaining) => unknown=
-+ =func: (...args: unknown) => unknown=: the function to initialize
++ =(func, ...initial) → (...remaining) → unknown=
++ =func: (...args: unknown) → unknown=: the function to initialize
 + =initial: unknown[]=: the initial arguments to bind
 + =remaining: unknown[]=: the remaining arguments to bind
 
@@ -172,12 +172,12 @@ functions with more than one argument?
 
 In a data-last architecture, the final argument of a function is /always/ its data.
 
-Any proceding arguments are *data modifiers*.
+Any preceding arguments are *data modifiers*.
 
-Using the =bind= utility, a function with a signature of =(z, y, x) => any= will break down to: =(z,
-y) => (x) => any= or =(z) => (y) => (x) => any=.
+Using the =bind= utility, a function with a signature of =(z, y, x) → any= will break down to: =(z,
+y) → (x) → any= or =(z) → (y) → (x) → any=.
 
-The remaining data operation satisfies the =arity = 1= clause for composition.
+The remaining data operation satisfies the =parity = 1= clause for composition.
 
 *** Tests
 
@@ -338,9 +338,9 @@ OUTPUT: ${output};
 }
 #+END_SRC
 
-I believe in the power of good error messages in helping developers solve their own problems. Human readable errors also decrease the likelihood that you'll need to consult documentation during your workflow.
+I believe in the power of good error messages in helping developers solve their own problems. Human-readable errors also decrease the likelihood that you'll need to consult documentation during your workflow.
 
-The format of  error messages thrown by the core is straightforward.
+The format of error messages thrown by the core is straightforward.
 
 #+BEGIN_SRC text
 
