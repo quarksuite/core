@@ -1,4 +1,4 @@
-// [[file:~/Code/project/@quarksuite/core/README.org::*compose (=src/utilities/compose.js=)][compose (=src/utilities/compose.js=):1]]
+// [[file:../../README.org::*compose (=src/utilities/compose.js=)][compose (=src/utilities/compose.js=):1]]
 import { ErrorTemplate } from "../internals/error.js";
 
 // Error handling

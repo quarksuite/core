@@ -1,4 +1,4 @@
-// [[file:~/Code/project/@quarksuite/core/README.org::*assertions][assertions:1]]
+// [[file:../../README.org::*assertions][assertions:1]]
 import { bind, compose, pipe } from "./index.js";
 
 import {
@@ -99,5 +99,4 @@ Deno.test("SPEC bind: when initial arguments match function arity, simply execut
   ]);
   assertEquals(boundMap, standardMap);
 });
-
 // assertions:1 ends here

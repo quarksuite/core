@@ -1,4 +1,4 @@
-// [[file:~/Code/project/@quarksuite/core/README.org::*error (=src/internals/error.js=)][error (=src/internals/error.js=):1]]
+// [[file:../../README.org::*error (=src/internals/error.js=)][error (=src/internals/error.js=):1]]
 /** Error message template */
 export function ErrorTemplate(
   { message, reason, suggestion, output } = {
