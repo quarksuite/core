@@ -19,7 +19,7 @@ Check that every value in your composition chain is a function.
     output,
   });
 
-/** A predicate for stating that x has a single argument. */
+/** Error thrown when function has a modifier or arity > 1 */
 const ArityError = (output) =>
   ErrorTemplate({
     message: "not a data operator",
@@ -34,7 +34,25 @@ Ex: (data: any) => any
     output,
   });
 
-/** A variadic functional composition */
+/**
+ * A higher order function that accepts a sequence of data operators and combines them
+ * into a new function waiting for data.
+ *
+ * ```ts
+ *  const upper = (data) => data.toUpperCase();
+ *  const split = (data) => data.split("");
+ *
+ *  const splitCapitalLetters = compose(upper, split);
+ *
+ *  splitCapitalLetters("hello"); // ["H", "E", "L", "L", "O"]
+ * ```
+ *
+ * @remark
+ * A data operator is also called a unary function. These are both ways of saying a function
+ * takes a single argument.
+ *
+ * @param {((data: unknown) => unknown)[]} operators - a sequence of functions to combine
+ * @returns {(data: unknown) => unknown} the composed function waiting for data  */
 export function compose(...operators) {
   return (data) =>
     operators.reduce((value, func) => {

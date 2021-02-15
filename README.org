@@ -61,7 +61,6 @@ Each section is broken down into:
 export * from "./compose.js";
 export * from "./pipe.js";
 export * from "./bind.js";
-
 #+END_SRC
 
 The Quarks System Core rests on a functional foundation. It uses a data-last architecture and the following
@@ -71,7 +70,6 @@ utilities are designed to take full advantage of this decision.
 
 + =compose: (...operators) => (data) => unknown=
 + =operators: Array<(data: unknown) => unknown>=: a sequence of data operators
-+ =data: unknown=: the data to process
 
 #+BEGIN_SRC deno :tangle "./src/utilities/compose.js" :comments link
 import { ErrorTemplate } from "../internals/error.js";
@@ -94,7 +92,7 @@ Check that every value in your composition chain is a function.
     output,
   });
 
-/** A predicate for stating that x has a single argument. */
+/** Error thrown when function has a modifier or arity > 1 */
 const ArityError = (output) =>
   ErrorTemplate({
     message: "not a data operator",
@@ -109,7 +107,25 @@ Ex: (data: any) => any
     output,
   });
 
-/** A variadic functional composition */
+/**
+ * A higher order function that accepts a sequence of data operators and combines them
+ * into a new function waiting for data.
+ *
+ * ```ts
+ *  const upper = (data) => data.toUpperCase();
+ *  const split = (data) => data.split("");
+ *
+ *  const splitCapitalLetters = compose(upper, split);
+ *
+ *  splitCapitalLetters("hello"); // ["H", "E", "L", "L", "O"]
+ * ```
+ *
+ * @remark
+ * A data operator is also called a unary function. These are both ways of saying a function
+ * takes a single argument.
+ *
+ * @param {((data: unknown) => unknown)[]} operators - a sequence of functions to combine
+ * @returns {(data: unknown) => unknown} the composed function waiting for data  */
 export function compose(...operators) {
   return (data) =>
     operators.reduce((value, func) => {
@@ -123,7 +139,7 @@ export function compose(...operators) {
 Two conditions must be met for compose to work:
 
 + all operators must be functions
-+ all operations must have a signature of =(x: unknown) → unknown=
++ all operations must have a signature of =(data: unknown) => unknown=
 
 *** pipe (=src/utilities/pipe.js=)
 
@@ -134,7 +150,25 @@ Two conditions must be met for compose to work:
 #+BEGIN_SRC deno :tangle "./src/utilities/pipe.js" :comments link
 import { compose } from "./compose.js";
 
-/** A data transformation utility */
+/**
+ * A higher order function that pipes data through a sequence of functions and
+ * outputs the result.
+ *
+ * ```ts
+ * const upper = (data) => data.toUpperCase();
+ * const split = (data) => data.split("");
+ *
+ * pipe("hello", upper, split); // ["H", "E", "L", "L", "O"]
+ * ```
+ *
+ * @remarks
+ * This function simply inverts `compose` so that the data is immediately transformed
+ * instead of combining the functions.
+ *
+ * @param {unknown} data - the data to pass through the pipeline
+ * @param {((data: unknown) => unknown)[]} operators - the sequence of functions to transform data
+ * @returns {unknown} The transformed data
+ */
 export function pipe(data, ...operators) {
   return compose(...operators)(data);
 }
@@ -152,14 +186,33 @@ immediately executes on call.
 + =(func, ...initial) => (...remaining) => unknown=
 + =func: (...args: unknown) => unknown=: the function to initialize
 + =initial: unknown[]=: the initial arguments to bind
-+ =remaining: unknown[]=: the remaining arguments to bind
 
 #+BEGIN_SRC deno :tangle "./src/utilities/bind.js" :comments link
-/** A function decomposition utility */
+/**
+ * A higher order function that accepts a function and some of its arguments;
+ * returning a function waiting for the rest of its arguments.
+ *
+ * ```ts
+ * const add = (y, x) => x + y;
+ * const add8 = bind(add, 8);
+ *
+ * add8(2) // 10
+ * ```
+ *
+ * @remarks
+ * `bind` is essential for converting complex utilities into preset data
+ * operators which can then be `compose`d and `pipe`d.
+ *
+ * Additionally, you can chain bind to approximate a full curry of a function:
+ * `(z, y, x) => unknown` to `(z) => (y) => (x) => unknown`
+ *
+ * @param {(...args: unknown[]) => unknown} func - a variadic function to initialize
+ * @param {unknown[]} initial - the arguments to apply
+ * @returns {((...remaining: unknown) => unknown) | unknown} A function waiing for remaining arguments or the result of calling the function if `initial = total arguments`  */
 export function bind(func, ...initial) {
-  return (func.length === initial.length)
+  return func.length === initial.length
     ? func(...initial)
-    : ((...remaining) => func(...initial, ...remaining));
+    : (...remaining) => func(...initial, ...remaining);
 }
 #+END_SRC
 
@@ -339,14 +392,12 @@ I believe in the power of good error messages in helping developers solve their 
 The format of error messages thrown by the core is straightforward.
 
 #+BEGIN_SRC text
-
 ERROR: something went wrong
 ============================================================
 REASON: here's why
 TRY: troubleshooting suggestions
 ------------------------------------------------------------
 OUTPUT: "and what actually happened";
-
 #+END_SRC
 
 * Data :noexport:
