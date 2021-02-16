@@ -1,4 +1,4 @@
-#+TITLE: Quarks System Core
+#+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
 #+DATE: <2021-02-15 Mon>
 #+PROPERTY: header-args :mkdirp yes
@@ -7,15 +7,15 @@
 
 * Intro :noexport:
 
-This repository is part of a of toolkit for creating, assembling, and distributing design systems under
-the collective name of QuarkSuite.
+This repository is part of a of toolkit for creating, assembling, and distributing design
+systems. The whole kit lives under the umbrella of the QuarkSuite name.
 
-Other arms of the project include:
+Other appendages of QuarkSuite include:
 
-+ Quarks System Language: A domain-specific language for codify design language into design systems
-+ Quarks System UI: A UI kit for design system documentation and visual development
-+ Quarks System Development Environment: A complete development environment integrating all of the
-  above and some extras
++ Quarks System Language (QSL): A domain-specific language for codifying design language into design systems
++ Quarks System User Interface (QSUI): A UI kit for design system documentation and visual development
++ Quarks System Development Environment (QSDE): A complete development environment integrating all
+  of the above and some extras
 
 If you're interested in how this project evolved, feel free to browse the repository for QuarkSuite 1.
 
@@ -25,13 +25,13 @@ The Quarks System Core is the oldest and most mature part of QuarkSuite. It's be
 QuarkSuite 1 to serve as an engine powering the rest of the kit.
 
 That said, it can still be used as a standalone library if your needs are simple, you require
-absolute control, or you want to develop your own design system workflow from QSC.
+absolute control, or you want to develop your own design system workflow with a QSC foundation.
 
 * Installation :noexport:
 * Features :noexport:
 * API
 
-The API is organized by the kind of data each of the functions accepts.
+The API is organized by the kind of data each function accepts.
 
 This means you can jump right to the section for what you need to do. The literate style isn't for
 everyone, so headings are appropriately marked with their source location in the repo if you prefer
@@ -364,7 +364,7 @@ This section documents and implements useful internal functions that aid in deve
 itself. They are not publicly accessible. The only reason you'd want to read this section is if
 you're interested in the nuts and bolts of this project.
 
-** error (=src/internals/error.js=)
+** Error Handling (=src/internals/error.js=)
 
 #+BEGIN_SRC deno :tangle "./src/internals/error.js" :comments link
 /** Error message template */
@@ -399,6 +399,318 @@ TRY: troubleshooting suggestions
 ------------------------------------------------------------
 OUTPUT: "and what actually happened";
 #+END_SRC
+
+** CSS Color Formats (=src/internals/color/format/index.js=)
+
+QuarkSuite is designed primarily for web technologies and handles all current (and upcoming) CSS color
+formats. This section documents how the QSC validates colors and extracts values for calculation space.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/index.js" :comments link
+/** Internal color utilities */
+export * from "./hex.js";
+export * from "./named.js";
+export * from "./rgb.js";
+#+END_SRC
+
+*** RGB Hex
+
+Hexadecimal colors are the most common format on the web. Below is a table showing the acceptable
+formats in CSS and some examples. I also think of them as color primitives, because hex /begins/ the
+conversion chain to other formats.
+
+#+NAME: hex-formats
+| Formats   | Example   |
+|-----------+-----------|
+| =#RGB=      | =#000=      |
+| =#RRGGBB=   | =#fff=      |
+|           | =#000000=   |
+|           | =#ffffff=   |
+|           | =#ace=      |
+|           | =#bea=      |
+|           | =#fed=      |
+|           | =#deaded=   |
+|           | =#bada55=   |
+|           | =#c0ffee=   |
+|           | =#caf3c0=   |
+|-----------+-----------|
+| =#RGBA=     | =#000f=     |
+| =#RRGGBBAA= | =#ffff=     |
+|           | =#face=     |
+|           | =#ca57=     |
+|           | =#000000ff= |
+|           | =#ffffffff= |
+|           | =#abcede79= |
+|           | =#33a0c9c3= |
+|           | =#eecc99dd= |
+
+**** Hex Validator
+
+The regular expression to validate a hex color is short.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/hex.js" :comments link
+/** Validate: hex color */
+export const validate = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
+#+END_SRC
+
+Let's see if all the colors defined in the format table pass:
+
+#+BEGIN_SRC deno :results output code replace :allow read :var hexTable=hex-formats
+const hex = await import(`${Deno.cwd()}/src/internals/color/format/hex.js`);
+const [, ...colors] = hexTable.map(([a, b]) => b.replace(/=/g, ""));
+
+console.log("const colors =", colors.map((color) => ({color, isHex: hex.validate(color)})))
+#+END_SRC
+
+#+NAME: valid-hex
+#+begin_src deno
+const colors = [
+  { color: "#000", isHex: true },
+  { color: "#fff", isHex: true },
+  { color: "#000000", isHex: true },
+  { color: "#ffffff", isHex: true },
+  { color: "#ace", isHex: true },
+  { color: "#bea", isHex: true },
+  { color: "#fed", isHex: true },
+  { color: "#deaded", isHex: true },
+  { color: "#bada55", isHex: true },
+  { color: "#c0ffee", isHex: true },
+  { color: "#caf3c0", isHex: true },
+  { color: "#000f", isHex: true },
+  { color: "#ffff", isHex: true },
+  { color: "#face", isHex: true },
+  { color: "#ca57", isHex: true },
+  { color: "#000000ff", isHex: true },
+  { color: "#ffffffff", isHex: true },
+  { color: "#abcede79", isHex: true },
+  { color: "#33a0c9c3", isHex: true },
+  { color: "#eecc99dd", isHex: true }
+]
+#+end_src
+
+**** Hex Value Extractor
+
+Now, that I know I have valid hex colors, I need to be able to extract their RGB(A) channels.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/hex.js" :comments link
+/** Expand hex shorthand into full hex color */
+export function expander(color) {
+  const [, ...values] = color;
+
+  if (values.length === 3 || values.length === 4) {
+    return `#${values.map((channel) => channel.repeat(2)).join("")}`;
+  }
+
+  return color;
+}
+#+END_SRC
+
+The first step is enforcing uniformity. To prevent any surprises, I'm going to simply expand hex
+color shorthand =#RGB(A)= to a full hex color =#RRGGBB(AA)=.
+
+Making sure that works:
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const hex = await import(`${Deno.cwd()}/src/internals/color/format/hex.js`);
+
+<<valid-hex>>
+
+console.log("const colors =", colors.map(({ color }) => ({ color, expanded: hex.expander(color) })))
+#+END_SRC
+
+#+NAME: expanded-hex
+#+begin_src deno
+const colors = [
+  { color: "#000", expanded: "#000000" },
+  { color: "#fff", expanded: "#ffffff" },
+  { color: "#000000", expanded: "#000000" },
+  { color: "#ffffff", expanded: "#ffffff" },
+  { color: "#ace", expanded: "#aaccee" },
+  { color: "#bea", expanded: "#bbeeaa" },
+  { color: "#fed", expanded: "#ffeedd" },
+  { color: "#deaded", expanded: "#deaded" },
+  { color: "#bada55", expanded: "#bada55" },
+  { color: "#c0ffee", expanded: "#c0ffee" },
+  { color: "#caf3c0", expanded: "#caf3c0" },
+  { color: "#000f", expanded: "#000000ff" },
+  { color: "#ffff", expanded: "#ffffffff" },
+  { color: "#face", expanded: "#ffaaccee" },
+  { color: "#ca57", expanded: "#ccaa5577" },
+  { color: "#000000ff", expanded: "#000000ff" },
+  { color: "#ffffffff", expanded: "#ffffffff" },
+  { color: "#abcede79", expanded: "#abcede79" },
+  { color: "#33a0c9c3", expanded: "#33a0c9c3" },
+  { color: "#eecc99dd", expanded: "#eecc99dd" }
+]
+#+end_src
+
+Having secured uniform input, I'm ready to extract the channel values for processing.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/hex.js" :comments link
+/** Extract: hex channel values */
+export const extract = (hex) => hex.match(/[\da-f]{2}/g);
+#+END_SRC
+
+The only thing to do here is remove the =#= and match the channel values with a regular expression.
+
+Then, I'm going to test that the channel values are extracted as =[R, G, B, A]=:
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const hex = await import (`${Deno.cwd()}/src/internals/color/format/hex.js`);
+
+<<expanded-hex>>
+
+console.log("const colors =", colors.map(({ expanded }) => ({color: expanded, values: hex.extract(expanded) })));
+#+END_SRC
+
+#+NAME: extracted-hex
+#+begin_src deno
+const colors = [
+  { color: "#000000", values: [ "00", "00", "00" ] },
+  { color: "#ffffff", values: [ "ff", "ff", "ff" ] },
+  { color: "#000000", values: [ "00", "00", "00" ] },
+  { color: "#ffffff", values: [ "ff", "ff", "ff" ] },
+  { color: "#aaccee", values: [ "aa", "cc", "ee" ] },
+  { color: "#bbeeaa", values: [ "bb", "ee", "aa" ] },
+  { color: "#ffeedd", values: [ "ff", "ee", "dd" ] },
+  { color: "#deaded", values: [ "de", "ad", "ed" ] },
+  { color: "#bada55", values: [ "ba", "da", "55" ] },
+  { color: "#c0ffee", values: [ "c0", "ff", "ee" ] },
+  { color: "#caf3c0", values: [ "ca", "f3", "c0" ] },
+  { color: "#000000ff", values: [ "00", "00", "00", "ff" ] },
+  { color: "#ffffffff", values: [ "ff", "ff", "ff", "ff" ] },
+  { color: "#ffaaccee", values: [ "ff", "aa", "cc", "ee" ] },
+  { color: "#ccaa5577", values: [ "cc", "aa", "55", "77" ] },
+  { color: "#000000ff", values: [ "00", "00", "00", "ff" ] },
+  { color: "#ffffffff", values: [ "ff", "ff", "ff", "ff" ] },
+  { color: "#abcede79", values: [ "ab", "ce", "de", "79" ] },
+  { color: "#33a0c9c3", values: [ "33", "a0", "c9", "c3" ] },
+  { color: "#eecc99dd", values: [ "ee", "cc", "99", "dd" ] }
+]
+#+end_src
+
+*** W3C-X11
+
+Named colors are simple to validate. It's a matter of matching the name with its hex value in the
+=X11Colors= lookup table as a boolean.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/named.js" :comments link
+import { X11Colors } from "../../../data/color/w3c-x11.js";
+
+/** Validate: W3C X11 named colors */
+export const validate = (color) => !!X11Colors[color];
+#+END_SRC
+
+*** Functional RGB
+
+The functional RGB syntax is more complex and allows for more variation in the format. Quarks System
+Core supports the original format as well as the newer space-delimited and percentage ones.
+
+#+NAME: rgb-formats
+| Formats          | Examples                  |
+|------------------+---------------------------|
+| =rgb(R, G, B)=     | =rgb(0, 0, 0)=              |
+| =rgb(R G B)=       | =rgb(255, 255, 255)=        |
+|                  | =rgb(110, 22, 33)=          |
+|                  | =rgb(30, 220, 140)=         |
+|                  | =rgb(148, 129, 240)=        |
+|                  | =rgb(31 33 100)=            |
+|                  | =rgb(200 210 131)=          |
+|                  | =rgb(0%, 0%, 0%)=           |
+|                  | =rgb(100%, 100%, 100%)=     |
+|                  | =rgb(31%, 15%, 4%)=         |
+|                  | =rgb(20%, 70.3%, 49%)=      |
+|                  | =rgb(10% 30% 95%)=          |
+|                  | rgb(33% 24% 44%)          |
+|------------------+---------------------------|
+| =rgba(R, G, B, A)= | =rgba(0, 0, 0, 1)=          |
+| =rgba(R G B / A)=  | =rgba(255, 255, 255, 1)=    |
+|                  | =rgba(230, 110, 0, 0.8)=    |
+|                  | =rgba(120, 178, 34, 0.719)= |
+|                  | =rgba(34, 199, 249, 0.3)=   |
+|                  | =rgba(10 110 200 / 73%)=    |
+|                  | =rgba(34 225 110 / 25.9%)=  |
+|                  | =rgba(10% 33% 19% / 0.35)= |
+
+**** RGB Validator
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/rgb.js" :comments link
+/** Validate: functional RGB format */
+export function validate(color) {
+  // RGB regexp
+
+  // prefix: "rgb(" || "rgba("
+  // channel: float<0-100%> || integer<0-255>
+  const channel =
+    /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
+  // transparency: decimal || percentage
+  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // separators: ", " || " " || " /"
+  const channelSep = /(?:[\s,]+)/;
+  const alphaSep = /(?:[,\s/]+)/;
+  // suffix: ")"
+
+  return new RegExp(
+    [
+      "(?:^rgba?\\(",
+      channel.source,
+      channelSep.source,
+      channel.source,
+      channelSep.source,
+      channel.source,
+      "(?:",
+      alphaSep.source,
+      alpha.source,
+      ")?\\))$",
+    ].join(""),
+  ).test(color);
+}
+#+END_SRC
+
+Validating the functional RGB is similarly complex but the regular expression can be broken down to
+its unique and repeating parts and then assembled with the =RegExp.source= property as a new =RegExp= object.
+
+Next up is seeing if the format tests pass.
+
+#+BEGIN_SRC deno :results output code replace :allow read :var rgbTable=rgb-formats
+const rgb = await import(`${Deno.cwd()}/src/internals/color/format/rgb.js`);
+const [, ...colors] = rgbTable.map(([a, b]) => b.replace(/=/g, ""));
+
+console.log("const colors =", colors.map((color) => ({color, isRGB: rgb.validate(color)})))
+#+END_SRC
+
+#+NAME: valid-rgb
+#+begin_src deno
+const colors = [
+  { color: "rgb(0, 0, 0)", isRGB: true },
+  { color: "rgb(255, 255, 255)", isRGB: true },
+  { color: "rgb(110, 22, 33)", isRGB: true },
+  { color: "rgb(30, 220, 140)", isRGB: true },
+  { color: "rgb(148, 129, 240)", isRGB: true },
+  { color: "rgb(31 33 100)", isRGB: true },
+  { color: "rgb(200 210 131)", isRGB: true },
+  { color: "rgb(0%, 0%, 0%)", isRGB: true },
+  { color: "rgb(100%, 100%, 100%)", isRGB: true },
+  { color: "rgb(31%, 15%, 4%)", isRGB: true },
+  { color: "rgb(20%, 70.3%, 49%)", isRGB: true },
+  { color: "rgb(10% 30% 95%)", isRGB: true },
+  { color: "rgb(33% 24% 44%)", isRGB: true },
+  { color: "rgba(0, 0, 0, 1)", isRGB: true },
+  { color: "rgba(255, 255, 255, 1)", isRGB: true },
+  { color: "rgba(230, 110, 0, 0.8)", isRGB: true },
+  { color: "rgba(120, 178, 34, 0.719)", isRGB: true },
+  { color: "rgba(34, 199, 249, 0.3)", isRGB: true },
+  { color: "rgba(10 110 200 / 73%)", isRGB: true },
+  { color: "rgba(34 225 110 / 25.9%)", isRGB: true },
+  { color: "rgba(10% 33% 19% / 0.35)", isRGB: true }
+]
+#+end_src
+
+*** HSL
+*** HWB
+*** Lab
+*** LCH
+
+** Color Conversion Math
 
 * Data :noexport:
 

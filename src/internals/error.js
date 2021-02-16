@@ -1,4 +1,4 @@
-// [[file:../../README.org::*error (=src/internals/error.js=)][error (=src/internals/error.js=):1]]
+// [[file:../../README.org::*Error Handling (=src/internals/error.js=)][Error Handling (=src/internals/error.js=):1]]
 /** Error message template */
 export function ErrorTemplate(
   { message, reason, suggestion, output } = {
@@ -17,4 +17,4 @@ ${"-".repeat(60)}
 OUTPUT: ${output};
 `);
 }
-// error (=src/internals/error.js=):1 ends here
+// Error Handling (=src/internals/error.js=):1 ends here
