@@ -5,4 +5,5 @@ export * from "./named.js";
 export * from "./rgb.js";
 export * from "./hsl.js";
 export * from "./device-cmyk.js";
+export * from "./hwb.js";
 // CSS Color Formats (=src/internals/color/format/index.js=):1 ends here

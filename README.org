@@ -412,6 +412,7 @@ export * from "./named.js";
 export * from "./rgb.js";
 export * from "./hsl.js";
 export * from "./device-cmyk.js";
+export * from "./hwb.js";
 #+END_SRC
 
 From the format index, you can see at a glance which color formats are currently supported.
@@ -637,6 +638,10 @@ Core supports the original format as well as the newer space-delimited and perce
 
 **** RGB Validator
 
+Validating the functional RGB is similarly complex but the regular expression can be broken down to
+its unique and repeating parts and then assembled with the =RegExp.source= property as a new =RegExp=
+object.
+
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/rgb.js" :comments link
 /** Validate: functional RGB format */
 export function validate(color) {
@@ -669,9 +674,6 @@ export function validate(color) {
   ).test(color);
 }
 #+END_SRC
-
-Validating the functional RGB is similarly complex but the regular expression can be broken down to
-its unique and repeating parts and then assembled with the =RegExp.source= property as a new =RegExp= object.
 
 Next up is seeing if the format tests pass.
 
@@ -816,6 +818,11 @@ CSS also defines several rotational units for the hue. All of which QuarkSuite s
 
 **** HSL Validator
 
+From here, you'll start seeing a lot of repetition in the validation expressions.
+
+Validating HSL has a similar pattern to validating RGB. In fact, many of the regular expression
+fragments are the same.
+
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/hsl.js" :comments link
 /** Validate: functional HSL format */
 export function validate(color) {
@@ -850,11 +857,6 @@ export function validate(color) {
   ).test(color);
 }
 #+END_SRC
-
-From here, you'll start seeing a lot of repetition in the validation expressions.
-
-Validating HSL has a similar pattern to validating RGB. In fact, many of the regular expression
-fragments are the same.
 
 Now, I'll perform the tests:
 
@@ -1114,7 +1116,131 @@ const colors = [
 
 And now it's on to the next one.
 
-*** HWB
+*** Functional HWB
+
+HWB is short for Hue-Whiteness-Blackness. It's an [[https://www.w3.org/TR/css-color-4/#the-hwb-notation][upcoming color format similar to HSL]] but even
+easier to use. It's actually the format of choice for lot of browser color picker implementations.
+
++ Hue (H): works the same as it does in the HSL format
++ Whiteness (W): a percentage value corresponding with how much white to mix with the hue
++ Blackness (B): a percentage value corresponding with how much black to mix with the hue
+
+When W and B are mixed equal amounts, they yield gray. When both are =100%=, the color is achromatic.
+
+#+NAME: hwb-formats
+| Formats           | Examples                 |
+|-------------------+--------------------------|
+| =hwb(H W% B%)=      | =hwb(0 0% 0%)=             |
+| =hwb(Hdeg W% B%)=   | =hwb(0 100% 0%)=           |
+| =hwb(Hrad W% B%)=   | =hwb(0 0% 100%)=           |
+| =hwb(Hgrad W% B%)=  | =hwb(0 100% 100%)=         |
+| =hwb(Hturn W% B%)=  | =hwb(47 37% 40%)=          |
+| =hwb(H W% B% / A)=  | =hwb(180deg 50% 3%)=       |
+| =hwb(H W% B% / A%)= | =hwb(172rad 25% 15%)=      |
+|                   | =hwb(3.1grad 0% 30%)=      |
+|                   | =hwb(0.28turn 49% 10%)=    |
+|                   | =hwb(310 78% 0% / 0.5)=    |
+|                   | =hwb(89rad 10% 90% / 83%)= |
+
+**** HWB Validator
+
+The HWB validator expressions are nearly identical to the HSL validator.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/hwb.js" :comments link
+/** Validate: functional HWB format */
+export function validate(color) {
+  // HWB regexp
+
+  // prefix: "hwb("
+  // hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
+  const hue = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
+  // whitness && blackness: float<0-100>%
+  const whiteness = /(?:(?:100%|(?:\d\.?\d?){1,}%))/;
+  const blackness = whiteness;
+  // transparency: float<0-1> || float<0-100>%
+  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // separators: " " || " /"
+  const valueSep = /(?:[\s,]+)/;
+  const alphaSep = /(?:[,\s/]+)/;
+  // suffix: ")"
+
+  return new RegExp(
+    [
+      "(?:^hwb\\(",
+      hue.source,
+      valueSep.source,
+      whiteness.source,
+      valueSep.source,
+      blackness.source,
+      "(?:",
+      alphaSep.source,
+      alpha.source,
+      ")?\\))$",
+    ].join(""),
+  ).test(color);
+}
+#+END_SRC
+
+Alright, now the format tests.
+
+#+BEGIN_SRC deno :results output code replace :allow read :var hwbTable=hwb-formats
+const hwb = await import(`${Deno.cwd()}/src/internals/color/format/hwb.js`);
+const [, ...colors] = hwbTable.map(([a, b]) => b.replace(/=/g, ""));
+
+console.log("const colors =", colors.map((color) => ({color, isHWB: hwb.validate(color)})))
+#+END_SRC
+
+#+NAME: valid-hwb
+#+begin_src deno
+const colors = [
+  { color: "hwb(0 100% 0%)", isHWB: true },
+  { color: "hwb(0 0% 100%)", isHWB: true },
+  { color: "hwb(0 100% 100%)", isHWB: true },
+  { color: "hwb(47 37% 40%)", isHWB: true },
+  { color: "hwb(180deg 50% 3%)", isHWB: true },
+  { color: "hwb(172rad 25% 15%)", isHWB: true },
+  { color: "hwb(3.1grad 0% 30%)", isHWB: true },
+  { color: "hwb(0.28turn 49% 10%)", isHWB: true },
+  { color: "hwb(310 78% 0% / 0.5)", isHWB: true },
+  { color: "hwb(89rad 10% 90% / 83%)", isHWB: true }
+]
+#+end_src
+
+**** HWB Extractor
+
+The value extractor for HWB is identical to the one for HSL.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/hwb.js" :comments link
+/** Extract: HWB values */
+export const extract = (hwb) => hwb.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
+#+END_SRC
+
+Finally, the tests for value extraction.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const hwb = await import(`${Deno.cwd()}/src/internals/color/format/hwb.js`);
+
+<<valid-hwb>>
+
+console.log("const colors =", colors.map(({ color }) => ({ color, values: hwb.extract(color) })));
+#+END_SRC
+
+#+NAME: extracted-hwb
+#+begin_src deno
+const colors = [
+  { color: "hwb(0 100% 0%)", values: [ "0", "100%", "0%" ] },
+  { color: "hwb(0 0% 100%)", values: [ "0", "0%", "100%" ] },
+  { color: "hwb(0 100% 100%)", values: [ "0", "100%", "100%" ] },
+  { color: "hwb(47 37% 40%)", values: [ "47", "37%", "40%" ] },
+  { color: "hwb(180deg 50% 3%)", values: [ "180deg", "50%", "3%" ] },
+  { color: "hwb(172rad 25% 15%)", values: [ "172rad", "25%", "15%" ] },
+  { color: "hwb(3.1grad 0% 30%)", values: [ "3.1grad", "0%", "30%" ] },
+  { color: "hwb(0.28turn 49% 10%)", values: [ "0.28turn", "49%", "10%" ] },
+  { color: "hwb(310 78% 0% / 0.5)", values: [ "310", "78%", "0%", "0.5" ] },
+  { color: "hwb(89rad 10% 90% / 83%)", values: [ "89rad", "10%", "90%", "83%" ] }
+]
+#+end_src
+
 *** Lab
 *** LCH
 ** Color Conversion Math
