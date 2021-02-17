@@ -1,6 +1,6 @@
 #+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
-#+DATE: <2021-02-15 Mon>
+#+DATE: <2021-02-17 Wed>
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
 #+PROPERTY: header-args:shell :results output code
@@ -403,7 +403,7 @@ OUTPUT: "and what actually happened";
 ** CSS Color Formats (=src/internals/color/format/index.js=)
 
 QuarkSuite is designed primarily for web technologies and handles all current (and upcoming) CSS color
-formats. This section documents how the QSC validates colors and extracts values for calculation space.
+formats. This section documents how the QSC validates colors and extracts values for calculation.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/index.js" :comments link
 /** Internal color utilities */
@@ -411,7 +411,10 @@ export * from "./hex.js";
 export * from "./named.js";
 export * from "./rgb.js";
 export * from "./hsl.js";
+export * from "./device-cmyk.js";
 #+END_SRC
+
+From the format index, you can see at a glance which color formats are currently supported.
 
 *** RGB Hex
 
@@ -978,6 +981,138 @@ const colors = [
   }
 ]
 #+end_src
+
+The formats documented beyond this point are brand new territory for the core module and unsupported
+in QuarkSuite 1.
+
+*** Device CMYK
+
+=device-cmyk()= is a prospective format documented in the [[https://www.w3.org/TR/css-color-4/#device-cmyk][current CSS Color Module 4 draft]]. CMYK in
+general is a color space typically calibrated for printed media.
+
++ Cyan (C): the amount of cyan ink in the color
++ Magenta (M): the amount of magenta ink in the color
++ Yellow (Y): the amount of yellow ink in the color
++ BlacK (K): the amount of black ink in the color
+
+It's important to note: as a newer CSS color functional format, =device-cmyk()= doesn't bother with
+the older comma-separated syntax, so neither does the Quarks System Core. The same carries for all
+color formats beyond this point.
+
+#+NAME: cmyk-formats
+| Format                        | Examples                          |
+|-------------------------------+-----------------------------------|
+| =device-cmyk(C M Y K)=          | =device-cmyk(0 0 0 0)=              |
+| =device-cmyk(C% M% Y% K%)=      | =device-cmyk(1 1 1 1)=              |
+| =device-cmyk(C M Y K / A)=      | =device-cmyk(0% 0% 0% 0%)=          |
+| =device-cmyk(C% M% Y% K% / A%)= | =device-cmyk(100% 100% 100% 100%)=  |
+|                               | =device-cmyk(0 0.4 0.8 0.25)=       |
+|                               | =device-cmyk(30% 49% 0 20%)=        |
+|                               | =device-cmyk(19% 30% 83% 0 / 0.31)= |
+|                               | =device-cmyk(0.9 0.25 0 0 / 73%)= |
+
+**** CMYK Validator
+
+The validation for CMYK in CSS is thankfully simple.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/device-cmyk.js" :comments link
+/** Validate: CMYK format */
+export function validate(color) {
+  // CMYK regexp
+
+  // prefix: "device-cymk("
+  // value: float<0-1> || float<0-100>%
+  const value = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // separators: " " || " /"
+  const valueSep = /(?:[\s]+)/;
+  const alphaSep = /(?:[\s/]+)/;
+  // suffix: ")"
+
+  return new RegExp(
+    [
+      "(?:^device-cmyk\\(",
+      value.source,
+      valueSep.source,
+      value.source,
+      valueSep.source,
+      value.source,
+      valueSep.source,
+      value.source,
+      "(?:",
+      alphaSep.source,
+      value.source,
+      ")?\\))$",
+    ].join(""),
+  ).test(color);
+}
+#+END_SRC
+
+Now, on to the format tests.
+
+#+BEGIN_SRC deno :results output code replace :allow read :var cmykTable=cmyk-formats
+const cmyk = await import(`${Deno.cwd()}/src/internals/color/format/device-cmyk.js`);
+const colors = cmykTable.map(([a, b]) => b.replace(/=/g, ""));
+
+console.log("const colors =", colors.map((color) => ({color, isCMYK: cmyk.validate(color)})))
+#+END_SRC
+
+#+NAME: valid-cmyk
+#+begin_src deno
+const colors = [
+  { color: "device-cmyk(0 0 0 0)", isCMYK: true },
+  { color: "device-cmyk(1 1 1 1)", isCMYK: true },
+  { color: "device-cmyk(0% 0% 0% 0%)", isCMYK: true },
+  { color: "device-cmyk(100% 100% 100% 100%)", isCMYK: true },
+  { color: "device-cmyk(0 0.4 0.8 0.25)", isCMYK: true },
+  { color: "device-cmyk(30% 49% 0 20%)", isCMYK: true },
+  { color: "device-cmyk(19% 30% 83% 0 / 0.31)", isCMYK: true },
+  { color: "device-cmyk(0.9 0.25 0 0 / 73%)", isCMYK: true }
+]
+#+end_src
+
+**** CMYK Extractor
+
+From here, the extractor is another one-liner.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/device-cmyk.js" :comments link
+/** Extract: CMYK values */
+export const extract = (cmyk) => cmyk.match(/([\d.]+)%?/g);
+#+END_SRC
+
+Finally, the extraction tests:
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const cmyk = await import(`${Deno.cwd()}/src/internals/color/format/device-cmyk.js`);
+
+<<valid-cmyk>>
+
+console.log("const colors =", colors.map(({ color }) => ({ color, values: cmyk.extract(color) })));
+#+END_SRC
+
+#+NAME: extracted-cmyk
+#+begin_src deno
+const colors = [
+  { color: "device-cmyk(0 0 0 0)", values: [ "0", "0", "0", "0" ] },
+  { color: "device-cmyk(1 1 1 1)", values: [ "1", "1", "1", "1" ] },
+  { color: "device-cmyk(0% 0% 0% 0%)", values: [ "0%", "0%", "0%", "0%" ] },
+  {
+    color: "device-cmyk(100% 100% 100% 100%)",
+    values: [ "100%", "100%", "100%", "100%" ]
+  },
+  { color: "device-cmyk(0 0.4 0.8 0.25)", values: [ "0", "0.4", "0.8", "0.25" ] },
+  { color: "device-cmyk(30% 49% 0 20%)", values: [ "30%", "49%", "0", "20%" ] },
+  {
+    color: "device-cmyk(19% 30% 83% 0 / 0.31)",
+    values: [ "19%", "30%", "83%", "0", "0.31" ]
+  },
+  {
+    color: "device-cmyk(0.9 0.25 0 0 / 73%)",
+    values: [ "0.9", "0.25", "0", "0", "73%" ]
+  }
+]
+#+end_src
+
+And now it's on to the next one.
 
 *** HWB
 *** Lab
