@@ -705,6 +705,58 @@ const colors = [
 ]
 #+end_src
 
+All clear!
+
+**** RGB Extractor
+
+The next step is ensuring the channel/alpha values can be extracted.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/rgb.js" :comments link
+/** Extract: RGB channel/alpha values */
+export const extract = (rgb) => rgb.match(/([\d.]%?)+/g);
+#+END_SRC
+
+The extractor preserves the =%= because it will be properly converted to a fraction for later
+calculations. Since the extractor is only used with valid RGB colors, the match pattern does not
+need to be intensive.
+
+Now, I'll test that the values are properly pulled.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const rgb = await import(`${Deno.cwd()}/src/internals/color/format/rgb.js`);
+
+<<valid-rgb>>
+
+console.log("const colors =", colors.map(({ color }) => ({ color, values: rgb.extract(color) })));
+#+END_SRC
+
+#+NAME: extracted-rgb
+#+begin_src deno
+const colors = [
+  { color: "rgb(0, 0, 0)", values: [ "0", "0", "0" ] },
+  { color: "rgb(255, 255, 255)", values: [ "255", "255", "255" ] },
+  { color: "rgb(110, 22, 33)", values: [ "110", "22", "33" ] },
+  { color: "rgb(30, 220, 140)", values: [ "30", "220", "140" ] },
+  { color: "rgb(148, 129, 240)", values: [ "148", "129", "240" ] },
+  { color: "rgb(31 33 100)", values: [ "31", "33", "100" ] },
+  { color: "rgb(200 210 131)", values: [ "200", "210", "131" ] },
+  { color: "rgb(0%, 0%, 0%)", values: [ "0%", "0%", "0%" ] },
+  { color: "rgb(100%, 100%, 100%)", values: [ "100%", "100%", "100%" ] },
+  { color: "rgb(31%, 15%, 4%)", values: [ "31%", "15%", "4%" ] },
+  { color: "rgb(20%, 70.3%, 49%)", values: [ "20%", "70.3%", "49%" ] },
+  { color: "rgb(10% 30% 95%)", values: [ "10%", "30%", "95%" ] },
+  { color: "rgb(33% 24% 44%)", values: [ "33%", "24%", "44%" ] },
+  { color: "rgba(0, 0, 0, 1)", values: [ "0", "0", "0", "1" ] },
+  { color: "rgba(255, 255, 255, 1)", values: [ "255", "255", "255", "1" ] },
+  { color: "rgba(230, 110, 0, 0.8)", values: [ "230", "110", "0", "0.8" ] },
+  { color: "rgba(120, 178, 34, 0.719)", values: [ "120", "178", "34", "0.719" ] },
+  { color: "rgba(34, 199, 249, 0.3)", values: [ "34", "199", "249", "0.3" ] },
+  { color: "rgba(10 110 200 / 73%)", values: [ "10", "110", "200", "73%" ] },
+  { color: "rgba(34 225 110 / 25.9%)", values: [ "34", "225", "110", "25.9%" ] },
+  { color: "rgba(10% 33% 19% / 0.35)", values: [ "10%", "33%", "19%", "0.35" ] }
+]
+#+end_src
+
 *** HSL
 *** HWB
 *** Lab

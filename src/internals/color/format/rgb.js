@@ -30,3 +30,8 @@ export function validate(color) {
   ).test(color);
 }
 // RGB Validator:1 ends here
+
+// [[file:../../../../README.org::*RGB Extractor][RGB Extractor:1]]
+/** Extract: RGB channel/alpha values */
+export const extract = (rgb) => rgb.match(/([\d.]%?)+/g);
+// RGB Extractor:1 ends here
