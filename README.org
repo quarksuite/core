@@ -29,7 +29,7 @@ absolute control, or you want to develop your own design system workflow with a 
 
 * Installation :noexport:
 * Features :noexport:
-* Source Code Index                                                   :TOC@3:
+* Source Code Index                                                   :TOC@4:
 - [[#api][API]]
   - [[#how-to-read-the-api][How to Read the API]]
   - [[#utilities-srcutilitiesindexjs][Utilities (=src/utilities/index.js=)]]
@@ -37,11 +37,21 @@ absolute control, or you want to develop your own design system workflow with a 
     - [[#pipe-srcutilitiespipejs][pipe (=src/utilities/pipe.js=)]]
     - [[#bind-srcutilitiesbindjs][bind (=src/utilities/bind.js=)]]
     - [[#tests][Tests]]
+      - [[#assertions][assertions]]
+      - [[#results][results]]
     - [[#scenarios][Scenarios]]
 - [[#internals][Internals]]
   - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
   - [[#color][Color]]
-    - [[#css-formats-srcinternalscolorformatindexjs][CSS Formats (=src/internals/color/format/index.js=)]]
+    - [[#formats-srcinternalscolorformatindexjs][Formats (=src/internals/color/format/index.js=)]]
+      - [[#rgb-hex-srcinternalscolorformathexjs][RGB Hex (=src/internals/color/format/hex.js=)]]
+      - [[#w3c-x11-srcinternalscolorformatnamedjs][W3C-X11 (=src/internals/color/format/named.js=)]]
+      - [[#functional-rgb-srcinternalscolorformatrgbjs][Functional RGB (=src/internals/color/format/rgb.js=)]]
+      - [[#functional-hsl-srcinternalscolorformathsljs][Functional HSL (=src/internals/color/format/hsl.js=)]]
+      - [[#device-cmyk-srcinternalscolorformatdevice-cmykjs][Device CMYK (=src/internals/color/format/device-cmyk.js=)]]
+      - [[#functional-hwb-srcinternalscolorformathwbjs][Functional HWB (=src/internals/color/format/hwb.js=)]]
+      - [[#functional-cielab-srcinternalscolorformatlabjs][Functional CIELAB (=src/internals/color/format/lab.js=)]]
+      - [[#functional-lch-srcinternalscolorformatlchjs][Functional LCH (=src/internals/color/format/lch.js=)]]
     - [[#conversion][Conversion]]
 - [[#data][Data]]
   - [[#color-1][Color]]
@@ -413,10 +423,10 @@ OUTPUT: "and what actually happened";
 #+END_SRC
 
 ** Color
-*** CSS Formats (=src/internals/color/format/index.js=)
+*** Formats (=src/internals/color/format/index.js=)
 
 QuarkSuite is designed primarily for web technologies and handles all current (and upcoming) CSS color
-formats. This section documents how the QSC validates colors and extracts values for calculation.
+formats. This section documents how the QSC validates colors and extracts color values.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/index.js" :comments link
 /** Internal color utilities */
@@ -427,6 +437,7 @@ export * from "./hsl.js";
 export * from "./device-cmyk.js";
 export * from "./hwb.js";
 export * from "./lab.js";
+export * from "./lch.js";
 #+END_SRC
 
 From the format index, you can see at a glance which color formats are currently supported.
@@ -621,16 +632,16 @@ export const validate = (color) => !!X11Colors[color];
 **** Functional RGB (=src/internals/color/format/rgb.js=)
 
 The functional RGB syntax is more complex and allows for more variation in the format. Quarks System
-Core supports the original format as well as the newer space-delimited and percentage ones.
+Core supports the legacy format as well as the newer space-separated ones.
 
 #+NAME: rgb-formats
 | Formats          | Examples                  |
 |------------------+---------------------------|
 | =rgb(R, G, B)=     | =rgb(0, 0, 0)=              |
-| =rgb(R G B)=       | =rgb(255, 255, 255)=        |
-|                  | =rgb(110, 22, 33)=          |
-|                  | =rgb(30, 220, 140)=         |
-|                  | =rgb(148, 129, 240)=        |
+| =rgba(R, G, B, A)= | =rgb(255, 255, 255)=        |
+| =rgb(R G B)=       | =rgb(110, 22, 33)=          |
+| rgb(R G B / A)   | =rgb(30, 220, 140)=         |
+| =rgba(R G B / A)=  | =rgb(148, 129, 240)=        |
 |                  | =rgb(31 33 100)=            |
 |                  | =rgb(200 210 131)=          |
 |                  | =rgb(0%, 0%, 0%)=           |
@@ -639,15 +650,14 @@ Core supports the original format as well as the newer space-delimited and perce
 |                  | =rgb(20%, 70.3%, 49%)=      |
 |                  | =rgb(10% 30% 95%)=          |
 |                  | rgb(33% 24% 44%)          |
-|------------------+---------------------------|
-| =rgba(R, G, B, A)= | =rgba(0, 0, 0, 1)=          |
-| =rgba(R G B / A)=  | =rgba(255, 255, 255, 1)=    |
+|                  | =rgba(0, 0, 0, 1)=          |
+|                  | =rgba(255, 255, 255, 1)=    |
 |                  | =rgba(230, 110, 0, 0.8)=    |
 |                  | =rgba(120, 178, 34, 0.719)= |
 |                  | =rgba(34, 199, 249, 0.3)=   |
-|                  | =rgba(10 110 200 / 73%)=    |
+|                  | =rgb(10 110 200 / 73%)=     |
 |                  | =rgba(34 225 110 / 25.9%)=  |
-|                  | =rgba(10% 33% 19% / 0.35)= |
+|                  | =rgb(10% 33% 19% / 0.35)=   |
 
 ***** RGB Validator
 
@@ -693,7 +703,7 @@ Next up is seeing if the format tests pass.
 
 #+BEGIN_SRC deno :results output code replace :allow read :var rgbTable=rgb-formats
 const rgb = await import(`${Deno.cwd()}/src/internals/color/format/rgb.js`);
-const [, ...colors] = rgbTable.map(([a, b]) => b.replace(/=/g, ""));
+const colors = rgbTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.map((color) => ({color, isRGB: rgb.validate(color)})))
 #+END_SRC
@@ -719,9 +729,9 @@ const colors = [
   { color: "rgba(230, 110, 0, 0.8)", isRGB: true },
   { color: "rgba(120, 178, 34, 0.719)", isRGB: true },
   { color: "rgba(34, 199, 249, 0.3)", isRGB: true },
-  { color: "rgba(10 110 200 / 73%)", isRGB: true },
+  { color: "rgb(10 110 200 / 73%)", isRGB: true },
   { color: "rgba(34 225 110 / 25.9%)", isRGB: true },
-  { color: "rgba(10% 33% 19% / 0.35)", isRGB: true }
+  { color: "rgb(10% 33% 19% / 0.35)", isRGB: true }
 ]
 #+end_src
 
@@ -771,9 +781,9 @@ const colors = [
   { color: "rgba(230, 110, 0, 0.8)", values: [ "230", "110", "0", "0.8" ] },
   { color: "rgba(120, 178, 34, 0.719)", values: [ "120", "178", "34", "0.719" ] },
   { color: "rgba(34, 199, 249, 0.3)", values: [ "34", "199", "249", "0.3" ] },
-  { color: "rgba(10 110 200 / 73%)", values: [ "10", "110", "200", "73%" ] },
+  { color: "rgb(10 110 200 / 73%)", values: [ "10", "110", "200", "73%" ] },
   { color: "rgba(34 225 110 / 25.9%)", values: [ "34", "225", "110", "25.9%" ] },
-  { color: "rgba(10% 33% 19% / 0.35)", values: [ "10%", "33%", "19%", "0.35" ] }
+  { color: "rgb(10% 33% 19% / 0.35)", values: [ "10%", "33%", "19%", "0.35" ] }
 ]
 #+end_src
 
@@ -782,7 +792,7 @@ const colors = [
 HSL is well-loved by designers for being a lot more intuitive than RGB. It explicitly allows
 setting:
 
-+ Hue (H): An angle corresponding to a color's position on a light-based color wheel. =0= degrees
++ Hue (H): An angle corresponding to a color's position on an RGB color wheel. =0= degrees
   means red, green sits at =120= degrees, and blue sits at =240=
 + Saturation (S): A percentage value corresponding to a color's vibrance or chroma. =0%= indicates a
   fully unsaturated color (yielding gray). =100%= indicates a fully saturated color
@@ -792,43 +802,42 @@ setting:
 CSS also defines several rotational units for the hue. All of which QuarkSuite supports.
 
 #+NAME: hsl-formats
-| Examples             | Formats                        |
-|----------------------+--------------------------------|
-| =hsl(H, S, L)=         | =hsl(0, 0%, 0%)=                 |
-| =hsl(Hdeg, S, L)=      | =hsl(0, 0%, 50%)=                |
-| =hsl(Hrad, S, L)=      | =hsl(0, 0%, 100%)=               |
-| =hsl(Hgrad, S, L)=     | =hsl(0 0% 0%)=                   |
-| =hsl(Hturn, S, L)=     | =hsl(0 0% 50%)=                  |
-| =hsl(H S L)=           | =hsl(0 0% 100%)=                 |
-| =hsl(Hdeg S L)=        | =hsl(120, 74%, 63%)=             |
-| =hsl(Hrad S L)=        | =hsl(64deg, 85%, 50%)=           |
-| =hsl(Hgrad S L)=       | =hsl(200rad, 42%, 81%)=          |
-| =hsl(Hturn S L)=       | =hsl(2.3grad, 50%, 50%)=         |
-|                      | =hsl(0.25turn, 39%, 73%)=        |
-|                      | =hsl(-135, 69%, 94%)=            |
-|                      | =hsl(189 35% 82%)=               |
-|                      | =hsl(161deg 50% 78%)=            |
-|                      | =hsl(380rad 75% 13%)=            |
-|                      | =hsl(1.6grad 100% 48%)=          |
-|                      | =hsl(0.13turn 58% 20%)=          |
-|                      | =hsl(-1.9grad 33% 80%)=          |
-|----------------------+--------------------------------|
-| =hsla(H, S, L, A)=     | =hsla(0, 0%, 0%, 1)=             |
-| =hsla(Hdeg, S, L, A)=  | =hsla(0, 0%, 50%, 1)=            |
-| =hsla(Hrad, S, L, A)=  | =hsla(0, 0%, 100%, 1)=           |
-| =hsla(Hgrad, S, L, A)= | =hsla(0 0% 0% / 1)=              |
-| =hsla(Hturn, S, L, A)= | =hsla(0 0% 50% / 1)=             |
-| =hsla(H S L / A)=      | =hsla(0 0% 100% / 1)=            |
-| =hsla(Hdeg S L / A)=   | =hsla(34, 73%, 89%, 0.7)=        |
-| =hsla(Hrad S L / A)=   | =hsla(67deg, 99%, 38%, 0.25)=    |
-| =hsla(Hgrad S L / A)=  | =hsla(393rad, 85%, 18%, 0.493)=  |
-| =hsla(Hturn S L / A)=  | =hsla(5.2grad, 39%, 58%, 0.5)=   |
-|                      | =hsla(0.34turn, 19%, 36%, 0.39)= |
-|                      | =hsla(100 40% 39% / 73%)=        |
-|                      | =hsla(90deg 89% 61% / 0.3)=      |
-|                      | =hsla(48rad 74% 38% / 39%)=      |
-|                      | =hsla(4.8grad 37% 100% / 0.47)=  |
-|                      | =hsla(0.134turn 33% 88% / 40%)= |
+| Examples         | Formats                        |
+|------------------+--------------------------------|
+| =hsl(H, S, L)=     | =hsl(0, 0%, 0%)=                 |
+| =hsla(H, S, L, A)= | =hsl(0, 0%, 50%)=                |
+| =hsl(H S L)=       | =hsl(0, 0%, 100%)=               |
+| =hsl(H S L / A)=   | =hsl(0 0% 0%)=                   |
+| =hsla(H S L / A)=  | =hsl(0 0% 50%)=                  |
+|                  | =hsl(0 0% 100%)=                 |
+|                  | =hsl(120, 74%, 63%)=             |
+|                  | =hsl(64deg, 85%, 50%)=           |
+|                  | =hsl(200rad, 42%, 81%)=          |
+|                  | =hsl(2.3grad, 50%, 50%)=         |
+|                  | =hsl(0.25turn, 39%, 73%)=        |
+|                  | =hsl(-135, 69%, 94%)=            |
+|                  | =hsl(189 35% 82%)=               |
+|                  | =hsl(161deg 50% 78%)=            |
+|                  | =hsl(380rad 75% 13%)=            |
+|                  | =hsl(1.6grad 100% 48%)=          |
+|                  | =hsl(0.13turn 58% 20%)=          |
+|                  | =hsl(-1.9grad 33% 80%)=          |
+|                  | =hsla(0, 0%, 0%, 1)=             |
+|                  | =hsla(0, 0%, 50%, 1)=            |
+|                  | =hsla(0, 0%, 100%, 1)=           |
+|                  | =hsla(0 0% 0% / 1)=              |
+|                  | =hsla(0 0% 50% / 1)=             |
+|                  | =hsla(0 0% 100% / 1)=            |
+|                  | =hsla(34, 73%, 89%, 0.7)=        |
+|                  | =hsla(67deg, 99%, 38%, 0.25)=    |
+|                  | =hsla(393rad, 85%, 18%, 0.493)=  |
+|                  | =hsla(5.2grad, 39%, 58%, 0.5)=   |
+|                  | =hsla(0.34turn, 19%, 36%, 0.39)= |
+|                  | =hsl(100 40% 39% / 73%)=         |
+|                  | =hsl(90deg 89% 61% / 0.3)=       |
+|                  | =hsla(48rad 74% 38% / 39%)=      |
+|                  | =hsl(4.8grad 37% 100% / 0.47)=   |
+|                  | =hsla(0.134turn 33% 88% / 40%)=  |
 
 ***** HSL Validator
 
@@ -876,7 +885,7 @@ Now, I'll perform the tests:
 
 #+BEGIN_SRC deno :results output code replace :allow read :var hslTable=hsl-formats
 const hsl = await import(`${Deno.cwd()}/src/internals/color/format/hsl.js`);
-const [, ...colors] = hslTable.map(([a, b]) => b.replace(/=/g, ""));
+const colors = hslTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.map((color) => ({color, isHSL: hsl.validate(color)})))
 #+END_SRC
@@ -913,10 +922,10 @@ const colors = [
   { color: "hsla(393rad, 85%, 18%, 0.493)", isHSL: true },
   { color: "hsla(5.2grad, 39%, 58%, 0.5)", isHSL: true },
   { color: "hsla(0.34turn, 19%, 36%, 0.39)", isHSL: true },
-  { color: "hsla(100 40% 39% / 73%)", isHSL: true },
-  { color: "hsla(90deg 89% 61% / 0.3)", isHSL: true },
+  { color: "hsl(100 40% 39% / 73%)", isHSL: true },
+  { color: "hsl(90deg 89% 61% / 0.3)", isHSL: true },
   { color: "hsla(48rad 74% 38% / 39%)", isHSL: true },
-  { color: "hsla(4.8grad 37% 100% / 0.47)", isHSL: true },
+  { color: "hsl(4.8grad 37% 100% / 0.47)", isHSL: true },
   { color: "hsla(0.134turn 33% 88% / 40%)", isHSL: true }
 ]
 #+end_src
@@ -984,11 +993,11 @@ const colors = [
     color: "hsla(0.34turn, 19%, 36%, 0.39)",
     values: [ "0.34turn", "19%", "36%", "0.39" ]
   },
-  { color: "hsla(100 40% 39% / 73%)", values: [ "100", "40%", "39%", "73%" ] },
-  { color: "hsla(90deg 89% 61% / 0.3)", values: [ "90deg", "89%", "61%", "0.3" ] },
+  { color: "hsl(100 40% 39% / 73%)", values: [ "100", "40%", "39%", "73%" ] },
+  { color: "hsl(90deg 89% 61% / 0.3)", values: [ "90deg", "89%", "61%", "0.3" ] },
   { color: "hsla(48rad 74% 38% / 39%)", values: [ "48rad", "74%", "38%", "39%" ] },
   {
-    color: "hsla(4.8grad 37% 100% / 0.47)",
+    color: "hsl(4.8grad 37% 100% / 0.47)",
     values: [ "4.8grad", "37%", "100%", "0.47" ]
   },
   {
@@ -1306,7 +1315,7 @@ export function validate(color) {
   // transparency: float<0-1> || float<0-100>%
   const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
   // separators: " " || " /"
-  const channelSep = /(?:[\s]+)/;
+  const valueSep = /(?:[\s]+)/;
   const alphaSep = /(?:[\s/]+)/;
   // suffix: ")"
 
@@ -1314,9 +1323,9 @@ export function validate(color) {
     [
       "(?:^lab\\(",
       L.source,
-      channelSep.source,
+      valueSep.source,
       a.source,
-      channelSep.source,
+      valueSep.source,
       b.source,
       "(?:",
       alphaSep.source,
@@ -1397,7 +1406,159 @@ const colors = [
 ]
 #+end_src
 
-**** LCH
+**** Functional LCH (=src/internals/color/format/lch.js=)
+
+The LCH color space is another device-independent color format with added support in the CSS Color
+Module Level 4 spec. It's an offshoot of CIELAB designed to be a little more useful for people. It
+consists of:
+
++ Lightness (L): a percentage value interpreted identically to CIELAB lightness
++ Chroma (C): a value corresponding to the amount of color desired
++ Hue (H): interpreted similar to HSL, but the angles map to the *a/*b axes
+
+The chroma is theoretically boundless, but in everyday use caps at =230=. The hues at =0deg= and =180deg=
+map to magenta-red and green-cyan, respectively. The hues at =90deg= and =270deg= map to a mustard
+yellow and sky blue, respectively.
+
+#+NAME: lch-formats
+| Format          | Examples                              |
+|-----------------+---------------------------------------|
+| =lch(L% C H)=     | =lch(0% 0 0)=                           |
+| =lch(L% C H / A)= | =lch(50% 0 0)=                          |
+|                 | =lch(100% 0 0)=                         |
+|                 | =lch(50% 230 0)=                        |
+|                 | =lch(29.2345% 44.2 27)=                 |
+|                 | =lch(52.2345% 72.2 56.2)=               |
+|                 | =lch(60.3119% 34.3 139.3)=              |
+|                 | =lch(39.119% 58.1 258.9)=               |
+|                 | =lch(79.44% 119 320.89 / 0.7)=          |
+|                 | =lch(62.1183% 42.5 81.881 / 89%)=       |
+|                 | =lch(119.339% 39.9 130deg)=             |
+|                 | =lch(93.411% 74.42 200rad)=             |
+|                 | =lch(33% 38.4434 3grad)=                |
+|                 | =lch(71.831% 204.314 0.184turn / 0.98)= |
+
+***** LCH Validator
+
+As a refinement of CIELAB, the LCH validator is a slightly modified implementation. It reuses the
+CIELAB lightness expression but also pulls in the HSL hue expression. They accept the same input
+even if they don't function the same way.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/lch.js" :comments link
+/** Validate: functional LCH format */
+export function validate(color) {
+  // LCH regexp
+
+  // prefix: "lch("
+  // lightness: float<0->%
+  const lightness = /(?:(?:\d\.?\d?){1,}%)/;
+  // chroma: int<0-230>
+  const chroma = /(?:(?:230|(?:2[0-2][0-9]|1[0-9][0-9])|(?:\d.?\d?){1,}))/;
+  // hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
+  const hue = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
+  // transparency: float<0-1> || float<0-100>%
+  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // separators: " " || " /"
+  const valueSep = /(?:[\s]+)/;
+  const alphaSep = /(?:[\s/]+)/;
+  // suffix: ")"
+
+  return new RegExp(
+    [
+      "(?:^lch\\(",
+      lightness.source,
+      valueSep.source,
+      chroma.source,
+      valueSep.source,
+      hue.source,
+      "(?:",
+      alphaSep.source,
+      alpha.source,
+      ")?\\))$",
+    ].join(""),
+  ).test(color);
+}
+#+END_SRC
+
+And it's format validation test time.
+
+#+BEGIN_SRC deno :results output code replace :allow read :var lchTable=lch-formats
+const lch = await import(`${Deno.cwd()}/src/internals/color/format/lch.js`);
+const colors = lchTable.map(([a, b]) => b.replace(/=/g, ""));
+
+console.log("const colors =", colors.map((color) => ({color, isLCH: lch.validate(color)})))
+#+END_SRC
+
+#+NAME: valid-lch
+#+begin_src deno
+const colors = [
+  { color: "lch(0% 0 0)", isLCH: true },
+  { color: "lch(50% 0 0)", isLCH: true },
+  { color: "lch(100% 0 0)", isLCH: true },
+  { color: "lch(50% 230 0)", isLCH: true },
+  { color: "lch(29.2345% 44.2 27)", isLCH: true },
+  { color: "lch(52.2345% 72.2 56.2)", isLCH: true },
+  { color: "lch(60.3119% 34.3 139.3)", isLCH: true },
+  { color: "lch(39.119% 58.1 258.9)", isLCH: true },
+  { color: "lch(79.44% 119 320.89 / 0.7)", isLCH: true },
+  { color: "lch(62.1183% 42.5 81.881 / 89%)", isLCH: true },
+  { color: "lch(119.339% 39.9 130deg)", isLCH: true },
+  { color: "lch(93.411% 74.42 200rad)", isLCH: true },
+  { color: "lch(33% 38.4434 3grad)", isLCH: true },
+  { color: "lch(71.831% 204.314 0.184turn / 0.98)", isLCH: true }
+]
+#+end_src
+
+***** LCH Extractor
+
+The LCH extractor is identical to the HSL extractor.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/lch.js" :comments link
+/** Extract: LCH values */
+export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
+#+END_SRC
+
+Now, I'll set up some extraction tests.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const lch = await import(`${Deno.cwd()}/src/internals/color/format/lch.js`);
+
+<<valid-lch>>
+
+console.log("const colors =", colors.map(({ color }) => ({ color, values: lch.extract(color) })));
+#+END_SRC
+
+#+NAME: extracted-lch
+#+begin_src deno
+const colors = [
+  { color: "lch(0% 0 0)", values: [ "0%", "0", "0" ] },
+  { color: "lch(50% 0 0)", values: [ "50%", "0", "0" ] },
+  { color: "lch(100% 0 0)", values: [ "100%", "0", "0" ] },
+  { color: "lch(50% 230 0)", values: [ "50%", "230", "0" ] },
+  { color: "lch(29.2345% 44.2 27)", values: [ "29.2345%", "44.2", "27" ] },
+  { color: "lch(52.2345% 72.2 56.2)", values: [ "52.2345%", "72.2", "56.2" ] },
+  { color: "lch(60.3119% 34.3 139.3)", values: [ "60.3119%", "34.3", "139.3" ] },
+  { color: "lch(39.119% 58.1 258.9)", values: [ "39.119%", "58.1", "258.9" ] },
+  {
+    color: "lch(79.44% 119 320.89 / 0.7)",
+    values: [ "79.44%", "119", "320.89", "0.7" ]
+  },
+  {
+    color: "lch(62.1183% 42.5 81.881 / 89%)",
+    values: [ "62.1183%", "42.5", "81.881", "89%" ]
+  },
+  { color: "lch(119.339% 39.9 130deg)", values: [ "119.339%", "39.9", "130deg" ] },
+  { color: "lch(93.411% 74.42 200rad)", values: [ "93.411%", "74.42", "200rad" ] },
+  { color: "lch(33% 38.4434 3grad)", values: [ "33%", "38.4434", "3grad" ] },
+  {
+    color: "lch(71.831% 204.314 0.184turn / 0.98)",
+    values: [ "71.831%", "204.314", "0.184turn", "0.98" ]
+  }
+]
+#+end_src
+
+And that's it. Full support for validating and extracting the values of all current (and future) CSS
+color formats. Not very useful  by itself, so I'm going to write functionality to convert between them.
 
 *** Conversion
 
