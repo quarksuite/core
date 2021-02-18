@@ -44,7 +44,6 @@ absolute control, or you want to develop your own design system workflow with a 
   - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
   - [[#color][Color]]
     - [[#formats-srcinternalscolorformatindexjs][Formats (=src/internals/color/format/index.js=)]]
-<<<<<<< HEAD
       - [[#rgb-hex-srcinternalscolorformathexjs][RGB Hex (=src/internals/color/format/hex.js=)]]
       - [[#w3c-x11-srcinternalscolorformatnamedjs][W3C-X11 (=src/internals/color/format/named.js=)]]
       - [[#functional-rgb-srcinternalscolorformatrgbjs][Functional RGB (=src/internals/color/format/rgb.js=)]]
@@ -53,8 +52,6 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#functional-hwb-srcinternalscolorformathwbjs][Functional HWB (=src/internals/color/format/hwb.js=)]]
       - [[#functional-cielab-srcinternalscolorformatlabjs][Functional CIELAB (=src/internals/color/format/lab.js=)]]
       - [[#functional-lch-srcinternalscolorformatlchjs][Functional LCH (=src/internals/color/format/lch.js=)]]
-=======
->>>>>>> 593dda5e7aa115e32091d2c608cbd948732d0ad5
     - [[#conversion][Conversion]]
 - [[#data][Data]]
   - [[#color-1][Color]]
@@ -1409,11 +1406,7 @@ const colors = [
 ]
 #+end_src
 
-<<<<<<< HEAD
 **** Functional LCH (=src/internals/color/format/lch.js=)
-=======
-**** Functional LCH (=src/internals/color/forma/lch.js=)
->>>>>>> 593dda5e7aa115e32091d2c608cbd948732d0ad5
 
 The LCH color space is another device-independent color format with added support in the CSS Color
 Module Level 4 spec. It's an offshoot of CIELAB designed to be a little more useful for people. It
