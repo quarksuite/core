@@ -648,7 +648,7 @@ Core supports the legacy format as well as the newer space-separated ones.
 |                  | =rgb(31%, 15%, 4%)=         |
 |                  | =rgb(20%, 70.3%, 49%)=      |
 |                  | =rgb(10% 30% 95%)=          |
-|                  | rgb(33% 24% 44%)          |
+|                  | =rgb(33% 24% 44%)=          |
 |                  | =rgba(0, 0, 0, 1)=          |
 |                  | =rgba(255, 255, 255, 1)=    |
 |                  | =rgba(230, 110, 0, 0.8)=    |
