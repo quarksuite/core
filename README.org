@@ -453,8 +453,8 @@ conversion chain to other formats.
 |-----------+-----------|
 | =#RGB=      | =#000=      |
 | =#RRGGBB=   | =#fff=      |
-|           | =#000000=   |
-|           | =#ffffff=   |
+| =#RGBA=     | =#000000=   |
+| =#RRGGBBAA= | =#ffffff=   |
 |           | =#ace=      |
 |           | =#bea=      |
 |           | =#fed=      |
@@ -462,9 +462,8 @@ conversion chain to other formats.
 |           | =#bada55=   |
 |           | =#c0ffee=   |
 |           | =#caf3c0=   |
-|-----------+-----------|
-| =#RGBA=     | =#000f=     |
-| =#RRGGBBAA= | =#ffff=     |
+|           | =#000f=     |
+|           | =#ffff=     |
 |           | =#face=     |
 |           | =#ca57=     |
 |           | =#000000ff= |
@@ -640,7 +639,7 @@ Core supports the legacy format as well as the newer space-separated ones.
 | =rgb(R, G, B)=     | =rgb(0, 0, 0)=              |
 | =rgba(R, G, B, A)= | =rgb(255, 255, 255)=        |
 | =rgb(R G B)=       | =rgb(110, 22, 33)=          |
-| rgb(R G B / A)   | =rgb(30, 220, 140)=         |
+| =rgb(R G B / A)=   | =rgb(30, 220, 140)=         |
 | =rgba(R G B / A)=  | =rgb(148, 129, 240)=        |
 |                  | =rgb(31 33 100)=            |
 |                  | =rgb(200 210 131)=          |
