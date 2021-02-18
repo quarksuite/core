@@ -12,7 +12,7 @@ export function validate(color) {
   // transparency: float<0-1> || float<0-100>%
   const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
   // separators: " " || " /"
-  const channelSep = /(?:[\s]+)/;
+  const valueSep = /(?:[\s]+)/;
   const alphaSep = /(?:[\s/]+)/;
   // suffix: ")"
 
@@ -20,9 +20,9 @@ export function validate(color) {
     [
       "(?:^lab\\(",
       L.source,
-      channelSep.source,
+      valueSep.source,
       a.source,
-      channelSep.source,
+      valueSep.source,
       b.source,
       "(?:",
       alphaSep.source,
