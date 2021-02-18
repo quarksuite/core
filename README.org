@@ -1,6 +1,6 @@
 #+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
-#+DATE: <2021-02-17 Wed>
+#+DATE: <2021-02-18 Thu>
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
 #+PROPERTY: header-args:shell :results output code
@@ -29,6 +29,27 @@ absolute control, or you want to develop your own design system workflow with a 
 
 * Installation :noexport:
 * Features :noexport:
+* Source Code Index                                                   :TOC@3:
+- [[#api][API]]
+  - [[#how-to-read-the-api][How to Read the API]]
+  - [[#utilities-srcutilitiesindexjs][Utilities (=src/utilities/index.js=)]]
+    - [[#compose-srcutilitiescomposejs][compose (=src/utilities/compose.js=)]]
+    - [[#pipe-srcutilitiespipejs][pipe (=src/utilities/pipe.js=)]]
+    - [[#bind-srcutilitiesbindjs][bind (=src/utilities/bind.js=)]]
+    - [[#tests][Tests]]
+    - [[#scenarios][Scenarios]]
+- [[#internals][Internals]]
+  - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
+  - [[#color][Color]]
+    - [[#css-formats-srcinternalscolorformatindexjs][CSS Formats (=src/internals/color/format/index.js=)]]
+    - [[#conversion][Conversion]]
+- [[#data][Data]]
+  - [[#color-1][Color]]
+    - [[#w3c-x11-color-definitions-srcdatacolorw3c-x11js][W3C X11 Color Definitions (=src/data/color/w3c-x11.js=)]]
+    - [[#accesible-web-defaults-srcdatacolora11yjs][Accesible Web Defaults (=src/data/color/a11y.js=)]]
+  - [[#typography][Typography]]
+    - [[#system-font-stacks-srcdatatypographysystemjs][System Font Stacks (=src/data/typography/system.js=)]]
+
 * API
 
 The API is organized by the kind of data each function accepts.
@@ -37,22 +58,13 @@ This means you can jump right to the section for what you need to do. The litera
 everyone, so headings are appropriately marked with their source location in the repo if you prefer
 to get right into code.
 
-** How to Read the API :noexport:
+** How to Read the API
 
 Each section is broken down into:
 
 + functions: the actual function definitions with developer commentary
 + Tests: proving each function does its job and doesn't choke on the unexpected
 + Scenarios: demonstrating use and applicable design patterns
-
-** Index                                                             :TOC@3:
-- [[#api][API]]
-  - [[#utilities-srcutilitiesindexjs][Utilities (=src/utilities/index.js=)]]
-    - [[#compose-srcutilitiescomposejs][compose (=src/utilities/compose.js=)]]
-    - [[#pipe-srcutilitiespipejs][pipe (=src/utilities/pipe.js=)]]
-    - [[#bind-srcutilitiesbindjs][bind (=src/utilities/bind.js=)]]
-    - [[#tests][Tests]]
-    - [[#scenarios][Scenarios]]
 
 ** Utilities (=src/utilities/index.js=)
 
@@ -358,7 +370,7 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (20ms
 #+end_src
 
 *** Scenarios
-* Internals                                                        :noexport:
+* Internals
 
 This section documents and implements useful internal functions that aid in developing the core
 itself. They are not publicly accessible. The only reason you'd want to read this section is if
@@ -400,7 +412,8 @@ TRY: troubleshooting suggestions
 OUTPUT: "and what actually happened";
 #+END_SRC
 
-** CSS Color Formats (=src/internals/color/format/index.js=)
+** Color
+*** CSS Formats (=src/internals/color/format/index.js=)
 
 QuarkSuite is designed primarily for web technologies and handles all current (and upcoming) CSS color
 formats. This section documents how the QSC validates colors and extracts values for calculation.
@@ -413,11 +426,12 @@ export * from "./rgb.js";
 export * from "./hsl.js";
 export * from "./device-cmyk.js";
 export * from "./hwb.js";
+export * from "./lab.js";
 #+END_SRC
 
 From the format index, you can see at a glance which color formats are currently supported.
 
-*** RGB Hex
+**** RGB Hex (=src/internals/color/format/hex.js=)
 
 Hexadecimal colors are the most common format on the web. Below is a table showing the acceptable
 formats in CSS and some examples. I also think of them as color primitives, because hex /begins/ the
@@ -448,7 +462,7 @@ conversion chain to other formats.
 |           | =#33a0c9c3= |
 |           | =#eecc99dd= |
 
-**** Hex Validator
+***** Hex Validator
 
 The regular expression to validate a hex color is short.
 
@@ -492,7 +506,7 @@ const colors = [
 ]
 #+end_src
 
-**** Hex Value Extractor
+***** Hex Value Extractor
 
 Now, that I know I have valid hex colors, I need to be able to extract their RGB(A) channels.
 
@@ -592,8 +606,7 @@ const colors = [
   { color: "#eecc99dd", values: [ "ee", "cc", "99", "dd" ] }
 ]
 #+end_src
-
-*** W3C-X11
+**** W3C-X11 (=src/internals/color/format/named.js=)
 
 Named colors are simple to validate. It's a matter of matching the name with its hex value in the
 =X11Colors= lookup table as a boolean.
@@ -605,7 +618,7 @@ import { X11Colors } from "../../../data/color/w3c-x11.js";
 export const validate = (color) => !!X11Colors[color];
 #+END_SRC
 
-*** Functional RGB
+**** Functional RGB (=src/internals/color/format/rgb.js=)
 
 The functional RGB syntax is more complex and allows for more variation in the format. Quarks System
 Core supports the original format as well as the newer space-delimited and percentage ones.
@@ -636,7 +649,7 @@ Core supports the original format as well as the newer space-delimited and perce
 |                  | =rgba(34 225 110 / 25.9%)=  |
 |                  | =rgba(10% 33% 19% / 0.35)= |
 
-**** RGB Validator
+***** RGB Validator
 
 Validating the functional RGB is similarly complex but the regular expression can be broken down to
 its unique and repeating parts and then assembled with the =RegExp.source= property as a new =RegExp=
@@ -648,8 +661,9 @@ export function validate(color) {
   // RGB regexp
 
   // prefix: "rgb(" || "rgba("
-  // channel: float<0-100>% || int<0-255>
-  const channel =
+  // R && G && B: float<0-100>% || int<0-255>
+  let R, G, B;
+  R = G = B =
     /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
   // transparency: float<0-1> || float<0-100>%
   const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
@@ -661,11 +675,11 @@ export function validate(color) {
   return new RegExp(
     [
       "(?:^rgba?\\(",
-      channel.source,
+      R.source,
       channelSep.source,
-      channel.source,
+      G.source,
       channelSep.source,
-      channel.source,
+      B.source,
       "(?:",
       alphaSep.source,
       alpha.source,
@@ -713,7 +727,7 @@ const colors = [
 
 All clear!
 
-**** RGB Extractor
+***** RGB Extractor
 
 The next step is ensuring the channel/alpha values can be extracted.
 
@@ -763,7 +777,7 @@ const colors = [
 ]
 #+end_src
 
-*** Functional HSL
+**** Functional HSL (=src/internals/color/format/hsl.js=)
 
 HSL is well-loved by designers for being a lot more intuitive than RGB. It explicitly allows
 setting:
@@ -816,7 +830,7 @@ CSS also defines several rotational units for the hue. All of which QuarkSuite s
 |                      | =hsla(4.8grad 37% 100% / 0.47)=  |
 |                      | =hsla(0.134turn 33% 88% / 40%)= |
 
-**** HSL Validator
+***** HSL Validator
 
 From here, you'll start seeing a lot of repetition in the validation expressions.
 
@@ -907,7 +921,7 @@ const colors = [
 ]
 #+end_src
 
-**** HSL Extractor
+***** HSL Extractor
 
 Next, I need to be able extract HSL values.
 
@@ -987,7 +1001,7 @@ const colors = [
 The formats documented beyond this point are brand new territory for the core module and unsupported
 in QuarkSuite 1.
 
-*** Device CMYK
+**** Device CMYK (=src/internals/color/format/device-cmyk.js=)
 
 =device-cmyk()= is a prospective format documented in the [[https://www.w3.org/TR/css-color-4/#device-cmyk][current CSS Color Module 4 draft]]. CMYK in
 general is a color space typically calibrated for printed media.
@@ -1013,7 +1027,7 @@ color formats beyond this point.
 |                               | =device-cmyk(19% 30% 83% 0 / 0.31)= |
 |                               | =device-cmyk(0.9 0.25 0 0 / 73%)= |
 
-**** CMYK Validator
+***** CMYK Validator
 
 The validation for CMYK in CSS is thankfully simple.
 
@@ -1023,8 +1037,9 @@ export function validate(color) {
   // CMYK regexp
 
   // prefix: "device-cymk("
-  // value: float<0-1> || float<0-100>%
-  const value = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // c & m & y & k & a: float<0-1> || float<0-100>%
+  let c, m, y, k, alpha;
+  c = m = y = k = alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
   // separators: " " || " /"
   const valueSep = /(?:[\s]+)/;
   const alphaSep = /(?:[\s/]+)/;
@@ -1033,16 +1048,16 @@ export function validate(color) {
   return new RegExp(
     [
       "(?:^device-cmyk\\(",
-      value.source,
+      c.source,
       valueSep.source,
-      value.source,
+      m.source,
       valueSep.source,
-      value.source,
+      y.source,
       valueSep.source,
-      value.source,
+      k.source,
       "(?:",
       alphaSep.source,
-      value.source,
+      alpha.source,
       ")?\\))$",
     ].join(""),
   ).test(color);
@@ -1072,7 +1087,7 @@ const colors = [
 ]
 #+end_src
 
-**** CMYK Extractor
+***** CMYK Extractor
 
 From here, the extractor is another one-liner.
 
@@ -1116,7 +1131,7 @@ const colors = [
 
 And now it's on to the next one.
 
-*** Functional HWB
+**** Functional HWB (=src/internals/color/format/hwb.js=)
 
 HWB is short for Hue-Whiteness-Blackness. It's an [[https://www.w3.org/TR/css-color-4/#the-hwb-notation][upcoming color format similar to HSL]] but even
 easier to use. It's actually the format of choice for lot of browser color picker implementations.
@@ -1142,7 +1157,7 @@ When W and B are mixed equal amounts, they yield gray. When both are =100%=, the
 |                   | =hwb(310 78% 0% / 0.5)=    |
 |                   | =hwb(89rad 10% 90% / 83%)= |
 
-**** HWB Validator
+***** HWB Validator
 
 The HWB validator expressions are nearly identical to the HSL validator.
 
@@ -1206,7 +1221,7 @@ const colors = [
 ]
 #+end_src
 
-**** HWB Extractor
+***** HWB Extractor
 
 The value extractor for HWB is identical to the one for HSL.
 
@@ -1241,11 +1256,152 @@ const colors = [
 ]
 #+end_src
 
-*** Lab
-*** LCH
-** Color Conversion Math
+**** Functional CIELAB (=src/internals/color/format/lab.js=)
 
-* Data :noexport:
+The CSS Color Module Level 4 is currently drafting [[https://www.w3.org/TR/css-color-4/#lab-colors][support for device-independent color
+formats]]. Quarks System Core supports both.
+
+First up is the CIELAB (often called Lab for short) color format. The format specification is better
+explained on the linked W3C page above, but I'll summarize the components:
+
++ Lightness (L): a percentage value which, unlike HSL, is /not/ capped at =100%= for this space
++ hues (*a): magenta-red when positive, its complement when negative
++ hues (*b): yellow when positive, its complement when negative
+
+The hue axes are unbound, but in everyday use typically cap at =±160=.
+
+#+NAME: lab-formats
+| Format          | Examples                      |
+|-----------------+-------------------------------|
+| =lab(L% a b)=     | =lab(0% 0 0)=                   |
+| =lab(L% a b / A)= | =lab(50% 0 0)=                  |
+|                 | =lab(100% 0 0)=                 |
+|                 | =lab(49% 160 0)=                |
+|                 | =lab(72% 0 160)=                |
+|                 | =lab(19% 160 0)=                |
+|                 | =lab(64% -160 0)=               |
+|                 | =lab(46% 0 -160)=               |
+|                 | =lab(34.3391% 49.3819 -4.3942)= |
+|                 | =lab(57.38% 38.339 19.331)=     |
+|                 | =lab(68.3194% -94 0)=           |
+|                 | =lab(24.193% -66 138 / 0.9)=    |
+|                 | =lab(88.1199% 78 -33 / 78%)=  |
+
+***** CIELAB Validator
+
+The Lab validator is not complex. It reuses the alpha validation expression and modifies the RGB
+channel validation expression slightly.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/lab.js" :comments link
+/** Validate: functional CIELAB format */
+export function validate(color) {
+  // CIELAB regexp
+
+  // prefix: "lab("
+  // L: float<0->%
+  const L = /(?:(?:\d\.?\d?){1,}%)/;
+  // a && b: -?int<0-160>
+  let a, b;
+  a = b = /(?:-?(?:160|(?:1[0-5][0-9]|(?:\d.?\d?){1,})))/;
+  // transparency: float<0-1> || float<0-100>%
+  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // separators: " " || " /"
+  const channelSep = /(?:[\s]+)/;
+  const alphaSep = /(?:[\s/]+)/;
+  // suffix: ")"
+
+  return new RegExp(
+    [
+      "(?:^lab\\(",
+      L.source,
+      channelSep.source,
+      a.source,
+      channelSep.source,
+      b.source,
+      "(?:",
+      alphaSep.source,
+      alpha.source,
+      ")?\\))$",
+    ].join(""),
+  ).test(color);
+}
+#+END_SRC
+
+Now, it's validator testing time.
+
+#+BEGIN_SRC deno :results output code replace :allow read :var labTable=lab-formats
+const lab = await import(`${Deno.cwd()}/src/internals/color/format/lab.js`);
+const [, ...colors] = labTable.map(([a, b]) => b.replace(/=/g, ""));
+
+console.log("const colors =", colors.map((color) => ({color, isCIELAB: lab.validate(color)})))
+#+END_SRC
+
+#+NAME: valid-lab
+#+begin_src deno
+const colors = [
+  { color: "lab(50% 0 0)", isCIELAB: true },
+  { color: "lab(100% 0 0)", isCIELAB: true },
+  { color: "lab(49% 160 0)", isCIELAB: true },
+  { color: "lab(72% 0 160)", isCIELAB: true },
+  { color: "lab(19% 160 0)", isCIELAB: true },
+  { color: "lab(64% -160 0)", isCIELAB: true },
+  { color: "lab(46% 0 -160)", isCIELAB: true },
+  { color: "lab(34.3391% 49.3819 -4.3942)", isCIELAB: true },
+  { color: "lab(57.38% 38.339 19.331)", isCIELAB: true },
+  { color: "lab(68.3194% -94 0)", isCIELAB: true },
+  { color: "lab(24.193% -66 138 / 0.9)", isCIELAB: true },
+  { color: "lab(88.1199% 78 -33 / 78%)", isCIELAB: true }
+]
+#+end_src
+
+Good to go.
+
+***** CIELAB Extractor
+
+The CIELAB value extractor is a slight modification from the HSL extractor. The CIELAB extractor
+needs to be able to capture negative and positive values as well as percentages.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/format/lab.js" :comments link
+/** Extract: CIELAB values */
+export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
+#+END_SRC
+
+Time to test it.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const lab = await import(`${Deno.cwd()}/src/internals/color/format/lab.js`);
+
+<<valid-lab>>
+
+console.log("const colors =", colors.map(({ color }) => ({ color, values: lab.extract(color) })));
+#+END_SRC
+
+#+NAME: extracted-lab
+#+begin_src deno
+const colors = [
+  { color: "lab(50% 0 0)", values: [ "50%", "0", "0" ] },
+  { color: "lab(100% 0 0)", values: [ "100%", "0", "0" ] },
+  { color: "lab(49% 160 0)", values: [ "49%", "160", "0" ] },
+  { color: "lab(72% 0 160)", values: [ "72%", "0", "160" ] },
+  { color: "lab(19% 160 0)", values: [ "19%", "160", "0" ] },
+  { color: "lab(64% -160 0)", values: [ "64%", "-160", "0" ] },
+  { color: "lab(46% 0 -160)", values: [ "46%", "0", "-160" ] },
+  {
+    color: "lab(34.3391% 49.3819 -4.3942)",
+    values: [ "34.3391%", "49.3819", "-4.3942" ]
+  },
+  { color: "lab(57.38% 38.339 19.331)", values: [ "57.38%", "38.339", "19.331" ] },
+  { color: "lab(68.3194% -94 0)", values: [ "68.3194%", "-94", "0" ] },
+  { color: "lab(24.193% -66 138 / 0.9)", values: [ "24.193%", "-66", "138", "0.9" ] },
+  { color: "lab(88.1199% 78 -33 / 78%)", values: [ "88.1199%", "78", "-33", "78%" ] }
+]
+#+end_src
+
+**** LCH
+
+*** Conversion
+
+* Data
 
 This section documents lookup tables and other hardcoded bits of data used by the core modules.
 

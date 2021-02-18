@@ -4,8 +4,9 @@ export function validate(color) {
   // CMYK regexp
 
   // prefix: "device-cymk("
-  // value: float<0-1> || float<0-100>%
-  const value = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // c & m & y & k & a: float<0-1> || float<0-100>%
+  let c, m, y, k, alpha;
+  c = m = y = k = alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
   // separators: " " || " /"
   const valueSep = /(?:[\s]+)/;
   const alphaSep = /(?:[\s/]+)/;
@@ -14,16 +15,16 @@ export function validate(color) {
   return new RegExp(
     [
       "(?:^device-cmyk\\(",
-      value.source,
+      c.source,
       valueSep.source,
-      value.source,
+      m.source,
       valueSep.source,
-      value.source,
+      y.source,
       valueSep.source,
-      value.source,
+      k.source,
       "(?:",
       alphaSep.source,
-      value.source,
+      alpha.source,
       ")?\\))$",
     ].join(""),
   ).test(color);
