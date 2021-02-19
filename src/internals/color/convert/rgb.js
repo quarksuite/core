@@ -72,6 +72,7 @@ function calcHSL(r, g, b) {
   const S = calcSat(delta, L);
 
   return [Math.sign(H) === -1 ? correctHueCounterClockwise(H) : H, S, L];
+}
 // Functional RGB -> Functional HSL (=rgb.hsl=):1 ends here
 
 // [[file:../../../../README.org::*Functional RGB -> Functional HSL (=rgb.hsl=)][Functional RGB -> Functional HSL (=rgb.hsl=):2]]

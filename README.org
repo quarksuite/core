@@ -439,14 +439,14 @@ formats. This section documents how the QSC validates colors and extracts color 
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/index.js" :comments link
 /** Internal format validation/extraction utilities */
-export * from "./hex.js";
-export * from "./named.js";
-export * from "./rgb.js";
-export * from "./hsl.js";
-export * from "./device-cmyk.js";
-export * from "./hwb.js";
-export * from "./lab.js";
-export * from "./lch.js";
+export * as hex from "./hex.js";
+export * as named from "./named.js";
+export * as rgb from "./rgb.js";
+export * as hsl from "./hsl.js";
+export * as cmyk from "./device-cmyk.js";
+export * as hwb from "./hwb.js";
+export * as lab from "./lab.js";
+export * as lch from "./lch.js";
 #+END_SRC
 
 From the format index, you can see at a glance which color formats are currently supported.
@@ -1895,6 +1895,7 @@ function calcHSL(r, g, b) {
   const S = calcSat(delta, L);
 
   return [Math.sign(H) === -1 ? correctHueCounterClockwise(H) : H, S, L];
+}
 #+END_SRC
 
 And now the actual conversion algorithm:
