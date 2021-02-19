@@ -52,7 +52,16 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#functional-hwb-srcinternalscolorformathwbjs][Functional HWB (=src/internals/color/format/hwb.js=)]]
       - [[#functional-cielab-srcinternalscolorformatlabjs][Functional CIELAB (=src/internals/color/format/lab.js=)]]
       - [[#functional-lch-srcinternalscolorformatlchjs][Functional LCH (=src/internals/color/format/lch.js=)]]
-    - [[#conversion][Conversion]]
+    - [[#conversion-srcinternalscolorconvertindexjs][Conversion (=src/internals/color/convert/index.js=)]]
+      - [[#setup-srcinternalscolorconvertsetupjs][Setup (=src/internals/color/convert/setup.js=)]]
+      - [[#rgb-hex-conversion-srcinternalscolorconverthexjs][RGB Hex Conversion (=src/internals/color/convert/hex.js=)]]
+      - [[#w3c-x11-conversion-srcinternalscolorconvertnamedjs][W3C-X11 Conversion (=src/internals/color/convert/named.js=)]]
+      - [[#functional-rgb-conversion-srcinternalscolorconvertrgbjs][Functional RGB Conversion (=src/internals/color/convert/rgb.js=)]]
+      - [[#functional-hsl-conversion-srcinternalscolorconverthsljs][Functional HSL Conversion (=src/internals/color/convert/hsl.js=)]]
+      - [[#device-cmyk-conversion-srcinternalscolorconvertdevice-cmykjs][Device CMYK Conversion (=src/internals/color/convert/device-cmyk.js=)]]
+      - [[#functional-hwb-conversion-srcinternalscolorconverthwbjs][Functional HWB Conversion (=src/internals/color/convert/hwb.js=)]]
+      - [[#functional-cielab-conversion-srcinternalscolorconvertlabjs][Functional CIELAB Conversion (=src/internals/color/convert/lab.js=)]]
+      - [[#functional-lch-conversion-srcinternalscolorconvertlchjs][Functional LCH Conversion (=src/internals/color/convert/lch.js=)]]
 - [[#data][Data]]
   - [[#color-1][Color]]
     - [[#w3c-x11-color-definitions-srcdatacolorw3c-x11js][W3C X11 Color Definitions (=src/data/color/w3c-x11.js=)]]
@@ -429,7 +438,7 @@ QuarkSuite is designed primarily for web technologies and handles all current (a
 formats. This section documents how the QSC validates colors and extracts color values.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/index.js" :comments link
-/** Internal color utilities */
+/** Internal format validation/extraction utilities */
 export * from "./hex.js";
 export * from "./named.js";
 export * from "./rgb.js";
@@ -616,6 +625,7 @@ const colors = [
   { color: "#eecc99dd", values: [ "ee", "cc", "99", "dd" ] }
 ]
 #+end_src
+
 **** W3C-X11 (=src/internals/color/format/named.js=)
 
 Named colors are simple to validate. It's a matter of matching the name with its hex value in the
@@ -1559,7 +1569,298 @@ const colors = [
 And that's it. Full support for validating and extracting the values of all current (and future) CSS
 color formats. Not very useful  by itself, so I'm going to write functionality to convert between them.
 
-*** Conversion
+*** Conversion (=src/internals/color/convert/index.js=)
+
+The internal color conversion functions are organized by format. They follow a convention of
+=inputFormat.outputFormat(color)= this allows them to easily be composed in a logical order to create
+the higher level color conversion utilities exposed in the public API.
+
+Each implementation assumes extracted color values instead of a full color. This is to ensure color
+formatting functions remain separate from conversion functions for the reasons demonstrated in the API.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/index.js" :comments link
+/** Internal color conversion utilities */
+export * from "./hex.js";
+export * from "./named.js";
+export * from "./rgb.js";
+export * from "./hsl.js";
+export * from "./device-cmyk.js";
+export * from "./hwb.js";
+export * from "./lab.js";
+export * from "./lch.js";
+#+END_SRC
+
+**** Setup (=src/internals/color/convert/setup.js=)
+
+Before I write color conversion functions, I need some helpers to streamline the process.
+
+***** Hex RGB Fragments
+
+As I wrote earlier, I consider hex colors on the web color primitives. They're the starting point
+of all conversions because hex colors can only be directly converted to functional RGB which begins
+the conversion chain for other formats.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/setup.js" :comments link
+/** Helper for converting hex->int */
+export const hexFragmentToChannel = (fragment) => parseInt(fragment, 16);
+
+/** Helper for converting int->hex */
+export const channelToHexFragment = (channel) =>
+channel.toString(16).padStart(2, "0");
+#+END_SRC
+
+***** Math
+
+Before I write the functions for actual conversion, I need to write some basic arithmetic helpers.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/setup.js" :comments link
+/** Helper to set significant digits */
+const significant = (digits, value) => +value.toPrecision(digits);
+
+/** x + y */
+const sum = (y, x) => significant(6, x + y);
+
+/** x ✕ y */
+const product = (y, x) => significant(6, x * y);
+
+/** x ÷ y */
+const quotient = (y, x) => significant(6, x / y);
+
+/** x % y */
+const remainder = (y, x) => significant(6, x % y);
+
+// Hrad, Hgrad, Hturn -> hue
+
+/** Formula: n° = n㎭ ✕ 180∕π */
+export const calcHueFromRad = (radians) =>
+Math.round(product(quotient(Math.PI, 180), radians));
+
+/** Formula: n° = nᵍ✕ 180∕200 */
+export const calcHueFromGrad = (gradians) =>
+Math.round(product(quotient(200, 180), gradians));
+
+/** Formula: n° = n% ✕ 360 */
+export const calcHueFromTurn = (turn) => Math.round(product(360, turn));
+
+// Hue correction
+
+/** Formula: n° = -n + 360 */
+export const correctHueCounterClockwise = (hue) => sum(360, hue);
+
+/** Formula: n° = n % 360 */
+export const correctHueClockwise = (hue) => remainder(360, hue);
+
+// Saturation, lightness
+
+/** Formula: n = n%∕100 */
+export const calcFractionFromPercent = (percentage) =>
+quotient(100, percentage);
+
+/** Formula: n = n ✕ 100 */
+export const calcPercentFromFraction = (fraction) => product(100, fraction);
+
+// RGB calculations
+
+/** Formula: n = n ✕ 255 */
+export const calcChannelFromFraction = (fraction) => product(255, fraction);
+
+/** Formula: n = n∕255 */
+export const calcFractionFromChannel = (channel) => quotient(255, channel);
+
+/** Formula: n = n%∕100 ✕ 255 */
+export const calcChannelFromPercent = (percentage) =>
+Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
+
+// Alpha
+
+/** Helper to convert alpha value to hex fragment */
+export const calcHexFragmentFromAlpha = (alpha) =>
+channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
+
+// Differential helper for color mixing
+
+/** Calculate the differential between original and offset */
+export const calcDifferential = (original, target, p) =>
+significant(6, ((1 - p) * original ** 2 + p * target ** 2) ** 0.5);
+#+END_SRC
+
+Now, I'm ready to write the conversion algorithms.
+
+**** RGB Hex Conversion (=src/internals/color/convert/hex.js=)
+
+To reiterate, a hex color is the primitive color value. They may convert up to another format,
+but cannot convert down to anything but machine code.
+
+***** RGB Hex -> Functional RGB (=hex.rgb=)
+
+Converting RGB Hex to functional RGB is a matter of extracting each channel hex fragment and
+converting them to their equivalent integers. And then converting the alpha channel /if/ it exists.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/hex.js" :comments link
+import { calcFractionFromChannel, hexFragmentToChannel } from "./setup.js";
+
+/** RGB Hex -> Functional RGB */
+export function rgb(hex) {
+  const [r, g, b, alpha] = hex;
+  const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
+  const A = calcFractionFromChannel(hexFragmentToChannel(alpha ?? "ff"));
+
+  return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
+}
+#+END_SRC
+
+For testing my implementation, I'll reuse the extracted hex results above.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const hex = await import(`${Deno.cwd()}/src/internals/color/convert/hex.js`);
+
+<<extracted-hex>>
+
+console.log(colors.map(({color, values}) => ({hex: color, rgb: hex.rgb(values)})));
+#+END_SRC
+
+#+NAME: hex-to-rgb
+#+begin_src deno
+[
+  { hex: "#000000", rgb: "rgb(0, 0, 0)" },
+  { hex: "#ffffff", rgb: "rgb(255, 255, 255)" },
+  { hex: "#000000", rgb: "rgb(0, 0, 0)" },
+  { hex: "#ffffff", rgb: "rgb(255, 255, 255)" },
+  { hex: "#aaccee", rgb: "rgb(170, 204, 238)" },
+  { hex: "#bbeeaa", rgb: "rgb(187, 238, 170)" },
+  { hex: "#ffeedd", rgb: "rgb(255, 238, 221)" },
+  { hex: "#deaded", rgb: "rgb(222, 173, 237)" },
+  { hex: "#bada55", rgb: "rgb(186, 218, 85)" },
+  { hex: "#c0ffee", rgb: "rgb(192, 255, 238)" },
+  { hex: "#caf3c0", rgb: "rgb(202, 243, 192)" },
+  { hex: "#000000ff", rgb: "rgb(0, 0, 0)" },
+  { hex: "#ffffffff", rgb: "rgb(255, 255, 255)" },
+  { hex: "#ffaaccee", rgb: "rgba(255, 170, 204, 0.933333)" },
+  { hex: "#ccaa5577", rgb: "rgba(204, 170, 85, 0.466667)" },
+  { hex: "#000000ff", rgb: "rgb(0, 0, 0)" },
+  { hex: "#ffffffff", rgb: "rgb(255, 255, 255)" },
+  { hex: "#abcede79", rgb: "rgba(171, 206, 222, 0.47451)" },
+  { hex: "#33a0c9c3", rgb: "rgba(51, 160, 201, 0.764706)" },
+  { hex: "#eecc99dd", rgb: "rgba(238, 204, 153, 0.866667)" }
+]
+#+end_src
+
+Success!
+
+**** W3C-X11 Conversion (=src/internals/color/convert/named.js=)
+
+***** W3C-X11 -> RGB Hex
+
+After validation, the only possible conversion for a CSS named color is a query for its hex value.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/named.js" :comments link
+import { X11Colors } from "../../../data/color/w3c-x11.js";
+
+/** W3C-X11 -> RGB HEX */
+export const hex = (keyword) => X11Colors[keyword];
+#+END_SRC
+
+**** Functional RGB Conversion (=src/internals/color/convert/rgb.js=)
+
+Functional RGB leads to the first progressive conversion fork and regression option.
+
++ =RGB Hex <- Functional RGB=: a regressive conversion to RGB Hex
++ =Functional RGB -> Functional HSL=: A progressive conversion to HSL
++ =Functional RGB -> Functional CIELAB=: a progressive conversion to Lab
+
+***** RGB Conversion Setup
+
+Functional RGB conversions are slightly more complex than RGB Hex conversions, so they require a bit
+of extra math. Luckily, I defined those arithmetic helpers, so I'll pull in the necessary ones.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+import {
+  calcChannelFromPercent,
+  calcFractionFromChannel,
+  calcFractionFromPercent,
+  calcHexFragmentFromAlpha,
+  calcPercentFromFraction,
+  channelToHexFragment,
+  correctHueCounterClockwise,
+} from "./setup.js";
+
+/** A helper function to prep RGB values for calculations */
+function parseRGB(rgb) {
+  const [r, g, b, alpha] = rgb;
+  const value = (s) => parseFloat(s);
+  const [R, G, B] = [r, g, b].map((channel) =>
+    channel.endsWith("%")
+      ? calcChannelFromPercent(value(channel))
+      : value(channel)
+  );
+
+  const a = value(alpha);
+  const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
+
+  return A === 1 ? [R, G, B] : [R, G, B, A];
+}
+#+END_SRC
+
+***** RGB Hex <- Functional RGB (=rgb.hex=)
+
+A regressive conversion is one that breaks a color down. Since an RGB color begins the chain to
+higher conversions, that leaves RGB Hex as the only possible regression.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+/** RGB Hex <- Functional RGB */
+export function hex(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+
+  const [R, G, B] = [r, g, b].map((channel) => channelToHexFragment(channel));
+  // Alpha is defined and not null
+  const A = alpha && calcHexFragmentFromAlpha(alpha ?? 1) || "ff";
+
+  return A === "ff" ? `#${R}${G}${B}` : `#${R}${G}${B}${A}`;
+}
+#+END_SRC
+
+Now, I'll use the extracted RGB defined earlier to test my conversions for accuracy.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
+
+<<extracted-rgb>>
+
+console.log(colors.map(({color, values}) => ({rgb: color, hex: rgb.hex(values)})));
+#+END_SRC
+
+#+rgb-to-hex
+#+begin_src deno
+[
+  { rgb: "rgb(0, 0, 0)", hex: "#000000" },
+  { rgb: "rgb(255, 255, 255)", hex: "#ffffff" },
+  { rgb: "rgb(110, 22, 33)", hex: "#6e1621" },
+  { rgb: "rgb(30, 220, 140)", hex: "#1edc8c" },
+  { rgb: "rgb(148, 129, 240)", hex: "#9481f0" },
+  { rgb: "rgb(31 33 100)", hex: "#1f2164" },
+  { rgb: "rgb(200 210 131)", hex: "#c8d283" },
+  { rgb: "rgb(0%, 0%, 0%)", hex: "#000000" },
+  { rgb: "rgb(100%, 100%, 100%)", hex: "#ffffff" },
+  { rgb: "rgb(31%, 15%, 4%)", hex: "#4f260a" },
+  { rgb: "rgb(20%, 70.3%, 49%)", hex: "#33b37d" },
+  { rgb: "rgb(10% 30% 95%)", hex: "#1a4df2" },
+  { rgb: "rgb(33% 24% 44%)", hex: "#543d70" },
+  { rgb: "rgba(0, 0, 0, 1)", hex: "#000000" },
+  { rgb: "rgba(255, 255, 255, 1)", hex: "#ffffff" },
+  { rgb: "rgba(230, 110, 0, 0.8)", hex: "#e66e00cc" },
+  { rgb: "rgba(120, 178, 34, 0.719)", hex: "#78b222b7" },
+  { rgb: "rgba(34, 199, 249, 0.3)", hex: "#22c7f94d" },
+  { rgb: "rgb(10 110 200 / 73%)", hex: "#0a6ec8ba" },
+  { rgb: "rgba(34 225 110 / 25.9%)", hex: "#22e16e42" },
+  { rgb: "rgb(10% 33% 19% / 0.35)", hex: "#1a543059" }
+]
+#+end_src
+
+**** Functional HSL Conversion (=src/internals/color/convert/hsl.js=)
+**** Device CMYK Conversion (=src/internals/color/convert/device-cmyk.js=)
+**** Functional HWB Conversion (=src/internals/color/convert/hwb.js=)
+**** Functional CIELAB Conversion (=src/internals/color/convert/lab.js=)
+**** Functional LCH Conversion (=src/internals/color/convert/lch.js=)
 
 * Data
 

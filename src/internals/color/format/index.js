@@ -1,5 +1,5 @@
 // [[file:../../../../README.org::*Formats (=src/internals/color/format/index.js=)][Formats (=src/internals/color/format/index.js=):1]]
-/** Internal color utilities */
+/** Internal format validation/extraction utilities */
 export * from "./hex.js";
 export * from "./named.js";
 export * from "./rgb.js";
