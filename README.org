@@ -1765,7 +1765,8 @@ export const hex = (keyword) => X11Colors[keyword];
 Functional RGB leads to the first progressive conversion fork and regression option.
 
 + =RGB Hex <- Functional RGB=: a regressive conversion to RGB Hex
-+ =Functional RGB -> Functional HSL=: A progressive conversion to HSL
++ =Functional RGB -> Functional HSL=: a progressive conversion to HSL
++ =Functional RGB -> Device CMYK=: a progressive conversion to CMYK
 + =Functional RGB -> Functional CIELAB=: a progressive conversion to Lab
 
 ***** RGB Conversion Setup
@@ -1813,7 +1814,7 @@ export function hex(rgb) {
 
   const [R, G, B] = [r, g, b].map((channel) => channelToHexFragment(channel));
   // Alpha is defined and not null
-  const A = alpha && calcHexFragmentFromAlpha(alpha ?? 1) || "ff";
+  const A = (alpha && calcHexFragmentFromAlpha(alpha ?? 1)) || "ff";
 
   return A === "ff" ? `#${R}${G}${B}` : `#${R}${G}${B}${A}`;
 }
@@ -1856,7 +1857,259 @@ console.log(colors.map(({color, values}) => ({rgb: color, hex: rgb.hex(values)})
 ]
 #+end_src
 
+***** Functional RGB -> Functional HSL (=rgb.hsl=)
+
+Functional RGB to Functional HSL conversion was supported in QuarkSuite 1, so the algorithm hasn't
+changed its implementation. First, it requires a little prep.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+// https://www.rapidtables.com/convert/color/rgb-to-hsl.html
+const calcHue = (R, G, B, cmax, delta) =>
+  new Map([
+    [0, delta === 0],
+    [60 * (((G - B) / delta) % 6), cmax === R],
+    [60 * ((B - R) / delta + 2), cmax === G],
+    [60 * ((R - G) / delta + 4), cmax === B],
+  ]);
+
+const calcSat = (delta, L) =>
+  delta === 0 ? 0 : delta / (1 - Math.abs(2 * L - 1));
+
+const calcLightness = (cmin, cmax) => (cmax + cmin) / 2;
+
+function calcHSL(r, g, b) {
+  const [R, G, B] = [r, g, b].map((channel) =>
+    calcFractionFromChannel(channel)
+  );
+
+  const cmin = Math.min(R, G, B);
+  const cmax = Math.max(R, G, B);
+  const delta = cmax - cmin;
+
+  const [H] = Array.from(calcHue(R, G, B, cmax, delta))
+    .filter(([, condition]) => condition)
+    .flatMap(([value]) => Math.round(value));
+
+  const L = calcLightness(cmin, cmax);
+
+  const S = calcSat(delta, L);
+
+  return [Math.sign(H) === -1 ? correctHueCounterClockwise(H) : H, S, L];
+#+END_SRC
+
+And now the actual conversion algorithm:
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+/** Functional RGB -> Functional HSL */
+export function hsl(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [h, s, l] = calcHSL(r, g, b);
+
+  const [H, S, L] = [h, calcPercentFromFraction(s), calcPercentFromFraction(l)];
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `hsl(${H}, ${S}%, ${L}%)` : `hsla(${H}, ${S}%, ${L}%, ${A})`;
+}
+#+END_SRC
+
+Time for some color conversion tests!
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
+
+<<extracted-rgb>>
+
+console.log(colors.map(({color, values}) => ({rgb: color, hsl: rgb.hsl(values)})));
+#+END_SRC
+
+#+NAME: rgb-to-hsl
+#+begin_src deno
+[
+  { rgb: "rgb(0, 0, 0)", hsl: "hsl(0, 0%, 0%)" },
+  { rgb: "rgb(255, 255, 255)", hsl: "hsl(0, 0%, 100%)" },
+  { rgb: "rgb(110, 22, 33)", hsl: "hsl(352, 66.6667%, 25.8824%)" },
+  { rgb: "rgb(30, 220, 140)", hsl: "hsl(155, 76%, 49.0196%)" },
+  { rgb: "rgb(148, 129, 240)", hsl: "hsl(250, 78.7233%, 72.3529%)" },
+  { rgb: "rgb(31 33 100)", hsl: "hsl(238, 52.6717%, 25.6863%)" },
+  { rgb: "rgb(200 210 131)", hsl: "hsl(68, 46.7455%, 66.8627%)" },
+  { rgb: "rgb(0%, 0%, 0%)", hsl: "hsl(0, 0%, 0%)" },
+  { rgb: "rgb(100%, 100%, 100%)", hsl: "hsl(0, 0%, 100%)" },
+  { rgb: "rgb(31%, 15%, 4%)", hsl: "hsl(24, 77.5281%, 17.451%)" },
+  { rgb: "rgb(20%, 70.3%, 49%)", hsl: "hsl(155, 55.6522%, 45.0981%)" },
+  { rgb: "rgb(10% 30% 95%)", hsl: "hsl(226, 89.2563%, 52.549%)" },
+  { rgb: "rgb(33% 24% 44%)", hsl: "hsl(267, 29.4797%, 33.9216%)" },
+  { rgb: "rgba(0, 0, 0, 1)", hsl: "hsl(0, 0%, 0%)" },
+  { rgb: "rgba(255, 255, 255, 1)", hsl: "hsl(0, 0%, 100%)" },
+  { rgb: "rgba(230, 110, 0, 0.8)", hsl: "hsla(29, 100%, 45.0981%, 0.8)" },
+  { rgb: "rgba(120, 178, 34, 0.719)", hsl: "hsla(84, 67.9246%, 41.5686%, 0.719)" },
+  { rgb: "rgba(34, 199, 249, 0.3)", hsl: "hsla(194, 94.7137%, 55.4902%, 0.3)" },
+  { rgb: "rgb(10 110 200 / 73%)", hsl: "hsla(208, 90.4762%, 41.1765%, 0.73)" },
+  { rgb: "rgba(34 225 110 / 25.9%)", hsl: "hsla(144, 76.0956%, 50.7843%, 0.259)" },
+  { rgb: "rgb(10% 33% 19% / 0.35)", hsl: "hsla(143, 52.7272%, 21.5687%, 0.35)" }
+]
+#+end_src
+
+Booyah!
+
 **** Functional HSL Conversion (=src/internals/color/convert/hsl.js=)
+
+HSL conversion sits like an island in the conversion algorithms, because even though it's easier for
+humans to work with, RGB conversions are easier to /calculate/. And so, all conversions from this
+point on convert to and from the RGB space.
+
+***** Functional RGB <- Functional HSL (=hsl.rgb=);
+
+The only unique HSL conversion is a regressive conversion to RGB which can be used as a jumping off
+point for converting to all remaining formats.
+
+First, the extracted values require some prepping before calculations are predictable.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/hsl.js" :comments link
+import {
+  calcChannelFromFraction,
+  calcFractionFromPercent,
+  calcHueFromGrad,
+  calcHueFromRad,
+  calcHueFromTurn,
+  correctHueClockwise,
+  correctHueCounterClockwise,
+} from "./setup.js";
+
+// https://www.rapidtables.com/convert/color/hsl-to-rgb.html
+const calcChannels = (C, X, H) =>
+  new Map([
+    [[C, X, 0], 0 <= H && H < 60],
+    [[X, C, 0], 60 <= H && H < 120],
+    [[0, C, X], 120 <= H && H < 180],
+    [[0, X, C], 180 <= H && H < 240],
+    [[X, 0, C], 240 <= H && H < 300],
+    [[C, 0, X], 300 <= H && H < 360],
+  ]);
+
+export const parseHSL = (hsl) => {
+  const [h, s, l, alpha] = hsl;
+
+  const [H] = [h].map((value) => {
+    const n = parseFloat(value);
+    const isNegative = (n) => Math.sign(n) === -1;
+    let hue;
+
+    // Set hue based on unit
+    if (value.endsWith("grad")) {
+      hue = isNegative(n) ? calcHueFromGrad(n + 400) : calcHueFromGrad(n);
+    } else if (value.endsWith("rad")) {
+      hue = isNegative(n) ? calcHueFromRad(n + 6.28319) : calcHueFromRad(n);
+    } else if (value.endsWith("turn")) {
+      hue = isNegative(n) ? calcHueFromTurn(n + 1) : calcHueFromTurn(n);
+    } else {
+      hue = n;
+    }
+
+    // hue correction
+    let degrees;
+    if (hue >= 360) {
+      degrees = correctHueClockwise(hue);
+    } else if (isNegative(hue)) {
+      degrees = correctHueClockwise(correctHueCounterClockwise(hue));
+    } else {
+      degrees = hue;
+    }
+
+    return degrees;
+  });
+
+  const [S, L] = [s, l].map((value) => {
+    const n = parseFloat(value);
+    return calcFractionFromPercent(n);
+  });
+
+  const a = parseFloat(alpha);
+  const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
+
+  return A === 1 ? [H, S, L] : [H, S, L, A];
+};
+
+export const calcRGB = (h, s, l) => {
+  // Calculate chroma
+  const C = (1 - Math.abs(2 * l - 1)) * s;
+  const X = C * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - C / 2;
+
+  // Evaluate channels
+  const [R, G, B] = Array.from(calcChannels(C, X, h))
+    .filter(([, condition]) => condition)
+    .flatMap(([evaluation]) => evaluation)
+    .map((channel) => Math.round(calcChannelFromFraction(channel + m)));
+
+  return [R, G, B];
+};
+#+END_SRC
+
+Phew. Now for the actual conversion algorithm, it's a similar pattern to the RGB progressive
+conversion to HSL.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/hsl.js" :comments link
+/** Functional RGB <- Functional HSL */
+export function rgb(hsl) {
+  const [h, s, l, alpha] = parseHSL(hsl);
+  const [R, G, B] = calcRGB(h, s, l);
+
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
+}
+#+END_SRC
+
+Now, the tests with my extracted HSL to verify that the math checks out.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const hsl = await import(`${Deno.cwd()}/src/internals/color/convert/hsl.js`);
+
+<<extracted-hsl>>
+
+console.log(colors.map(({color, values}) => ({hsl: color, rgb: hsl.rgb(values)})));
+#+END_SRC
+
+#+NAME: hsl-to-rgb
+#+begin_src deno
+[
+  { hsl: "hsl(0, 0%, 0%)", rgb: "rgb(0, 0, 0)" },
+  { hsl: "hsl(0, 0%, 50%)", rgb: "rgb(128, 128, 128)" },
+  { hsl: "hsl(0, 0%, 100%)", rgb: "rgb(255, 255, 255)" },
+  { hsl: "hsl(0 0% 0%)", rgb: "rgb(0, 0, 0)" },
+  { hsl: "hsl(0 0% 50%)", rgb: "rgb(128, 128, 128)" },
+  { hsl: "hsl(0 0% 100%)", rgb: "rgb(255, 255, 255)" },
+  { hsl: "hsl(120, 74%, 63%)", rgb: "rgb(91, 230, 91)" },
+  { hsl: "hsl(64deg, 85%, 50%)", rgb: "rgb(221, 236, 19)" },
+  { hsl: "hsl(200rad, 42%, 81%)", rgb: "rgb(226, 186, 227)" },
+  { hsl: "hsl(2.3grad, 50%, 50%)", rgb: "rgb(191, 68, 64)" },
+  { hsl: "hsl(0.25turn, 39%, 73%)", rgb: "rgb(186, 213, 159)" },
+  { hsl: "hsl(-135, 69%, 94%)", rgb: "rgb(229, 234, 250)" },
+  { hsl: "hsl(189 35% 82%)", rgb: "rgb(193, 220, 225)" },
+  { hsl: "hsl(161deg 50% 78%)", rgb: "rgb(171, 227, 209)" },
+  { hsl: "hsl(380rad 75% 13%)", rgb: "rgb(8, 58, 51)" },
+  { hsl: "hsl(1.6grad 100% 48%)", rgb: "rgb(245, 4, 0)" },
+  { hsl: "hsl(0.13turn 58% 20%)", rgb: "rgb(81, 68, 21)" },
+  { hsl: "hsl(-1.9grad 33% 80%)", rgb: "rgb(221, 187, 188)" },
+  { hsl: "hsla(0, 0%, 0%, 1)", rgb: "rgb(0, 0, 0)" },
+  { hsl: "hsla(0, 0%, 50%, 1)", rgb: "rgb(128, 128, 128)" },
+  { hsl: "hsla(0, 0%, 100%, 1)", rgb: "rgb(255, 255, 255)" },
+  { hsl: "hsla(0 0% 0% / 1)", rgb: "rgb(0, 0, 0)" },
+  { hsl: "hsla(0 0% 50% / 1)", rgb: "rgb(128, 128, 128)" },
+  { hsl: "hsla(0 0% 100% / 1)", rgb: "rgb(255, 255, 255)" },
+  { hsl: "hsla(34, 73%, 89%, 0.7)", rgb: "rgba(247, 230, 206, 0.7)" },
+  { hsl: "hsla(67deg, 99%, 38%, 0.25)", rgb: "rgba(170, 193, 1, 0.25)" },
+  { hsl: "hsla(393rad, 85%, 18%, 0.493)", rgb: "rgba(7, 63, 85, 0.493)" },
+  { hsl: "hsla(5.2grad, 39%, 58%, 0.5)", rgb: "rgba(190, 113, 106, 0.5)" },
+  { hsl: "hsla(0.34turn, 19%, 36%, 0.39)", rgb: "rgba(74, 109, 76, 0.39)" },
+  { hsl: "hsl(100 40% 39% / 73%)", rgb: "rgba(86, 139, 60, 0.73)" },
+  { hsl: "hsl(90deg 89% 61% / 0.3)", rgb: "rgba(156, 244, 67, 0.3)" },
+  { hsl: "hsla(48rad 74% 38% / 39%)", rgb: "rgba(25, 49, 169, 0.39)" },
+  { hsl: "hsl(4.8grad 37% 100% / 0.47)", rgb: "rgba(255, 255, 255, 0.47)" },
+  { hsl: "hsla(0.134turn 33% 88% / 40%)", rgb: "rgba(234, 230, 214, 0.4)" }
+]
+#+end_src
+
 **** Device CMYK Conversion (=src/internals/color/convert/device-cmyk.js=)
 **** Functional HWB Conversion (=src/internals/color/convert/hwb.js=)
 **** Functional CIELAB Conversion (=src/internals/color/convert/lab.js=)
