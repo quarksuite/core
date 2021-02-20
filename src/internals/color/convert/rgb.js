@@ -112,3 +112,21 @@ export function cmyk(rgb) {
     : `device-cmyk(${C}% ${M}% ${Y}% ${K}% / ${A})`;
 }
 // Functional RGB -> Device CMYK (=rgb.cmyk=):1 ends here
+
+// [[file:../../../../README.org::*Functional RGB -> Functional HWB (=rgb.hwb=)][Functional RGB -> Functional HWB (=rgb.hwb=):1]]
+export function hwb(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [R, G, B] = [r, g, b].map((channel) =>
+    calcFractionFromChannel(channel)
+  );
+
+  const [H] = calcHSL(r, g, b);
+  const [W, BLK] = [
+    calcPercentFromFraction(Math.min(R, G, B)),
+    calcPercentFromFraction(1 - Math.max(R, G, B)),
+  ];
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `hwb(${H} ${W}% ${BLK}%)` : `hwb(${H} ${W}% ${BLK}% / ${A})`;
+}
+// Functional RGB -> Functional HWB (=rgb.hwb=):1 ends here

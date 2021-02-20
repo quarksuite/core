@@ -1795,6 +1795,7 @@ Functional RGB leads to the first progressive conversion fork and regression opt
 + =RGB Hex <- Functional RGB=: a regressive conversion to RGB Hex
 + =Functional RGB -> Functional HSL=: a progressive conversion to HSL
 + =Functional RGB -> Device CMYK=: a progressive conversion to CMYK
++ =Functional RGB -> Functional HWB=: a progressive conversion to HWB
 + =Functional RGB -> Functional CIELAB=: a progressive conversion to Lab
 
 ***** RGB Conversion Setup
@@ -2063,6 +2064,69 @@ console.log(colors.map(({color, values}) => ({rgb: color, cmyk: rgb.cmyk(values)
 
 Seems to check out, but I'm going to implement some visual tests soon.
 
+***** Functional RGB -> Functional HWB (=rgb.hwb=)
+
+The conversion of RGB to HWB is a little unorthodox. It's technically a /composite/ conversion. The
+hue is first calculated via partial HSL conversion, and then the amount of white and black is
+calculated via a [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][modified formula from the spec itself]].
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+export function hwb(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [R, G, B] = [r, g, b].map((channel) =>
+    calcFractionFromChannel(channel)
+  );
+
+  const [H] = calcHSL(r, g, b);
+  const [W, BLK] = [
+    calcPercentFromFraction(Math.min(R, G, B)),
+    calcPercentFromFraction(1 - Math.max(R, G, B)),
+  ];
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `hwb(${H} ${W}% ${BLK}%)` : `hwb(${H} ${W}% ${BLK}% / ${A})`;
+}
+#+END_SRC
+
+I'm suspicious of the math here, so let's see the proof.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
+
+<<extracted-rgb>>
+
+console.log(colors.map(({color, values}) => ({rgb: color, hwb: rgb.hwb(values)})));
+#+END_SRC
+
+#+NAME: rgb-to-hwb
+#+begin_src deno
+[
+  { rgb: "rgb(0, 0, 0)", hwb: "hwb(0 0% 100%)" },
+  { rgb: "rgb(255, 255, 255)", hwb: "hwb(0 100% 0%)" },
+  { rgb: "rgb(110, 22, 33)", hwb: "hwb(352 8.62745% 56.8627%)" },
+  { rgb: "rgb(30, 220, 140)", hwb: "hwb(155 11.7647% 13.7255%)" },
+  { rgb: "rgb(148, 129, 240)", hwb: "hwb(250 50.5882% 5.8824%)" },
+  { rgb: "rgb(31 33 100)", hwb: "hwb(238 12.1569% 60.7843%)" },
+  { rgb: "rgb(200 210 131)", hwb: "hwb(68 51.3725% 17.6471%)" },
+  { rgb: "rgb(0%, 0%, 0%)", hwb: "hwb(0 0% 100%)" },
+  { rgb: "rgb(100%, 100%, 100%)", hwb: "hwb(0 100% 0%)" },
+  { rgb: "rgb(31%, 15%, 4%)", hwb: "hwb(24 3.92157% 69.0196%)" },
+  { rgb: "rgb(20%, 70.3%, 49%)", hwb: "hwb(155 20% 29.8039%)" },
+  { rgb: "rgb(10% 30% 95%)", hwb: "hwb(226 10.1961% 5.098%)" },
+  { rgb: "rgb(33% 24% 44%)", hwb: "hwb(267 23.9216% 56.0784%)" },
+  { rgb: "rgba(0, 0, 0, 1)", hwb: "hwb(0 0% 100%)" },
+  { rgb: "rgba(255, 255, 255, 1)", hwb: "hwb(0 100% 0%)" },
+  { rgb: "rgba(230, 110, 0, 0.8)", hwb: "hwb(29 0% 9.8039% / 0.8)" },
+  { rgb: "rgba(120, 178, 34, 0.719)", hwb: "hwb(84 13.3333% 30.1961% / 0.719)" },
+  { rgb: "rgba(34, 199, 249, 0.3)", hwb: "hwb(194 13.3333% 2.3529% / 0.3)" },
+  { rgb: "rgb(10 110 200 / 73%)", hwb: "hwb(208 3.92157% 21.5686% / 0.73)" },
+  { rgb: "rgba(34 225 110 / 25.9%)", hwb: "hwb(144 13.3333% 11.7647% / 0.259)" },
+  { rgb: "rgb(10% 33% 19% / 0.35)", hwb: "hwb(143 10.1961% 67.0588% / 0.35)" }
+]
+#+end_src
+
+I'll test this more , but the results are about what I'd expect.
+
 **** Functional HSL Conversion (=src/internals/color/convert/hsl.js=)
 
 HSL conversion sits like an island in the conversion algorithms, because even though it's easier for
@@ -2298,6 +2362,99 @@ console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)
 #+end_src
 
 **** Functional HWB Conversion (=src/internals/color/convert/hwb.js=)
+
+The only possible conversion from HWB is a regressive conversion to RGB. This provides the necessary
+bridge to other format conversions.
+
+***** Functional RGB <- Functional HWB
+
+As with the progressive conversion, the regressive conversion is a composite. It first splits the
+hue with a call to =calcRGB()= from the HSL conversion module, setting the saturation and lightness to
+return a pure hue, then modifies the result with the given amount of white and black.
+
+Again, the implementation uses [[https://www.w3.org/TR/css-color-4/#hwb-to-rgb][a formula ripped straight from the spec]] with some modifications.
+
+First, setting up some helpers:
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/hwb.js" :comments link
+import {
+  calcChannelFromFraction,
+  calcFractionFromChannel,
+  calcFractionFromPercent,
+} from "./setup.js";
+import { calcRGB, parseHSL } from "./hsl.js";
+
+function parseHWB(hwb) {
+  const [h, w, blk, alpha] = hwb;
+  const [H] = parseHSL([h, "100%", "50%", "1"]);
+  const [W, BLK] = [w, blk].map((component) =>
+    calcFractionFromPercent(parseFloat(component))
+  );
+
+  const a = parseFloat(alpha);
+  const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
+
+  return A === 1 ? [H, W, BLK] : [H, W, BLK, A];
+}
+#+END_SRC
+
+And now for the conversion algorithm.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/hwb.js" :comments link
+export function rgb(hwb) {
+  const [h, w, blk, alpha] = parseHWB(hwb);
+  const [r, g, b] = calcRGB(h, 1, 0.5);
+
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  // Achromatic
+  if (w + blk >= 1) {
+    const GRAY = Math.round(calcChannelFromFraction(w / (w + blk)));
+    return A === 1
+      ? `rgb(${GRAY}, ${GRAY}, ${GRAY})`
+      : `rgba(${GRAY}, ${GRAY}, ${GRAY}, ${A})`;
+  }
+
+  const [R, G, B] = [r, g, b].map((channel) =>
+    Math.round(
+      calcChannelFromFraction(
+        calcFractionFromChannel(channel) * (1 - w - blk) + w,
+      ),
+    )
+  );
+
+  return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
+}
+#+END_SRC
+
+Now the fun part: seeing if anything breaks.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const hwb = await import(`${Deno.cwd()}/src/internals/color/convert/hwb.js`);
+
+<<extracted-hwb>>
+
+console.log(colors.map(({color, values}) => ({hwb: color, rgb: hwb.rgb(values)})));
+#+END_SRC
+
+#+RESULTS:
+#+begin_src deno
+[
+  { hwb: "hwb(0 100% 0%)", rgb: "rgb(255, 255, 255)" },
+  { hwb: "hwb(0 0% 100%)", rgb: "rgb(0, 0, 0)" },
+  { hwb: "hwb(0 100% 100%)", rgb: "rgb(128, 128, 128)" },
+  { hwb: "hwb(47 37% 40%)", rgb: "rgb(153, 140, 94)" },
+  { hwb: "hwb(180deg 50% 3%)", rgb: "rgb(128, 247, 247)" },
+  { hwb: "hwb(172rad 25% 15%)", rgb: "rgb(64, 217, 102)" },
+  { hwb: "hwb(3.1grad 0% 30%)", rgb: "rgb(179, 9, 0)" },
+  { hwb: "hwb(0.28turn 49% 10%)", rgb: "rgb(158, 230, 125)" },
+  { hwb: "hwb(310 78% 0% / 0.5)", rgb: "rgba(255, 199, 246, 0.5)" },
+  { hwb: "hwb(89rad 10% 90% / 83%)", rgb: "rgba(26, 26, 26, 0.83)" }
+]
+#+end_src
+
+Looks like we're golden.
+
 **** Functional CIELAB Conversion (=src/internals/color/convert/lab.js=)
 **** Functional LCH Conversion (=src/internals/color/convert/lch.js=)
 
