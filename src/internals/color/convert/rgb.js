@@ -87,3 +87,28 @@ export function hsl(rgb) {
   return A === 1 ? `hsl(${H}, ${S}%, ${L}%)` : `hsla(${H}, ${S}%, ${L}%, ${A})`;
 }
 // Functional RGB -> Functional HSL (=rgb.hsl=):2 ends here
+
+// [[file:../../../../README.org::*Functional RGB -> Device CMYK (=rgb.cmyk=)][Functional RGB -> Device CMYK (=rgb.cmyk=):1]]
+/** Functional RGB -> Device CMYK */
+export function cmyk(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [R, G, B] = [r, g, b].map((channel) =>
+    calcFractionFromChannel(channel)
+  );
+
+  // https://www.rapidtables.com/convert/color/rgb-to-cmyk.html
+  const k = 1 - Math.max(R, G, B);
+  const [c, m, y] = [R, G, B].map((channel) => (1 - channel - k) / (1 - k));
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  // Many examples in the CSS Color Module Level 4 use the percentage format,
+  // so I'm assuming that's the preferred format in conversions.
+  const [C, M, Y, K] = [c, m, y, k].map((component) =>
+    isNaN(component) ? 0 : calcPercentFromFraction(component)
+  );
+
+  return A === 1
+    ? `device-cmyk(${C}% ${M}% ${Y}% ${K}%)`
+    : `device-cmyk(${C}% ${M}% ${Y}% ${K}% / ${A})`;
+}
+// Functional RGB -> Device CMYK (=rgb.cmyk=):1 ends here

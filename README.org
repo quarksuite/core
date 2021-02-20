@@ -389,6 +389,7 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (20ms
 #+end_src
 
 *** Scenarios
+
 * Internals
 
 This section documents and implements useful internal functions that aid in developing the core
@@ -1037,13 +1038,21 @@ color formats beyond this point.
 | Format                        | Examples                          |
 |-------------------------------+-----------------------------------|
 | =device-cmyk(C M Y K)=          | =device-cmyk(0 0 0 0)=              |
-| =device-cmyk(C% M% Y% K%)=      | =device-cmyk(1 1 1 1)=              |
-| =device-cmyk(C M Y K / A)=      | =device-cmyk(0% 0% 0% 0%)=          |
-| =device-cmyk(C% M% Y% K% / A%)= | =device-cmyk(100% 100% 100% 100%)=  |
+| =device-cmyk(C% M% Y% K%)=      | =device-cmyk(1 0 0 0)=              |
+| =device-cmyk(C M Y K / A)=      | =device-cmyk(0 1 0 0)=              |
+| =device-cmyk(C% M% Y% K% / A%)= | =device-cmyk(0 0 1 0)=              |
+|                               | =device-cmyk(0 0 0 1)=              |
+|                               | =device-cmyk(1 1 1 0)=              |
+|                               | =device-cmyk(0% 0% 0% 0%)=          |
+|                               | =device-cmyk(100% 0% 0% 0%)=        |
+|                               | =device-cmyk(0% 100% 0% 0%)=        |
+|                               | =device-cmyk(0% 0% 100% 0%)=      |
+|                               | =device-cmyk(0% 0% 0% 100%)=        |
+|                               | =device-cmyk(100% 100% 100% 0%)=    |
 |                               | =device-cmyk(0 0.4 0.8 0.25)=       |
 |                               | =device-cmyk(30% 49% 0 20%)=        |
 |                               | =device-cmyk(19% 30% 83% 0 / 0.31)= |
-|                               | =device-cmyk(0.9 0.25 0 0 / 73%)= |
+|                               | =device-cmyk(0.9 0.25 0 0 / 73%)=   |
 
 ***** CMYK Validator
 
@@ -1095,9 +1104,17 @@ console.log("const colors =", colors.map((color) => ({color, isCMYK: cmyk.valida
 #+begin_src deno
 const colors = [
   { color: "device-cmyk(0 0 0 0)", isCMYK: true },
-  { color: "device-cmyk(1 1 1 1)", isCMYK: true },
+  { color: "device-cmyk(1 0 0 0)", isCMYK: true },
+  { color: "device-cmyk(0 1 0 0)", isCMYK: true },
+  { color: "device-cmyk(0 0 1 0)", isCMYK: true },
+  { color: "device-cmyk(0 0 0 1)", isCMYK: true },
+  { color: "device-cmyk(1 1 1 0)", isCMYK: true },
   { color: "device-cmyk(0% 0% 0% 0%)", isCMYK: true },
-  { color: "device-cmyk(100% 100% 100% 100%)", isCMYK: true },
+  { color: "device-cmyk(100% 0% 0% 0%)", isCMYK: true },
+  { color: "device-cmyk(0% 100% 0% 0%)", isCMYK: true },
+  { color: "device-cmyk(0% 0% 100% 0%)", isCMYK: true },
+  { color: "device-cmyk(0% 0% 0% 100%)", isCMYK: true },
+  { color: "device-cmyk(100% 100% 100% 0%)", isCMYK: true },
   { color: "device-cmyk(0 0.4 0.8 0.25)", isCMYK: true },
   { color: "device-cmyk(30% 49% 0 20%)", isCMYK: true },
   { color: "device-cmyk(19% 30% 83% 0 / 0.31)", isCMYK: true },
@@ -1128,11 +1145,19 @@ console.log("const colors =", colors.map(({ color }) => ({ color, values: cmyk.e
 #+begin_src deno
 const colors = [
   { color: "device-cmyk(0 0 0 0)", values: [ "0", "0", "0", "0" ] },
-  { color: "device-cmyk(1 1 1 1)", values: [ "1", "1", "1", "1" ] },
+  { color: "device-cmyk(1 0 0 0)", values: [ "1", "0", "0", "0" ] },
+  { color: "device-cmyk(0 1 0 0)", values: [ "0", "1", "0", "0" ] },
+  { color: "device-cmyk(0 0 1 0)", values: [ "0", "0", "1", "0" ] },
+  { color: "device-cmyk(0 0 0 1)", values: [ "0", "0", "0", "1" ] },
+  { color: "device-cmyk(1 1 1 0)", values: [ "1", "1", "1", "0" ] },
   { color: "device-cmyk(0% 0% 0% 0%)", values: [ "0%", "0%", "0%", "0%" ] },
+  { color: "device-cmyk(100% 0% 0% 0%)", values: [ "100%", "0%", "0%", "0%" ] },
+  { color: "device-cmyk(0% 100% 0% 0%)", values: [ "0%", "100%", "0%", "0%" ] },
+  { color: "device-cmyk(0% 0% 100% 0%)", values: [ "0%", "0%", "100%", "0%" ] },
+  { color: "device-cmyk(0% 0% 0% 100%)", values: [ "0%", "0%", "0%", "100%" ] },
   {
-    color: "device-cmyk(100% 100% 100% 100%)",
-    values: [ "100%", "100%", "100%", "100%" ]
+    color: "device-cmyk(100% 100% 100% 0%)",
+    values: [ "100%", "100%", "100%", "0%" ]
   },
   { color: "device-cmyk(0 0.4 0.8 0.25)", values: [ "0", "0.4", "0.8", "0.25" ] },
   { color: "device-cmyk(30% 49% 0 20%)", values: [ "30%", "49%", "0", "20%" ] },
@@ -1671,6 +1696,9 @@ export const calcFractionFromChannel = (channel) => quotient(255, channel);
 export const calcChannelFromPercent = (percentage) =>
 Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
 
+/** Normalization to define boundaries */
+export const normalize = (a, x, b) => Math.round(Math.min(Math.max(x, a), b));
+
 // Alpha
 
 /** Helper to convert alpha value to hex fragment */
@@ -1952,13 +1980,96 @@ console.log(colors.map(({color, values}) => ({rgb: color, hsl: rgb.hsl(values)})
 
 Booyah!
 
+***** Functional RGB -> Device CMYK (=rgb.cmyk=)
+
+And now I drift again into unfamiliar terrain, but RapidTables is there again to provide a map.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+/** Functional RGB -> Device CMYK */
+export function cmyk(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [R, G, B] = [r, g, b].map((channel) =>
+    calcFractionFromChannel(channel)
+  );
+
+  // https://www.rapidtables.com/convert/color/rgb-to-cmyk.html
+  const k = 1 - Math.max(R, G, B);
+  const [c, m, y] = [R, G, B].map((channel) => (1 - channel - k) / (1 - k));
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  // Many examples in the CSS Color Module Level 4 use the percentage format,
+  // so I'm assuming that's the preferred format in conversions.
+  const [C, M, Y, K] = [c, m, y, k].map((component) =>
+    isNaN(component) ? 0 : calcPercentFromFraction(component)
+  );
+
+  return A === 1
+    ? `device-cmyk(${C}% ${M}% ${Y}% ${K}%)`
+    : `device-cmyk(${C}% ${M}% ${Y}% ${K}% / ${A})`;
+}
+#+END_SRC
+
+Now, I'm checking the math.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
+
+<<extracted-rgb>>
+
+console.log(colors.map(({color, values}) => ({rgb: color, cmyk: rgb.cmyk(values)})));
+#+END_SRC
+
+#+NAME: rgb-to-cmyk
+#+begin_src deno
+[
+  { rgb: "rgb(0, 0, 0)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
+  { rgb: "rgb(255, 255, 255)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
+  { rgb: "rgb(110, 22, 33)", cmyk: "device-cmyk(0% 80% 70% 56.8627%)" },
+  { rgb: "rgb(30, 220, 140)", cmyk: "device-cmyk(86.3636% 0% 36.3636% 13.7255%)" },
+  { rgb: "rgb(148, 129, 240)", cmyk: "device-cmyk(38.3333% 46.25% 0% 5.8824%)" },
+  { rgb: "rgb(31 33 100)", cmyk: "device-cmyk(68.9999% 67% 0% 60.7843%)" },
+  { rgb: "rgb(200 210 131)", cmyk: "device-cmyk(4.76182% 0% 37.6191% 17.6471%)" },
+  { rgb: "rgb(0%, 0%, 0%)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
+  { rgb: "rgb(100%, 100%, 100%)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
+  { rgb: "rgb(31%, 15%, 4%)", cmyk: "device-cmyk(0% 51.8986% 87.3418% 69.0196%)" },
+  { rgb: "rgb(20%, 70.3%, 49%)", cmyk: "device-cmyk(71.5084% 0% 30.1676% 29.8039%)" },
+  { rgb: "rgb(10% 30% 95%)", cmyk: "device-cmyk(89.2562% 68.1818% 0% 5.098%)" },
+  { rgb: "rgb(33% 24% 44%)", cmyk: "device-cmyk(25% 45.5357% 0% 56.0784%)" },
+  { rgb: "rgba(0, 0, 0, 1)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
+  { rgb: "rgba(255, 255, 255, 1)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
+  {
+    rgb: "rgba(230, 110, 0, 0.8)",
+    cmyk: "device-cmyk(0% 52.1739% 100% 9.8039% / 0.8)"
+  },
+  {
+    rgb: "rgba(120, 178, 34, 0.719)",
+    cmyk: "device-cmyk(32.5843% 0% 80.8989% 30.1961% / 0.719)"
+  },
+  {
+    rgb: "rgba(34, 199, 249, 0.3)",
+    cmyk: "device-cmyk(86.3454% 20.0804% 0% 2.3529% / 0.3)"
+  },
+  { rgb: "rgb(10 110 200 / 73%)", cmyk: "device-cmyk(95% 45% 0% 21.5686% / 0.73)" },
+  {
+    rgb: "rgba(34 225 110 / 25.9%)",
+    cmyk: "device-cmyk(84.8889% 0% 51.1111% 11.7647% / 0.259)"
+  },
+  {
+    rgb: "rgb(10% 33% 19% / 0.35)",
+    cmyk: "device-cmyk(69.0476% 0% 42.8573% 67.0588% / 0.35)"
+  }
+]
+#+end_src
+
+Seems to check out, but I'm going to implement some visual tests soon.
+
 **** Functional HSL Conversion (=src/internals/color/convert/hsl.js=)
 
 HSL conversion sits like an island in the conversion algorithms, because even though it's easier for
 humans to work with, RGB conversions are easier to /calculate/. And so, all conversions from this
 point on convert to and from the RGB space.
 
-***** Functional RGB <- Functional HSL (=hsl.rgb=);
+***** Functional RGB <- Functional HSL (=hsl.rgb=)
 
 The only unique HSL conversion is a regressive conversion to RGB which can be used as a jumping off
 point for converting to all remaining formats.
@@ -2112,6 +2223,80 @@ console.log(colors.map(({color, values}) => ({hsl: color, rgb: hsl.rgb(values)})
 #+end_src
 
 **** Device CMYK Conversion (=src/internals/color/convert/device-cmyk.js=)
+
+CMYK  conversion is like HSL in that it's more of an endpoint and needs to be regressively converted
+to functional RGB before it can be included in a conversion chain.
+
+***** Functional RGB <- Device CMYK (=cmyk.rgb=)
+
+First, some minimal setup.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/device-cmyk.js" :comments link
+import { calcChannelFromFraction, calcFractionFromPercent } from "./setup.js";
+
+function parseCMYK(cmyk) {
+  const [c, m, y, k, alpha] = cmyk;
+  const value = (s) => parseFloat(s);
+  const [C, M, Y, K] = [c, m, y, k].map((component) =>
+    component.endsWith("%")
+      ? calcFractionFromPercent(value(component))
+      : value(component)
+  );
+
+  const a = value(alpha);
+  const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
+
+  return A === 1 ? [C, M, Y, K] : [C, M, Y, K, A];
+}
+#+END_SRC
+
+For the conversion algorithm, it's RapidTables coming again with the assist.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/device-cmyk.js" :comments link
+export function rgb(cmyk) {
+  const [C, M, Y, K, alpha] = parseCMYK(cmyk);
+
+  const [R, G, B] = [C, M, Y].map((component) =>
+    Math.round(calcChannelFromFraction(1 - component * (1 - K)))
+  );
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
+}
+#+END_SRC
+
+Time to see if the math stacks up.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const cmyk = await import(`${Deno.cwd()}/src/internals/color/convert/device-cmyk.js`);
+
+<<extracted-cmyk>>
+
+console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)})));
+#+END_SRC
+
+#+NAME: cmyk-to-rgb
+#+begin_src deno
+[
+  { cmyk: "device-cmyk(0 0 0 0)", rgb: "rgb(255, 255, 255)" },
+  { cmyk: "device-cmyk(1 0 0 0)", rgb: "rgb(0, 255, 255)" },
+  { cmyk: "device-cmyk(0 1 0 0)", rgb: "rgb(255, 0, 255)" },
+  { cmyk: "device-cmyk(0 0 1 0)", rgb: "rgb(255, 255, 0)" },
+  { cmyk: "device-cmyk(0 0 0 1)", rgb: "rgb(255, 255, 255)" },
+  { cmyk: "device-cmyk(1 1 1 0)", rgb: "rgb(0, 0, 0)" },
+  { cmyk: "device-cmyk(0% 0% 0% 0%)", rgb: "rgb(255, 255, 255)" },
+  { cmyk: "device-cmyk(100% 0% 0% 0%)", rgb: "rgb(0, 255, 255)" },
+  { cmyk: "device-cmyk(0% 100% 0% 0%)", rgb: "rgb(255, 0, 255)" },
+  { cmyk: "device-cmyk(0% 0% 100% 0%)", rgb: "rgb(255, 255, 0)" },
+  { cmyk: "device-cmyk(0% 0% 0% 100%)", rgb: "rgb(255, 255, 255)" },
+  { cmyk: "device-cmyk(100% 100% 100% 0%)", rgb: "rgb(0, 0, 0)" },
+  { cmyk: "device-cmyk(0 0.4 0.8 0.25)", rgb: "rgb(255, 179, 102)" },
+  { cmyk: "device-cmyk(30% 49% 0 20%)", rgb: "rgb(194, 155, 255)" },
+  { cmyk: "device-cmyk(19% 30% 83% 0 / 0.31)", rgb: "rgba(207, 179, 43, 0.31)" },
+  { cmyk: "device-cmyk(0.9 0.25 0 0 / 73%)", rgb: "rgba(26, 191, 255, 0.73)" }
+]
+#+end_src
+
 **** Functional HWB Conversion (=src/internals/color/convert/hwb.js=)
 **** Functional CIELAB Conversion (=src/internals/color/convert/lab.js=)
 **** Functional LCH Conversion (=src/internals/color/convert/lch.js=)

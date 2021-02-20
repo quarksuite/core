@@ -1,4 +1,4 @@
-// [[file:../../../../README.org::*Functional RGB <- Functional HSL (=hsl.rgb=);][Functional RGB <- Functional HSL (=hsl.rgb=);:1]]
+// [[file:../../../../README.org::*Functional RGB <- Functional HSL (=hsl.rgb=)][Functional RGB <- Functional HSL (=hsl.rgb=):1]]
 import {
   calcChannelFromFraction,
   calcFractionFromPercent,
@@ -77,9 +77,9 @@ export const calcRGB = (h, s, l) => {
 
   return [R, G, B];
 };
-// Functional RGB <- Functional HSL (=hsl.rgb=);:1 ends here
+// Functional RGB <- Functional HSL (=hsl.rgb=):1 ends here
 
-// [[file:../../../../README.org::*Functional RGB <- Functional HSL (=hsl.rgb=);][Functional RGB <- Functional HSL (=hsl.rgb=);:2]]
+// [[file:../../../../README.org::*Functional RGB <- Functional HSL (=hsl.rgb=)][Functional RGB <- Functional HSL (=hsl.rgb=):2]]
 /** Functional RGB <- Functional HSL */
 export function rgb(hsl) {
   const [h, s, l, alpha] = parseHSL(hsl);
@@ -89,4 +89,4 @@ export function rgb(hsl) {
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
-// Functional RGB <- Functional HSL (=hsl.rgb=);:2 ends here
+// Functional RGB <- Functional HSL (=hsl.rgb=):2 ends here

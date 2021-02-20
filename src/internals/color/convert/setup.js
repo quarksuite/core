@@ -65,6 +65,9 @@ export const calcFractionFromChannel = (channel) => quotient(255, channel);
 export const calcChannelFromPercent = (percentage) =>
 Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
 
+/** Normalization to define boundaries */
+export const normalize = (a, x, b) => Math.round(Math.min(Math.max(x, a), b));
+
 // Alpha
 
 /** Helper to convert alpha value to hex fragment */
