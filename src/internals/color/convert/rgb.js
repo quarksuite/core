@@ -130,3 +130,71 @@ export function hwb(rgb) {
   return A === 1 ? `hwb(${H} ${W}% ${BLK}%)` : `hwb(${H} ${W}% ${BLK}% / ${A})`;
 }
 // Functional RGB -> Functional HWB (=rgb.hwb=):1 ends here
+
+// [[file:../../../../README.org::*Functional RGB >-< Linear RGB][Functional RGB >-< Linear RGB:1]]
+/** Functional RGB >-< Linear RGB */
+const removeGamma = (rgb) =>
+  rgb.map((v) => {
+    const V = calcFractionFromChannel(v);
+    return V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4;
+  });
+// Functional RGB >-< Linear RGB:1 ends here
+
+// [[file:../../../../README.org::*Linear RGB -> CIE XYZ][Linear RGB -> CIE XYZ:1]]
+/** Linear RGB -> CIE XYZ */
+function calcXYZ(rgb) {
+  const [R, G, B] = removeGamma(rgb);
+  return [
+    R * 0.4124564 + G * 0.3575761 + B * 0.1804375,
+    R * 0.2126729 + G * 0.7151522 + B * 0.072175,
+    R * 0.0193339 + G * 0.119192 + B * 0.9503041,
+  ]; // [X, Y, Z]
+}
+// Linear RGB -> CIE XYZ:1 ends here
+
+// [[file:../../../../README.org::*CIE XYZ -> Functional CIE Lab][CIE XYZ -> Functional CIE Lab:1]]
+function calcD50XYZ(rgb) {
+  const [X, Y, Z] = calcXYZ(rgb);
+  /*
+   * D50 matrix
+   * =============================
+   * 1.0478112  0.0228866 -0.0501270
+   * 0.0295424  0.9904844 -0.0170491
+   * -0.0092345  0.0150436  0.7521316
+   * =============================
+   */
+  return [
+    X * 1.0478112 + Y * 0.0228866 + Z * -0.050127,
+    X * 0.0295424 + Y * 0.9904844 + Z * -0.0170491,
+    X * -0.0092345 + Y * 0.0150436 + Z * 0.7521316,
+  ];
+}
+
+/** Functional RGB -> Functional CIE Lab */
+export function lab(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [x, y, z] = calcD50XYZ([r, g, b]);
+
+  // CIE standards
+  const ε = 216 / 24389;
+  const κ = 24389 / 27;
+  const white = [0.96422, 1.0, 0.82521]; // D50 reference white
+
+  // Calculating XYZ scaled relative to white
+  const [X, Y, Z] = [x, y, z].map((v, i) => v / white[i]);
+  // Calculating F for each value
+  const [FX, FY, FZ] = [X, Y, Z].map((V) =>
+    V > ε ? Math.cbrt(V) : (κ * V + 16) / 116
+  );
+
+  // Calculating Lab values and limiting the precision
+  const [L, aHue, bHue] = [116 * FY - 16, 500 * (FX - FY), 200 * (FY - FZ)].map(
+    (V) => Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(6)
+  );
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1
+    ? `lab(${L}% ${aHue} ${bHue})`
+    : `lab(${L}% ${aHue} ${bHue} / ${A})`;
+}
+// CIE XYZ -> Functional CIE Lab:1 ends here

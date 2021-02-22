@@ -1,6 +1,6 @@
 #+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
-#+DATE: <2021-02-18 Thu>
+#+DATE: <2021-02-22 Mon>
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
 #+PROPERTY: header-args:shell :results output code
@@ -50,8 +50,8 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#functional-hsl-srcinternalscolorformathsljs][Functional HSL (=src/internals/color/format/hsl.js=)]]
       - [[#device-cmyk-srcinternalscolorformatdevice-cmykjs][Device CMYK (=src/internals/color/format/device-cmyk.js=)]]
       - [[#functional-hwb-srcinternalscolorformathwbjs][Functional HWB (=src/internals/color/format/hwb.js=)]]
-      - [[#functional-cielab-srcinternalscolorformatlabjs][Functional CIELAB (=src/internals/color/format/lab.js=)]]
-      - [[#functional-lch-srcinternalscolorformatlchjs][Functional LCH (=src/internals/color/format/lch.js=)]]
+      - [[#functional-cie-lab-srcinternalscolorformatlabjs][Functional CIE Lab (=src/internals/color/format/lab.js=)]]
+      - [[#functional-cie-lch-srcinternalscolorformatlchjs][Functional CIE LCH (=src/internals/color/format/lch.js=)]]
     - [[#conversion-srcinternalscolorconvertindexjs][Conversion (=src/internals/color/convert/index.js=)]]
       - [[#setup-srcinternalscolorconvertsetupjs][Setup (=src/internals/color/convert/setup.js=)]]
       - [[#rgb-hex-conversion-srcinternalscolorconverthexjs][RGB Hex Conversion (=src/internals/color/convert/hex.js=)]]
@@ -60,8 +60,8 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#functional-hsl-conversion-srcinternalscolorconverthsljs][Functional HSL Conversion (=src/internals/color/convert/hsl.js=)]]
       - [[#device-cmyk-conversion-srcinternalscolorconvertdevice-cmykjs][Device CMYK Conversion (=src/internals/color/convert/device-cmyk.js=)]]
       - [[#functional-hwb-conversion-srcinternalscolorconverthwbjs][Functional HWB Conversion (=src/internals/color/convert/hwb.js=)]]
-      - [[#functional-cielab-conversion-srcinternalscolorconvertlabjs][Functional CIELAB Conversion (=src/internals/color/convert/lab.js=)]]
-      - [[#functional-lch-conversion-srcinternalscolorconvertlchjs][Functional LCH Conversion (=src/internals/color/convert/lch.js=)]]
+      - [[#functional-cie-lab-conversion-srcinternalscolorconvertlabjs][Functional CIE Lab Conversion (=src/internals/color/convert/lab.js=)]]
+      - [[#functional-cie-lch-conversion-srcinternalscolorconvertlchjs][Functional CIE LCH Conversion (=src/internals/color/convert/lch.js=)]]
 - [[#data][Data]]
   - [[#color-1][Color]]
     - [[#w3c-x11-color-definitions-srcdatacolorw3c-x11js][W3C X11 Color Definitions (=src/data/color/w3c-x11.js=)]]
@@ -1299,19 +1299,19 @@ const colors = [
 ]
 #+end_src
 
-**** Functional CIELAB (=src/internals/color/format/lab.js=)
+**** Functional CIE Lab (=src/internals/color/format/lab.js=)
 
 The CSS Color Module Level 4 is currently drafting [[https://www.w3.org/TR/css-color-4/#lab-colors][support for device-independent color
 formats]]. Quarks System Core supports both.
 
-First up is the CIELAB (often called Lab for short) color format. The format specification is better
+First up is the CIE Lab (often called Lab for short) color format. The format specification is better
 explained on the linked W3C page above, but I'll summarize the components:
 
 + Lightness (L): a percentage value which, unlike HSL, is /not/ capped at =100%= for this space
 + hues (*a): magenta-red when positive, its complement when negative
 + hues (*b): yellow when positive, its complement when negative
 
-The hue axes are unbound, but in everyday use typically cap at =±160=.
+The hue axes are unbound, but for use with the RGB space /must/ cap at =±128=.
 
 #+NAME: lab-formats
 | Format          | Examples                      |
@@ -1319,33 +1319,33 @@ The hue axes are unbound, but in everyday use typically cap at =±160=.
 | =lab(L% a b)=     | =lab(0% 0 0)=                   |
 | =lab(L% a b / A)= | =lab(50% 0 0)=                  |
 |                 | =lab(100% 0 0)=                 |
-|                 | =lab(49% 160 0)=                |
-|                 | =lab(72% 0 160)=                |
-|                 | =lab(19% 160 0)=                |
-|                 | =lab(64% -160 0)=               |
-|                 | =lab(46% 0 -160)=               |
+|                 | =lab(49% 127 0)=                |
+|                 | =lab(72% 0 127)=                |
+|                 | =lab(19% -128 0)=               |
+|                 | =lab(64% -128 0)=               |
+|                 | =lab(46% 0 -128)=               |
 |                 | =lab(34.3391% 49.3819 -4.3942)= |
 |                 | =lab(57.38% 38.339 19.331)=     |
 |                 | =lab(68.3194% -94 0)=           |
-|                 | =lab(24.193% -66 138 / 0.9)=    |
+|                 | =lab(24.193% -66 127 / 0.9)=    |
 |                 | =lab(88.1199% 78 -33 / 78%)=  |
 
-***** CIELAB Validator
+***** CIE Lab Validator
 
 The Lab validator is not complex. It reuses the alpha validation expression and modifies the RGB
 channel validation expression slightly.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/lab.js" :comments link
-/** Validate: functional CIELAB format */
+/** Validate: functional CIE Lab format */
 export function validate(color) {
-  // CIELAB regexp
+  // CIE Lab regexp
 
   // prefix: "lab("
   // L: float<0->%
   const L = /(?:(?:\d\.?\d?){1,}%)/;
-  // a && b: -?int<0-160>
+  // a && b: -?int<0-128>
   let a, b;
-  a = b = /(?:-?(?:160|(?:1[0-5][0-9]|(?:\d.?\d?){1,})))/;
+  a = b = /(?:-?(?:128|(?:1[0-2][0-8]|(?:\d.?\d?){1,})))/;
   // transparency: float<0-1> || float<0-100>%
   const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
   // separators: " " || " /"
@@ -1374,38 +1374,39 @@ Now, it's validator testing time.
 
 #+BEGIN_SRC deno :results output code replace :allow read :var labTable=lab-formats
 const lab = await import(`${Deno.cwd()}/src/internals/color/format/lab.js`);
-const [, ...colors] = labTable.map(([a, b]) => b.replace(/=/g, ""));
+const colors = labTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isCIELAB: lab.validate(color)})))
+console.log("const colors =", colors.map((color) => ({color, isCIELab: lab.validate(color)})))
 #+END_SRC
 
 #+NAME: valid-lab
 #+begin_src deno
 const colors = [
-  { color: "lab(50% 0 0)", isCIELAB: true },
-  { color: "lab(100% 0 0)", isCIELAB: true },
-  { color: "lab(49% 160 0)", isCIELAB: true },
-  { color: "lab(72% 0 160)", isCIELAB: true },
-  { color: "lab(19% 160 0)", isCIELAB: true },
-  { color: "lab(64% -160 0)", isCIELAB: true },
-  { color: "lab(46% 0 -160)", isCIELAB: true },
-  { color: "lab(34.3391% 49.3819 -4.3942)", isCIELAB: true },
-  { color: "lab(57.38% 38.339 19.331)", isCIELAB: true },
-  { color: "lab(68.3194% -94 0)", isCIELAB: true },
-  { color: "lab(24.193% -66 138 / 0.9)", isCIELAB: true },
-  { color: "lab(88.1199% 78 -33 / 78%)", isCIELAB: true }
+  { color: "lab(0% 0 0)", isCIELab: true },
+  { color: "lab(50% 0 0)", isCIELab: true },
+  { color: "lab(100% 0 0)", isCIELab: true },
+  { color: "lab(49% 127 0)", isCIELab: true },
+  { color: "lab(72% 0 127)", isCIELab: true },
+  { color: "lab(19% -128 0)", isCIELab: true },
+  { color: "lab(64% -128 0)", isCIELab: true },
+  { color: "lab(46% 0 -128)", isCIELab: true },
+  { color: "lab(34.3391% 49.3819 -4.3942)", isCIELab: true },
+  { color: "lab(57.38% 38.339 19.331)", isCIELab: true },
+  { color: "lab(68.3194% -94 0)", isCIELab: true },
+  { color: "lab(24.193% -66 127 / 0.9)", isCIELab: true },
+  { color: "lab(88.1199% 78 -33 / 78%)", isCIELab: true }
 ]
 #+end_src
 
 Good to go.
 
-***** CIELAB Extractor
+***** CIE Lab Extractor
 
-The CIELAB value extractor is a slight modification from the HSL extractor. The CIELAB extractor
+The CIE Lab value extractor is a slight modification from the HSL extractor. The CIE Lab extractor
 needs to be able to capture negative and positive values as well as percentages.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/lab.js" :comments link
-/** Extract: CIELAB values */
+/** Extract: CIE Lab values */
 export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
 #+END_SRC
 
@@ -1422,31 +1423,32 @@ console.log("const colors =", colors.map(({ color }) => ({ color, values: lab.ex
 #+NAME: extracted-lab
 #+begin_src deno
 const colors = [
+  { color: "lab(0% 0 0)", values: [ "0%", "0", "0" ] },
   { color: "lab(50% 0 0)", values: [ "50%", "0", "0" ] },
   { color: "lab(100% 0 0)", values: [ "100%", "0", "0" ] },
-  { color: "lab(49% 160 0)", values: [ "49%", "160", "0" ] },
-  { color: "lab(72% 0 160)", values: [ "72%", "0", "160" ] },
-  { color: "lab(19% 160 0)", values: [ "19%", "160", "0" ] },
-  { color: "lab(64% -160 0)", values: [ "64%", "-160", "0" ] },
-  { color: "lab(46% 0 -160)", values: [ "46%", "0", "-160" ] },
+  { color: "lab(49% 127 0)", values: [ "49%", "127", "0" ] },
+  { color: "lab(72% 0 127)", values: [ "72%", "0", "127" ] },
+  { color: "lab(19% -128 0)", values: [ "19%", "-128", "0" ] },
+  { color: "lab(64% -128 0)", values: [ "64%", "-128", "0" ] },
+  { color: "lab(46% 0 -128)", values: [ "46%", "0", "-128" ] },
   {
     color: "lab(34.3391% 49.3819 -4.3942)",
     values: [ "34.3391%", "49.3819", "-4.3942" ]
   },
   { color: "lab(57.38% 38.339 19.331)", values: [ "57.38%", "38.339", "19.331" ] },
   { color: "lab(68.3194% -94 0)", values: [ "68.3194%", "-94", "0" ] },
-  { color: "lab(24.193% -66 138 / 0.9)", values: [ "24.193%", "-66", "138", "0.9" ] },
+  { color: "lab(24.193% -66 127 / 0.9)", values: [ "24.193%", "-66", "127", "0.9" ] },
   { color: "lab(88.1199% 78 -33 / 78%)", values: [ "88.1199%", "78", "-33", "78%" ] }
 ]
 #+end_src
 
-**** Functional LCH (=src/internals/color/format/lch.js=)
+**** Functional CIE LCH (=src/internals/color/format/lch.js=)
 
-The LCH color space is another device-independent color format with added support in the CSS Color
-Module Level 4 spec. It's an offshoot of CIELAB designed to be a little more useful for people. It
+The CIE LCH color space is another device-independent color format with added support in the CSS Color
+Module Level 4 spec. It's an offshoot of CIE Lab designed to be a little more useful for people. It
 consists of:
 
-+ Lightness (L): a percentage value interpreted identically to CIELAB lightness
++ Lightness (L): a percentage value interpreted identically to CIE Lab lightness
 + Chroma (C): a value corresponding to the amount of color desired
 + Hue (H): interpreted similar to HSL, but the angles map to the *a/*b axes
 
@@ -1472,16 +1474,16 @@ yellow and sky blue, respectively.
 |                 | =lch(33% 38.4434 3grad)=                |
 |                 | =lch(71.831% 204.314 0.184turn / 0.98)= |
 
-***** LCH Validator
+***** CIE LCH Validator
 
-As a refinement of CIELAB, the LCH validator is a slightly modified implementation. It reuses the
-CIELAB lightness expression but also pulls in the HSL hue expression. They accept the same input
+As a refinement of CIE Lab, the CIE LCH validator is a slightly modified implementation. It reuses the
+CIE Lab lightness expression but also pulls in the HSL hue expression. They accept the same input
 even if they don't function the same way.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/lch.js" :comments link
-/** Validate: functional LCH format */
+/** Validate: functional CIE LCH format */
 export function validate(color) {
-  // LCH regexp
+  // CIE LCH regexp
 
   // prefix: "lch("
   // lightness: float<0->%
@@ -1520,35 +1522,35 @@ And it's format validation test time.
 const lch = await import(`${Deno.cwd()}/src/internals/color/format/lch.js`);
 const colors = lchTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isLCH: lch.validate(color)})))
+console.log("const colors =", colors.map((color) => ({color, isCIE LCH: lch.validate(color)})))
 #+END_SRC
 
 #+NAME: valid-lch
 #+begin_src deno
 const colors = [
-  { color: "lch(0% 0 0)", isLCH: true },
-  { color: "lch(50% 0 0)", isLCH: true },
-  { color: "lch(100% 0 0)", isLCH: true },
-  { color: "lch(50% 230 0)", isLCH: true },
-  { color: "lch(29.2345% 44.2 27)", isLCH: true },
-  { color: "lch(52.2345% 72.2 56.2)", isLCH: true },
-  { color: "lch(60.3119% 34.3 139.3)", isLCH: true },
-  { color: "lch(39.119% 58.1 258.9)", isLCH: true },
-  { color: "lch(79.44% 119 320.89 / 0.7)", isLCH: true },
-  { color: "lch(62.1183% 42.5 81.881 / 89%)", isLCH: true },
-  { color: "lch(119.339% 39.9 130deg)", isLCH: true },
-  { color: "lch(93.411% 74.42 200rad)", isLCH: true },
-  { color: "lch(33% 38.4434 3grad)", isLCH: true },
-  { color: "lch(71.831% 204.314 0.184turn / 0.98)", isLCH: true }
+  { color: "lch(0% 0 0)", isCIE LCH: true },
+  { color: "lch(50% 0 0)", isCIE LCH: true },
+  { color: "lch(100% 0 0)", isCIE LCH: true },
+  { color: "lch(50% 230 0)", isCIE LCH: true },
+  { color: "lch(29.2345% 44.2 27)", isCIE LCH: true },
+  { color: "lch(52.2345% 72.2 56.2)", isCIE LCH: true },
+  { color: "lch(60.3119% 34.3 139.3)", isCIE LCH: true },
+  { color: "lch(39.119% 58.1 258.9)", isCIE LCH: true },
+  { color: "lch(79.44% 119 320.89 / 0.7)", isCIE LCH: true },
+  { color: "lch(62.1183% 42.5 81.881 / 89%)", isCIE LCH: true },
+  { color: "lch(119.339% 39.9 130deg)", isCIE LCH: true },
+  { color: "lch(93.411% 74.42 200rad)", isCIE LCH: true },
+  { color: "lch(33% 38.4434 3grad)", isCIE LCH: true },
+  { color: "lch(71.831% 204.314 0.184turn / 0.98)", isCIE LCH: true }
 ]
 #+end_src
 
-***** LCH Extractor
+***** CIE LCH Extractor
 
-The LCH extractor is identical to the HSL extractor.
+The CIE LCH extractor is identical to the HSL extractor.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/lch.js" :comments link
-/** Extract: LCH values */
+/** Extract: CIE LCH values */
 export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 #+END_SRC
 
@@ -1796,7 +1798,7 @@ Functional RGB leads to the first progressive conversion fork and regression opt
 + =Functional RGB -> Functional HSL=: a progressive conversion to HSL
 + =Functional RGB -> Device CMYK=: a progressive conversion to CMYK
 + =Functional RGB -> Functional HWB=: a progressive conversion to HWB
-+ =Functional RGB -> Functional CIELAB=: a progressive conversion to Lab
++ =Functional RGB -> Functional CIE Lab=: a progressive conversion to Lab
 
 ***** RGB Conversion Setup
 
@@ -2127,6 +2129,155 @@ console.log(colors.map(({color, values}) => ({rgb: color, hwb: rgb.hwb(values)})
 
 I'll test this more , but the results are about what I'd expect.
 
+***** Functional RGB -> Functional CIE Lab (=rgb.lab=)
+
+Converting RGB to CIE Lab is another multistep process. The chain is as follows:
+
+1) =Functional RGB >-< Linear RGB=
+2) =Linear RGB -> CIE XYZ=
+3) =CIE XYZ -> Functional CIE Lab=
+
+The =>-<= indicates a lateral conversion. One that isn't a completely different format, but a
+modification of the original format for some special purpose.
+
+CIE XYZ is a necessary waypoint on the road to CIE Lab conversion indicating a set of general
+coordinates based on the range of colors perceptible by the human eye.
+
+#+BEGIN_QUOTE
+In some color conversion implementations, it would also be a waypoint in CIE LCH conversion, but I
+think it's easier to complete the =Functional RGB <-> Functional CIE Lab= link and then allow
+=Functional CIE Lab <-> Functional CIE LCH= to form its own separate link.
+#+END_QUOTE
+
+****** Functional RGB >-< Linear RGB
+
+Linear RGB is RGB without the gamma function applied as that would throw off the calculation of CIE
+XYZ.
+
+You can [[https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz][read more about the actual formula]] if you're curious.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+/** Functional RGB >-< Linear RGB */
+const removeGamma = (rgb) =>
+  rgb.map((v) => {
+    const V = calcFractionFromChannel(v);
+    return V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4;
+  });
+#+END_SRC
+
+****** Linear RGB -> CIE XYZ
+
+Now, to convert the ungamma-ed RGB to XYZ data, we have to pass it through a transformation matrix
+of values representing the D65 reference white point defined in sRGB, which CSS uses.
+
+For that, I'm going to use a simple array calculation that /approximates/ what matrix multiplication
+is under the hood instead of wiring up a needlessly complex implementation.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+/** Linear RGB -> CIE XYZ */
+function calcXYZ(rgb) {
+  const [R, G, B] = removeGamma(rgb);
+  return [
+    R * 0.4124564 + G * 0.3575761 + B * 0.1804375,
+    R * 0.2126729 + G * 0.7151522 + B * 0.072175,
+    R * 0.0193339 + G * 0.119192 + B * 0.9503041,
+  ]; // [X, Y, Z]
+}
+#+END_SRC
+
+****** CIE XYZ -> Functional CIE Lab
+
+First, I need to apply the [[http://www.brucelindbloom.com/Eqn_ChromAdapt.html][Bradford method of chromatic adaptation]] to convert from D65 to D50, which
+CIE Lab uses.
+
+And then I need to apply the actual [[http://www.brucelindbloom.com/index.html?Equations.html][conversion formula]].
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+function calcD50XYZ(rgb) {
+  const [X, Y, Z] = calcXYZ(rgb);
+  /*
+   * D50 matrix
+   * =============================
+   * 1.0478112  0.0228866 -0.0501270
+   * 0.0295424  0.9904844 -0.0170491
+   * -0.0092345  0.0150436  0.7521316
+   * =============================
+   */
+  return [
+    X * 1.0478112 + Y * 0.0228866 + Z * -0.050127,
+    X * 0.0295424 + Y * 0.9904844 + Z * -0.0170491,
+    X * -0.0092345 + Y * 0.0150436 + Z * 0.7521316,
+  ];
+}
+
+/** Functional RGB -> Functional CIE Lab */
+export function lab(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [x, y, z] = calcD50XYZ([r, g, b]);
+
+  // CIE standards
+  const ε = 216 / 24389;
+  const κ = 24389 / 27;
+  const white = [0.96422, 1.0, 0.82521]; // D50 reference white
+
+  // Calculating XYZ scaled relative to white
+  const [X, Y, Z] = [x, y, z].map((v, i) => v / white[i]);
+  // Calculating F for each value
+  const [FX, FY, FZ] = [X, Y, Z].map((V) =>
+    V > ε ? Math.cbrt(V) : (κ * V + 16) / 116
+  );
+
+  // Calculating Lab values and limiting the precision
+  const [L, aHue, bHue] = [116 * FY - 16, 500 * (FX - FY), 200 * (FY - FZ)].map(
+    (V) => Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(6)
+  );
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1
+    ? `lab(${L}% ${aHue} ${bHue})`
+    : `lab(${L}% ${aHue} ${bHue} / ${A})`;
+}
+#+END_SRC
+
+That was a lot, so I'm going to run my tests now.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
+
+<<extracted-rgb>>
+
+console.log(colors.map(({color, values}) => ({rgb: color, lab: rgb.lab(values)})));
+#+END_SRC
+
+#+RESULTS:
+#+begin_src deno
+[
+  { rgb: "rgb(0, 0, 0)", lab: "lab(0% 0 0)" },
+  { rgb: "rgb(255, 255, 255)", lab: "lab(100% 0 0)" },
+  { rgb: "rgb(110, 22, 33)", lab: "lab(24.1186% 38.8473 18.0091)" },
+  { rgb: "rgb(30, 220, 140)", lab: "lab(77.9842% -59.373 26.4802)" },
+  { rgb: "rgb(148, 129, 240)", lab: "lab(59.5334% 27.092 -54.262)" },
+  { rgb: "rgb(31 33 100)", lab: "lab(16.3435% 17.9625 -40.7303)" },
+  { rgb: "rgb(200 210 131)", lab: "lab(82.0706% -12.4948 37.9315)" },
+  { rgb: "rgb(0%, 0%, 0%)", lab: "lab(0% 0 0)" },
+  { rgb: "rgb(100%, 100%, 100%)", lab: "lab(100% 0 0)" },
+  { rgb: "rgb(31%, 15%, 4%)", lab: "lab(20.6255% 18.0471 25.8622)" },
+  { rgb: "rgb(20%, 70.3%, 49%)", lab: "lab(65.1965% -45.6829 17.2626)" },
+  { rgb: "rgb(10% 30% 95%)", lab: "lab(39.4664% 35.7517 -88.2634)" },
+  { rgb: "rgb(33% 24% 44%)", lab: "lab(30.1574% 18.9516 -26.0225)" },
+  { rgb: "rgba(0, 0, 0, 1)", lab: "lab(0% 0 0)" },
+  { rgb: "rgba(255, 255, 255, 1)", lab: "lab(100% 0 0)" },
+  { rgb: "rgba(230, 110, 0, 0.8)", lab: "lab(60.5912% 44.3505 68.7516 / 0.8)" },
+  { rgb: "rgba(120, 178, 34, 0.719)", lab: "lab(66.666% -35.117 60.337 / 0.719)" },
+  { rgb: "rgba(34, 199, 249, 0.3)", lab: "lab(74.2159% -28.0157 -36.6419 / 0.3)" },
+  { rgb: "rgb(10 110 200 / 73%)", lab: "lab(45.2853% 1.11938 -54.9855 / 0.73)" },
+  { rgb: "rgba(34 225 110 / 25.9%)", lab: "lab(79.2011% -64.4579 42.7094 / 0.259)" },
+  { rgb: "rgb(10% 33% 19% / 0.35)", lab: "lab(31.2648% -26.5935 15.3386 / 0.35)" }
+]
+#+end_src
+
+Awesome.
+
 **** Functional HSL Conversion (=src/internals/color/convert/hsl.js=)
 
 HSL conversion sits like an island in the conversion algorithms, because even though it's easier for
@@ -2455,8 +2606,156 @@ console.log(colors.map(({color, values}) => ({hwb: color, rgb: hwb.rgb(values)})
 
 Looks like we're golden.
 
-**** Functional CIELAB Conversion (=src/internals/color/convert/lab.js=)
-**** Functional LCH Conversion (=src/internals/color/convert/lch.js=)
+**** Functional CIE Lab Conversion (=src/internals/color/convert/lab.js=)
+
+CIE Lab requires a regressive conversion to Functional RGB. With this, the link is complete and CIE
+Lab colors now have a bridge to other conversions.
+
+***** CIE Lab Conversion Setup
+
+I'll have to grab the RGB channel conversion function from my math kit.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/lab.js" :comments link
+import {
+  calcChannelFromFraction,
+  calcFractionFromPercent,
+  normalize,
+} from "./setup.js";
+#+END_SRC
+
+***** Functional RGB <- CIE Lab
+
+Now, I follow an inversion of the progressive conversion algorithm.
+
+1) =CIE XYZ <- Functional CIE Lab=
+2) =Linear RGB <- CIE XYZ=
+3) =Linear RGB >-< Functional RGB=
+
+****** CIE XYZ <- Functonal CIE Lab
+
+The [[http://www.brucelindbloom.com/index.html?Equations.html][formula for regressing CIE Lab to CIE XYZ]] is cleanly outlined. So, I'll follow that.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/lab.js" :comments link
+function calcXYZ(lab) {
+  const [L, a, b] = lab.map((v) => parseFloat(v));
+
+  // CIE standards
+  const ε = 216 / 24389;
+  const κ = 24389 / 27;
+  const white = [0.96422, 1.0, 0.82521]; // D50 reference white
+
+  // Compute the values of F
+  const Fy = (L + 16) / 116;
+  const Fx = a / 500 + Fy;
+  const Fz = Fy - b / 200;
+
+  // Calculate xyz
+  const [x, y, z] = [
+    Fx ** 3 > ε ? Fx ** 3 : (116 * Fx - 16) / κ,
+    L > κ * ε ? ((L + 16) / 116) ** 3 : L / κ,
+    Fz ** 3 > ε ? Fz ** 3 : (116 * Fz - 16) / κ,
+  ];
+
+  return [x, y, z].map((V, i) => V * white[i]);
+}
+#+END_SRC
+
+****** Linear RGB <- CIE XYZ
+
+The next step is converting the D50 XYZ to sRGB native D65 XYZ via chromatic adaptation.
+
+And /then/ passing it through the inverse transformation matrix to get linear RGB.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/lab.js" :comments link
+function calcLinearRGB(lab) {
+  const [x, y, z] = calcXYZ(lab);
+  /**
+   * D65 transformation matrix
+   * =============================
+   * 0.9555766 -0.0230393  0.0631636
+   * -0.0282895  1.0099416  0.0210077
+   * 0.0122982 -0.0204830  1.3299098
+   * =============================
+   */
+  const [X, Y, Z] = [
+    x * 0.9555766 + y * -0.0230393 + z * 0.0631636,
+    x * -0.0282895 + y * 1.0099416 + z * 0.0210077,
+    x * 0.0122982 + y * -0.020483 + z * 1.3299098,
+  ];
+
+  /**
+   * linear sRGB transformation matrix (inverse)
+   * =============================
+   *  3.2404542 -1.5371385 -0.4985314
+   * -0.9692660  1.8760108  0.0415560
+   *  0.0556434 -0.2040259  1.0572252
+   * =============================
+   */
+  return [
+    X * 3.2404542 + Y * -1.5371385 + Z * -0.4985314,
+    X * -0.969266 + Y * 1.8760108 + Z * 0.041556,
+    X * 0.0556434 + Y * -0.2040259 + Z * 1.0572252,
+  ];
+}
+#+END_SRC
+
+****** Linear RGB >-< Functional RGB
+
+Gamma application is the finishing touch before converting the channel values to the expected =0-255=
+range.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/lab.js" :comments link
+const calcRGB = (lrgb) =>
+  lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
+
+export function rgb(lab) {
+  const [l, a, b, alpha] = lab;
+
+  const [R, G, B] = calcRGB(calcLinearRGB([l, a, b])).map((channel) =>
+    normalize(0, Math.round(calcChannelFromFraction(channel)), 255)
+  );
+  const A = (alpha &&
+    (alpha.endsWith("%")
+      ? calcFractionFromPercent(parseFloat(alpha))
+      : alpha)) ||
+    1;
+
+  return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
+}
+#+END_SRC
+
+That was a lot to parse. Time to see if the calculations check out.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const lab = await import(`${Deno.cwd()}/src/internals/color/convert/lab.js`);
+
+<<extracted-lab>>
+
+console.log(colors.map(({color, values}) => ({lab: color, rgb: lab.rgb(values)})));
+#+END_SRC
+
+#+NAME: lab-to-rgb
+#+begin_src deno
+[
+  { lab: "lab(0% 0 0)", rgb: "rgb(0, 0, 0)" },
+  { lab: "lab(50% 0 0)", rgb: "rgb(119, 119, 119)" },
+  { lab: "lab(100% 0 0)", rgb: "rgb(255, 255, 255)" },
+  { lab: "lab(49% 127 0)", rgb: "rgb(255, 0, 124)" },
+  { lab: "lab(72% 0 127)", rgb: "rgb(206, 174, 0)" },
+  { lab: "lab(19% -128 0)", rgb: "rgb(0, 72, 44)" },
+  { lab: "lab(64% -128 0)", rgb: "rgb(0, 197, 151)" },
+  { lab: "lab(46% 0 -128)", rgb: "rgb(0, 122, 255)" },
+  { lab: "lab(34.3391% 49.3819 -4.3942)", rgb: "rgb(146, 35, 90)" },
+  { lab: "lab(57.38% 38.339 19.331)", rgb: "rgb(204, 109, 106)" },
+  { lab: "lab(68.3194% -94 0)", rgb: "rgb(0, 203, 163)" },
+  { lab: "lab(24.193% -66 127 / 0.9)", rgb: "rgba(0, 74, 0, 0.9)" },
+  { lab: "lab(88.1199% 78 -33 / 78%)", rgb: "rgba(255, 152, 255, 0.78)" }
+]
+#+end_src
+
+I'll stamp this as Good Enough™.
+
+**** Functional CIE LCH Conversion (=src/internals/color/convert/lch.js=)
 
 * Data
 

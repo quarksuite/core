@@ -1,7 +1,7 @@
-// [[file:../../../../README.org::*LCH Validator][LCH Validator:1]]
-/** Validate: functional LCH format */
+// [[file:../../../../README.org::*CIE LCH Validator][CIE LCH Validator:1]]
+/** Validate: functional CIE LCH format */
 export function validate(color) {
-  // LCH regexp
+  // CIE LCH regexp
 
   // prefix: "lch("
   // lightness: float<0->%
@@ -32,9 +32,9 @@ export function validate(color) {
     ].join(""),
   ).test(color);
 }
-// LCH Validator:1 ends here
+// CIE LCH Validator:1 ends here
 
-// [[file:../../../../README.org::*LCH Extractor][LCH Extractor:1]]
-/** Extract: LCH values */
+// [[file:../../../../README.org::*CIE LCH Extractor][CIE LCH Extractor:1]]
+/** Extract: CIE LCH values */
 export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
-// LCH Extractor:1 ends here
+// CIE LCH Extractor:1 ends here
