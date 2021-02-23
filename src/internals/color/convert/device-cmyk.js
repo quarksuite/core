@@ -23,7 +23,7 @@ export function rgb(cmyk) {
   const [C, M, Y, K, alpha] = parseCMYK(cmyk);
 
   const [R, G, B] = [C, M, Y].map((component) =>
-    Math.round(calcChannelFromFraction(1 - component * (1 - K)))
+    Math.round(calcChannelFromFraction((1 - component) * (1 - K)))
   );
   const A = (alpha && (alpha ?? 1)) || 1;
 

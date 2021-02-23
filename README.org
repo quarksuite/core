@@ -2474,7 +2474,7 @@ export function rgb(cmyk) {
   const [C, M, Y, K, alpha] = parseCMYK(cmyk);
 
   const [R, G, B] = [C, M, Y].map((component) =>
-    Math.round(calcChannelFromFraction(1 - component * (1 - K)))
+    Math.round(calcChannelFromFraction((1 - component) * (1 - K)))
   );
   const A = (alpha && (alpha ?? 1)) || 1;
 
@@ -2499,16 +2499,16 @@ console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)
   { cmyk: "device-cmyk(1 0 0 0)", rgb: "rgb(0, 255, 255)" },
   { cmyk: "device-cmyk(0 1 0 0)", rgb: "rgb(255, 0, 255)" },
   { cmyk: "device-cmyk(0 0 1 0)", rgb: "rgb(255, 255, 0)" },
-  { cmyk: "device-cmyk(0 0 0 1)", rgb: "rgb(255, 255, 255)" },
+  { cmyk: "device-cmyk(0 0 0 1)", rgb: "rgb(0, 0, 0)" },
   { cmyk: "device-cmyk(1 1 1 0)", rgb: "rgb(0, 0, 0)" },
   { cmyk: "device-cmyk(0% 0% 0% 0%)", rgb: "rgb(255, 255, 255)" },
   { cmyk: "device-cmyk(100% 0% 0% 0%)", rgb: "rgb(0, 255, 255)" },
   { cmyk: "device-cmyk(0% 100% 0% 0%)", rgb: "rgb(255, 0, 255)" },
   { cmyk: "device-cmyk(0% 0% 100% 0%)", rgb: "rgb(255, 255, 0)" },
-  { cmyk: "device-cmyk(0% 0% 0% 100%)", rgb: "rgb(255, 255, 255)" },
+  { cmyk: "device-cmyk(0% 0% 0% 100%)", rgb: "rgb(0, 0, 0)" },
   { cmyk: "device-cmyk(100% 100% 100% 0%)", rgb: "rgb(0, 0, 0)" },
-  { cmyk: "device-cmyk(0 0.4 0.8 0.25)", rgb: "rgb(255, 179, 102)" },
-  { cmyk: "device-cmyk(30% 49% 0 20%)", rgb: "rgb(194, 155, 255)" },
+  { cmyk: "device-cmyk(0 0.4 0.8 0.25)", rgb: "rgb(191, 115, 38)" },
+  { cmyk: "device-cmyk(30% 49% 0 20%)", rgb: "rgb(143, 104, 204)" },
   { cmyk: "device-cmyk(19% 30% 83% 0 / 0.31)", rgb: "rgba(207, 179, 43, 0.31)" },
   { cmyk: "device-cmyk(0.9 0.25 0 0 / 73%)", rgb: "rgba(26, 191, 255, 0.73)" }
 ]
