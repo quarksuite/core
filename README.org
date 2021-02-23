@@ -1,13 +1,13 @@
 #+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
-#+DATE: <2021-02-22 Mon>
+#+DATE: <2021-02-23 Tue>
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
 #+PROPERTY: header-args:shell :results output code
 
 * Intro :noexport:
 
-This repository is part of a of toolkit for creating, assembling, and distributing design
+This repository is part of a toolkit for creating, assembling, and distributing design
 systems. The whole kit lives under the umbrella of the QuarkSuite name.
 
 Other appendages of QuarkSuite include:
@@ -15,9 +15,9 @@ Other appendages of QuarkSuite include:
 + Quarks System Language (QSL): A domain-specific language for codifying design language into design systems
 + Quarks System User Interface (QSUI): A UI kit for design system documentation and visual development
 + Quarks System Development Environment (QSDE): A complete development environment integrating all
-  of the above and some extras
+  the above and some extras
 
-If you're interested in how this project evolved, feel free to browse the repository for QuarkSuite 1.
+If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for QuarkSuite 1]].
 
 * Summary :noexport:
 
@@ -257,7 +257,7 @@ Any preceding arguments are *data modifiers*.
 Using the =bind= utility, a function with a signature of =(z, y, x) => any= will break down to: =(z,
 y) => (x) => any= or =(z) => (y) => (x) => any=.
 
-The remaining data operation satisfies the =parity = 1= clause for composition.
+The remaining data operation satisfies the =arity = 1= clause for composition.
 
 *** Tests
 
@@ -591,7 +591,7 @@ export const extract = (hex) => hex.match(/[\da-f]{2}/g);
 
 The only thing to do here is remove the =#= and match the channel values with a regular expression.
 
-Then, I'm going to test that the channel values are extracted as =[R, G, B, A]=:
+Then, I'm going to test that the channel values are plucked as =[R, G, B, A]=:
 
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const hex = await import (`${Deno.cwd()}/src/internals/color/format/hex.js`);
@@ -671,7 +671,7 @@ Core supports the legacy format as well as the newer space-separated ones.
 
 ***** RGB Validator
 
-Validating the functional RGB is similarly complex but the regular expression can be broken down to
+Validating the functional RGB is similarly complex, but the regular expression can be broken down to
 its unique and repeating parts and then assembled with the =RegExp.source= property as a new =RegExp=
 object.
 
@@ -1177,7 +1177,7 @@ And now it's on to the next one.
 **** Functional HWB (=src/internals/color/format/hwb.js=)
 
 HWB is short for Hue-Whiteness-Blackness. It's an [[https://www.w3.org/TR/css-color-4/#the-hwb-notation][upcoming color format similar to HSL]] but even
-easier to use. It's actually the format of choice for lot of browser color picker implementations.
+easier to use. It's the format of choice for a variety of browser color picker implementations.
 
 + Hue (H): works the same as it does in the HSL format
 + Whiteness (W): a percentage value corresponding with how much white to mix with the hue
@@ -2774,7 +2774,8 @@ export function lch(lab) {
     .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
     .map((V, i) =>
       i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
-    );
+    )
+    .map((V, i) => (i === 0 ? normalize(0, V, 230) : V));
 
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -2807,11 +2808,11 @@ console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})
   { lab: "lab(19% -128 0)", lch: "lch(19%% 128 180)" },
   { lab: "lab(64% -128 0)", lch: "lch(64%% 128 180)" },
   { lab: "lab(46% 0 -128)", lch: "lch(46%% 128 270)" },
-  { lab: "lab(34.3391% 49.3819 -4.3942)", lch: "lch(34.3391%% 49.58 0)" },
-  { lab: "lab(57.38% 38.339 19.331)", lch: "lch(57.38%% 42.94 0)" },
+  { lab: "lab(34.3391% 49.3819 -4.3942)", lch: "lch(34.3391%% 50 0)" },
+  { lab: "lab(57.38% 38.339 19.331)", lch: "lch(57.38%% 43 0)" },
   { lab: "lab(68.3194% -94 0)", lch: "lch(68.3194%% 94 180)" },
-  { lab: "lab(24.193% -66 127 / 0.9)", lch: "lch(24.193%% 143.1 117)" },
-  { lab: "lab(88.1199% 78 -33 / 78%)", lch: "lch(88.1199%% 84.69 0)" }
+  { lab: "lab(24.193% -66 127 / 0.9)", lch: "lch(24.193%% 143 117)" },
+  { lab: "lab(88.1199% 78 -33 / 78%)", lch: "lch(88.1199%% 85 0)" }
 ]
 #+end_src
 
@@ -2831,7 +2832,7 @@ It's necessary for the hue component of LCH to use the same possible hue inputs 
 that's what's allowed in the spec.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/lch.js" :comments link
-import { calcFractionFromPercent } from "./setup.js";
+import { calcFractionFromPercent, normalize } from "./setup.js";
 import { parseHSL } from "./hsl.js";
 #+END_SRC
 
@@ -2847,7 +2848,7 @@ export function lab(lch) {
   const [a, b] = [
     C * Math.cos(H * (Math.PI / 180)),
     C * Math.sin(H * (Math.PI / 180)),
-  ].map((V) => +V.toPrecision(6));
+  ].map((V) => +(normalize(-128, V, 127)).toPrecision(6));
 
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -2875,23 +2876,17 @@ console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})
   { lch: "lch(0% 0 0)", lab: "lab(0% 0 0)" },
   { lch: "lch(50% 0 0)", lab: "lab(50% 0 0)" },
   { lch: "lch(100% 0 0)", lab: "lab(100% 0 0)" },
-  { lch: "lch(50% 230 0)", lab: "lab(50% 230 0)" },
-  { lch: "lch(29.2345% 44.2 27)", lab: "lab(29.2345% 39.3825 20.0664)" },
-  { lch: "lch(52.2345% 72.2 56.2)", lab: "lab(52.2345% 40.1645 59.9971)" },
-  { lch: "lch(60.3119% 34.3 139.3)", lab: "lab(60.3119% -26.004 22.367)" },
-  { lch: "lch(39.119% 58.1 258.9)", lab: "lab(39.119% -11.1855 -57.0131)" },
-  { lch: "lch(79.44% 119 320.89 / 0.7)", lab: "lab(79.44% 92.3364 -75.0665 / 0.7)" },
-  {
-    lch: "lch(62.1183% 42.5 81.881 / 89%)",
-    lab: "lab(62.1183% 6.00225 42.074 / 0.89)"
-  },
-  { lch: "lch(119.339% 39.9 130deg)", lab: "lab(119.339% -25.6472 30.5652)" },
-  { lch: "lch(93.411% 74.42 200rad)", lab: "lab(93.411% 36.0795 -65.0892)" },
-  { lch: "lch(33% 38.4434 3grad)", lab: "lab(33% 38.3907 2.01197)" },
-  {
-    lch: "lch(71.831% 204.314 0.184turn / 0.98)",
-    lab: "lab(71.831% 83.102 186.65 / 0.98)"
-  }
+  { lch: "lch(50% 230 0)", lab: "lab(50% 127 0)" },
+  { lch: "lch(29.2345% 44.2 27)", lab: "lab(29.2345% 39 20)" },
+  { lch: "lch(52.2345% 72.2 56.2)", lab: "lab(52.2345% 40 60)" },
+  { lch: "lch(60.3119% 34.3 139.3)", lab: "lab(60.3119% -26 22)" },
+  { lch: "lch(39.119% 58.1 258.9)", lab: "lab(39.119% -11 -57)" },
+  { lch: "lch(79.44% 119 320.89 / 0.7)", lab: "lab(79.44% 92 -75 / 0.7)" },
+  { lch: "lch(62.1183% 42.5 81.881 / 89%)", lab: "lab(62.1183% 6 42 / 0.89)" },
+  { lch: "lch(119.339% 39.9 130deg)", lab: "lab(119.339% -26 31)" },
+  { lch: "lch(93.411% 74.42 200rad)", lab: "lab(93.411% 36 -65)" },
+  { lch: "lch(33% 38.4434 3grad)", lab: "lab(33% 38 2)" },
+  { lch: "lch(71.831% 204.314 0.184turn / 0.98)", lab: "lab(71.831% 83 127 / 0.98)" }
 ]
 #+end_src
 

@@ -96,7 +96,8 @@ export function lch(lab) {
     .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
     .map((V, i) =>
       i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
-    );
+    )
+    .map((V, i) => (i === 0 ? normalize(0, V, 230) : V));
 
   const A = (alpha &&
     (alpha.endsWith("%")
