@@ -2,6 +2,8 @@
 import {
   calcChannelFromFraction,
   calcFractionFromPercent,
+  calcHueFromRad,
+  correctHueCounterClockwise,
   normalize,
 } from "./setup.js";
 // CIE Lab Conversion Setup:1 ends here
@@ -68,6 +70,7 @@ function calcLinearRGB(lab) {
 const calcRGB = (lrgb) =>
   lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
 
+/** Functional CIE Lab <- Functional RGB */
 export function rgb(lab) {
   const [l, a, b, alpha] = lab;
 
@@ -83,3 +86,24 @@ export function rgb(lab) {
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
 // Linear RGB >-< Functional RGB:1 ends here
+
+// [[file:../../../../README.org::*Functional CIE Lab -> Functional CIE LCH][Functional CIE Lab -> Functional CIE LCH:1]]
+/** Functional CIE Lab -> Functional CIE LCH */
+export function lch(lab) {
+  const [L, a, b, alpha] = lab;
+  const [C, H] = [Math.sqrt(a ** 2 + b ** 2), Math.atan2(b, a)]
+    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(4)))
+    .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
+    .map((V, i) =>
+      i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
+    );
+
+  const A = (alpha &&
+    (alpha.endsWith("%")
+      ? calcFractionFromPercent(parseFloat(alpha))
+      : alpha)) ||
+    1;
+
+  return A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H})`;
+}
+// Functional CIE Lab -> Functional CIE LCH:1 ends here

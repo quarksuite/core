@@ -2619,6 +2619,8 @@ I'll have to grab the RGB channel conversion function from my math kit.
 import {
   calcChannelFromFraction,
   calcFractionFromPercent,
+  calcHueFromRad,
+  correctHueCounterClockwise,
   normalize,
 } from "./setup.js";
 #+END_SRC
@@ -2708,6 +2710,7 @@ range.
 const calcRGB = (lrgb) =>
   lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
 
+/** Functional CIE Lab <- Functional RGB */
 export function rgb(lab) {
   const [l, a, b, alpha] = lab;
 
@@ -2755,7 +2758,144 @@ console.log(colors.map(({color, values}) => ({lab: color, rgb: lab.rgb(values)})
 
 I'll stamp this as Good Enough™.
 
+***** Functional CIE Lab -> Functional CIE LCH
+
+The final bridge is a progressive conversion of CIE Lab to CIE LCH. With this, all known and proposed
+CSS color formats are supported by the Quarks System Core.
+
+And thankfully, [[http://www.brucelindbloom.com/Eqn_Lab_to_LCH.html][the formula]] is a dead simple conversion of rectangle coordinates to polar coordinates.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/lab.js" :comments link
+/** Functional CIE Lab -> Functional CIE LCH */
+export function lch(lab) {
+  const [L, a, b, alpha] = lab;
+  const [C, H] = [Math.sqrt(a ** 2 + b ** 2), Math.atan2(b, a)]
+    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(4)))
+    .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
+    .map((V, i) =>
+      i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
+    );
+
+  const A = (alpha &&
+    (alpha.endsWith("%")
+      ? calcFractionFromPercent(parseFloat(alpha))
+      : alpha)) ||
+    1;
+
+  return A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H})`;
+}
+#+END_SRC
+
+Now to make sure it returns what I expect.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const lab = await import(`${Deno.cwd()}/src/internals/color/convert/lab.js`);
+
+<<extracted-lab>>
+
+console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})));
+#+END_SRC
+
+#+NAME: lab-to-lch
+#+begin_src deno
+[
+  { lab: "lab(0% 0 0)", lch: "lch(0%% 0 0)" },
+  { lab: "lab(50% 0 0)", lch: "lch(50%% 0 0)" },
+  { lab: "lab(100% 0 0)", lch: "lch(100%% 0 0)" },
+  { lab: "lab(49% 127 0)", lch: "lch(49%% 127 0)" },
+  { lab: "lab(72% 0 127)", lch: "lch(72%% 127 90)" },
+  { lab: "lab(19% -128 0)", lch: "lch(19%% 128 180)" },
+  { lab: "lab(64% -128 0)", lch: "lch(64%% 128 180)" },
+  { lab: "lab(46% 0 -128)", lch: "lch(46%% 128 270)" },
+  { lab: "lab(34.3391% 49.3819 -4.3942)", lch: "lch(34.3391%% 49.58 0)" },
+  { lab: "lab(57.38% 38.339 19.331)", lch: "lch(57.38%% 42.94 0)" },
+  { lab: "lab(68.3194% -94 0)", lch: "lch(68.3194%% 94 180)" },
+  { lab: "lab(24.193% -66 127 / 0.9)", lch: "lch(24.193%% 143.1 117)" },
+  { lab: "lab(88.1199% 78 -33 / 78%)", lch: "lch(88.1199%% 84.69 0)" }
+]
+#+end_src
+
+That'll do.
+
 **** Functional CIE LCH Conversion (=src/internals/color/convert/lch.js=)
+
+Now, I need to calculate the regressive conversion of LCH back to Lab. This final algorithm closes
+the conversion chain and allows any supported format to convert to and from any other supported
+format.
+
+***** Functional CIE Lab <- Functional CIE LCH
+
+First, a little setup.
+
+It's necessary for the hue component of LCH to use the same possible hue inputs as HSL, because
+that's what's allowed in the spec.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/lch.js" :comments link
+import { calcFractionFromPercent } from "./setup.js";
+import { parseHSL } from "./hsl.js";
+#+END_SRC
+
+The [[http://www.brucelindbloom.com/Eqn_LCH_to_Lab.html][conversion algorithm itself]] is short and sweet.
+
+#+BEGIN_SRC deno :tangle "./src/internals/color/convert/lch.js" :comments link
+/** Functional CIE Lab <- Functional CIE LCH */
+export function lab(lch) {
+  const [L, c, h, alpha] = lch;
+  const C = parseFloat(c);
+  const [H] = parseHSL([h, "100%", "50%", "1"]);
+
+  const [a, b] = [
+    C * Math.cos(H * (Math.PI / 180)),
+    C * Math.sin(H * (Math.PI / 180)),
+  ].map((V) => +V.toPrecision(6));
+
+  const A = (alpha &&
+    (alpha.endsWith("%")
+      ? calcFractionFromPercent(parseFloat(alpha))
+      : alpha)) ||
+    1;
+
+  return A === 1 ? `lab(${L} ${a} ${b})` : `lab(${L} ${a} ${b} / ${A})`;
+}
+#+END_SRC
+
+Alright, time to test the LCH color table.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const lch = await import(`${Deno.cwd()}/src/internals/color/convert/lch.js`);
+
+<<extracted-lch>>
+
+console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})));
+#+END_SRC
+
+#+NAME: lch-to-lab
+#+begin_src deno
+[
+  { lch: "lch(0% 0 0)", lab: "lab(0% 0 0)" },
+  { lch: "lch(50% 0 0)", lab: "lab(50% 0 0)" },
+  { lch: "lch(100% 0 0)", lab: "lab(100% 0 0)" },
+  { lch: "lch(50% 230 0)", lab: "lab(50% 230 0)" },
+  { lch: "lch(29.2345% 44.2 27)", lab: "lab(29.2345% 39.3825 20.0664)" },
+  { lch: "lch(52.2345% 72.2 56.2)", lab: "lab(52.2345% 40.1645 59.9971)" },
+  { lch: "lch(60.3119% 34.3 139.3)", lab: "lab(60.3119% -26.004 22.367)" },
+  { lch: "lch(39.119% 58.1 258.9)", lab: "lab(39.119% -11.1855 -57.0131)" },
+  { lch: "lch(79.44% 119 320.89 / 0.7)", lab: "lab(79.44% 92.3364 -75.0665 / 0.7)" },
+  {
+    lch: "lch(62.1183% 42.5 81.881 / 89%)",
+    lab: "lab(62.1183% 6.00225 42.074 / 0.89)"
+  },
+  { lch: "lch(119.339% 39.9 130deg)", lab: "lab(119.339% -25.6472 30.5652)" },
+  { lch: "lch(93.411% 74.42 200rad)", lab: "lab(93.411% 36.0795 -65.0892)" },
+  { lch: "lch(33% 38.4434 3grad)", lab: "lab(33% 38.3907 2.01197)" },
+  {
+    lch: "lch(71.831% 204.314 0.184turn / 0.98)",
+    lab: "lab(71.831% 83.102 186.65 / 0.98)"
+  }
+]
+#+end_src
+
+And that's it for color conversion.
 
 * Data
 
