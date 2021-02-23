@@ -18,6 +18,7 @@ function parseCMYK(cmyk) {
 // Functional RGB <- Device CMYK (=cmyk.rgb=):1 ends here
 
 // [[file:../../../../README.org::*Functional RGB <- Device CMYK (=cmyk.rgb=)][Functional RGB <- Device CMYK (=cmyk.rgb=):2]]
+/** Functional RGB <- Device CMYK */
 export function rgb(cmyk) {
   const [C, M, Y, K, alpha] = parseCMYK(cmyk);
 

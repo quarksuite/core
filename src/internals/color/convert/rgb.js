@@ -114,6 +114,7 @@ export function cmyk(rgb) {
 // Functional RGB -> Device CMYK (=rgb.cmyk=):1 ends here
 
 // [[file:../../../../README.org::*Functional RGB -> Functional HWB (=rgb.hwb=)][Functional RGB -> Functional HWB (=rgb.hwb=):1]]
+/** Functional RGB -> Functional HWB */
 export function hwb(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
   const [R, G, B] = [r, g, b].map((channel) =>

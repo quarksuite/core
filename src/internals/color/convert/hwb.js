@@ -21,6 +21,7 @@ function parseHWB(hwb) {
 // Functional RGB <- Functional HWB:1 ends here
 
 // [[file:../../../../README.org::*Functional RGB <- Functional HWB][Functional RGB <- Functional HWB:2]]
+/** Functional RGB <- Functional HWB */
 export function rgb(hwb) {
   const [h, w, blk, alpha] = parseHWB(hwb);
   const [r, g, b] = calcRGB(h, 1, 0.5);

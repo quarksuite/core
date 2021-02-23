@@ -1779,14 +1779,14 @@ Success!
 
 **** W3C-X11 Conversion (=src/internals/color/convert/named.js=)
 
-***** W3C-X11 -> RGB Hex
+***** RGB Hex <- W3C-X11
 
 After validation, the only possible conversion for a CSS named color is a query for its hex value.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/named.js" :comments link
 import { X11Colors } from "../../../data/color/w3c-x11.js";
 
-/** W3C-X11 -> RGB HEX */
+/** RGB HEX <- W3C-X11 */
 export const hex = (keyword) => X11Colors[keyword];
 #+END_SRC
 
@@ -2073,6 +2073,7 @@ hue is first calculated via partial HSL conversion, and then the amount of white
 calculated via a [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][modified formula from the spec itself]].
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/rgb.js" :comments link
+/** Functional RGB -> Functional HWB */
 export function hwb(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
   const [R, G, B] = [r, g, b].map((channel) =>
@@ -2468,6 +2469,7 @@ function parseCMYK(cmyk) {
 For the conversion algorithm, it's RapidTables coming again with the assist.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/device-cmyk.js" :comments link
+/** Functional RGB <- Device CMYK */
 export function rgb(cmyk) {
   const [C, M, Y, K, alpha] = parseCMYK(cmyk);
 
@@ -2552,6 +2554,7 @@ function parseHWB(hwb) {
 And now for the conversion algorithm.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/hwb.js" :comments link
+/** Functional RGB <- Functional HWB */
 export function rgb(hwb) {
   const [h, w, blk, alpha] = parseHWB(hwb);
   const [r, g, b] = calcRGB(h, 1, 0.5);
