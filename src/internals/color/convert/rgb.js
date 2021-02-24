@@ -7,20 +7,24 @@ import {
   calcPercentFromFraction,
   channelToHexFragment,
   correctHueCounterClockwise,
+  significant,
 } from "./setup.js";
+
+const precision = significant.bind(null, 4);
 
 /** A helper function to prep RGB values for calculations */
 function parseRGB(rgb) {
   const [r, g, b, alpha] = rgb;
   const value = (s) => parseFloat(s);
+
   const [R, G, B] = [r, g, b].map((channel) =>
     channel.endsWith("%")
-      ? calcChannelFromPercent(value(channel))
-      : value(channel)
+      ? precision(calcChannelFromPercent(value(channel)))
+      : precision(value(channel))
   );
 
   const a = value(alpha);
-  const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
+  const A = a != null ? (a > 1 ? precision(calcFractionFromPercent(a)) : a) : 1;
 
   return A === 1 ? [R, G, B] : [R, G, B, A];
 }
@@ -189,9 +193,11 @@ export function lab(rgb) {
   );
 
   // Calculating Lab values and limiting the precision
-  const [L, aHue, bHue] = [116 * FY - 16, 500 * (FX - FY), 200 * (FY - FZ)].map(
-    (V) => Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(6)
-  );
+  const [L, aHue, bHue] = [
+    116 * FY - 16,
+    500 * (FX - FY),
+    200 * (FY - FZ),
+  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(6)));
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1

@@ -458,29 +458,27 @@ Hexadecimal colors are the most common format on the web. Below is a table showi
 formats in CSS and some examples. I also think of them as color primitives, because hex /begins/ the
 conversion chain to other formats.
 
-#+NAME: hex-formats
-| Formats   | Example   |
-|-----------+-----------|
-| =#RGB=      | =#000=      |
-| =#RRGGBB=   | =#fff=      |
-| =#RGBA=     | =#000000=   |
-| =#RRGGBBAA= | =#ffffff=   |
-|           | =#ace=      |
-|           | =#bea=      |
-|           | =#fed=      |
-|           | =#deaded=   |
-|           | =#bada55=   |
-|           | =#c0ffee=   |
-|           | =#caf3c0=   |
-|           | =#000f=     |
-|           | =#ffff=     |
-|           | =#face=     |
-|           | =#ca57=     |
-|           | =#000000ff= |
-|           | =#ffffffff= |
-|           | =#abcede79= |
-|           | =#33a0c9c3= |
-|           | =#eecc99dd= |
+#+NAME: hex-samples
+| Color   | Value     |
+|---------+-----------|
+| Black   | =#000000=   |
+| Gray    | =#808080=   |
+| White   | =#ffffff=   |
+| Red     | =#ff0000=   |
+| Yellow  | =#ffff00=   |
+| Green   | =#00ff00=   |
+| Cyan    | =#00ffff=   |
+| Blue    | =#0000ff=   |
+| Magenta | =#ff00ff=   |
+| Etc.    | =#ace=      |
+|         | =#bea=      |
+|         | =#fed=      |
+|         | =#face=     |
+|         | =#cafe=     |
+|         | =#deaded=   |
+|         | =#c0ffee=   |
+|         | =#4991ccaa= |
+|         | =#abcdef68=  |
 
 ***** Hex Validator
 
@@ -493,36 +491,25 @@ export const validate = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
 
 Let's see if all the colors defined in the format table pass:
 
-#+BEGIN_SRC deno :results output code replace :allow read :var hexTable=hex-formats
+#+BEGIN_SRC deno :results output code replace :allow read :var hexTable=hex-samples
 const hex = await import(`${Deno.cwd()}/src/internals/color/format/hex.js`);
-const [, ...colors] = hexTable.map(([a, b]) => b.replace(/=/g, ""));
+const colors = hexTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isHex: hex.validate(color)})))
+console.log("const colors =", colors.filter((color) => hex.validate(color)))
 #+END_SRC
 
 #+NAME: valid-hex
 #+begin_src deno
 const colors = [
-  { color: "#000", isHex: true },
-  { color: "#fff", isHex: true },
-  { color: "#000000", isHex: true },
-  { color: "#ffffff", isHex: true },
-  { color: "#ace", isHex: true },
-  { color: "#bea", isHex: true },
-  { color: "#fed", isHex: true },
-  { color: "#deaded", isHex: true },
-  { color: "#bada55", isHex: true },
-  { color: "#c0ffee", isHex: true },
-  { color: "#caf3c0", isHex: true },
-  { color: "#000f", isHex: true },
-  { color: "#ffff", isHex: true },
-  { color: "#face", isHex: true },
-  { color: "#ca57", isHex: true },
-  { color: "#000000ff", isHex: true },
-  { color: "#ffffffff", isHex: true },
-  { color: "#abcede79", isHex: true },
-  { color: "#33a0c9c3", isHex: true },
-  { color: "#eecc99dd", isHex: true }
+  "#000000",   "#808080",
+  "#ffffff",   "#ff0000",
+  "#ffff00",   "#00ff00",
+  "#00ffff",   "#0000ff",
+  "#ff00ff",   "#ace",
+  "#bea",      "#fed",
+  "#face",     "#cafe",
+  "#deaded",   "#c0ffee",
+  "#4991ccaa", "#abcdef68"
 ]
 #+end_src
 
@@ -553,32 +540,30 @@ const hex = await import(`${Deno.cwd()}/src/internals/color/format/hex.js`);
 
 <<valid-hex>>
 
-console.log("const colors =", colors.map(({ color }) => ({ color, expanded: hex.expander(color) })))
+console.log("const colors =", colors.map((color) => ({ color, value: hex.expander(color) })))
 #+END_SRC
 
 #+NAME: expanded-hex
 #+begin_src deno
 const colors = [
-  { color: "#000", expanded: "#000000" },
-  { color: "#fff", expanded: "#ffffff" },
-  { color: "#000000", expanded: "#000000" },
-  { color: "#ffffff", expanded: "#ffffff" },
-  { color: "#ace", expanded: "#aaccee" },
-  { color: "#bea", expanded: "#bbeeaa" },
-  { color: "#fed", expanded: "#ffeedd" },
-  { color: "#deaded", expanded: "#deaded" },
-  { color: "#bada55", expanded: "#bada55" },
-  { color: "#c0ffee", expanded: "#c0ffee" },
-  { color: "#caf3c0", expanded: "#caf3c0" },
-  { color: "#000f", expanded: "#000000ff" },
-  { color: "#ffff", expanded: "#ffffffff" },
-  { color: "#face", expanded: "#ffaaccee" },
-  { color: "#ca57", expanded: "#ccaa5577" },
-  { color: "#000000ff", expanded: "#000000ff" },
-  { color: "#ffffffff", expanded: "#ffffffff" },
-  { color: "#abcede79", expanded: "#abcede79" },
-  { color: "#33a0c9c3", expanded: "#33a0c9c3" },
-  { color: "#eecc99dd", expanded: "#eecc99dd" }
+  { color: "#000000", value: "#000000" },
+  { color: "#808080", value: "#808080" },
+  { color: "#ffffff", value: "#ffffff" },
+  { color: "#ff0000", value: "#ff0000" },
+  { color: "#ffff00", value: "#ffff00" },
+  { color: "#00ff00", value: "#00ff00" },
+  { color: "#00ffff", value: "#00ffff" },
+  { color: "#0000ff", value: "#0000ff" },
+  { color: "#ff00ff", value: "#ff00ff" },
+  { color: "#ace", value: "#aaccee" },
+  { color: "#bea", value: "#bbeeaa" },
+  { color: "#fed", value: "#ffeedd" },
+  { color: "#face", value: "#ffaaccee" },
+  { color: "#cafe", value: "#ccaaffee" },
+  { color: "#deaded", value: "#deaded" },
+  { color: "#c0ffee", value: "#c0ffee" },
+  { color: "#4991ccaa", value: "#4991ccaa" },
+  { color: "#abcdef68", value: "#abcdef68" }
 ]
 #+end_src
 
@@ -598,32 +583,30 @@ const hex = await import (`${Deno.cwd()}/src/internals/color/format/hex.js`);
 
 <<expanded-hex>>
 
-console.log("const colors =", colors.map(({ expanded }) => ({color: expanded, values: hex.extract(expanded) })));
+console.log("const colors =", colors.map(({color, value}) => ({color, values: hex.extract(value)})));
 #+END_SRC
 
-#+NAME: extracted-hex
+#+NAME: hex-values
 #+begin_src deno
 const colors = [
   { color: "#000000", values: [ "00", "00", "00" ] },
+  { color: "#808080", values: [ "80", "80", "80" ] },
   { color: "#ffffff", values: [ "ff", "ff", "ff" ] },
-  { color: "#000000", values: [ "00", "00", "00" ] },
-  { color: "#ffffff", values: [ "ff", "ff", "ff" ] },
-  { color: "#aaccee", values: [ "aa", "cc", "ee" ] },
-  { color: "#bbeeaa", values: [ "bb", "ee", "aa" ] },
-  { color: "#ffeedd", values: [ "ff", "ee", "dd" ] },
+  { color: "#ff0000", values: [ "ff", "00", "00" ] },
+  { color: "#ffff00", values: [ "ff", "ff", "00" ] },
+  { color: "#00ff00", values: [ "00", "ff", "00" ] },
+  { color: "#00ffff", values: [ "00", "ff", "ff" ] },
+  { color: "#0000ff", values: [ "00", "00", "ff" ] },
+  { color: "#ff00ff", values: [ "ff", "00", "ff" ] },
+  { color: "#ace", values: [ "aa", "cc", "ee" ] },
+  { color: "#bea", values: [ "bb", "ee", "aa" ] },
+  { color: "#fed", values: [ "ff", "ee", "dd" ] },
+  { color: "#face", values: [ "ff", "aa", "cc", "ee" ] },
+  { color: "#cafe", values: [ "cc", "aa", "ff", "ee" ] },
   { color: "#deaded", values: [ "de", "ad", "ed" ] },
-  { color: "#bada55", values: [ "ba", "da", "55" ] },
   { color: "#c0ffee", values: [ "c0", "ff", "ee" ] },
-  { color: "#caf3c0", values: [ "ca", "f3", "c0" ] },
-  { color: "#000000ff", values: [ "00", "00", "00", "ff" ] },
-  { color: "#ffffffff", values: [ "ff", "ff", "ff", "ff" ] },
-  { color: "#ffaaccee", values: [ "ff", "aa", "cc", "ee" ] },
-  { color: "#ccaa5577", values: [ "cc", "aa", "55", "77" ] },
-  { color: "#000000ff", values: [ "00", "00", "00", "ff" ] },
-  { color: "#ffffffff", values: [ "ff", "ff", "ff", "ff" ] },
-  { color: "#abcede79", values: [ "ab", "ce", "de", "79" ] },
-  { color: "#33a0c9c3", values: [ "33", "a0", "c9", "c3" ] },
-  { color: "#eecc99dd", values: [ "ee", "cc", "99", "dd" ] }
+  { color: "#4991ccaa", values: [ "49", "91", "cc", "aa" ] },
+  { color: "#abcdef68", values: [ "ab", "cd", "ef", "68" ] }
 ]
 #+end_src
 
@@ -644,30 +627,25 @@ export const validate = (color) => !!X11Colors[color];
 The functional RGB syntax is more complex and allows for more variation in the format. Quarks System
 Core supports the legacy format as well as the newer space-separated ones.
 
-#+NAME: rgb-formats
-| Formats          | Examples                  |
-|------------------+---------------------------|
-| =rgb(R, G, B)=     | =rgb(0, 0, 0)=              |
-| =rgba(R, G, B, A)= | =rgb(255, 255, 255)=        |
-| =rgb(R G B)=       | =rgb(110, 22, 33)=          |
-| =rgb(R G B / A)=   | =rgb(30, 220, 140)=         |
-| =rgba(R G B / A)=  | =rgb(148, 129, 240)=        |
-|                  | =rgb(31 33 100)=            |
-|                  | =rgb(200 210 131)=          |
-|                  | =rgb(0%, 0%, 0%)=           |
-|                  | =rgb(100%, 100%, 100%)=     |
-|                  | =rgb(31%, 15%, 4%)=         |
-|                  | =rgb(20%, 70.3%, 49%)=      |
-|                  | =rgb(10% 30% 95%)=          |
-|                  | =rgb(33% 24% 44%)=          |
-|                  | =rgba(0, 0, 0, 1)=          |
-|                  | =rgba(255, 255, 255, 1)=    |
-|                  | =rgba(230, 110, 0, 0.8)=    |
-|                  | =rgba(120, 178, 34, 0.719)= |
-|                  | =rgba(34, 199, 249, 0.3)=   |
-|                  | =rgb(10 110 200 / 73%)=     |
-|                  | =rgba(34 225 110 / 25.9%)=  |
-|                  | =rgb(10% 33% 19% / 0.35)=   |
+#+NAME: rgb-samples
+| Color   | Value                    |
+|---------+--------------------------|
+| Black   | =rgb(0, 0, 0)=             |
+| Gray    | =rgb(128, 128, 128)=       |
+| White   | =rgb(255, 255, 255)=       |
+| Red     | =rgb(255, 0, 0)=           |
+| Yellow  | =rgb(255, 255, 0)=         |
+| Green   | =rgb(0, 255, 0)=           |
+| Cyan    | =rgb(0, 255, 255)=         |
+| Blue    | =rgb(0, 0, 255)=           |
+| Magenta | =rgb(255, 0, 255)=         |
+| Etc.    | =rgb(33, 199, 95)=         |
+|         | =rgb(19, 114, 220)=        |
+|         | =rgb(10%, 40.4%, 49.9%)=   |
+|         | =rgb(200 138 39)=          |
+|         | =rgb(31 88 49 / 0.8)=      |
+|         | =rgba(110, 33, 110, 0.75)= |
+|         | =rgba(10, 119, 30, 30%)=   |
 
 ***** RGB Validator
 
@@ -711,37 +689,32 @@ export function validate(color) {
 
 Next up is seeing if the format tests pass.
 
-#+BEGIN_SRC deno :results output code replace :allow read :var rgbTable=rgb-formats
+#+BEGIN_SRC deno :results output code replace :allow read :var rgbTable=rgb-samples
 const rgb = await import(`${Deno.cwd()}/src/internals/color/format/rgb.js`);
 const colors = rgbTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isRGB: rgb.validate(color)})))
+console.log("const colors =", colors.filter((color) => rgb.validate(color)))
 #+END_SRC
 
 #+NAME: valid-rgb
 #+begin_src deno
 const colors = [
-  { color: "rgb(0, 0, 0)", isRGB: true },
-  { color: "rgb(255, 255, 255)", isRGB: true },
-  { color: "rgb(110, 22, 33)", isRGB: true },
-  { color: "rgb(30, 220, 140)", isRGB: true },
-  { color: "rgb(148, 129, 240)", isRGB: true },
-  { color: "rgb(31 33 100)", isRGB: true },
-  { color: "rgb(200 210 131)", isRGB: true },
-  { color: "rgb(0%, 0%, 0%)", isRGB: true },
-  { color: "rgb(100%, 100%, 100%)", isRGB: true },
-  { color: "rgb(31%, 15%, 4%)", isRGB: true },
-  { color: "rgb(20%, 70.3%, 49%)", isRGB: true },
-  { color: "rgb(10% 30% 95%)", isRGB: true },
-  { color: "rgb(33% 24% 44%)", isRGB: true },
-  { color: "rgba(0, 0, 0, 1)", isRGB: true },
-  { color: "rgba(255, 255, 255, 1)", isRGB: true },
-  { color: "rgba(230, 110, 0, 0.8)", isRGB: true },
-  { color: "rgba(120, 178, 34, 0.719)", isRGB: true },
-  { color: "rgba(34, 199, 249, 0.3)", isRGB: true },
-  { color: "rgb(10 110 200 / 73%)", isRGB: true },
-  { color: "rgba(34 225 110 / 25.9%)", isRGB: true },
-  { color: "rgb(10% 33% 19% / 0.35)", isRGB: true }
+  "rgb(0, 0, 0)",
+  "rgb(128, 128, 128)",
+  "rgb(255, 255, 255)",
+  "rgb(255, 0, 0)",
+  "rgb(255, 255, 0)",
+  "rgb(0, 255, 0)",
+  "rgb(0, 255, 255)",
+  "rgb(0, 0, 255)",
+  "rgb(255, 0, 255)",
+  "rgb(33, 199, 95)",
+  "rgb(19, 114, 220)",
+  "rgb(10%, 40.4%, 49.9%)",
+  "rgb(200 138 39)",
+  "rgb(31 88 49 / 0.8)",
+  "rgba(110, 33, 110, 0.75)",
+  "rgba(10, 119, 30, 30%)"
 ]
 #+end_src
 
@@ -767,33 +740,28 @@ const rgb = await import(`${Deno.cwd()}/src/internals/color/format/rgb.js`);
 
 <<valid-rgb>>
 
-console.log("const colors =", colors.map(({ color }) => ({ color, values: rgb.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: rgb.extract(color) })));
 #+END_SRC
 
-#+NAME: extracted-rgb
+#+NAME: rgb-values
 #+begin_src deno
 const colors = [
   { color: "rgb(0, 0, 0)", values: [ "0", "0", "0" ] },
+  { color: "rgb(128, 128, 128)", values: [ "128", "128", "128" ] },
   { color: "rgb(255, 255, 255)", values: [ "255", "255", "255" ] },
-  { color: "rgb(110, 22, 33)", values: [ "110", "22", "33" ] },
-  { color: "rgb(30, 220, 140)", values: [ "30", "220", "140" ] },
-  { color: "rgb(148, 129, 240)", values: [ "148", "129", "240" ] },
-  { color: "rgb(31 33 100)", values: [ "31", "33", "100" ] },
-  { color: "rgb(200 210 131)", values: [ "200", "210", "131" ] },
-  { color: "rgb(0%, 0%, 0%)", values: [ "0%", "0%", "0%" ] },
-  { color: "rgb(100%, 100%, 100%)", values: [ "100%", "100%", "100%" ] },
-  { color: "rgb(31%, 15%, 4%)", values: [ "31%", "15%", "4%" ] },
-  { color: "rgb(20%, 70.3%, 49%)", values: [ "20%", "70.3%", "49%" ] },
-  { color: "rgb(10% 30% 95%)", values: [ "10%", "30%", "95%" ] },
-  { color: "rgb(33% 24% 44%)", values: [ "33%", "24%", "44%" ] },
-  { color: "rgba(0, 0, 0, 1)", values: [ "0", "0", "0", "1" ] },
-  { color: "rgba(255, 255, 255, 1)", values: [ "255", "255", "255", "1" ] },
-  { color: "rgba(230, 110, 0, 0.8)", values: [ "230", "110", "0", "0.8" ] },
-  { color: "rgba(120, 178, 34, 0.719)", values: [ "120", "178", "34", "0.719" ] },
-  { color: "rgba(34, 199, 249, 0.3)", values: [ "34", "199", "249", "0.3" ] },
-  { color: "rgb(10 110 200 / 73%)", values: [ "10", "110", "200", "73%" ] },
-  { color: "rgba(34 225 110 / 25.9%)", values: [ "34", "225", "110", "25.9%" ] },
-  { color: "rgb(10% 33% 19% / 0.35)", values: [ "10%", "33%", "19%", "0.35" ] }
+  { color: "rgb(255, 0, 0)", values: [ "255", "0", "0" ] },
+  { color: "rgb(255, 255, 0)", values: [ "255", "255", "0" ] },
+  { color: "rgb(0, 255, 0)", values: [ "0", "255", "0" ] },
+  { color: "rgb(0, 255, 255)", values: [ "0", "255", "255" ] },
+  { color: "rgb(0, 0, 255)", values: [ "0", "0", "255" ] },
+  { color: "rgb(255, 0, 255)", values: [ "255", "0", "255" ] },
+  { color: "rgb(33, 199, 95)", values: [ "33", "199", "95" ] },
+  { color: "rgb(19, 114, 220)", values: [ "19", "114", "220" ] },
+  { color: "rgb(10%, 40.4%, 49.9%)", values: [ "10%", "40.4%", "49.9%" ] },
+  { color: "rgb(200 138 39)", values: [ "200", "138", "39" ] },
+  { color: "rgb(31 88 49 / 0.8)", values: [ "31", "88", "49", "0.8" ] },
+  { color: "rgba(110, 33, 110, 0.75)", values: [ "110", "33", "110", "0.75" ] },
+  { color: "rgba(10, 119, 30, 30%)", values: [ "10", "119", "30", "30%" ] }
 ]
 #+end_src
 
@@ -1641,8 +1609,8 @@ channel.toString(16).padStart(2, "0");
 Before I write the functions for actual conversion, I need to write some basic arithmetic helpers.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/setup.js" :comments link
-/** Helper to set significant digits */
-const significant = (digits, value) => +value.toPrecision(digits);
+/** Helper to limit precision */
+export const significant = (digits, value) => +value.toPrecision(digits);
 
 /** x + y */
 const sum = (y, x) => significant(6, x + y);
@@ -1727,13 +1695,20 @@ Converting RGB Hex to functional RGB is a matter of extracting each channel hex 
 converting them to their equivalent integers. And then converting the alpha channel /if/ it exists.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/hex.js" :comments link
-import { calcFractionFromChannel, hexFragmentToChannel } from "./setup.js";
+import {
+  calcFractionFromChannel,
+  hexFragmentToChannel,
+  significant,
+} from "./setup.js";
 
 /** RGB Hex -> Functional RGB */
 export function rgb(hex) {
   const [r, g, b, alpha] = hex;
   const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
-  const A = calcFractionFromChannel(hexFragmentToChannel(alpha ?? "ff"));
+  const A = significant(
+    4,
+    calcFractionFromChannel(hexFragmentToChannel(alpha ?? "ff")),
+  );
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
@@ -1744,7 +1719,7 @@ For testing my implementation, I'll reuse the extracted hex results above.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const hex = await import(`${Deno.cwd()}/src/internals/color/convert/hex.js`);
 
-<<extracted-hex>>
+<<hex-values>>
 
 console.log(colors.map(({color, values}) => ({hex: color, rgb: hex.rgb(values)})));
 #+END_SRC
@@ -1753,25 +1728,23 @@ console.log(colors.map(({color, values}) => ({hex: color, rgb: hex.rgb(values)})
 #+begin_src deno
 [
   { hex: "#000000", rgb: "rgb(0, 0, 0)" },
+  { hex: "#808080", rgb: "rgb(128, 128, 128)" },
   { hex: "#ffffff", rgb: "rgb(255, 255, 255)" },
-  { hex: "#000000", rgb: "rgb(0, 0, 0)" },
-  { hex: "#ffffff", rgb: "rgb(255, 255, 255)" },
-  { hex: "#aaccee", rgb: "rgb(170, 204, 238)" },
-  { hex: "#bbeeaa", rgb: "rgb(187, 238, 170)" },
-  { hex: "#ffeedd", rgb: "rgb(255, 238, 221)" },
+  { hex: "#ff0000", rgb: "rgb(255, 0, 0)" },
+  { hex: "#ffff00", rgb: "rgb(255, 255, 0)" },
+  { hex: "#00ff00", rgb: "rgb(0, 255, 0)" },
+  { hex: "#00ffff", rgb: "rgb(0, 255, 255)" },
+  { hex: "#0000ff", rgb: "rgb(0, 0, 255)" },
+  { hex: "#ff00ff", rgb: "rgb(255, 0, 255)" },
+  { hex: "#ace", rgb: "rgb(170, 204, 238)" },
+  { hex: "#bea", rgb: "rgb(187, 238, 170)" },
+  { hex: "#fed", rgb: "rgb(255, 238, 221)" },
+  { hex: "#face", rgb: "rgba(255, 170, 204, 0.9333)" },
+  { hex: "#cafe", rgb: "rgba(204, 170, 255, 0.9333)" },
   { hex: "#deaded", rgb: "rgb(222, 173, 237)" },
-  { hex: "#bada55", rgb: "rgb(186, 218, 85)" },
   { hex: "#c0ffee", rgb: "rgb(192, 255, 238)" },
-  { hex: "#caf3c0", rgb: "rgb(202, 243, 192)" },
-  { hex: "#000000ff", rgb: "rgb(0, 0, 0)" },
-  { hex: "#ffffffff", rgb: "rgb(255, 255, 255)" },
-  { hex: "#ffaaccee", rgb: "rgba(255, 170, 204, 0.933333)" },
-  { hex: "#ccaa5577", rgb: "rgba(204, 170, 85, 0.466667)" },
-  { hex: "#000000ff", rgb: "rgb(0, 0, 0)" },
-  { hex: "#ffffffff", rgb: "rgb(255, 255, 255)" },
-  { hex: "#abcede79", rgb: "rgba(171, 206, 222, 0.47451)" },
-  { hex: "#33a0c9c3", rgb: "rgba(51, 160, 201, 0.764706)" },
-  { hex: "#eecc99dd", rgb: "rgba(238, 204, 153, 0.866667)" }
+  { hex: "#4991ccaa", rgb: "rgba(73, 145, 204, 0.6667)" },
+  { hex: "#abcdef68", rgb: "rgba(171, 205, 239, 0.4078)" }
 ]
 #+end_src
 
@@ -1814,20 +1787,24 @@ import {
   calcPercentFromFraction,
   channelToHexFragment,
   correctHueCounterClockwise,
+  significant,
 } from "./setup.js";
+
+const precision = significant.bind(null, 4);
 
 /** A helper function to prep RGB values for calculations */
 function parseRGB(rgb) {
   const [r, g, b, alpha] = rgb;
   const value = (s) => parseFloat(s);
+
   const [R, G, B] = [r, g, b].map((channel) =>
     channel.endsWith("%")
-      ? calcChannelFromPercent(value(channel))
-      : value(channel)
+      ? precision(calcChannelFromPercent(value(channel)))
+      : precision(value(channel))
   );
 
   const a = value(alpha);
-  const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
+  const A = a != null ? (a > 1 ? precision(calcFractionFromPercent(a)) : a) : 1;
 
   return A === 1 ? [R, G, B] : [R, G, B, A];
 }
@@ -1856,35 +1833,30 @@ Now, I'll use the extracted RGB defined earlier to test my conversions for accur
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
 
-<<extracted-rgb>>
+<<rgb-values>>
 
 console.log(colors.map(({color, values}) => ({rgb: color, hex: rgb.hex(values)})));
 #+END_SRC
 
-#+rgb-to-hex
+#+NAME: rgb-to-hex
 #+begin_src deno
 [
   { rgb: "rgb(0, 0, 0)", hex: "#000000" },
+  { rgb: "rgb(128, 128, 128)", hex: "#808080" },
   { rgb: "rgb(255, 255, 255)", hex: "#ffffff" },
-  { rgb: "rgb(110, 22, 33)", hex: "#6e1621" },
-  { rgb: "rgb(30, 220, 140)", hex: "#1edc8c" },
-  { rgb: "rgb(148, 129, 240)", hex: "#9481f0" },
-  { rgb: "rgb(31 33 100)", hex: "#1f2164" },
-  { rgb: "rgb(200 210 131)", hex: "#c8d283" },
-  { rgb: "rgb(0%, 0%, 0%)", hex: "#000000" },
-  { rgb: "rgb(100%, 100%, 100%)", hex: "#ffffff" },
-  { rgb: "rgb(31%, 15%, 4%)", hex: "#4f260a" },
-  { rgb: "rgb(20%, 70.3%, 49%)", hex: "#33b37d" },
-  { rgb: "rgb(10% 30% 95%)", hex: "#1a4df2" },
-  { rgb: "rgb(33% 24% 44%)", hex: "#543d70" },
-  { rgb: "rgba(0, 0, 0, 1)", hex: "#000000" },
-  { rgb: "rgba(255, 255, 255, 1)", hex: "#ffffff" },
-  { rgb: "rgba(230, 110, 0, 0.8)", hex: "#e66e00cc" },
-  { rgb: "rgba(120, 178, 34, 0.719)", hex: "#78b222b7" },
-  { rgb: "rgba(34, 199, 249, 0.3)", hex: "#22c7f94d" },
-  { rgb: "rgb(10 110 200 / 73%)", hex: "#0a6ec8ba" },
-  { rgb: "rgba(34 225 110 / 25.9%)", hex: "#22e16e42" },
-  { rgb: "rgb(10% 33% 19% / 0.35)", hex: "#1a543059" }
+  { rgb: "rgb(255, 0, 0)", hex: "#ff0000" },
+  { rgb: "rgb(255, 255, 0)", hex: "#ffff00" },
+  { rgb: "rgb(0, 255, 0)", hex: "#00ff00" },
+  { rgb: "rgb(0, 255, 255)", hex: "#00ffff" },
+  { rgb: "rgb(0, 0, 255)", hex: "#0000ff" },
+  { rgb: "rgb(255, 0, 255)", hex: "#ff00ff" },
+  { rgb: "rgb(33, 199, 95)", hex: "#21c75f" },
+  { rgb: "rgb(19, 114, 220)", hex: "#1372dc" },
+  { rgb: "rgb(10%, 40.4%, 49.9%)", hex: "#1a677f" },
+  { rgb: "rgb(200 138 39)", hex: "#c88a27" },
+  { rgb: "rgb(31 88 49 / 0.8)", hex: "#1f5831cc" },
+  { rgb: "rgba(110, 33, 110, 0.75)", hex: "#6e216ebf" },
+  { rgb: "rgba(10, 119, 30, 30%)", hex: "#0a771e4d" }
 ]
 #+end_src
 

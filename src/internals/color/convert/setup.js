@@ -8,8 +8,8 @@ channel.toString(16).padStart(2, "0");
 // Hex RGB Fragments:1 ends here
 
 // [[file:../../../../README.org::*Math][Math:1]]
-/** Helper to set significant digits */
-const significant = (digits, value) => +value.toPrecision(digits);
+/** Helper to limit precision */
+export const significant = (digits, value) => +value.toPrecision(digits);
 
 /** x + y */
 const sum = (y, x) => significant(6, x + y);
