@@ -10,7 +10,7 @@ import {
   significant,
 } from "./setup.js";
 
-const precision = significant.bind(null, 4);
+const precision = significant.bind(null, 5);
 
 /** A helper function to prep RGB values for calculations */
 function parseRGB(rgb) {
@@ -85,7 +85,11 @@ export function hsl(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
   const [h, s, l] = calcHSL(r, g, b);
 
-  const [H, S, L] = [h, calcPercentFromFraction(s), calcPercentFromFraction(l)];
+  const [H, S, L] = [
+    h,
+    precision(calcPercentFromFraction(s)),
+    precision(calcPercentFromFraction(l)),
+  ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1 ? `hsl(${H}, ${S}%, ${L}%)` : `hsla(${H}, ${S}%, ${L}%, ${A})`;

@@ -777,45 +777,26 @@ setting:
 + Lightness/Luminance (L): A percentage value corresponding to a color's brightness. At =50%= a color
   is normalized. =0%= yields pure black and =100%= yields pure white
 
-CSS also defines several rotational units for the hue. All of which QuarkSuite supports.
+CSS also defines several angle units for the hue. All of which QuarkSuite supports.
 
-#+NAME: hsl-formats
-| Examples         | Formats                        |
-|------------------+--------------------------------|
-| =hsl(H, S, L)=     | =hsl(0, 0%, 0%)=                 |
-| =hsla(H, S, L, A)= | =hsl(0, 0%, 50%)=                |
-| =hsl(H S L)=       | =hsl(0, 0%, 100%)=               |
-| =hsl(H S L / A)=   | =hsl(0 0% 0%)=                   |
-| =hsla(H S L / A)=  | =hsl(0 0% 50%)=                  |
-|                  | =hsl(0 0% 100%)=                 |
-|                  | =hsl(120, 74%, 63%)=             |
-|                  | =hsl(64deg, 85%, 50%)=           |
-|                  | =hsl(200rad, 42%, 81%)=          |
-|                  | =hsl(2.3grad, 50%, 50%)=         |
-|                  | =hsl(0.25turn, 39%, 73%)=        |
-|                  | =hsl(-135, 69%, 94%)=            |
-|                  | =hsl(189 35% 82%)=               |
-|                  | =hsl(161deg 50% 78%)=            |
-|                  | =hsl(380rad 75% 13%)=            |
-|                  | =hsl(1.6grad 100% 48%)=          |
-|                  | =hsl(0.13turn 58% 20%)=          |
-|                  | =hsl(-1.9grad 33% 80%)=          |
-|                  | =hsla(0, 0%, 0%, 1)=             |
-|                  | =hsla(0, 0%, 50%, 1)=            |
-|                  | =hsla(0, 0%, 100%, 1)=           |
-|                  | =hsla(0 0% 0% / 1)=              |
-|                  | =hsla(0 0% 50% / 1)=             |
-|                  | =hsla(0 0% 100% / 1)=            |
-|                  | =hsla(34, 73%, 89%, 0.7)=        |
-|                  | =hsla(67deg, 99%, 38%, 0.25)=    |
-|                  | =hsla(393rad, 85%, 18%, 0.493)=  |
-|                  | =hsla(5.2grad, 39%, 58%, 0.5)=   |
-|                  | =hsla(0.34turn, 19%, 36%, 0.39)= |
-|                  | =hsl(100 40% 39% / 73%)=         |
-|                  | =hsl(90deg 89% 61% / 0.3)=       |
-|                  | =hsla(48rad 74% 38% / 39%)=      |
-|                  | =hsl(4.8grad 37% 100% / 0.47)=   |
-|                  | =hsla(0.134turn 33% 88% / 40%)=  |
+#+NAME: hsl-samples
+| Color   | Value                         |
+|---------+-------------------------------|
+| Black   | =hsl(0, 0%, 0%)=                |
+| Gray    | =hsl(0, 0%, 50%)=               |
+| White   | =hsl(0, 0%, 100%)=              |
+| Red     | =hsl(0, 100%, 50%)=             |
+| Yellow  | =hsl(60, 100%, 50%)=            |
+| Green   | =hsl(120, 100%, 50%)=           |
+| Cyan    | =hsl(180, 100%, 50%)=           |
+| Blue    | =hsl(240, 100%, 50%)=           |
+| Magenta | =hsl(300, 100%, 50%)=           |
+| Etc.    | =hsl(38, 78%, 40%)=             |
+|         | =hsl(3 88% 70%)=                |
+|         | =hsl(189 63% 85% / 0.71)=       |
+|         | =hsla(1.5rad, 73%, 10%, 0.831)= |
+|         | =hsl(320grad 89% 36% / 79%)=    |
+|         | =hsl(0.36turn 83% 90%)=       |
 
 ***** HSL Validator
 
@@ -861,50 +842,31 @@ export function validate(color) {
 
 Now, I'll perform the tests:
 
-#+BEGIN_SRC deno :results output code replace :allow read :var hslTable=hsl-formats
+#+BEGIN_SRC deno :results output code replace :allow read :var hslTable=hsl-samples
 const hsl = await import(`${Deno.cwd()}/src/internals/color/format/hsl.js`);
 const colors = hslTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isHSL: hsl.validate(color)})))
+console.log("const colors =", colors.filter((color) => hsl.validate(color)))
 #+END_SRC
 
 #+NAME: valid-hsl
 #+begin_src deno
 const colors = [
-  { color: "hsl(0, 0%, 0%)", isHSL: true },
-  { color: "hsl(0, 0%, 50%)", isHSL: true },
-  { color: "hsl(0, 0%, 100%)", isHSL: true },
-  { color: "hsl(0 0% 0%)", isHSL: true },
-  { color: "hsl(0 0% 50%)", isHSL: true },
-  { color: "hsl(0 0% 100%)", isHSL: true },
-  { color: "hsl(120, 74%, 63%)", isHSL: true },
-  { color: "hsl(64deg, 85%, 50%)", isHSL: true },
-  { color: "hsl(200rad, 42%, 81%)", isHSL: true },
-  { color: "hsl(2.3grad, 50%, 50%)", isHSL: true },
-  { color: "hsl(0.25turn, 39%, 73%)", isHSL: true },
-  { color: "hsl(-135, 69%, 94%)", isHSL: true },
-  { color: "hsl(189 35% 82%)", isHSL: true },
-  { color: "hsl(161deg 50% 78%)", isHSL: true },
-  { color: "hsl(380rad 75% 13%)", isHSL: true },
-  { color: "hsl(1.6grad 100% 48%)", isHSL: true },
-  { color: "hsl(0.13turn 58% 20%)", isHSL: true },
-  { color: "hsl(-1.9grad 33% 80%)", isHSL: true },
-  { color: "hsla(0, 0%, 0%, 1)", isHSL: true },
-  { color: "hsla(0, 0%, 50%, 1)", isHSL: true },
-  { color: "hsla(0, 0%, 100%, 1)", isHSL: true },
-  { color: "hsla(0 0% 0% / 1)", isHSL: true },
-  { color: "hsla(0 0% 50% / 1)", isHSL: true },
-  { color: "hsla(0 0% 100% / 1)", isHSL: true },
-  { color: "hsla(34, 73%, 89%, 0.7)", isHSL: true },
-  { color: "hsla(67deg, 99%, 38%, 0.25)", isHSL: true },
-  { color: "hsla(393rad, 85%, 18%, 0.493)", isHSL: true },
-  { color: "hsla(5.2grad, 39%, 58%, 0.5)", isHSL: true },
-  { color: "hsla(0.34turn, 19%, 36%, 0.39)", isHSL: true },
-  { color: "hsl(100 40% 39% / 73%)", isHSL: true },
-  { color: "hsl(90deg 89% 61% / 0.3)", isHSL: true },
-  { color: "hsla(48rad 74% 38% / 39%)", isHSL: true },
-  { color: "hsl(4.8grad 37% 100% / 0.47)", isHSL: true },
-  { color: "hsla(0.134turn 33% 88% / 40%)", isHSL: true }
+  "hsl(0, 0%, 0%)",
+  "hsl(0, 0%, 50%)",
+  "hsl(0, 0%, 100%)",
+  "hsl(0, 100%, 50%)",
+  "hsl(60, 100%, 50%)",
+  "hsl(120, 100%, 50%)",
+  "hsl(180, 100%, 50%)",
+  "hsl(240, 100%, 50%)",
+  "hsl(300, 100%, 50%)",
+  "hsl(38, 78%, 40%)",
+  "hsl(3 88% 70%)",
+  "hsl(189 63% 85% / 0.71)",
+  "hsla(1.5rad, 73%, 10%, 0.831)",
+  "hsl(320grad 89% 36% / 79%)",
+  "hsl(0.36turn 83% 90%)"
 ]
 #+end_src
 
@@ -927,61 +889,30 @@ const hsl = await import(`${Deno.cwd()}/src/internals/color/format/hsl.js`);
 
 <<valid-hsl>>
 
-console.log("const colors =", colors.map(({ color }) => ({ color, values: hsl.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: hsl.extract(color) })));
 #+END_SRC
 
-#+NAME: extracted-hsl
+#+NAME: hsl-values
 #+begin_src deno
 const colors = [
   { color: "hsl(0, 0%, 0%)", values: [ "0", "0%", "0%" ] },
   { color: "hsl(0, 0%, 50%)", values: [ "0", "0%", "50%" ] },
   { color: "hsl(0, 0%, 100%)", values: [ "0", "0%", "100%" ] },
-  { color: "hsl(0 0% 0%)", values: [ "0", "0%", "0%" ] },
-  { color: "hsl(0 0% 50%)", values: [ "0", "0%", "50%" ] },
-  { color: "hsl(0 0% 100%)", values: [ "0", "0%", "100%" ] },
-  { color: "hsl(120, 74%, 63%)", values: [ "120", "74%", "63%" ] },
-  { color: "hsl(64deg, 85%, 50%)", values: [ "64deg", "85%", "50%" ] },
-  { color: "hsl(200rad, 42%, 81%)", values: [ "200rad", "42%", "81%" ] },
-  { color: "hsl(2.3grad, 50%, 50%)", values: [ "2.3grad", "50%", "50%" ] },
-  { color: "hsl(0.25turn, 39%, 73%)", values: [ "0.25turn", "39%", "73%" ] },
-  { color: "hsl(-135, 69%, 94%)", values: [ "-135", "69%", "94%" ] },
-  { color: "hsl(189 35% 82%)", values: [ "189", "35%", "82%" ] },
-  { color: "hsl(161deg 50% 78%)", values: [ "161deg", "50%", "78%" ] },
-  { color: "hsl(380rad 75% 13%)", values: [ "380rad", "75%", "13%" ] },
-  { color: "hsl(1.6grad 100% 48%)", values: [ "1.6grad", "100%", "48%" ] },
-  { color: "hsl(0.13turn 58% 20%)", values: [ "0.13turn", "58%", "20%" ] },
-  { color: "hsl(-1.9grad 33% 80%)", values: [ "-1.9grad", "33%", "80%" ] },
-  { color: "hsla(0, 0%, 0%, 1)", values: [ "0", "0%", "0%", "1" ] },
-  { color: "hsla(0, 0%, 50%, 1)", values: [ "0", "0%", "50%", "1" ] },
-  { color: "hsla(0, 0%, 100%, 1)", values: [ "0", "0%", "100%", "1" ] },
-  { color: "hsla(0 0% 0% / 1)", values: [ "0", "0%", "0%", "1" ] },
-  { color: "hsla(0 0% 50% / 1)", values: [ "0", "0%", "50%", "1" ] },
-  { color: "hsla(0 0% 100% / 1)", values: [ "0", "0%", "100%", "1" ] },
-  { color: "hsla(34, 73%, 89%, 0.7)", values: [ "34", "73%", "89%", "0.7" ] },
-  { color: "hsla(67deg, 99%, 38%, 0.25)", values: [ "67deg", "99%", "38%", "0.25" ] },
+  { color: "hsl(0, 100%, 50%)", values: [ "0", "100%", "50%" ] },
+  { color: "hsl(60, 100%, 50%)", values: [ "60", "100%", "50%" ] },
+  { color: "hsl(120, 100%, 50%)", values: [ "120", "100%", "50%" ] },
+  { color: "hsl(180, 100%, 50%)", values: [ "180", "100%", "50%" ] },
+  { color: "hsl(240, 100%, 50%)", values: [ "240", "100%", "50%" ] },
+  { color: "hsl(300, 100%, 50%)", values: [ "300", "100%", "50%" ] },
+  { color: "hsl(38, 78%, 40%)", values: [ "38", "78%", "40%" ] },
+  { color: "hsl(3 88% 70%)", values: [ "3", "88%", "70%" ] },
+  { color: "hsl(189 63% 85% / 0.71)", values: [ "189", "63%", "85%", "0.71" ] },
   {
-    color: "hsla(393rad, 85%, 18%, 0.493)",
-    values: [ "393rad", "85%", "18%", "0.493" ]
+    color: "hsla(1.5rad, 73%, 10%, 0.831)",
+    values: [ "1.5rad", "73%", "10%", "0.831" ]
   },
-  {
-    color: "hsla(5.2grad, 39%, 58%, 0.5)",
-    values: [ "5.2grad", "39%", "58%", "0.5" ]
-  },
-  {
-    color: "hsla(0.34turn, 19%, 36%, 0.39)",
-    values: [ "0.34turn", "19%", "36%", "0.39" ]
-  },
-  { color: "hsl(100 40% 39% / 73%)", values: [ "100", "40%", "39%", "73%" ] },
-  { color: "hsl(90deg 89% 61% / 0.3)", values: [ "90deg", "89%", "61%", "0.3" ] },
-  { color: "hsla(48rad 74% 38% / 39%)", values: [ "48rad", "74%", "38%", "39%" ] },
-  {
-    color: "hsl(4.8grad 37% 100% / 0.47)",
-    values: [ "4.8grad", "37%", "100%", "0.47" ]
-  },
-  {
-    color: "hsla(0.134turn 33% 88% / 40%)",
-    values: [ "0.134turn", "33%", "88%", "40%" ]
-  }
+  { color: "hsl(320grad 89% 36% / 79%)", values: [ "320grad", "89%", "36%", "79%" ] },
+  { color: "hsl(0.36turn 83% 90%)", values: [ "0.36turn", "83%", "90%" ] }
 ]
 #+end_src
 
@@ -1790,7 +1721,7 @@ import {
   significant,
 } from "./setup.js";
 
-const precision = significant.bind(null, 4);
+const precision = significant.bind(null, 5);
 
 /** A helper function to prep RGB values for calculations */
 function parseRGB(rgb) {
@@ -1909,7 +1840,11 @@ export function hsl(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
   const [h, s, l] = calcHSL(r, g, b);
 
-  const [H, S, L] = [h, calcPercentFromFraction(s), calcPercentFromFraction(l)];
+  const [H, S, L] = [
+    h,
+    precision(calcPercentFromFraction(s)),
+    precision(calcPercentFromFraction(l)),
+  ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1 ? `hsl(${H}, ${S}%, ${L}%)` : `hsla(${H}, ${S}%, ${L}%, ${A})`;
@@ -1921,7 +1856,7 @@ Time for some color conversion tests!
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
 
-<<extracted-rgb>>
+<<rgb-values>>
 
 console.log(colors.map(({color, values}) => ({rgb: color, hsl: rgb.hsl(values)})));
 #+END_SRC
@@ -1930,26 +1865,21 @@ console.log(colors.map(({color, values}) => ({rgb: color, hsl: rgb.hsl(values)})
 #+begin_src deno
 [
   { rgb: "rgb(0, 0, 0)", hsl: "hsl(0, 0%, 0%)" },
+  { rgb: "rgb(128, 128, 128)", hsl: "hsl(0, 0%, 50.196%)" },
   { rgb: "rgb(255, 255, 255)", hsl: "hsl(0, 0%, 100%)" },
-  { rgb: "rgb(110, 22, 33)", hsl: "hsl(352, 66.6667%, 25.8824%)" },
-  { rgb: "rgb(30, 220, 140)", hsl: "hsl(155, 76%, 49.0196%)" },
-  { rgb: "rgb(148, 129, 240)", hsl: "hsl(250, 78.7233%, 72.3529%)" },
-  { rgb: "rgb(31 33 100)", hsl: "hsl(238, 52.6717%, 25.6863%)" },
-  { rgb: "rgb(200 210 131)", hsl: "hsl(68, 46.7455%, 66.8627%)" },
-  { rgb: "rgb(0%, 0%, 0%)", hsl: "hsl(0, 0%, 0%)" },
-  { rgb: "rgb(100%, 100%, 100%)", hsl: "hsl(0, 0%, 100%)" },
-  { rgb: "rgb(31%, 15%, 4%)", hsl: "hsl(24, 77.5281%, 17.451%)" },
-  { rgb: "rgb(20%, 70.3%, 49%)", hsl: "hsl(155, 55.6522%, 45.0981%)" },
-  { rgb: "rgb(10% 30% 95%)", hsl: "hsl(226, 89.2563%, 52.549%)" },
-  { rgb: "rgb(33% 24% 44%)", hsl: "hsl(267, 29.4797%, 33.9216%)" },
-  { rgb: "rgba(0, 0, 0, 1)", hsl: "hsl(0, 0%, 0%)" },
-  { rgb: "rgba(255, 255, 255, 1)", hsl: "hsl(0, 0%, 100%)" },
-  { rgb: "rgba(230, 110, 0, 0.8)", hsl: "hsla(29, 100%, 45.0981%, 0.8)" },
-  { rgb: "rgba(120, 178, 34, 0.719)", hsl: "hsla(84, 67.9246%, 41.5686%, 0.719)" },
-  { rgb: "rgba(34, 199, 249, 0.3)", hsl: "hsla(194, 94.7137%, 55.4902%, 0.3)" },
-  { rgb: "rgb(10 110 200 / 73%)", hsl: "hsla(208, 90.4762%, 41.1765%, 0.73)" },
-  { rgb: "rgba(34 225 110 / 25.9%)", hsl: "hsla(144, 76.0956%, 50.7843%, 0.259)" },
-  { rgb: "rgb(10% 33% 19% / 0.35)", hsl: "hsla(143, 52.7272%, 21.5687%, 0.35)" }
+  { rgb: "rgb(255, 0, 0)", hsl: "hsl(0, 100%, 50%)" },
+  { rgb: "rgb(255, 255, 0)", hsl: "hsl(60, 100%, 50%)" },
+  { rgb: "rgb(0, 255, 0)", hsl: "hsl(120, 100%, 50%)" },
+  { rgb: "rgb(0, 255, 255)", hsl: "hsl(180, 100%, 50%)" },
+  { rgb: "rgb(0, 0, 255)", hsl: "hsl(240, 100%, 50%)" },
+  { rgb: "rgb(255, 0, 255)", hsl: "hsl(300, 100%, 50%)" },
+  { rgb: "rgb(33, 199, 95)", hsl: "hsl(142, 71.552%, 45.49%)" },
+  { rgb: "rgb(19, 114, 220)", hsl: "hsl(212, 84.1%, 46.863%)" },
+  { rgb: "rgb(10%, 40.4%, 49.9%)", hsl: "hsl(194, 66.013%, 30%)" },
+  { rgb: "rgb(200 138 39)", hsl: "hsl(37, 67.364%, 46.863%)" },
+  { rgb: "rgb(31 88 49 / 0.8)", hsl: "hsla(139, 47.899%, 23.333%, 0.8)" },
+  { rgb: "rgba(110, 33, 110, 0.75)", hsl: "hsla(300, 53.846%, 28.039%, 0.75)" },
+  { rgb: "rgba(10, 119, 30, 30%)", hsl: "hsla(131, 84.496%, 25.294%, 0.3)" }
 ]
 #+end_src
 
@@ -2365,7 +2295,7 @@ Now, the tests with my extracted HSL to verify that the math checks out.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const hsl = await import(`${Deno.cwd()}/src/internals/color/convert/hsl.js`);
 
-<<extracted-hsl>>
+<<hsl-values>>
 
 console.log(colors.map(({color, values}) => ({hsl: color, rgb: hsl.rgb(values)})));
 #+END_SRC
@@ -2376,37 +2306,18 @@ console.log(colors.map(({color, values}) => ({hsl: color, rgb: hsl.rgb(values)})
   { hsl: "hsl(0, 0%, 0%)", rgb: "rgb(0, 0, 0)" },
   { hsl: "hsl(0, 0%, 50%)", rgb: "rgb(128, 128, 128)" },
   { hsl: "hsl(0, 0%, 100%)", rgb: "rgb(255, 255, 255)" },
-  { hsl: "hsl(0 0% 0%)", rgb: "rgb(0, 0, 0)" },
-  { hsl: "hsl(0 0% 50%)", rgb: "rgb(128, 128, 128)" },
-  { hsl: "hsl(0 0% 100%)", rgb: "rgb(255, 255, 255)" },
-  { hsl: "hsl(120, 74%, 63%)", rgb: "rgb(91, 230, 91)" },
-  { hsl: "hsl(64deg, 85%, 50%)", rgb: "rgb(221, 236, 19)" },
-  { hsl: "hsl(200rad, 42%, 81%)", rgb: "rgb(226, 186, 227)" },
-  { hsl: "hsl(2.3grad, 50%, 50%)", rgb: "rgb(191, 68, 64)" },
-  { hsl: "hsl(0.25turn, 39%, 73%)", rgb: "rgb(186, 213, 159)" },
-  { hsl: "hsl(-135, 69%, 94%)", rgb: "rgb(229, 234, 250)" },
-  { hsl: "hsl(189 35% 82%)", rgb: "rgb(193, 220, 225)" },
-  { hsl: "hsl(161deg 50% 78%)", rgb: "rgb(171, 227, 209)" },
-  { hsl: "hsl(380rad 75% 13%)", rgb: "rgb(8, 58, 51)" },
-  { hsl: "hsl(1.6grad 100% 48%)", rgb: "rgb(245, 4, 0)" },
-  { hsl: "hsl(0.13turn 58% 20%)", rgb: "rgb(81, 68, 21)" },
-  { hsl: "hsl(-1.9grad 33% 80%)", rgb: "rgb(221, 187, 188)" },
-  { hsl: "hsla(0, 0%, 0%, 1)", rgb: "rgb(0, 0, 0)" },
-  { hsl: "hsla(0, 0%, 50%, 1)", rgb: "rgb(128, 128, 128)" },
-  { hsl: "hsla(0, 0%, 100%, 1)", rgb: "rgb(255, 255, 255)" },
-  { hsl: "hsla(0 0% 0% / 1)", rgb: "rgb(0, 0, 0)" },
-  { hsl: "hsla(0 0% 50% / 1)", rgb: "rgb(128, 128, 128)" },
-  { hsl: "hsla(0 0% 100% / 1)", rgb: "rgb(255, 255, 255)" },
-  { hsl: "hsla(34, 73%, 89%, 0.7)", rgb: "rgba(247, 230, 206, 0.7)" },
-  { hsl: "hsla(67deg, 99%, 38%, 0.25)", rgb: "rgba(170, 193, 1, 0.25)" },
-  { hsl: "hsla(393rad, 85%, 18%, 0.493)", rgb: "rgba(7, 63, 85, 0.493)" },
-  { hsl: "hsla(5.2grad, 39%, 58%, 0.5)", rgb: "rgba(190, 113, 106, 0.5)" },
-  { hsl: "hsla(0.34turn, 19%, 36%, 0.39)", rgb: "rgba(74, 109, 76, 0.39)" },
-  { hsl: "hsl(100 40% 39% / 73%)", rgb: "rgba(86, 139, 60, 0.73)" },
-  { hsl: "hsl(90deg 89% 61% / 0.3)", rgb: "rgba(156, 244, 67, 0.3)" },
-  { hsl: "hsla(48rad 74% 38% / 39%)", rgb: "rgba(25, 49, 169, 0.39)" },
-  { hsl: "hsl(4.8grad 37% 100% / 0.47)", rgb: "rgba(255, 255, 255, 0.47)" },
-  { hsl: "hsla(0.134turn 33% 88% / 40%)", rgb: "rgba(234, 230, 214, 0.4)" }
+  { hsl: "hsl(0, 100%, 50%)", rgb: "rgb(255, 0, 0)" },
+  { hsl: "hsl(60, 100%, 50%)", rgb: "rgb(255, 255, 0)" },
+  { hsl: "hsl(120, 100%, 50%)", rgb: "rgb(0, 255, 0)" },
+  { hsl: "hsl(180, 100%, 50%)", rgb: "rgb(0, 255, 255)" },
+  { hsl: "hsl(240, 100%, 50%)", rgb: "rgb(0, 0, 255)" },
+  { hsl: "hsl(300, 100%, 50%)", rgb: "rgb(255, 0, 255)" },
+  { hsl: "hsl(38, 78%, 40%)", rgb: "rgb(182, 123, 22)" },
+  { hsl: "hsl(3 88% 70%)", rgb: "rgb(246, 118, 111)" },
+  { hsl: "hsl(189 63% 85% / 0.71)", rgb: "rgba(193, 234, 241, 0.71)" },
+  { hsl: "hsla(1.5rad, 73%, 10%, 0.831)", rgb: "rgba(28, 44, 7, 0.831)" },
+  { hsl: "hsl(320grad 89% 36% / 79%)", rgb: "rgba(141, 10, 174, 0.79)" },
+  { hsl: "hsl(0.36turn 83% 90%)", rgb: "rgb(208, 251, 215)" }
 ]
 #+end_src
 
