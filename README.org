@@ -933,25 +933,23 @@ It's important to note: as a newer CSS color functional format, =device-cmyk()= 
 the older comma-separated syntax, so neither does the Quarks System Core. The same carries for all
 color formats beyond this point.
 
-#+NAME: cmyk-formats
-| Format                        | Examples                          |
-|-------------------------------+-----------------------------------|
-| =device-cmyk(C M Y K)=          | =device-cmyk(0 0 0 0)=              |
-| =device-cmyk(C% M% Y% K%)=      | =device-cmyk(1 0 0 0)=              |
-| =device-cmyk(C M Y K / A)=      | =device-cmyk(0 1 0 0)=              |
-| =device-cmyk(C% M% Y% K% / A%)= | =device-cmyk(0 0 1 0)=              |
-|                               | =device-cmyk(0 0 0 1)=              |
-|                               | =device-cmyk(1 1 1 0)=              |
-|                               | =device-cmyk(0% 0% 0% 0%)=          |
-|                               | =device-cmyk(100% 0% 0% 0%)=        |
-|                               | =device-cmyk(0% 100% 0% 0%)=        |
-|                               | =device-cmyk(0% 0% 100% 0%)=      |
-|                               | =device-cmyk(0% 0% 0% 100%)=        |
-|                               | =device-cmyk(100% 100% 100% 0%)=    |
-|                               | =device-cmyk(0 0.4 0.8 0.25)=       |
-|                               | =device-cmyk(30% 49% 0 20%)=        |
-|                               | =device-cmyk(19% 30% 83% 0 / 0.31)= |
-|                               | =device-cmyk(0.9 0.25 0 0 / 73%)=   |
+#+NAME: cmyk-samples
+| Color   | Value                             |
+|---------+-----------------------------------|
+| Black   | =device-cmyk(0% 0% 0% 100%)=        |
+| Gray    | =device-cmyk(0% 0% 0% 50%)=         |
+| White   | =device-cmyk(0% 0% 0% 0%)=          |
+| Red     | =device-cmyk(0% 100% 100% 0%)=      |
+| Yellow  | =device-cmyk(0% 0% 100% 0%)=        |
+| Green   | =device-cmyk(100% 0% 100% 0%)=      |
+| Cyan    | =device-cmyk(100% 0% 0% 0%)=        |
+| Blue    | =device-cmyk(100% 100% 0% 0%)=      |
+| Magenta | =device-cmyk(0% 100% 0% 0%)=        |
+| Etc.    | =device-cmyk(37% 63% 0 0)=          |
+|         | =device-cmyk(50% 25% 10% 0)=        |
+|         | =device-cmyk(0.77 0.33 0 0)=        |
+|         | =device-cmyk(0.8 0 0.4 0.13 / 0.8)= |
+|         | =device-cmyk(25% 75% 8% 3% / 81.3%)= |
 
 ***** CMYK Validator
 
@@ -992,32 +990,30 @@ export function validate(color) {
 
 Now, on to the format tests.
 
-#+BEGIN_SRC deno :results output code replace :allow read :var cmykTable=cmyk-formats
+#+BEGIN_SRC deno :results output code replace :allow read :var cmykTable=cmyk-samples
 const cmyk = await import(`${Deno.cwd()}/src/internals/color/format/device-cmyk.js`);
 const colors = cmykTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isCMYK: cmyk.validate(color)})))
+console.log("const colors =", colors.filter((color) => cmyk.validate(color)));
 #+END_SRC
 
 #+NAME: valid-cmyk
 #+begin_src deno
 const colors = [
-  { color: "device-cmyk(0 0 0 0)", isCMYK: true },
-  { color: "device-cmyk(1 0 0 0)", isCMYK: true },
-  { color: "device-cmyk(0 1 0 0)", isCMYK: true },
-  { color: "device-cmyk(0 0 1 0)", isCMYK: true },
-  { color: "device-cmyk(0 0 0 1)", isCMYK: true },
-  { color: "device-cmyk(1 1 1 0)", isCMYK: true },
-  { color: "device-cmyk(0% 0% 0% 0%)", isCMYK: true },
-  { color: "device-cmyk(100% 0% 0% 0%)", isCMYK: true },
-  { color: "device-cmyk(0% 100% 0% 0%)", isCMYK: true },
-  { color: "device-cmyk(0% 0% 100% 0%)", isCMYK: true },
-  { color: "device-cmyk(0% 0% 0% 100%)", isCMYK: true },
-  { color: "device-cmyk(100% 100% 100% 0%)", isCMYK: true },
-  { color: "device-cmyk(0 0.4 0.8 0.25)", isCMYK: true },
-  { color: "device-cmyk(30% 49% 0 20%)", isCMYK: true },
-  { color: "device-cmyk(19% 30% 83% 0 / 0.31)", isCMYK: true },
-  { color: "device-cmyk(0.9 0.25 0 0 / 73%)", isCMYK: true }
+  "device-cmyk(0% 0% 0% 100%)",
+  "device-cmyk(0% 0% 0% 50%)",
+  "device-cmyk(0% 0% 0% 0%)",
+  "device-cmyk(0% 100% 100% 0%)",
+  "device-cmyk(0% 0% 100% 0%)",
+  "device-cmyk(100% 0% 100% 0%)",
+  "device-cmyk(100% 0% 0% 0%)",
+  "device-cmyk(100% 100% 0% 0%)",
+  "device-cmyk(0% 100% 0% 0%)",
+  "device-cmyk(37% 63% 0 0)",
+  "device-cmyk(50% 25% 10% 0)",
+  "device-cmyk(0.77 0.33 0 0)",
+  "device-cmyk(0.8 0 0.4 0.13 / 0.8)",
+  "device-cmyk(25% 75% 8% 3% / 81.3%)"
 ]
 #+end_src
 
@@ -1037,36 +1033,31 @@ const cmyk = await import(`${Deno.cwd()}/src/internals/color/format/device-cmyk.
 
 <<valid-cmyk>>
 
-console.log("const colors =", colors.map(({ color }) => ({ color, values: cmyk.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: cmyk.extract(color) })));
 #+END_SRC
 
-#+NAME: extracted-cmyk
+#+NAME: cmyk-values
 #+begin_src deno
 const colors = [
-  { color: "device-cmyk(0 0 0 0)", values: [ "0", "0", "0", "0" ] },
-  { color: "device-cmyk(1 0 0 0)", values: [ "1", "0", "0", "0" ] },
-  { color: "device-cmyk(0 1 0 0)", values: [ "0", "1", "0", "0" ] },
-  { color: "device-cmyk(0 0 1 0)", values: [ "0", "0", "1", "0" ] },
-  { color: "device-cmyk(0 0 0 1)", values: [ "0", "0", "0", "1" ] },
-  { color: "device-cmyk(1 1 1 0)", values: [ "1", "1", "1", "0" ] },
-  { color: "device-cmyk(0% 0% 0% 0%)", values: [ "0%", "0%", "0%", "0%" ] },
-  { color: "device-cmyk(100% 0% 0% 0%)", values: [ "100%", "0%", "0%", "0%" ] },
-  { color: "device-cmyk(0% 100% 0% 0%)", values: [ "0%", "100%", "0%", "0%" ] },
-  { color: "device-cmyk(0% 0% 100% 0%)", values: [ "0%", "0%", "100%", "0%" ] },
   { color: "device-cmyk(0% 0% 0% 100%)", values: [ "0%", "0%", "0%", "100%" ] },
+  { color: "device-cmyk(0% 0% 0% 50%)", values: [ "0%", "0%", "0%", "50%" ] },
+  { color: "device-cmyk(0% 0% 0% 0%)", values: [ "0%", "0%", "0%", "0%" ] },
+  { color: "device-cmyk(0% 100% 100% 0%)", values: [ "0%", "100%", "100%", "0%" ] },
+  { color: "device-cmyk(0% 0% 100% 0%)", values: [ "0%", "0%", "100%", "0%" ] },
+  { color: "device-cmyk(100% 0% 100% 0%)", values: [ "100%", "0%", "100%", "0%" ] },
+  { color: "device-cmyk(100% 0% 0% 0%)", values: [ "100%", "0%", "0%", "0%" ] },
+  { color: "device-cmyk(100% 100% 0% 0%)", values: [ "100%", "100%", "0%", "0%" ] },
+  { color: "device-cmyk(0% 100% 0% 0%)", values: [ "0%", "100%", "0%", "0%" ] },
+  { color: "device-cmyk(37% 63% 0 0)", values: [ "37%", "63%", "0", "0" ] },
+  { color: "device-cmyk(50% 25% 10% 0)", values: [ "50%", "25%", "10%", "0" ] },
+  { color: "device-cmyk(0.77 0.33 0 0)", values: [ "0.77", "0.33", "0", "0" ] },
   {
-    color: "device-cmyk(100% 100% 100% 0%)",
-    values: [ "100%", "100%", "100%", "0%" ]
+    color: "device-cmyk(0.8 0 0.4 0.13 / 0.8)",
+    values: [ "0.8", "0", "0.4", "0.13", "0.8" ]
   },
-  { color: "device-cmyk(0 0.4 0.8 0.25)", values: [ "0", "0.4", "0.8", "0.25" ] },
-  { color: "device-cmyk(30% 49% 0 20%)", values: [ "30%", "49%", "0", "20%" ] },
   {
-    color: "device-cmyk(19% 30% 83% 0 / 0.31)",
-    values: [ "19%", "30%", "83%", "0", "0.31" ]
-  },
-  {
-    color: "device-cmyk(0.9 0.25 0 0 / 73%)",
-    values: [ "0.9", "0.25", "0", "0", "73%" ]
+    color: "device-cmyk(25% 75% 8% 3% / 81.3%)",
+    values: [ "25%", "75%", "8%", "3%", "81.3%" ]
   }
 ]
 #+end_src
@@ -1919,7 +1910,7 @@ Now, I'm checking the math.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
 
-<<extracted-rgb>>
+<<rgb-values>>
 
 console.log(colors.map(({color, values}) => ({rgb: color, cmyk: rgb.cmyk(values)})));
 #+END_SRC
@@ -1928,40 +1919,29 @@ console.log(colors.map(({color, values}) => ({rgb: color, cmyk: rgb.cmyk(values)
 #+begin_src deno
 [
   { rgb: "rgb(0, 0, 0)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
+  { rgb: "rgb(128, 128, 128)", cmyk: "device-cmyk(0% 0% 0% 49.8039%)" },
   { rgb: "rgb(255, 255, 255)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
-  { rgb: "rgb(110, 22, 33)", cmyk: "device-cmyk(0% 80% 70% 56.8627%)" },
-  { rgb: "rgb(30, 220, 140)", cmyk: "device-cmyk(86.3636% 0% 36.3636% 13.7255%)" },
-  { rgb: "rgb(148, 129, 240)", cmyk: "device-cmyk(38.3333% 46.25% 0% 5.8824%)" },
-  { rgb: "rgb(31 33 100)", cmyk: "device-cmyk(68.9999% 67% 0% 60.7843%)" },
-  { rgb: "rgb(200 210 131)", cmyk: "device-cmyk(4.76182% 0% 37.6191% 17.6471%)" },
-  { rgb: "rgb(0%, 0%, 0%)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
-  { rgb: "rgb(100%, 100%, 100%)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
-  { rgb: "rgb(31%, 15%, 4%)", cmyk: "device-cmyk(0% 51.8986% 87.3418% 69.0196%)" },
-  { rgb: "rgb(20%, 70.3%, 49%)", cmyk: "device-cmyk(71.5084% 0% 30.1676% 29.8039%)" },
-  { rgb: "rgb(10% 30% 95%)", cmyk: "device-cmyk(89.2562% 68.1818% 0% 5.098%)" },
-  { rgb: "rgb(33% 24% 44%)", cmyk: "device-cmyk(25% 45.5357% 0% 56.0784%)" },
-  { rgb: "rgba(0, 0, 0, 1)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
-  { rgb: "rgba(255, 255, 255, 1)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
+  { rgb: "rgb(255, 0, 0)", cmyk: "device-cmyk(0% 100% 100% 0%)" },
+  { rgb: "rgb(255, 255, 0)", cmyk: "device-cmyk(0% 0% 100% 0%)" },
+  { rgb: "rgb(0, 255, 0)", cmyk: "device-cmyk(100% 0% 100% 0%)" },
+  { rgb: "rgb(0, 255, 255)", cmyk: "device-cmyk(100% 0% 0% 0%)" },
+  { rgb: "rgb(0, 0, 255)", cmyk: "device-cmyk(100% 100% 0% 0%)" },
+  { rgb: "rgb(255, 0, 255)", cmyk: "device-cmyk(0% 100% 0% 0%)" },
+  { rgb: "rgb(33, 199, 95)", cmyk: "device-cmyk(83.4171% 0% 52.2613% 21.9608%)" },
+  { rgb: "rgb(19, 114, 220)", cmyk: "device-cmyk(91.3636% 48.1818% 0% 13.7255%)" },
   {
-    rgb: "rgba(230, 110, 0, 0.8)",
-    cmyk: "device-cmyk(0% 52.1739% 100% 9.8039% / 0.8)"
+    rgb: "rgb(10%, 40.4%, 49.9%)",
+    cmyk: "device-cmyk(79.5275% 18.8975% 0% 50.1961%)"
   },
+  { rgb: "rgb(200 138 39)", cmyk: "device-cmyk(0% 31.0001% 80.5% 21.5686%)" },
   {
-    rgb: "rgba(120, 178, 34, 0.719)",
-    cmyk: "device-cmyk(32.5843% 0% 80.8989% 30.1961% / 0.719)"
+    rgb: "rgb(31 88 49 / 0.8)",
+    cmyk: "device-cmyk(64.7726% 0% 44.3181% 65.4902% / 0.8)"
   },
+  { rgb: "rgba(110, 33, 110, 0.75)", cmyk: "device-cmyk(0% 70% 0% 56.8627% / 0.75)" },
   {
-    rgb: "rgba(34, 199, 249, 0.3)",
-    cmyk: "device-cmyk(86.3454% 20.0804% 0% 2.3529% / 0.3)"
-  },
-  { rgb: "rgb(10 110 200 / 73%)", cmyk: "device-cmyk(95% 45% 0% 21.5686% / 0.73)" },
-  {
-    rgb: "rgba(34 225 110 / 25.9%)",
-    cmyk: "device-cmyk(84.8889% 0% 51.1111% 11.7647% / 0.259)"
-  },
-  {
-    rgb: "rgb(10% 33% 19% / 0.35)",
-    cmyk: "device-cmyk(69.0476% 0% 42.8573% 67.0588% / 0.35)"
+    rgb: "rgba(10, 119, 30, 30%)",
+    cmyk: "device-cmyk(91.5966% 0% 74.7899% 53.3333% / 0.3)"
   }
 ]
 #+end_src
@@ -2370,7 +2350,7 @@ Time to see if the math stacks up.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const cmyk = await import(`${Deno.cwd()}/src/internals/color/convert/device-cmyk.js`);
 
-<<extracted-cmyk>>
+<<cmyk-values>>
 
 console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)})));
 #+END_SRC
@@ -2378,22 +2358,20 @@ console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)
 #+NAME: cmyk-to-rgb
 #+begin_src deno
 [
-  { cmyk: "device-cmyk(0 0 0 0)", rgb: "rgb(255, 255, 255)" },
-  { cmyk: "device-cmyk(1 0 0 0)", rgb: "rgb(0, 255, 255)" },
-  { cmyk: "device-cmyk(0 1 0 0)", rgb: "rgb(255, 0, 255)" },
-  { cmyk: "device-cmyk(0 0 1 0)", rgb: "rgb(255, 255, 0)" },
-  { cmyk: "device-cmyk(0 0 0 1)", rgb: "rgb(0, 0, 0)" },
-  { cmyk: "device-cmyk(1 1 1 0)", rgb: "rgb(0, 0, 0)" },
-  { cmyk: "device-cmyk(0% 0% 0% 0%)", rgb: "rgb(255, 255, 255)" },
-  { cmyk: "device-cmyk(100% 0% 0% 0%)", rgb: "rgb(0, 255, 255)" },
-  { cmyk: "device-cmyk(0% 100% 0% 0%)", rgb: "rgb(255, 0, 255)" },
-  { cmyk: "device-cmyk(0% 0% 100% 0%)", rgb: "rgb(255, 255, 0)" },
   { cmyk: "device-cmyk(0% 0% 0% 100%)", rgb: "rgb(0, 0, 0)" },
-  { cmyk: "device-cmyk(100% 100% 100% 0%)", rgb: "rgb(0, 0, 0)" },
-  { cmyk: "device-cmyk(0 0.4 0.8 0.25)", rgb: "rgb(191, 115, 38)" },
-  { cmyk: "device-cmyk(30% 49% 0 20%)", rgb: "rgb(143, 104, 204)" },
-  { cmyk: "device-cmyk(19% 30% 83% 0 / 0.31)", rgb: "rgba(207, 179, 43, 0.31)" },
-  { cmyk: "device-cmyk(0.9 0.25 0 0 / 73%)", rgb: "rgba(26, 191, 255, 0.73)" }
+  { cmyk: "device-cmyk(0% 0% 0% 50%)", rgb: "rgb(128, 128, 128)" },
+  { cmyk: "device-cmyk(0% 0% 0% 0%)", rgb: "rgb(255, 255, 255)" },
+  { cmyk: "device-cmyk(0% 100% 100% 0%)", rgb: "rgb(255, 0, 0)" },
+  { cmyk: "device-cmyk(0% 0% 100% 0%)", rgb: "rgb(255, 255, 0)" },
+  { cmyk: "device-cmyk(100% 0% 100% 0%)", rgb: "rgb(0, 255, 0)" },
+  { cmyk: "device-cmyk(100% 0% 0% 0%)", rgb: "rgb(0, 255, 255)" },
+  { cmyk: "device-cmyk(100% 100% 0% 0%)", rgb: "rgb(0, 0, 255)" },
+  { cmyk: "device-cmyk(0% 100% 0% 0%)", rgb: "rgb(255, 0, 255)" },
+  { cmyk: "device-cmyk(37% 63% 0 0)", rgb: "rgb(161, 94, 255)" },
+  { cmyk: "device-cmyk(50% 25% 10% 0)", rgb: "rgb(128, 191, 230)" },
+  { cmyk: "device-cmyk(0.77 0.33 0 0)", rgb: "rgb(59, 171, 255)" },
+  { cmyk: "device-cmyk(0.8 0 0.4 0.13 / 0.8)", rgb: "rgba(44, 222, 133, 0.8)" },
+  { cmyk: "device-cmyk(25% 75% 8% 3% / 81.3%)", rgb: "rgba(186, 62, 228, 0.813)" }
 ]
 #+end_src
 
