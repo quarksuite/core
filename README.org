@@ -1075,20 +1075,22 @@ easier to use. It's the format of choice for a variety of browser color picker i
 
 When W and B are mixed equal amounts, they yield gray. When both are =100%=, the color is achromatic.
 
-#+NAME: hwb-formats
-| Formats           | Examples                 |
-|-------------------+--------------------------|
-| =hwb(H W% B%)=      | =hwb(0 0% 0%)=             |
-| =hwb(Hdeg W% B%)=   | =hwb(0 100% 0%)=           |
-| =hwb(Hrad W% B%)=   | =hwb(0 0% 100%)=           |
-| =hwb(Hgrad W% B%)=  | =hwb(0 100% 100%)=         |
-| =hwb(Hturn W% B%)=  | =hwb(47 37% 40%)=          |
-| =hwb(H W% B% / A)=  | =hwb(180deg 50% 3%)=       |
-| =hwb(H W% B% / A%)= | =hwb(172rad 25% 15%)=      |
-|                   | =hwb(3.1grad 0% 30%)=      |
-|                   | =hwb(0.28turn 49% 10%)=    |
-|                   | =hwb(310 78% 0% / 0.5)=    |
-|                   | =hwb(89rad 10% 90% / 83%)= |
+#+NAME: hwb-samples
+| Color   | Value                     |
+|---------+---------------------------|
+| Black   | =hwb(0 0% 100%)=            |
+| Gray    | =hwb(0 100% 100%)=          |
+| White   | =hwb(0 100% 0%)=            |
+| Red     | =hwb(0 0% 0%)=              |
+| Yellow  | =hwb(60 0% 0%)=             |
+| Green   | =hwb(120 0% 0%)=            |
+| Cyan    | =hwb(180 0% 0%)=            |
+| Blue    | =hwb(240 0% 0%)=            |
+| Magenta | =hwb(300 0% 0%)=            |
+| Etc.    | =hwb(188 20% 3%)=           |
+|         | =hwb(3.1rad 50% 0%)=        |
+|         | =hwb(183grad 5% 15% / 0.5)= |
+|         | =hwb(0.8turn 38% 99%)=      |
 
 ***** HWB Validator
 
@@ -1131,26 +1133,29 @@ export function validate(color) {
 
 Alright, now the format tests.
 
-#+BEGIN_SRC deno :results output code replace :allow read :var hwbTable=hwb-formats
+#+BEGIN_SRC deno :results output code replace :allow read :var hwbTable=hwb-samples
 const hwb = await import(`${Deno.cwd()}/src/internals/color/format/hwb.js`);
-const [, ...colors] = hwbTable.map(([a, b]) => b.replace(/=/g, ""));
+const colors = hwbTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isHWB: hwb.validate(color)})))
+console.log("const colors =", colors.filter((color) => hwb.validate(color)))
 #+END_SRC
 
 #+NAME: valid-hwb
 #+begin_src deno
 const colors = [
-  { color: "hwb(0 100% 0%)", isHWB: true },
-  { color: "hwb(0 0% 100%)", isHWB: true },
-  { color: "hwb(0 100% 100%)", isHWB: true },
-  { color: "hwb(47 37% 40%)", isHWB: true },
-  { color: "hwb(180deg 50% 3%)", isHWB: true },
-  { color: "hwb(172rad 25% 15%)", isHWB: true },
-  { color: "hwb(3.1grad 0% 30%)", isHWB: true },
-  { color: "hwb(0.28turn 49% 10%)", isHWB: true },
-  { color: "hwb(310 78% 0% / 0.5)", isHWB: true },
-  { color: "hwb(89rad 10% 90% / 83%)", isHWB: true }
+  "hwb(0 0% 100%)",
+  "hwb(0 100% 100%)",
+  "hwb(0 100% 0%)",
+  "hwb(0 0% 0%)",
+  "hwb(60 0% 0%)",
+  "hwb(120 0% 0%)",
+  "hwb(180 0% 0%)",
+  "hwb(240 0% 0%)",
+  "hwb(300 0% 0%)",
+  "hwb(188 20% 3%)",
+  "hwb(3.1rad 50% 0%)",
+  "hwb(183grad 5% 15% / 0.5)",
+  "hwb(0.8turn 38% 99%)"
 ]
 #+end_src
 
@@ -1170,22 +1175,25 @@ const hwb = await import(`${Deno.cwd()}/src/internals/color/format/hwb.js`);
 
 <<valid-hwb>>
 
-console.log("const colors =", colors.map(({ color }) => ({ color, values: hwb.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: hwb.extract(color) })));
 #+END_SRC
 
-#+NAME: extracted-hwb
+#+NAME: hwb-values
 #+begin_src deno
 const colors = [
-  { color: "hwb(0 100% 0%)", values: [ "0", "100%", "0%" ] },
   { color: "hwb(0 0% 100%)", values: [ "0", "0%", "100%" ] },
   { color: "hwb(0 100% 100%)", values: [ "0", "100%", "100%" ] },
-  { color: "hwb(47 37% 40%)", values: [ "47", "37%", "40%" ] },
-  { color: "hwb(180deg 50% 3%)", values: [ "180deg", "50%", "3%" ] },
-  { color: "hwb(172rad 25% 15%)", values: [ "172rad", "25%", "15%" ] },
-  { color: "hwb(3.1grad 0% 30%)", values: [ "3.1grad", "0%", "30%" ] },
-  { color: "hwb(0.28turn 49% 10%)", values: [ "0.28turn", "49%", "10%" ] },
-  { color: "hwb(310 78% 0% / 0.5)", values: [ "310", "78%", "0%", "0.5" ] },
-  { color: "hwb(89rad 10% 90% / 83%)", values: [ "89rad", "10%", "90%", "83%" ] }
+  { color: "hwb(0 100% 0%)", values: [ "0", "100%", "0%" ] },
+  { color: "hwb(0 0% 0%)", values: [ "0", "0%", "0%" ] },
+  { color: "hwb(60 0% 0%)", values: [ "60", "0%", "0%" ] },
+  { color: "hwb(120 0% 0%)", values: [ "120", "0%", "0%" ] },
+  { color: "hwb(180 0% 0%)", values: [ "180", "0%", "0%" ] },
+  { color: "hwb(240 0% 0%)", values: [ "240", "0%", "0%" ] },
+  { color: "hwb(300 0% 0%)", values: [ "300", "0%", "0%" ] },
+  { color: "hwb(188 20% 3%)", values: [ "188", "20%", "3%" ] },
+  { color: "hwb(3.1rad 50% 0%)", values: [ "3.1rad", "50%", "0%" ] },
+  { color: "hwb(183grad 5% 15% / 0.5)", values: [ "183grad", "5%", "15%", "0.5" ] },
+  { color: "hwb(0.8turn 38% 99%)", values: [ "0.8turn", "38%", "99%" ] }
 ]
 #+end_src
 
@@ -1964,8 +1972,8 @@ export function hwb(rgb) {
 
   const [H] = calcHSL(r, g, b);
   const [W, BLK] = [
-    calcPercentFromFraction(Math.min(R, G, B)),
-    calcPercentFromFraction(1 - Math.max(R, G, B)),
+    precision(calcPercentFromFraction(Math.min(R, G, B))),
+    precision(calcPercentFromFraction(1 - Math.max(R, G, B))),
   ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
@@ -1978,7 +1986,7 @@ I'm suspicious of the math here, so let's see the proof.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
 
-<<extracted-rgb>>
+<<rgb-values>>
 
 console.log(colors.map(({color, values}) => ({rgb: color, hwb: rgb.hwb(values)})));
 #+END_SRC
@@ -1987,26 +1995,21 @@ console.log(colors.map(({color, values}) => ({rgb: color, hwb: rgb.hwb(values)})
 #+begin_src deno
 [
   { rgb: "rgb(0, 0, 0)", hwb: "hwb(0 0% 100%)" },
+  { rgb: "rgb(128, 128, 128)", hwb: "hwb(0 50.196% 49.804%)" },
   { rgb: "rgb(255, 255, 255)", hwb: "hwb(0 100% 0%)" },
-  { rgb: "rgb(110, 22, 33)", hwb: "hwb(352 8.62745% 56.8627%)" },
-  { rgb: "rgb(30, 220, 140)", hwb: "hwb(155 11.7647% 13.7255%)" },
-  { rgb: "rgb(148, 129, 240)", hwb: "hwb(250 50.5882% 5.8824%)" },
-  { rgb: "rgb(31 33 100)", hwb: "hwb(238 12.1569% 60.7843%)" },
-  { rgb: "rgb(200 210 131)", hwb: "hwb(68 51.3725% 17.6471%)" },
-  { rgb: "rgb(0%, 0%, 0%)", hwb: "hwb(0 0% 100%)" },
-  { rgb: "rgb(100%, 100%, 100%)", hwb: "hwb(0 100% 0%)" },
-  { rgb: "rgb(31%, 15%, 4%)", hwb: "hwb(24 3.92157% 69.0196%)" },
-  { rgb: "rgb(20%, 70.3%, 49%)", hwb: "hwb(155 20% 29.8039%)" },
-  { rgb: "rgb(10% 30% 95%)", hwb: "hwb(226 10.1961% 5.098%)" },
-  { rgb: "rgb(33% 24% 44%)", hwb: "hwb(267 23.9216% 56.0784%)" },
-  { rgb: "rgba(0, 0, 0, 1)", hwb: "hwb(0 0% 100%)" },
-  { rgb: "rgba(255, 255, 255, 1)", hwb: "hwb(0 100% 0%)" },
-  { rgb: "rgba(230, 110, 0, 0.8)", hwb: "hwb(29 0% 9.8039% / 0.8)" },
-  { rgb: "rgba(120, 178, 34, 0.719)", hwb: "hwb(84 13.3333% 30.1961% / 0.719)" },
-  { rgb: "rgba(34, 199, 249, 0.3)", hwb: "hwb(194 13.3333% 2.3529% / 0.3)" },
-  { rgb: "rgb(10 110 200 / 73%)", hwb: "hwb(208 3.92157% 21.5686% / 0.73)" },
-  { rgb: "rgba(34 225 110 / 25.9%)", hwb: "hwb(144 13.3333% 11.7647% / 0.259)" },
-  { rgb: "rgb(10% 33% 19% / 0.35)", hwb: "hwb(143 10.1961% 67.0588% / 0.35)" }
+  { rgb: "rgb(255, 0, 0)", hwb: "hwb(0 0% 0%)" },
+  { rgb: "rgb(255, 255, 0)", hwb: "hwb(60 0% 0%)" },
+  { rgb: "rgb(0, 255, 0)", hwb: "hwb(120 0% 0%)" },
+  { rgb: "rgb(0, 255, 255)", hwb: "hwb(180 0% 0%)" },
+  { rgb: "rgb(0, 0, 255)", hwb: "hwb(240 0% 0%)" },
+  { rgb: "rgb(255, 0, 255)", hwb: "hwb(300 0% 0%)" },
+  { rgb: "rgb(33, 199, 95)", hwb: "hwb(142 12.941% 21.961%)" },
+  { rgb: "rgb(19, 114, 220)", hwb: "hwb(212 7.451% 13.726%)" },
+  { rgb: "rgb(10%, 40.4%, 49.9%)", hwb: "hwb(194 10.196% 50.196%)" },
+  { rgb: "rgb(200 138 39)", hwb: "hwb(37 15.294% 21.569%)" },
+  { rgb: "rgb(31 88 49 / 0.8)", hwb: "hwb(139 12.157% 65.49% / 0.8)" },
+  { rgb: "rgba(110, 33, 110, 0.75)", hwb: "hwb(300 12.941% 56.863% / 0.75)" },
+  { rgb: "rgba(10, 119, 30, 30%)", hwb: "hwb(131 3.9216% 53.333% / 0.3)" }
 ]
 #+end_src
 
@@ -2447,24 +2450,27 @@ Now the fun part: seeing if anything breaks.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const hwb = await import(`${Deno.cwd()}/src/internals/color/convert/hwb.js`);
 
-<<extracted-hwb>>
+<<hwb-values>>
 
 console.log(colors.map(({color, values}) => ({hwb: color, rgb: hwb.rgb(values)})));
 #+END_SRC
 
-#+RESULTS:
+#+NAME: hwb-to-rgb
 #+begin_src deno
 [
-  { hwb: "hwb(0 100% 0%)", rgb: "rgb(255, 255, 255)" },
   { hwb: "hwb(0 0% 100%)", rgb: "rgb(0, 0, 0)" },
   { hwb: "hwb(0 100% 100%)", rgb: "rgb(128, 128, 128)" },
-  { hwb: "hwb(47 37% 40%)", rgb: "rgb(153, 140, 94)" },
-  { hwb: "hwb(180deg 50% 3%)", rgb: "rgb(128, 247, 247)" },
-  { hwb: "hwb(172rad 25% 15%)", rgb: "rgb(64, 217, 102)" },
-  { hwb: "hwb(3.1grad 0% 30%)", rgb: "rgb(179, 9, 0)" },
-  { hwb: "hwb(0.28turn 49% 10%)", rgb: "rgb(158, 230, 125)" },
-  { hwb: "hwb(310 78% 0% / 0.5)", rgb: "rgba(255, 199, 246, 0.5)" },
-  { hwb: "hwb(89rad 10% 90% / 83%)", rgb: "rgba(26, 26, 26, 0.83)" }
+  { hwb: "hwb(0 100% 0%)", rgb: "rgb(255, 255, 255)" },
+  { hwb: "hwb(0 0% 0%)", rgb: "rgb(255, 0, 0)" },
+  { hwb: "hwb(60 0% 0%)", rgb: "rgb(255, 255, 0)" },
+  { hwb: "hwb(120 0% 0%)", rgb: "rgb(0, 255, 0)" },
+  { hwb: "hwb(180 0% 0%)", rgb: "rgb(0, 255, 255)" },
+  { hwb: "hwb(240 0% 0%)", rgb: "rgb(0, 0, 255)" },
+  { hwb: "hwb(300 0% 0%)", rgb: "rgb(255, 0, 255)" },
+  { hwb: "hwb(188 20% 3%)", rgb: "rgb(51, 221, 247)" },
+  { hwb: "hwb(3.1rad 50% 0%)", rgb: "rgb(128, 255, 251)" },
+  { hwb: "hwb(183grad 5% 15% / 0.5)", rgb: "rgba(13, 217, 166, 0.5)" },
+  { hwb: "hwb(0.8turn 38% 99%)", rgb: "rgb(71, 71, 71)" }
 ]
 #+end_src
 

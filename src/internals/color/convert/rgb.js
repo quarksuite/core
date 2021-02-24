@@ -131,8 +131,8 @@ export function hwb(rgb) {
 
   const [H] = calcHSL(r, g, b);
   const [W, BLK] = [
-    calcPercentFromFraction(Math.min(R, G, B)),
-    calcPercentFromFraction(1 - Math.max(R, G, B)),
+    precision(calcPercentFromFraction(Math.min(R, G, B))),
+    precision(calcPercentFromFraction(1 - Math.max(R, G, B))),
   ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
