@@ -13,9 +13,9 @@ export function lab(lch) {
   const [H] = parseHSL([h, "100%", "50%", "1"]);
 
   const [a, b] = [
-    C * Math.cos(H * (Math.PI / 180)),
-    C * Math.sin(H * (Math.PI / 180)),
-  ].map((V) => precision(normalize(-128, V, 128)));
+    precision(C * Math.cos(H * (Math.PI / 180))),
+    precision(C * Math.sin(H * (Math.PI / 180))),
+  ];
 
   const A = (alpha &&
     (alpha.endsWith("%")

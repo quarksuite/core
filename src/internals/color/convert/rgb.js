@@ -198,10 +198,10 @@ export function lab(rgb) {
 
   // Calculating Lab values and limiting the precision
   const [L, aHue, bHue] = [
-    116 * FY - 16,
-    500 * (FX - FY),
-    200 * (FY - FZ),
-  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)));
+    precision(116 * FY - 16),
+    precision(500 * (FX - FY)),
+    precision(200 * (FY - FZ)),
+  ].map((V) => Math.sign(Math.round(V)) === 0 ? 0 : V);
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1

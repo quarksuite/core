@@ -76,7 +76,7 @@ export function rgb(lab) {
   const [l, a, b, alpha] = lab;
 
   const [R, G, B] = calcRGB(calcLinearRGB([l, a, b])).map((channel) =>
-    normalize(0, Math.round(calcChannelFromFraction(channel)), 255)
+    normalize(0, calcChannelFromFraction(channel), 255)
   );
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -94,13 +94,12 @@ const precision = significant.bind(null, 5);
 /** Functional CIE Lab -> Functional CIE LCH */
 export function lch(lab) {
   const [L, a, b, alpha] = lab;
-  const [C, H] = [Math.sqrt(a ** 2 + b ** 2), Math.atan2(b, a)]
-    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)))
-    .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
-    .map((V, i) =>
-      i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
-    )
-    .map((V, i) => (i === 0 ? normalize(0, V, 230) : V));
+  const [C, h] = [
+    precision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
+    precision(Math.atan2(parseFloat(b), parseFloat(a)) * (180 / Math.PI)),
+  ];
+
+  const H = Math.sign(h) === -1 ? h + 360 : h;
 
   const A = (alpha &&
     (alpha.endsWith("%")

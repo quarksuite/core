@@ -1355,21 +1355,21 @@ map to magenta-red and green-cyan, respectively. The hues at =90deg= and =270deg
 yellow and sky blue, respectively.
 
 #+NAME: lch-samples
-| Color   | Value                        |
-|---------+------------------------------|
-| Black   | =lch(0% 0 0)=                  |
-| Gray    | =lch(53.59% 0 0)=              |
-| White   | =lch(100% 0 0)=                |
-| Red     | =lch(54.29% 107 41)=           |
-| Yellow  | =lch(97.6% 95 100)=            |
-| Green   | =lch(87.82% 113 134)=          |
-| Cyan    | =lch(90.67% 53 196)=           |
-| Blue    | =lch(29.57% 131 301)=          |
-| Magenta | =lch(60.17% 111 327)=          |
-| Etc.    | =lch(53.31% 89 200)=           |
-|         | =lch(89.1% 167 3.6rad / 0.99)= |
-|         | =lch(24.494% 74 193grad)=      |
-|         | =lch(47.39% 111 0.62turn / 75%)= |
+| Color   | Value                              |
+|---------+------------------------------------|
+| Black   | =lch(0% 0 0)=                        |
+| Gray    | =lch(53.59% 0 0)=                    |
+| White   | =lch(100% 0 0)=                      |
+| Red     | =lch(54.29% 106.84 40.855)=          |
+| Yellow  | =lch(97.6% 94.709 99.573)=           |
+| Green   | =lch(87.82% 113.34 134.39)=          |
+| Cyan    | =lch(90.67% 52.832 196.45)=          |
+| Blue    | =lch(29.57% 131.21 301.369)=         |
+| Magenta | =lch(60.17% 111.41 327.109)=         |
+| Etc.    | =lch(53.31% 89.31 200)=              |
+|         | =lch(89.1% 167.34 3.6rad / 0.99)=    |
+|         | =lch(24.494% 74.9 193grad)=          |
+|         | =lch(47.39% 111.193 0.62turn / 75%)= |
 
 ***** CIE LCH Validator
 
@@ -1428,16 +1428,16 @@ const colors = [
   "lch(0% 0 0)",
   "lch(53.59% 0 0)",
   "lch(100% 0 0)",
-  "lch(54.29% 107 41)",
-  "lch(97.6% 95 100)",
-  "lch(87.82% 113 134)",
-  "lch(90.67% 53 196)",
-  "lch(29.57% 131 301)",
-  "lch(60.17% 111 327)",
-  "lch(53.31% 89 200)",
-  "lch(89.1% 167 3.6rad / 0.99)",
-  "lch(24.494% 74 193grad)",
-  "lch(47.39% 111 0.62turn / 75%)"
+  "lch(54.29% 106.84 40.855)",
+  "lch(97.6% 94.709 99.573)",
+  "lch(87.82% 113.34 134.39)",
+  "lch(90.67% 52.832 196.45)",
+  "lch(29.57% 131.21 301.369)",
+  "lch(60.17% 111.41 327.109)",
+  "lch(53.31% 89.31 200)",
+  "lch(89.1% 167.34 3.6rad / 0.99)",
+  "lch(24.494% 74.9 193grad)",
+  "lch(47.39% 111.193 0.62turn / 75%)"
 ]
 #+end_src
 
@@ -1466,21 +1466,21 @@ const colors = [
   { color: "lch(0% 0 0)", values: [ "0%", "0", "0" ] },
   { color: "lch(53.59% 0 0)", values: [ "53.59%", "0", "0" ] },
   { color: "lch(100% 0 0)", values: [ "100%", "0", "0" ] },
-  { color: "lch(54.29% 107 41)", values: [ "54.29%", "107", "41" ] },
-  { color: "lch(97.6% 95 100)", values: [ "97.6%", "95", "100" ] },
-  { color: "lch(87.82% 113 134)", values: [ "87.82%", "113", "134" ] },
-  { color: "lch(90.67% 53 196)", values: [ "90.67%", "53", "196" ] },
-  { color: "lch(29.57% 131 301)", values: [ "29.57%", "131", "301" ] },
-  { color: "lch(60.17% 111 327)", values: [ "60.17%", "111", "327" ] },
-  { color: "lch(53.31% 89 200)", values: [ "53.31%", "89", "200" ] },
+  { color: "lch(54.29% 106.84 40.855)", values: [ "54.29%", "106.84", "40.855" ] },
+  { color: "lch(97.6% 94.709 99.573)", values: [ "97.6%", "94.709", "99.573" ] },
+  { color: "lch(87.82% 113.34 134.39)", values: [ "87.82%", "113.34", "134.39" ] },
+  { color: "lch(90.67% 52.832 196.45)", values: [ "90.67%", "52.832", "196.45" ] },
+  { color: "lch(29.57% 131.21 301.369)", values: [ "29.57%", "131.21", "301.369" ] },
+  { color: "lch(60.17% 111.41 327.109)", values: [ "60.17%", "111.41", "327.109" ] },
+  { color: "lch(53.31% 89.31 200)", values: [ "53.31%", "89.31", "200" ] },
   {
-    color: "lch(89.1% 167 3.6rad / 0.99)",
-    values: [ "89.1%", "167", "3.6rad", "0.99" ]
+    color: "lch(89.1% 167.34 3.6rad / 0.99)",
+    values: [ "89.1%", "167.34", "3.6rad", "0.99" ]
   },
-  { color: "lch(24.494% 74 193grad)", values: [ "24.494%", "74", "193grad" ] },
+  { color: "lch(24.494% 74.9 193grad)", values: [ "24.494%", "74.9", "193grad" ] },
   {
-    color: "lch(47.39% 111 0.62turn / 75%)",
-    values: [ "47.39%", "111", "0.62turn", "75%" ]
+    color: "lch(47.39% 111.193 0.62turn / 75%)",
+    values: [ "47.39%", "111.193", "0.62turn", "75%" ]
   }
 ]
 #+end_src
@@ -2109,10 +2109,10 @@ export function lab(rgb) {
 
   // Calculating Lab values and limiting the precision
   const [L, aHue, bHue] = [
-    116 * FY - 16,
-    500 * (FX - FY),
-    200 * (FY - FZ),
-  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)));
+    precision(116 * FY - 16),
+    precision(500 * (FX - FY)),
+    precision(200 * (FY - FZ)),
+  ].map((V) => Math.sign(Math.round(V)) === 0 ? 0 : V);
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1
@@ -2577,7 +2577,7 @@ export function rgb(lab) {
   const [l, a, b, alpha] = lab;
 
   const [R, G, B] = calcRGB(calcLinearRGB([l, a, b])).map((channel) =>
-    normalize(0, Math.round(calcChannelFromFraction(channel)), 255)
+    normalize(0, calcChannelFromFraction(channel), 255)
   );
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -2633,13 +2633,12 @@ const precision = significant.bind(null, 5);
 /** Functional CIE Lab -> Functional CIE LCH */
 export function lch(lab) {
   const [L, a, b, alpha] = lab;
-  const [C, H] = [Math.sqrt(a ** 2 + b ** 2), Math.atan2(b, a)]
-    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)))
-    .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
-    .map((V, i) =>
-      i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
-    )
-    .map((V, i) => (i === 0 ? normalize(0, V, 230) : V));
+  const [C, h] = [
+    precision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
+    precision(Math.atan2(parseFloat(b), parseFloat(a)) * (180 / Math.PI)),
+  ];
+
+  const H = Math.sign(h) === -1 ? h + 360 : h;
 
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -2667,16 +2666,19 @@ console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})
   { lab: "lab(0% 0 0)", lch: "lch(0% 0 0)" },
   { lab: "lab(53.59% 0 0)", lch: "lch(53.59% 0 0)" },
   { lab: "lab(100% 0 0)", lch: "lch(100% 0 0)" },
-  { lab: "lab(54.29% 80.81 69.89)", lch: "lch(54.29% 107 41)" },
-  { lab: "lab(97.6% -15.75 93.39)", lch: "lch(97.6% 95 100)" },
-  { lab: "lab(87.82% -79.29 80.99)", lch: "lch(87.82% 113 134)" },
-  { lab: "lab(90.67% -50.67 -14.96)", lch: "lch(90.67% 53 196)" },
-  { lab: "lab(29.57% 68.3 -112.03)", lch: "lch(29.57% 131 301)" },
-  { lab: "lab(60.17% 93.55 -60.5)", lch: "lch(60.17% 111 327)" },
-  { lab: "lab(49.18% 38.1 -110.33)", lch: "lch(49.18% 117 289)" },
-  { lab: "lab(91.3% -93 14)", lch: "lch(91.3% 94 171)" },
-  { lab: "lab(83.119% 49.34 -3.99 / 0.75)", lch: "lch(83.119% 50 0 / 0.75)" },
-  { lab: "lab(199% 38 13 / 78%)", lch: "lch(199% 40 0 / 0.78)" }
+  { lab: "lab(54.29% 80.81 69.89)", lch: "lch(54.29% 106.84 40.855)" },
+  { lab: "lab(97.6% -15.75 93.39)", lch: "lch(97.6% 94.709 99.573)" },
+  { lab: "lab(87.82% -79.29 80.99)", lch: "lch(87.82% 113.34 134.39)" },
+  { lab: "lab(90.67% -50.67 -14.96)", lch: "lch(90.67% 52.832 196.45)" },
+  { lab: "lab(29.57% 68.3 -112.03)", lch: "lch(29.57% 131.21 301.369)" },
+  { lab: "lab(60.17% 93.55 -60.5)", lch: "lch(60.17% 111.41 327.109)" },
+  { lab: "lab(49.18% 38.1 -110.33)", lch: "lch(49.18% 116.72 289.051)" },
+  { lab: "lab(91.3% -93 14)", lch: "lch(91.3% 94.048 171.44)" },
+  {
+    lab: "lab(83.119% 49.34 -3.99 / 0.75)",
+    lch: "lch(83.119% 49.501 355.3767 / 0.75)"
+  },
+  { lab: "lab(199% 38 13 / 78%)", lch: "lch(199% 40.162 18.886 / 0.78)" }
 ]
 #+end_src
 
@@ -2712,9 +2714,9 @@ export function lab(lch) {
   const [H] = parseHSL([h, "100%", "50%", "1"]);
 
   const [a, b] = [
-    C * Math.cos(H * (Math.PI / 180)),
-    C * Math.sin(H * (Math.PI / 180)),
-  ].map((V) => precision(normalize(-128, V, 128)));
+    precision(C * Math.cos(H * (Math.PI / 180))),
+    precision(C * Math.sin(H * (Math.PI / 180))),
+  ];
 
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -2742,16 +2744,19 @@ console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})
   { lch: "lch(0% 0 0)", lab: "lab(0% 0 0)" },
   { lch: "lch(53.59% 0 0)", lab: "lab(53.59% 0 0)" },
   { lch: "lch(100% 0 0)", lab: "lab(100% 0 0)" },
-  { lch: "lch(54.29% 107 41)", lab: "lab(54.29% 81 70)" },
-  { lch: "lch(97.6% 95 100)", lab: "lab(97.6% -16 94)" },
-  { lch: "lch(87.82% 113 134)", lab: "lab(87.82% -78 81)" },
-  { lch: "lch(90.67% 53 196)", lab: "lab(90.67% -51 -15)" },
-  { lch: "lch(29.57% 131 301)", lab: "lab(29.57% 67 -112)" },
-  { lch: "lch(60.17% 111 327)", lab: "lab(60.17% 93 -60)" },
-  { lch: "lch(53.31% 89 200)", lab: "lab(53.31% -84 -30)" },
-  { lch: "lch(89.1% 167 3.6rad / 0.99)", lab: "lab(89.1% -128 -73 / 0.99)" },
-  { lch: "lch(24.494% 74 193grad)", lab: "lab(24.494% -74 8)" },
-  { lch: "lch(47.39% 111 0.62turn / 75%)", lab: "lab(47.39% -81 -76 / 0.75)" }
+  { lch: "lch(54.29% 106.84 40.855)", lab: "lab(54.29% 80.81 69.889)" },
+  { lch: "lch(97.6% 94.709 99.573)", lab: "lab(97.6% -15.75 93.39)" },
+  { lch: "lch(87.82% 113.34 134.39)", lab: "lab(87.82% -79.286 80.992)" },
+  { lch: "lch(90.67% 52.832 196.45)", lab: "lab(90.67% -50.669 -14.961)" },
+  { lch: "lch(29.57% 131.21 301.369)", lab: "lab(29.57% 68.301 -112.03)" },
+  { lch: "lch(60.17% 111.41 327.109)", lab: "lab(60.17% 93.552 -60.5)" },
+  { lch: "lch(53.31% 89.31 200)", lab: "lab(53.31% -83.924 -30.546)" },
+  { lch: "lch(89.1% 167.34 3.6rad / 0.99)", lab: "lab(89.1% -150.4 -73.357 / 0.99)" },
+  { lch: "lch(24.494% 74.9 193grad)", lab: "lab(24.494% -74.49 7.8292)" },
+  {
+    lch: "lch(47.39% 111.193 0.62turn / 75%)",
+    lab: "lab(47.39% -81.321 -75.833 / 0.75)"
+  }
 ]
 #+end_src
 
