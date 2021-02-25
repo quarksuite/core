@@ -5,6 +5,7 @@ import {
   calcHueFromRad,
   correctHueCounterClockwise,
   normalize,
+  significant,
 } from "./setup.js";
 // CIE Lab Conversion Setup:1 ends here
 
@@ -88,11 +89,13 @@ export function rgb(lab) {
 // Linear RGB >-< Functional RGB:1 ends here
 
 // [[file:../../../../README.org::*Functional CIE Lab -> Functional CIE LCH][Functional CIE Lab -> Functional CIE LCH:1]]
+const precision = significant.bind(null, 5);
+
 /** Functional CIE Lab -> Functional CIE LCH */
 export function lch(lab) {
   const [L, a, b, alpha] = lab;
   const [C, H] = [Math.sqrt(a ** 2 + b ** 2), Math.atan2(b, a)]
-    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(4)))
+    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)))
     .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
     .map((V, i) =>
       i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
@@ -105,6 +108,6 @@ export function lch(lab) {
       : alpha)) ||
     1;
 
-  return A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H})`;
+  return A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`;
 }
 // Functional CIE Lab -> Functional CIE LCH:1 ends here

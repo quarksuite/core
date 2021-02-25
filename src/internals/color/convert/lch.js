@@ -1,6 +1,8 @@
 // [[file:../../../../README.org::*Functional CIE Lab <- Functional CIE LCH][Functional CIE Lab <- Functional CIE LCH:1]]
-import { calcFractionFromPercent, normalize } from "./setup.js";
+import { calcFractionFromPercent, normalize, significant } from "./setup.js";
 import { parseHSL } from "./hsl.js";
+
+const precision = significant.bind(null, 5);
 // Functional CIE Lab <- Functional CIE LCH:1 ends here
 
 // [[file:../../../../README.org::*Functional CIE Lab <- Functional CIE LCH][Functional CIE Lab <- Functional CIE LCH:2]]
@@ -13,7 +15,7 @@ export function lab(lch) {
   const [a, b] = [
     C * Math.cos(H * (Math.PI / 180)),
     C * Math.sin(H * (Math.PI / 180)),
-  ].map((V) => +(normalize(-128, V, 127)).toPrecision(6));
+  ].map((V) => precision(normalize(-128, V, 128)));
 
   const A = (alpha &&
     (alpha.endsWith("%")

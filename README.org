@@ -1354,23 +1354,22 @@ The chroma is theoretically boundless, but in everyday use caps at =230=. The hu
 map to magenta-red and green-cyan, respectively. The hues at =90deg= and =270deg= map to a mustard
 yellow and sky blue, respectively.
 
-#+NAME: lch-formats
-| Format          | Examples                              |
-|-----------------+---------------------------------------|
-| =lch(L% C H)=     | =lch(0% 0 0)=                           |
-| =lch(L% C H / A)= | =lch(50% 0 0)=                          |
-|                 | =lch(100% 0 0)=                         |
-|                 | =lch(50% 230 0)=                        |
-|                 | =lch(29.2345% 44.2 27)=                 |
-|                 | =lch(52.2345% 72.2 56.2)=               |
-|                 | =lch(60.3119% 34.3 139.3)=              |
-|                 | =lch(39.119% 58.1 258.9)=               |
-|                 | =lch(79.44% 119 320.89 / 0.7)=          |
-|                 | =lch(62.1183% 42.5 81.881 / 89%)=       |
-|                 | =lch(119.339% 39.9 130deg)=             |
-|                 | =lch(93.411% 74.42 200rad)=             |
-|                 | =lch(33% 38.4434 3grad)=                |
-|                 | =lch(71.831% 204.314 0.184turn / 0.98)= |
+#+NAME: lch-samples
+| Color   | Value                        |
+|---------+------------------------------|
+| Black   | =lch(0% 0 0)=                  |
+| Gray    | =lch(53.59% 0 0)=              |
+| White   | =lch(100% 0 0)=                |
+| Red     | =lch(54.29% 107 41)=           |
+| Yellow  | =lch(97.6% 95 100)=            |
+| Green   | =lch(87.82% 113 134)=          |
+| Cyan    | =lch(90.67% 53 196)=           |
+| Blue    | =lch(29.57% 131 301)=          |
+| Magenta | =lch(60.17% 111 327)=          |
+| Etc.    | =lch(53.31% 89 200)=           |
+|         | =lch(89.1% 167 3.6rad / 0.99)= |
+|         | =lch(24.494% 74 193grad)=      |
+|         | =lch(47.39% 111 0.62turn / 75%)= |
 
 ***** CIE LCH Validator
 
@@ -1416,30 +1415,29 @@ export function validate(color) {
 
 And it's format validation test time.
 
-#+BEGIN_SRC deno :results output code replace :allow read :var lchTable=lch-formats
+#+BEGIN_SRC deno :results output code replace :allow read :var lchTable=lch-samples
 const lch = await import(`${Deno.cwd()}/src/internals/color/format/lch.js`);
 const colors = lchTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isCIE LCH: lch.validate(color)})))
+console.log("const colors =", colors.filter((color) => lch.validate(color)))
 #+END_SRC
 
 #+NAME: valid-lch
 #+begin_src deno
 const colors = [
-  { color: "lch(0% 0 0)", isCIE LCH: true },
-  { color: "lch(50% 0 0)", isCIE LCH: true },
-  { color: "lch(100% 0 0)", isCIE LCH: true },
-  { color: "lch(50% 230 0)", isCIE LCH: true },
-  { color: "lch(29.2345% 44.2 27)", isCIE LCH: true },
-  { color: "lch(52.2345% 72.2 56.2)", isCIE LCH: true },
-  { color: "lch(60.3119% 34.3 139.3)", isCIE LCH: true },
-  { color: "lch(39.119% 58.1 258.9)", isCIE LCH: true },
-  { color: "lch(79.44% 119 320.89 / 0.7)", isCIE LCH: true },
-  { color: "lch(62.1183% 42.5 81.881 / 89%)", isCIE LCH: true },
-  { color: "lch(119.339% 39.9 130deg)", isCIE LCH: true },
-  { color: "lch(93.411% 74.42 200rad)", isCIE LCH: true },
-  { color: "lch(33% 38.4434 3grad)", isCIE LCH: true },
-  { color: "lch(71.831% 204.314 0.184turn / 0.98)", isCIE LCH: true }
+  "lch(0% 0 0)",
+  "lch(53.59% 0 0)",
+  "lch(100% 0 0)",
+  "lch(54.29% 107 41)",
+  "lch(97.6% 95 100)",
+  "lch(87.82% 113 134)",
+  "lch(90.67% 53 196)",
+  "lch(29.57% 131 301)",
+  "lch(60.17% 111 327)",
+  "lch(53.31% 89 200)",
+  "lch(89.1% 167 3.6rad / 0.99)",
+  "lch(24.494% 74 193grad)",
+  "lch(47.39% 111 0.62turn / 75%)"
 ]
 #+end_src
 
@@ -1459,34 +1457,30 @@ const lch = await import(`${Deno.cwd()}/src/internals/color/format/lch.js`);
 
 <<valid-lch>>
 
-console.log("const colors =", colors.map(({ color }) => ({ color, values: lch.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: lch.extract(color) })));
 #+END_SRC
 
-#+NAME: extracted-lch
+#+NAME: lch-values
 #+begin_src deno
 const colors = [
   { color: "lch(0% 0 0)", values: [ "0%", "0", "0" ] },
-  { color: "lch(50% 0 0)", values: [ "50%", "0", "0" ] },
+  { color: "lch(53.59% 0 0)", values: [ "53.59%", "0", "0" ] },
   { color: "lch(100% 0 0)", values: [ "100%", "0", "0" ] },
-  { color: "lch(50% 230 0)", values: [ "50%", "230", "0" ] },
-  { color: "lch(29.2345% 44.2 27)", values: [ "29.2345%", "44.2", "27" ] },
-  { color: "lch(52.2345% 72.2 56.2)", values: [ "52.2345%", "72.2", "56.2" ] },
-  { color: "lch(60.3119% 34.3 139.3)", values: [ "60.3119%", "34.3", "139.3" ] },
-  { color: "lch(39.119% 58.1 258.9)", values: [ "39.119%", "58.1", "258.9" ] },
+  { color: "lch(54.29% 107 41)", values: [ "54.29%", "107", "41" ] },
+  { color: "lch(97.6% 95 100)", values: [ "97.6%", "95", "100" ] },
+  { color: "lch(87.82% 113 134)", values: [ "87.82%", "113", "134" ] },
+  { color: "lch(90.67% 53 196)", values: [ "90.67%", "53", "196" ] },
+  { color: "lch(29.57% 131 301)", values: [ "29.57%", "131", "301" ] },
+  { color: "lch(60.17% 111 327)", values: [ "60.17%", "111", "327" ] },
+  { color: "lch(53.31% 89 200)", values: [ "53.31%", "89", "200" ] },
   {
-    color: "lch(79.44% 119 320.89 / 0.7)",
-    values: [ "79.44%", "119", "320.89", "0.7" ]
+    color: "lch(89.1% 167 3.6rad / 0.99)",
+    values: [ "89.1%", "167", "3.6rad", "0.99" ]
   },
+  { color: "lch(24.494% 74 193grad)", values: [ "24.494%", "74", "193grad" ] },
   {
-    color: "lch(62.1183% 42.5 81.881 / 89%)",
-    values: [ "62.1183%", "42.5", "81.881", "89%" ]
-  },
-  { color: "lch(119.339% 39.9 130deg)", values: [ "119.339%", "39.9", "130deg" ] },
-  { color: "lch(93.411% 74.42 200rad)", values: [ "93.411%", "74.42", "200rad" ] },
-  { color: "lch(33% 38.4434 3grad)", values: [ "33%", "38.4434", "3grad" ] },
-  {
-    color: "lch(71.831% 204.314 0.184turn / 0.98)",
-    values: [ "71.831%", "204.314", "0.184turn", "0.98" ]
+    color: "lch(47.39% 111 0.62turn / 75%)",
+    values: [ "47.39%", "111", "0.62turn", "75%" ]
   }
 ]
 #+end_src
@@ -2489,6 +2483,7 @@ import {
   calcHueFromRad,
   correctHueCounterClockwise,
   normalize,
+  significant,
 } from "./setup.js";
 #+END_SRC
 
@@ -2633,11 +2628,13 @@ CSS color formats are supported by the Quarks System Core.
 And thankfully, [[http://www.brucelindbloom.com/Eqn_Lab_to_LCH.html][the formula]] is a dead simple conversion of rectangle coordinates to polar coordinates.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/lab.js" :comments link
+const precision = significant.bind(null, 5);
+
 /** Functional CIE Lab -> Functional CIE LCH */
 export function lch(lab) {
   const [L, a, b, alpha] = lab;
   const [C, H] = [Math.sqrt(a ** 2 + b ** 2), Math.atan2(b, a)]
-    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(4)))
+    .map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)))
     .map((V, i) => (i === 1 ? calcHueFromRad(V) : V))
     .map((V, i) =>
       i === 1 && Math.sign(V) === -1 ? correctHueCounterClockwise(V) : V
@@ -2650,7 +2647,7 @@ export function lch(lab) {
       : alpha)) ||
     1;
 
-  return A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H})`;
+  return A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`;
 }
 #+END_SRC
 
@@ -2659,7 +2656,7 @@ Now to make sure it returns what I expect.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const lab = await import(`${Deno.cwd()}/src/internals/color/convert/lab.js`);
 
-<<extracted-lab>>
+<<lab-values>>
 
 console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})));
 #+END_SRC
@@ -2667,23 +2664,23 @@ console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})
 #+NAME: lab-to-lch
 #+begin_src deno
 [
-  { lab: "lab(0% 0 0)", lch: "lch(0%% 0 0)" },
-  { lab: "lab(50% 0 0)", lch: "lch(50%% 0 0)" },
-  { lab: "lab(100% 0 0)", lch: "lch(100%% 0 0)" },
-  { lab: "lab(49% 127 0)", lch: "lch(49%% 127 0)" },
-  { lab: "lab(72% 0 127)", lch: "lch(72%% 127 90)" },
-  { lab: "lab(19% -128 0)", lch: "lch(19%% 128 180)" },
-  { lab: "lab(64% -128 0)", lch: "lch(64%% 128 180)" },
-  { lab: "lab(46% 0 -128)", lch: "lch(46%% 128 270)" },
-  { lab: "lab(34.3391% 49.3819 -4.3942)", lch: "lch(34.3391%% 50 0)" },
-  { lab: "lab(57.38% 38.339 19.331)", lch: "lch(57.38%% 43 0)" },
-  { lab: "lab(68.3194% -94 0)", lch: "lch(68.3194%% 94 180)" },
-  { lab: "lab(24.193% -66 127 / 0.9)", lch: "lch(24.193%% 143 117)" },
-  { lab: "lab(88.1199% 78 -33 / 78%)", lch: "lch(88.1199%% 85 0)" }
+  { lab: "lab(0% 0 0)", lch: "lch(0% 0 0)" },
+  { lab: "lab(53.59% 0 0)", lch: "lch(53.59% 0 0)" },
+  { lab: "lab(100% 0 0)", lch: "lch(100% 0 0)" },
+  { lab: "lab(54.29% 80.81 69.89)", lch: "lch(54.29% 107 41)" },
+  { lab: "lab(97.6% -15.75 93.39)", lch: "lch(97.6% 95 100)" },
+  { lab: "lab(87.82% -79.29 80.99)", lch: "lch(87.82% 113 134)" },
+  { lab: "lab(90.67% -50.67 -14.96)", lch: "lch(90.67% 53 196)" },
+  { lab: "lab(29.57% 68.3 -112.03)", lch: "lch(29.57% 131 301)" },
+  { lab: "lab(60.17% 93.55 -60.5)", lch: "lch(60.17% 111 327)" },
+  { lab: "lab(49.18% 38.1 -110.33)", lch: "lch(49.18% 117 289)" },
+  { lab: "lab(91.3% -93 14)", lch: "lch(91.3% 94 171)" },
+  { lab: "lab(83.119% 49.34 -3.99 / 0.75)", lch: "lch(83.119% 50 0 / 0.75)" },
+  { lab: "lab(199% 38 13 / 78%)", lch: "lch(199% 40 0 / 0.78)" }
 ]
 #+end_src
 
-That'll do.
+That'll do it.
 
 **** Functional CIE LCH Conversion (=src/internals/color/convert/lch.js=)
 
@@ -2699,8 +2696,10 @@ It's necessary for the hue component of LCH to use the same possible hue inputs 
 that's what's allowed in the spec.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/convert/lch.js" :comments link
-import { calcFractionFromPercent, normalize } from "./setup.js";
+import { calcFractionFromPercent, normalize, significant } from "./setup.js";
 import { parseHSL } from "./hsl.js";
+
+const precision = significant.bind(null, 5);
 #+END_SRC
 
 The [[http://www.brucelindbloom.com/Eqn_LCH_to_Lab.html][conversion algorithm itself]] is short and sweet.
@@ -2715,7 +2714,7 @@ export function lab(lch) {
   const [a, b] = [
     C * Math.cos(H * (Math.PI / 180)),
     C * Math.sin(H * (Math.PI / 180)),
-  ].map((V) => +(normalize(-128, V, 127)).toPrecision(6));
+  ].map((V) => precision(normalize(-128, V, 128)));
 
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -2732,7 +2731,7 @@ Alright, time to test the LCH color table.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const lch = await import(`${Deno.cwd()}/src/internals/color/convert/lch.js`);
 
-<<extracted-lch>>
+<<lch-values>>
 
 console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})));
 #+END_SRC
@@ -2741,19 +2740,18 @@ console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})
 #+begin_src deno
 [
   { lch: "lch(0% 0 0)", lab: "lab(0% 0 0)" },
-  { lch: "lch(50% 0 0)", lab: "lab(50% 0 0)" },
+  { lch: "lch(53.59% 0 0)", lab: "lab(53.59% 0 0)" },
   { lch: "lch(100% 0 0)", lab: "lab(100% 0 0)" },
-  { lch: "lch(50% 230 0)", lab: "lab(50% 127 0)" },
-  { lch: "lch(29.2345% 44.2 27)", lab: "lab(29.2345% 39 20)" },
-  { lch: "lch(52.2345% 72.2 56.2)", lab: "lab(52.2345% 40 60)" },
-  { lch: "lch(60.3119% 34.3 139.3)", lab: "lab(60.3119% -26 22)" },
-  { lch: "lch(39.119% 58.1 258.9)", lab: "lab(39.119% -11 -57)" },
-  { lch: "lch(79.44% 119 320.89 / 0.7)", lab: "lab(79.44% 92 -75 / 0.7)" },
-  { lch: "lch(62.1183% 42.5 81.881 / 89%)", lab: "lab(62.1183% 6 42 / 0.89)" },
-  { lch: "lch(119.339% 39.9 130deg)", lab: "lab(119.339% -26 31)" },
-  { lch: "lch(93.411% 74.42 200rad)", lab: "lab(93.411% 36 -65)" },
-  { lch: "lch(33% 38.4434 3grad)", lab: "lab(33% 38 2)" },
-  { lch: "lch(71.831% 204.314 0.184turn / 0.98)", lab: "lab(71.831% 83 127 / 0.98)" }
+  { lch: "lch(54.29% 107 41)", lab: "lab(54.29% 81 70)" },
+  { lch: "lch(97.6% 95 100)", lab: "lab(97.6% -16 94)" },
+  { lch: "lch(87.82% 113 134)", lab: "lab(87.82% -78 81)" },
+  { lch: "lch(90.67% 53 196)", lab: "lab(90.67% -51 -15)" },
+  { lch: "lch(29.57% 131 301)", lab: "lab(29.57% 67 -112)" },
+  { lch: "lch(60.17% 111 327)", lab: "lab(60.17% 93 -60)" },
+  { lch: "lch(53.31% 89 200)", lab: "lab(53.31% -84 -30)" },
+  { lch: "lch(89.1% 167 3.6rad / 0.99)", lab: "lab(89.1% -128 -73 / 0.99)" },
+  { lch: "lch(24.494% 74 193grad)", lab: "lab(24.494% -74 8)" },
+  { lch: "lch(47.39% 111 0.62turn / 75%)", lab: "lab(47.39% -81 -76 / 0.75)" }
 ]
 #+end_src
 
