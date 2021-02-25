@@ -25,7 +25,7 @@ function calcXYZ(lab) {
   // Calculate xyz
   const [x, y, z] = [
     Fx ** 3 > ε ? Fx ** 3 : (116 * Fx - 16) / κ,
-    L > κ * ε ? ((L + 16) / 116) ** 3 : L / κ,
+    L > κ * ε ? Fy ** 3 : L / κ,
     Fz ** 3 > ε ? Fz ** 3 : (116 * Fz - 16) / κ,
   ];
 

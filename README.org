@@ -1211,22 +1211,22 @@ explained on the linked W3C page above, but I'll summarize the components:
 
 The hue axes are unbound, but for use with the RGB space /must/ cap at =±128=.
 
-#+NAME: lab-formats
-| Format          | Examples                      |
-|-----------------+-------------------------------|
-| =lab(L% a b)=     | =lab(0% 0 0)=                   |
-| =lab(L% a b / A)= | =lab(50% 0 0)=                  |
-|                 | =lab(100% 0 0)=                 |
-|                 | =lab(49% 127 0)=                |
-|                 | =lab(72% 0 127)=                |
-|                 | =lab(19% -128 0)=               |
-|                 | =lab(64% -128 0)=               |
-|                 | =lab(46% 0 -128)=               |
-|                 | =lab(34.3391% 49.3819 -4.3942)= |
-|                 | =lab(57.38% 38.339 19.331)=     |
-|                 | =lab(68.3194% -94 0)=           |
-|                 | =lab(24.193% -66 127 / 0.9)=    |
-|                 | =lab(88.1199% 78 -33 / 78%)=  |
+#+NAME: lab-samples
+| Color   | Value                           |
+|---------+---------------------------------|
+| Black   | =lab(0% 0 0)=                     |
+| Gray    | =lab(53.59% 0 0)=                 |
+| White   | =lab(100% 0 0)=                   |
+| Red     | =lab(54.29% 80.81 69.89)=         |
+| Yellow  | =lab(97.6% -15.75 93.39)=         |
+| Green   | =lab(87.82% -79.29 80.99)=        |
+| Cyan    | =lab(90.67% -50.67 -14.96)=       |
+| Blue    | =lab(29.57% 68.3 -112.03)=        |
+| Magenta | =lab(60.17% 93.55 -60.5)=         |
+| Etc.    | =lab(49.18% 38.1 -110.33)=        |
+|         | =lab(91.3% -93 14)=               |
+|         | =lab(83.119% 49.34 -3.99 / 0.75)= |
+|         | =lab(199% 38 13 / 78%)=         |
 
 ***** CIE Lab Validator
 
@@ -1270,29 +1270,29 @@ export function validate(color) {
 
 Now, it's validator testing time.
 
-#+BEGIN_SRC deno :results output code replace :allow read :var labTable=lab-formats
+#+BEGIN_SRC deno :results output code replace :allow read :var labTable=lab-samples
 const lab = await import(`${Deno.cwd()}/src/internals/color/format/lab.js`);
 const colors = labTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.map((color) => ({color, isCIELab: lab.validate(color)})))
+console.log("const colors =", colors.filter((color) => lab.validate(color)))
 #+END_SRC
 
 #+NAME: valid-lab
 #+begin_src deno
 const colors = [
-  { color: "lab(0% 0 0)", isCIELab: true },
-  { color: "lab(50% 0 0)", isCIELab: true },
-  { color: "lab(100% 0 0)", isCIELab: true },
-  { color: "lab(49% 127 0)", isCIELab: true },
-  { color: "lab(72% 0 127)", isCIELab: true },
-  { color: "lab(19% -128 0)", isCIELab: true },
-  { color: "lab(64% -128 0)", isCIELab: true },
-  { color: "lab(46% 0 -128)", isCIELab: true },
-  { color: "lab(34.3391% 49.3819 -4.3942)", isCIELab: true },
-  { color: "lab(57.38% 38.339 19.331)", isCIELab: true },
-  { color: "lab(68.3194% -94 0)", isCIELab: true },
-  { color: "lab(24.193% -66 127 / 0.9)", isCIELab: true },
-  { color: "lab(88.1199% 78 -33 / 78%)", isCIELab: true }
+  "lab(0% 0 0)",
+  "lab(53.59% 0 0)",
+  "lab(100% 0 0)",
+  "lab(54.29% 80.81 69.89)",
+  "lab(97.6% -15.75 93.39)",
+  "lab(87.82% -79.29 80.99)",
+  "lab(90.67% -50.67 -14.96)",
+  "lab(29.57% 68.3 -112.03)",
+  "lab(60.17% 93.55 -60.5)",
+  "lab(49.18% 38.1 -110.33)",
+  "lab(91.3% -93 14)",
+  "lab(83.119% 49.34 -3.99 / 0.75)",
+  "lab(199% 38 13 / 78%)"
 ]
 #+end_src
 
@@ -1315,28 +1315,28 @@ const lab = await import(`${Deno.cwd()}/src/internals/color/format/lab.js`);
 
 <<valid-lab>>
 
-console.log("const colors =", colors.map(({ color }) => ({ color, values: lab.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: lab.extract(color) })));
 #+END_SRC
 
-#+NAME: extracted-lab
+#+NAME: lab-values
 #+begin_src deno
 const colors = [
   { color: "lab(0% 0 0)", values: [ "0%", "0", "0" ] },
-  { color: "lab(50% 0 0)", values: [ "50%", "0", "0" ] },
+  { color: "lab(53.59% 0 0)", values: [ "53.59%", "0", "0" ] },
   { color: "lab(100% 0 0)", values: [ "100%", "0", "0" ] },
-  { color: "lab(49% 127 0)", values: [ "49%", "127", "0" ] },
-  { color: "lab(72% 0 127)", values: [ "72%", "0", "127" ] },
-  { color: "lab(19% -128 0)", values: [ "19%", "-128", "0" ] },
-  { color: "lab(64% -128 0)", values: [ "64%", "-128", "0" ] },
-  { color: "lab(46% 0 -128)", values: [ "46%", "0", "-128" ] },
+  { color: "lab(54.29% 80.81 69.89)", values: [ "54.29%", "80.81", "69.89" ] },
+  { color: "lab(97.6% -15.75 93.39)", values: [ "97.6%", "-15.75", "93.39" ] },
+  { color: "lab(87.82% -79.29 80.99)", values: [ "87.82%", "-79.29", "80.99" ] },
+  { color: "lab(90.67% -50.67 -14.96)", values: [ "90.67%", "-50.67", "-14.96" ] },
+  { color: "lab(29.57% 68.3 -112.03)", values: [ "29.57%", "68.3", "-112.03" ] },
+  { color: "lab(60.17% 93.55 -60.5)", values: [ "60.17%", "93.55", "-60.5" ] },
+  { color: "lab(49.18% 38.1 -110.33)", values: [ "49.18%", "38.1", "-110.33" ] },
+  { color: "lab(91.3% -93 14)", values: [ "91.3%", "-93", "14" ] },
   {
-    color: "lab(34.3391% 49.3819 -4.3942)",
-    values: [ "34.3391%", "49.3819", "-4.3942" ]
+    color: "lab(83.119% 49.34 -3.99 / 0.75)",
+    values: [ "83.119%", "49.34", "-3.99", "0.75" ]
   },
-  { color: "lab(57.38% 38.339 19.331)", values: [ "57.38%", "38.339", "19.331" ] },
-  { color: "lab(68.3194% -94 0)", values: [ "68.3194%", "-94", "0" ] },
-  { color: "lab(24.193% -66 127 / 0.9)", values: [ "24.193%", "-66", "127", "0.9" ] },
-  { color: "lab(88.1199% 78 -33 / 78%)", values: [ "88.1199%", "78", "-33", "78%" ] }
+  { color: "lab(199% 38 13 / 78%)", values: [ "199%", "38", "13", "78%" ] }
 ]
 #+end_src
 
@@ -2114,9 +2114,11 @@ export function lab(rgb) {
   );
 
   // Calculating Lab values and limiting the precision
-  const [L, aHue, bHue] = [116 * FY - 16, 500 * (FX - FY), 200 * (FY - FZ)].map(
-    (V) => Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(6)
-  );
+  const [L, aHue, bHue] = [
+    116 * FY - 16,
+    500 * (FX - FY),
+    200 * (FY - FZ),
+  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)));
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1
@@ -2130,35 +2132,30 @@ That was a lot, so I'm going to run my tests now.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const rgb = await import(`${Deno.cwd()}/src/internals/color/convert/rgb.js`);
 
-<<extracted-rgb>>
+<<rgb-values>>
 
 console.log(colors.map(({color, values}) => ({rgb: color, lab: rgb.lab(values)})));
 #+END_SRC
 
-#+RESULTS:
+#+NAME: rgb-to-lab
 #+begin_src deno
 [
   { rgb: "rgb(0, 0, 0)", lab: "lab(0% 0 0)" },
+  { rgb: "rgb(128, 128, 128)", lab: "lab(53.585% 0 0)" },
   { rgb: "rgb(255, 255, 255)", lab: "lab(100% 0 0)" },
-  { rgb: "rgb(110, 22, 33)", lab: "lab(24.1186% 38.8473 18.0091)" },
-  { rgb: "rgb(30, 220, 140)", lab: "lab(77.9842% -59.373 26.4802)" },
-  { rgb: "rgb(148, 129, 240)", lab: "lab(59.5334% 27.092 -54.262)" },
-  { rgb: "rgb(31 33 100)", lab: "lab(16.3435% 17.9625 -40.7303)" },
-  { rgb: "rgb(200 210 131)", lab: "lab(82.0706% -12.4948 37.9315)" },
-  { rgb: "rgb(0%, 0%, 0%)", lab: "lab(0% 0 0)" },
-  { rgb: "rgb(100%, 100%, 100%)", lab: "lab(100% 0 0)" },
-  { rgb: "rgb(31%, 15%, 4%)", lab: "lab(20.6255% 18.0471 25.8622)" },
-  { rgb: "rgb(20%, 70.3%, 49%)", lab: "lab(65.1965% -45.6829 17.2626)" },
-  { rgb: "rgb(10% 30% 95%)", lab: "lab(39.4664% 35.7517 -88.2634)" },
-  { rgb: "rgb(33% 24% 44%)", lab: "lab(30.1574% 18.9516 -26.0225)" },
-  { rgb: "rgba(0, 0, 0, 1)", lab: "lab(0% 0 0)" },
-  { rgb: "rgba(255, 255, 255, 1)", lab: "lab(100% 0 0)" },
-  { rgb: "rgba(230, 110, 0, 0.8)", lab: "lab(60.5912% 44.3505 68.7516 / 0.8)" },
-  { rgb: "rgba(120, 178, 34, 0.719)", lab: "lab(66.666% -35.117 60.337 / 0.719)" },
-  { rgb: "rgba(34, 199, 249, 0.3)", lab: "lab(74.2159% -28.0157 -36.6419 / 0.3)" },
-  { rgb: "rgb(10 110 200 / 73%)", lab: "lab(45.2853% 1.11938 -54.9855 / 0.73)" },
-  { rgb: "rgba(34 225 110 / 25.9%)", lab: "lab(79.2011% -64.4579 42.7094 / 0.259)" },
-  { rgb: "rgb(10% 33% 19% / 0.35)", lab: "lab(31.2648% -26.5935 15.3386 / 0.35)" }
+  { rgb: "rgb(255, 0, 0)", lab: "lab(54.292% 80.812 69.885)" },
+  { rgb: "rgb(255, 255, 0)", lab: "lab(97.607% -15.753 93.388)" },
+  { rgb: "rgb(0, 255, 0)", lab: "lab(87.818% -79.287 80.99)" },
+  { rgb: "rgb(0, 255, 255)", lab: "lab(90.665% -50.665 -14.962)" },
+  { rgb: "rgb(0, 0, 255)", lab: "lab(29.568% 68.299 -112.03)" },
+  { rgb: "rgb(255, 0, 255)", lab: "lab(60.17% 93.55 -60.499)" },
+  { rgb: "rgb(33, 199, 95)", lab: "lab(70.854% -58.576 39.72)" },
+  { rgb: "rgb(19, 114, 220)", lab: "lab(47.683% 5.8918 -62.494)" },
+  { rgb: "rgb(10%, 40.4%, 49.9%)", lab: "lab(39.981% -16.954 -20.404)" },
+  { rgb: "rgb(200 138 39)", lab: "lab(62.671% 18.464 58.572)" },
+  { rgb: "rgb(31 88 49 / 0.8)", lab: "lab(32.891% -26.87 16.881 / 0.8)" },
+  { rgb: "rgba(110, 33, 110, 0.75)", lab: "lab(28.127% 41.667 -27.612 / 0.75)" },
+  { rgb: "rgba(10, 119, 30, 30%)", lab: "lab(43.317% -42.987 38.123 / 0.3)" }
 ]
 #+end_src
 
@@ -2524,7 +2521,7 @@ function calcXYZ(lab) {
   // Calculate xyz
   const [x, y, z] = [
     Fx ** 3 > ε ? Fx ** 3 : (116 * Fx - 16) / κ,
-    L > κ * ε ? ((L + 16) / 116) ** 3 : L / κ,
+    L > κ * ε ? Fy ** 3 : L / κ,
     Fz ** 3 > ε ? Fz ** 3 : (116 * Fz - 16) / κ,
   ];
 
@@ -2602,27 +2599,27 @@ That was a lot to parse. Time to see if the calculations check out.
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const lab = await import(`${Deno.cwd()}/src/internals/color/convert/lab.js`);
 
-<<extracted-lab>>
+<<lab-values>>
 
 console.log(colors.map(({color, values}) => ({lab: color, rgb: lab.rgb(values)})));
 #+END_SRC
 
-#+NAME: lab-to-rgb
+#+RESULTS:
 #+begin_src deno
 [
   { lab: "lab(0% 0 0)", rgb: "rgb(0, 0, 0)" },
-  { lab: "lab(50% 0 0)", rgb: "rgb(119, 119, 119)" },
+  { lab: "lab(53.59% 0 0)", rgb: "rgb(128, 128, 128)" },
   { lab: "lab(100% 0 0)", rgb: "rgb(255, 255, 255)" },
-  { lab: "lab(49% 127 0)", rgb: "rgb(255, 0, 124)" },
-  { lab: "lab(72% 0 127)", rgb: "rgb(206, 174, 0)" },
-  { lab: "lab(19% -128 0)", rgb: "rgb(0, 72, 44)" },
-  { lab: "lab(64% -128 0)", rgb: "rgb(0, 197, 151)" },
-  { lab: "lab(46% 0 -128)", rgb: "rgb(0, 122, 255)" },
-  { lab: "lab(34.3391% 49.3819 -4.3942)", rgb: "rgb(146, 35, 90)" },
-  { lab: "lab(57.38% 38.339 19.331)", rgb: "rgb(204, 109, 106)" },
-  { lab: "lab(68.3194% -94 0)", rgb: "rgb(0, 203, 163)" },
-  { lab: "lab(24.193% -66 127 / 0.9)", rgb: "rgba(0, 74, 0, 0.9)" },
-  { lab: "lab(88.1199% 78 -33 / 78%)", rgb: "rgba(255, 152, 255, 0.78)" }
+  { lab: "lab(54.29% 80.81 69.89)", rgb: "rgb(255, 0, 0)" },
+  { lab: "lab(97.6% -15.75 93.39)", rgb: "rgb(255, 255, 0)" },
+  { lab: "lab(87.82% -79.29 80.99)", rgb: "rgb(0, 255, 0)" },
+  { lab: "lab(90.67% -50.67 -14.96)", rgb: "rgb(0, 255, 255)" },
+  { lab: "lab(29.57% 68.3 -112.03)", rgb: "rgb(0, 0, 255)" },
+  { lab: "lab(60.17% 93.55 -60.5)", rgb: "rgb(255, 0, 255)" },
+  { lab: "lab(49.18% 38.1 -110.33)", rgb: "rgb(0, 102, 255)" },
+  { lab: "lab(91.3% -93 14)", rgb: "rgb(0, 255, 199)" },
+  { lab: "lab(83.119% 49.34 -3.99 / 0.75)", rgb: "rgba(255, 169, 217, 0.75)" },
+  { lab: "lab(199% 38 13 / 78%)", rgb: "rgba(255, 255, 255, 0.78)" }
 ]
 #+end_src
 

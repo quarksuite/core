@@ -201,7 +201,7 @@ export function lab(rgb) {
     116 * FY - 16,
     500 * (FX - FY),
     200 * (FY - FZ),
-  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : +V.toPrecision(6)));
+  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : precision(V)));
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1
