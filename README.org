@@ -2599,7 +2599,7 @@ const lab = await import(`${Deno.cwd()}/src/internals/color/convert/lab.js`);
 console.log(colors.map(({color, values}) => ({lab: color, rgb: lab.rgb(values)})));
 #+END_SRC
 
-#+RESULTS:
+#+NAME: lab-to-rgb
 #+begin_src deno
 [
   { lab: "lab(0% 0 0)", rgb: "rgb(0, 0, 0)" },
