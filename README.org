@@ -37,9 +37,21 @@ absolute control, or you want to develop your own design system workflow with a 
     - [[#pipe-srcutilitiespipejs][pipe (=src/utilities/pipe.js=)]]
     - [[#bind-srcutilitiesbindjs][bind (=src/utilities/bind.js=)]]
     - [[#tests][Tests]]
-      - [[#assertions][assertions]]
-      - [[#results][results]]
+      - [[#utilities-assertions][Utilities Assertions]]
+      - [[#utilities-results][Utilities Results]]
     - [[#scenarios][Scenarios]]
+  - [[#color-format-conversion-srccolorconversionindexjs][Color Format Conversion (=src/color/conversion/index.js=)]]
+    - [[#hex-srccolorconversionhexjs][hex (=src/color/conversion/hex.js=)]]
+    - [[#rgb-srccolorconversionrgbjs][rgb (=src/color/conversion/rgb.js=)]]
+    - [[#hsl-srccolorconversionhsljs][hsl (=src/color/conversion/hsl.js=)]]
+    - [[#cmyk-srccolorconversiondevice-cmykjs][cmyk (=src/color/conversion/device-cmyk.js=)]]
+    - [[#hwb-srccolorconversionhwbjs][hwb (=src/color/conversion/hwb.js=)]]
+    - [[#lab-srccolorconversionlabjs][lab (=src/color/conversion/lab.js=)]]
+    - [[#lch-srccolorconversionlchjs][lch (=src/color/conversion/lch.js=)]]
+    - [[#tests-1][Tests]]
+      - [[#color-format-conversion-assertions][Color Format Conversion Assertions]]
+      - [[#color-format-conversion-results][Color Format Conversion Results]]
+    - [[#scenarios-1][Scenarios]]
 - [[#internals][Internals]]
   - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
   - [[#color][Color]]
@@ -89,9 +101,9 @@ Each section is broken down into:
 
 #+BEGIN_SRC deno :tangle "./src/utilities/index.js" :comments link
 /** Functional Utilities */
-export * from "./compose.js";
-export * from "./pipe.js";
-export * from "./bind.js";
+export { compose } from "./compose.js";
+export { pipe } from "./pipe.js";
+export { bind } from "./bind.js";
 #+END_SRC
 
 The Quarks System Core rests on a functional foundation. It uses a data-last architecture and the following
@@ -99,8 +111,8 @@ utilities are designed to take full advantage of this decision.
 
 *** compose (=src/utilities/compose.js=)
 
-+ =compose: (...operators) => (data) => unknown=
-+ =operators: Array<(data: unknown) => unknown>=: a sequence of data operators
++ =compose: (...operators) ==> (data) ==> unknown=
++ =operators: Array<(data: unknown) ==> unknown>=: a sequence of data operators
 
 #+BEGIN_SRC deno :tangle "./src/utilities/compose.js" :comments link
 import { ErrorTemplate } from "../internals/error.js";
@@ -261,7 +273,7 @@ The remaining data operation satisfies the =arity = 1= clause for composition.
 
 *** Tests
 
-**** assertions
+**** Utilities Assertions
 
 #+BEGIN_SRC deno :tangle "./src/utilities/index_test.js" :comments link
 import { bind, compose, pipe } from "./index.js";
@@ -366,12 +378,13 @@ Deno.test("SPEC bind: when initial arguments match function arity, simply execut
 });
 #+END_SRC
 
-**** results
+**** Utilities Results
 
 #+BEGIN_SRC shell
 printf '%s\n' (NO_COLOR=true deno test ./src/utilities/index_test.js)
 #+END_SRC
 
+#+NAME: utilities-test
 #+begin_src shell
 running 9 tests
 test SPEC compose: combines two data operators ... ok (4ms)
@@ -390,6 +403,694 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (20ms
 
 *** Scenarios
 
+** Color Format Conversion (=src/color/conversion/index.js=)
+
+The public conversion API is designed to abstract the internal =inputFormat.outputFormat= conversion
+utilities into a simple =outputFormat:: inputColor -> outputColor= conversion.
+
+For example: =hex("rgb(255, 0, 0)")= will yield =#ff0000=.
+
+Each utility checks the validity of the input color before doing anything with it, and will throw a
+helpful error message if something goes wrong.
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/index.js" :comments link
+export { hex } from "./hex.js";
+export { rgb } from "./rgb.js";
+export { hsl } from "./hsl.js";
+export { cmyk } from "./device-cmyk.js";
+export { hwb } from "./hwb.js";
+export { lab } from "./lab.js";
+export { lch } from "./lch.js";
+#+END_SRC
+
+To streamline the conversion process and make it easier to add future formats, Quarks System Core
+provides a collection of conversion pipelines for each format.
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/setup.js" :comments link
+import * as format from "../../internals/color/format/index.js";
+import * as convert from "../../internals/color/convert/index.js";
+import { ErrorTemplate } from "../../internals/error.js";
+import { pipe } from "../../utilities/pipe.js";
+
+const ColorError = (output) =>
+  ErrorTemplate({
+    message: "not a valid CSS color format",
+    reason: `
+This error indicates that the input for conversion is not actually a color.
+`,
+    suggestion: `
+Ensure that the input is a valid CSS color.
+
+Examples:
+
+#deaded
+#bea
+#face
+#abcdef68
+
+aliceblue
+rebeccapurple
+
+rgb(110, 33, 229)
+rgba(139, 110, 19, 0.5)
+
+hsl(300, 89%, 38%)
+hsla(3.4rad, 100%, 25%, 0.99)
+
+device-cmyk(0 1 1 0)
+device-cmyk(78% 39% 0 0)
+
+hwb(190 39% 3%)
+
+lab(64% 19 -47)
+
+lch(38% 78 147)
+`,
+    output,
+  });
+
+const parseColor = (color, input, ...conversionChain) =>
+  input.validate(color) && pipe(color, input.extract, ...conversionChain);
+
+const parseNamedColor = (color, chain = false, ...conversionChain) =>
+  format.named.validate(color) && chain
+    ? pipe(color, convert.named.hex, format.hex.extract, ...conversionChain)
+    : pipe(color, convert.named.hex);
+
+const parseSelf = (color, input) => input.validate(color) && color;
+
+// Possible RGB hex conversion chains
+export const hex = (color) =>
+  Object.values({
+    hex: parseSelf(color, format.hex),
+    named: parseNamedColor(color),
+    rgb: parseColor(color, format.rgb, convert.rgb.hex),
+    hsl: parseColor(
+      color,
+      format.hsl,
+      convert.hsl.rgb,
+      format.rgb.extract,
+      convert.rgb.hex,
+    ),
+    cmyk: parseColor(
+      color,
+      format.cmyk,
+      convert.cmyk.rgb,
+      format.rgb.extract,
+      convert.rgb.hex,
+    ),
+    hwb: parseColor(
+      color,
+      format.hwb,
+      convert.hwb.rgb,
+      format.rgb.extract,
+      convert.rgb.hex,
+    ),
+    lab: parseColor(
+      color,
+      format.lab,
+      convert.lab.rgb,
+      format.rgb.extract,
+      convert.rgb.hex,
+    ),
+    lch: parseColor(
+      color,
+      format.lch,
+      convert.lch.lab,
+      format.lab.extract,
+      convert.lab.rgb,
+      format.rgb.extract,
+      convert.rgb.hex,
+    ),
+  })
+    .filter((found) => !!found)
+    .toString() || ColorError(color);
+
+// Possible RGB conversion chains
+export const rgb = (color) =>
+  Object.values({
+    hex: parseColor(color, format.hex, convert.hex.rgb),
+    named: parseNamedColor(color, true, convert.hex.rgb),
+    rgb: parseSelf(color, format.rgb),
+    hsl: parseColor(color, format.hsl, convert.hsl.rgb),
+    cmyk: parseColor(color, format.cmyk, convert.cmyk.rgb),
+    hwb: parseColor(color, format.hwb, convert.hwb.rgb),
+    lab: parseColor(color, format.lab, convert.lab.rgb),
+    lch: parseColor(
+      color,
+      format.lch,
+      convert.lch.lab,
+      format.lab.extract,
+      convert.lab.rgb,
+    ),
+  })
+    .filter((found) => !!found)
+    .toString() || ColorError(color);
+
+// Possible HSL conversion chains
+export const hsl = (color) =>
+  Object.values({
+    hex: parseColor(
+      color,
+      format.hex,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.hsl,
+    ),
+    named: parseNamedColor(
+      color,
+      true,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.hsl,
+    ),
+    rgb: parseColor(color, format.rgb, convert.rgb.hsl),
+    hsl: parseSelf(color, format.hsl),
+    cmyk: parseColor(
+      color,
+      format.cmyk,
+      convert.cmyk.rgb,
+      format.rgb.extract,
+      convert.rgb.hsl,
+    ),
+    hwb: parseColor(
+      color,
+      format.hwb,
+      convert.hwb.rgb,
+      format.rgb.extract,
+      convert.rgb.hsl,
+    ),
+    lab: parseColor(
+      color,
+      format.lab,
+      convert.lab.rgb,
+      format.rgb.extract,
+      convert.rgb.hsl,
+    ),
+    lch: parseColor(
+      color,
+      format.lch,
+      convert.lch.lab,
+      convert.lab.rgb,
+      convert.rgb.hsl,
+    ),
+  })
+    .filter((found) => !!found)
+    .toString() || ColorError(color);
+
+// Possible CMYK conversion chains
+export const cmyk = (color) =>
+  Object.values({
+    hex: parseColor(
+      color,
+      format.hex,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.cmyk,
+    ),
+    named: parseNamedColor(
+      color,
+      true,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.cmyk,
+    ),
+    rgb: parseColor(color, format.rgb, convert.rgb.cmyk),
+    hsl: parseColor(
+      color,
+      format.hsl,
+      convert.hsl.rgb,
+      format.rgb.extract,
+      convert.rgb.cmyk,
+    ),
+    cmyk: parseSelf(color, format.cmyk),
+    hwb: parseColor(
+      color,
+      format.hwb,
+      convert.hwb.rgb,
+      format.rgb.extract,
+      convert.rgb.cmyk,
+    ),
+    lab: parseColor(
+      color,
+      format.lab,
+      convert.lab.rgb,
+      format.rgb.extract,
+      convert.rgb.cmyk,
+    ),
+    lch: parseColor(
+      color,
+      format.lch,
+      convert.lch.lab,
+      format.lab.extract,
+      convert.lab.rgb,
+      format.rgb.extract,
+      convert.rgb.cmyk,
+    ),
+  })
+    .filter((found) => !!found)
+    .toString() || ColorError(color);
+
+// Possible HWB conversion chains
+export const hwb = (color) =>
+  Object.values({
+    hex: parseColor(
+      color,
+      format.hex,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.hwb,
+    ),
+    named: parseNamedColor(
+      color,
+      true,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.hwb,
+    ),
+
+    hsl: parseColor(
+      color,
+      format.hsl,
+      convert.hsl.rgb,
+      format.rgb.extract,
+      convert.rgb.hwb,
+    ),
+    cmyk: parseColor(
+      color,
+      format.cmyk,
+      convert.cmyk.rgb,
+      format.rgb.extract,
+      convert.rgb.hwb,
+    ),
+    hwb: parseSelf(color, format.hwb),
+    lab: parseColor(
+      color,
+      format.lab,
+      convert.lab.rgb,
+      format.rgb.extract,
+      convert.rgb.hwb,
+    ),
+    lch: parseColor(
+      color,
+      format.lch,
+      convert.lch.lab,
+      format.lab.extract,
+      convert.lab.rgb,
+      format.rgb.extract,
+      convert.rgb.hwb,
+    ),
+  })
+    .filter((found) => !!found)
+    .toString() || ColorError(color);
+
+// Possible CIE Lab conversion chains
+export const lab = (color) =>
+  Object.values({
+    hex: parseColor(
+      color,
+      format.hex,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+    ),
+    named: parseNamedColor(
+      color,
+      true,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+    ),
+    rgb: parseColor(color, format.rgb, convert.rgb.lab),
+    hsl: parseColor(
+      color,
+      format.hsl,
+      convert.hsl.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+    ),
+    cmyk: parseColor(
+      color,
+      format.cmyk,
+      convert.cmyk.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+    ),
+    hwb: parseColor(
+      color,
+      format.hwb,
+      convert.hwb.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+    ),
+    lab: parseSelf(color, format.lab),
+    lch: parseColor(color, format.lch, convert.lch.lab),
+  })
+    .filter((found) => !!found)
+    .toString() || ColorError(color);
+
+// Possible CIE LCH conversion chains
+export const lch = (color) =>
+  Object.values({
+    hex: parseColor(
+      color,
+      format.hex,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+      format.lab.extract,
+      convert.lab.lch,
+    ),
+    named: parseNamedColor(
+      color,
+      true,
+      convert.hex.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+      format.lab.extract,
+      convert.lab.lch,
+    ),
+    rgb: parseColor(
+      color,
+      format.rgb,
+      convert.rgb.lab,
+      format.lab.extract,
+      convert.lab.lch,
+    ),
+    hsl: parseColor(
+      color,
+      format.hsl,
+      convert.hsl.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+      format.lab.extract,
+      convert.lab.lch,
+    ),
+    cmyk: parseColor(
+      color,
+      format.cmyk,
+      convert.cmyk.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+      format.lab.extract,
+      convert.lab.lch,
+    ),
+    hwb: parseColor(
+      color,
+      format.hwb,
+      convert.hwb.rgb,
+      format.rgb.extract,
+      convert.rgb.lab,
+      format.lab.extract,
+      convert.lab.lch,
+    ),
+    lab: parseColor(color, format.lab, convert.lab.lch),
+    lch: parseSelf(color, format.lch),
+  })
+    .filter((found) => !!found)
+    .toString() || ColorError(color);
+#+END_SRC
+
+I'll be using these conversion trees to allow target formats to consume any input format.
+
+*** hex (=src/color/conversion/hex.js=)
+
++ =hex: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/hex.js" :comments link
+import { hex as target } from "./setup.js";
+
+/**
+ * A function that converts any valid CSS color to RGB hex.
+ *
+ * ```ts
+ * hex("rgb(0, 0, 0)");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to RGB hex
+ */
+export const hex = (color) => target(color);
+#+END_SRC
+
+*** rgb (=src/color/conversion/rgb.js=)
+
++ =rgb: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/rgb.js" :comments link
+import { rgb as target } from "./setup.js";
+
+/**
+ * A function that converts any valid CSS color to RGB.
+ *
+ * ```ts
+ * rgb("#deaded");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to RGB
+ */
+export const rgb = (color) => target(color);
+#+END_SRC
+
+*** hsl (=src/color/conversion/hsl.js=)
+
++ =hsl: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/hsl.js" :comments link
+import { hsl as target } from "./setup.js";
+
+/**
+ * A function that converts any valid CSS color to HSL.
+ *
+ * ```ts
+ * hsl("device-cmyk(30% 0 60% 0)");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to HSL
+ */
+export const hsl = (color) => target(color);
+#+END_SRC
+
+*** cmyk (=src/color/conversion/device-cmyk.js=)
+
++ =cmyk: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/device-cmyk.js" :comments link
+import { cmyk as target } from "./setup.js";
+
+/**
+ * A function that converts any valid CSS color to CMYK
+ *
+ * ```ts
+ * cmyk("hsl(97, 63%, 81%)");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to CMYK
+ */
+export const cmyk = (color) => target(color);
+#+END_SRC
+
+*** hwb (=src/color/conversion/hwb.js=)
+
++ =hwb: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/hwb.js" :comments link
+import { hwb as target } from "./setup.js";
+
+/**
+ * A function that converts any valid CSS color to HWB.
+ *
+ * ```ts
+ * hwb("lch(78.31% 83 210)");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to HWB
+ */
+export const hwb = (color) => target(color);
+#+END_SRC
+
+*** lab (=src/color/conversion/lab.js=)
+
++ =lab: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/lab.js" :comments link
+import { lab as target } from "./setup.js";
+
+/**
+ * A function that converts any valid CSS color to CIE Lab.
+ *
+ * ```ts
+ * lab("hwb(90 25% 10%)");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to CIE Lab
+ */
+export const lab = (color) => target(color);
+#+END_SRC
+
+*** lch (=src/color/conversion/lch.js=)
+
++ =lch: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/lch.js" :comments link
+import { lch as target } from "./setup.js";
+
+/**
+ * A function that converts any valid CSS color to CIE LCH.
+ *
+ * ```ts
+ * lch("#face");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to CIE LCH
+ */
+export const lch = (color) => target(color);
+#+END_SRC
+
+*** Tests
+
+Catching color errors before they show up in someone else's interface is crucial because *color is
+hard*.
+
+Since I've included extensive conversion examples in the internal conversion documentation, I'll be
+plugging some values to test the conversion chaining and error reporting here.
+
+**** Color Format Conversion Assertions
+
+#+BEGIN_SRC deno :tangle "./src/color/conversion/index_test.js" :comments link
+import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "./index.js";
+
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+const conversions = { hex, rgb, hsl, cmyk, hwb, lab, lch };
+
+const samples = {
+  hex: "#348ec9",
+  rgb: "rgb(30, 119, 200)",
+  hsl: "hsl(300, 78%, 69%)",
+  cmyk: "device-cmyk(49% 2% 10% 0%)",
+  hwb: "hwb(145 30% 5%)",
+  lab: "lab(43.319% -42 -8)",
+  lch: "lch(85.19% 73.81 67.142)",
+};
+
+const colors = [
+  "midnightblue",
+  "gainsboro",
+  "cornsilk",
+  "crimson",
+  "springgreen",
+  "rebeccapurple",
+];
+
+colors.forEach((color) => {
+  Object.entries(conversions).forEach(([format, fn]) =>
+    Deno.test(
+      `SPEC try ${color} ${format.toUpperCase()}: "${fn(color)}"`,
+      function () {
+        assertEquals(fn(color), fn(color));
+      },
+    )
+  );
+});
+
+Deno.test(
+  `EDGE: does nothing when input is the same format as target conversion`,
+  function () {
+    Object.entries(conversions).forEach(([format, fn]) =>
+      assertEquals(fn(samples[format]), samples[format])
+    );
+  },
+);
+
+Deno.test(`EDGE: rejects invalid or unsupported color formats`, function () {
+  Object.values(conversions).forEach((fn) =>
+    assertThrows(
+      () => {
+        throw fn("invalid");
+      },
+      undefined,
+      "not a valid CSS color",
+    )
+  );
+});
+#+END_SRC
+
+**** Color Format Conversion Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./src/color/conversion/index_test.js)
+#+END_SRC
+
+#+NAME: conversion-tests
+#+begin_src shell
+running 44 tests
+test SPEC try slateblue HEX: "#6a5acd" ... ok (7ms)
+test SPEC try slateblue RGB: "rgb(106, 90, 205)" ... ok (1ms)
+test SPEC try slateblue HSL: "hsl(248, 53.489%, 57.843%)" ... ok (4ms)
+test SPEC try slateblue CMYK: "device-cmyk(48.2927% 56.0976% 0% 19.6078%)" ... ok (2ms)
+test SPEC try slateblue HWB: "hwb(248 35.294% 19.608%)" ... ok (4ms)
+test SPEC try slateblue LAB: "lab(44.571% 29.656 -58.715)" ... ok (2ms)
+test SPEC try slateblue LCH: "lch(44.571% 65.779 296.798)" ... ok (3ms)
+test SPEC try gainsboro HEX: "#dcdcdc" ... ok (0ms)
+test SPEC try gainsboro RGB: "rgb(220, 220, 220)" ... ok (3ms)
+test SPEC try gainsboro HSL: "hsl(0, 0%, 86.275%)" ... ok (2ms)
+test SPEC try gainsboro CMYK: "device-cmyk(0% 0% 0% 13.7255%)" ... ok (2ms)
+test SPEC try gainsboro HWB: "hwb(0 86.275% 13.726%)" ... ok (2ms)
+test SPEC try gainsboro LAB: "lab(87.761% 0 0)" ... ok (2ms)
+test SPEC try gainsboro LCH: "lch(87.761% 0 0)" ... ok (1ms)
+test SPEC try cornsilk HEX: "#fff8dc" ... ok (2ms)
+test SPEC try cornsilk RGB: "rgb(255, 248, 220)" ... ok (3ms)
+test SPEC try cornsilk HSL: "hsl(48, 100%, 93.137%)" ... ok (1ms)
+test SPEC try cornsilk CMYK: "device-cmyk(0% 2.7451% 13.7255% 0%)" ... ok (1ms)
+test SPEC try cornsilk HWB: "hwb(48 86.275% 0%)" ... ok (2ms)
+test SPEC try cornsilk LAB: "lab(97.584% -0.95546 14.387)" ... ok (2ms)
+test SPEC try cornsilk LCH: "lch(97.584% 14.419 93.8)" ... ok (3ms)
+test SPEC try crimson HEX: "#dc143c" ... ok (2ms)
+test SPEC try crimson RGB: "rgb(220, 20, 60)" ... ok (3ms)
+test SPEC try crimson HSL: "hsl(348, 83.333%, 47.059%)" ... ok (2ms)
+test SPEC try crimson CMYK: "device-cmyk(0% 90.9091% 72.7273% 13.7255%)" ... ok (3ms)
+test SPEC try crimson HWB: "hwb(348 7.8431% 13.726%)" ... ok (2ms)
+test SPEC try crimson LAB: "lab(47.88% 71.283 35.481)" ... ok (2ms)
+test SPEC try crimson LCH: "lch(47.88% 79.625 26.462)" ... ok (2ms)
+test SPEC try springgreen HEX: "#00ff7f" ... ok (1ms)
+test SPEC try springgreen RGB: "rgb(0, 255, 127)" ... ok (2ms)
+test SPEC try springgreen HSL: "hsl(150, 100%, 50%)" ... ok (2ms)
+test SPEC try springgreen CMYK: "device-cmyk(100% 0% 50.1961% 0%)" ... ok (2ms)
+test SPEC try springgreen HWB: "hwb(150 0% 0%)" ... ok (2ms)
+test SPEC try springgreen LAB: "lab(88.435% -72.513 45.975)" ... ok (3ms)
+test SPEC try springgreen LCH: "lch(88.435% 85.859 147.62)" ... ok (1ms)
+test SPEC try dodgerblue HEX: "#1e90ff" ... ok (5ms)
+test SPEC try dodgerblue RGB: "rgb(30, 144, 255)" ... ok (2ms)
+test SPEC try dodgerblue HSL: "hsl(210, 100%, 55.882%)" ... ok (3ms)
+test SPEC try dodgerblue CMYK: "device-cmyk(88.2353% 43.5294% 0% 0%)" ... ok (2ms)
+test SPEC try dodgerblue HWB: "hwb(210 11.765% 0%)" ... ok (2ms)
+test SPEC try dodgerblue LAB: "lab(58.362% 0.88969 -64.779)" ... ok (1ms)
+test SPEC try dodgerblue LCH: "lch(58.362% 64.785 270.78700000000003)" ... ok (3ms)
+test EDGE: does nothing when input is the same format as target conversion ... ok (3ms)
+test EDGE: rejects invalid or unsupported color formats ... ok (4ms)
+
+test result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (111ms)
+
+#+end_src
+
+*** Scenarios
 * Internals
 
 This section documents and implements useful internal functions that aid in developing the core
@@ -517,9 +1218,12 @@ const colors = [
 
 Now, that I know I have valid hex colors, I need to be able to extract their RGB(A) channels.
 
+The first step is enforcing uniformity. To prevent any surprises, I'm going to simply expand hex
+color shorthand =#RGB(A)= to a full hex color =#RRGGBB(AA)=.
+
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/hex.js" :comments link
 /** Expand hex shorthand into full hex color */
-export function expander(color) {
+function expander(color) {
   const [, ...values] = color;
 
   if (values.length === 3 || values.length === 4) {
@@ -530,60 +1234,23 @@ export function expander(color) {
 }
 #+END_SRC
 
-The first step is enforcing uniformity. To prevent any surprises, I'm going to simply expand hex
-color shorthand =#RGB(A)= to a full hex color =#RRGGBB(AA)=.
-
-Making sure that works:
-
-#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const hex = await import(`${Deno.cwd()}/src/internals/color/format/hex.js`);
-
-<<valid-hex>>
-
-console.log("const colors =", colors.map((color) => ({ color, value: hex.expander(color) })))
-#+END_SRC
-
-#+NAME: expanded-hex
-#+begin_src deno
-const colors = [
-  { color: "#000000", value: "#000000" },
-  { color: "#808080", value: "#808080" },
-  { color: "#ffffff", value: "#ffffff" },
-  { color: "#ff0000", value: "#ff0000" },
-  { color: "#ffff00", value: "#ffff00" },
-  { color: "#00ff00", value: "#00ff00" },
-  { color: "#00ffff", value: "#00ffff" },
-  { color: "#0000ff", value: "#0000ff" },
-  { color: "#ff00ff", value: "#ff00ff" },
-  { color: "#ace", value: "#aaccee" },
-  { color: "#bea", value: "#bbeeaa" },
-  { color: "#fed", value: "#ffeedd" },
-  { color: "#face", value: "#ffaaccee" },
-  { color: "#cafe", value: "#ccaaffee" },
-  { color: "#deaded", value: "#deaded" },
-  { color: "#c0ffee", value: "#c0ffee" },
-  { color: "#4991ccaa", value: "#4991ccaa" },
-  { color: "#abcdef68", value: "#abcdef68" }
-]
-#+end_src
-
 Having secured uniform input, I'm ready to extract the channel values for processing.
+
+The only thing to do here is remove the =#= and match the channel values with a regular expression.
 
 #+BEGIN_SRC deno :tangle "./src/internals/color/format/hex.js" :comments link
 /** Extract: hex channel values */
-export const extract = (hex) => hex.match(/[\da-f]{2}/g);
+export const extract = (hex) => expander(hex).match(/[\da-f]{2}/g);
 #+END_SRC
-
-The only thing to do here is remove the =#= and match the channel values with a regular expression.
 
 Then, I'm going to test that the channel values are plucked as =[R, G, B, A]=:
 
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
 const hex = await import (`${Deno.cwd()}/src/internals/color/format/hex.js`);
 
-<<expanded-hex>>
+<<valid-hex>>
 
-console.log("const colors =", colors.map(({color, value}) => ({color, values: hex.extract(value)})));
+console.log("const colors =", colors.map((color) => ({color, values: hex.extract(color)})));
 #+END_SRC
 
 #+NAME: hex-values
