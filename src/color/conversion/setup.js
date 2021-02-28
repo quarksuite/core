@@ -163,7 +163,9 @@ export const hsl = (color) =>
       color,
       format.lch,
       convert.lch.lab,
+      format.lab.extract,
       convert.lab.rgb,
+      format.rgb.extract,
       convert.rgb.hsl,
     ),
   })

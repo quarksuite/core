@@ -1,4 +1,5 @@
 // [[file:../../../README.org::*Color Format Conversion (=src/color/conversion/index.js=)][Color Format Conversion (=src/color/conversion/index.js=):1]]
+/** Public color conversion utilities */
 export { hex } from "./hex.js";
 export { rgb } from "./rgb.js";
 export { hsl } from "./hsl.js";

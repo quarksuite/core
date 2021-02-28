@@ -414,6 +414,7 @@ Each utility checks the validity of the input color before doing anything with i
 helpful error message if something goes wrong.
 
 #+BEGIN_SRC deno :tangle "./src/color/conversion/index.js" :comments link
+/** Public color conversion utilities */
 export { hex } from "./hex.js";
 export { rgb } from "./rgb.js";
 export { hsl } from "./hsl.js";
@@ -591,7 +592,9 @@ export const hsl = (color) =>
       color,
       format.lch,
       convert.lch.lab,
+      format.lab.extract,
       convert.lab.rgb,
+      format.rgb.extract,
       convert.rgb.hsl,
     ),
   })
