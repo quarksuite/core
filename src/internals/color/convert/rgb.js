@@ -112,7 +112,7 @@ export function cmyk(rgb) {
   // Many examples in the CSS Color Module Level 4 use the percentage format,
   // so I'm assuming that's the preferred format in conversions.
   const [C, M, Y, K] = [c, m, y, k].map((component) =>
-    isNaN(component) ? 0 : calcPercentFromFraction(component)
+    isNaN(component) ? 0 : precision(calcPercentFromFraction(component))
   );
 
   return A === 1
@@ -201,7 +201,7 @@ export function lab(rgb) {
     precision(116 * FY - 16),
     precision(500 * (FX - FY)),
     precision(200 * (FY - FZ)),
-  ].map((V) => Math.sign(Math.round(V)) === 0 ? 0 : V);
+  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : V));
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1

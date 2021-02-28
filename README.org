@@ -2565,7 +2565,7 @@ export function cmyk(rgb) {
   // Many examples in the CSS Color Module Level 4 use the percentage format,
   // so I'm assuming that's the preferred format in conversions.
   const [C, M, Y, K] = [c, m, y, k].map((component) =>
-    isNaN(component) ? 0 : calcPercentFromFraction(component)
+    isNaN(component) ? 0 : precision(calcPercentFromFraction(component))
   );
 
   return A === 1
@@ -2588,7 +2588,7 @@ console.log(colors.map(({color, values}) => ({rgb: color, cmyk: rgb.cmyk(values)
 #+begin_src deno
 [
   { rgb: "rgb(0, 0, 0)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
-  { rgb: "rgb(128, 128, 128)", cmyk: "device-cmyk(0% 0% 0% 49.8039%)" },
+  { rgb: "rgb(128, 128, 128)", cmyk: "device-cmyk(0% 0% 0% 49.804%)" },
   { rgb: "rgb(255, 255, 255)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
   { rgb: "rgb(255, 0, 0)", cmyk: "device-cmyk(0% 100% 100% 0%)" },
   { rgb: "rgb(255, 255, 0)", cmyk: "device-cmyk(0% 0% 100% 0%)" },
@@ -2596,21 +2596,18 @@ console.log(colors.map(({color, values}) => ({rgb: color, cmyk: rgb.cmyk(values)
   { rgb: "rgb(0, 255, 255)", cmyk: "device-cmyk(100% 0% 0% 0%)" },
   { rgb: "rgb(0, 0, 255)", cmyk: "device-cmyk(100% 100% 0% 0%)" },
   { rgb: "rgb(255, 0, 255)", cmyk: "device-cmyk(0% 100% 0% 0%)" },
-  { rgb: "rgb(33, 199, 95)", cmyk: "device-cmyk(83.4171% 0% 52.2613% 21.9608%)" },
-  { rgb: "rgb(19, 114, 220)", cmyk: "device-cmyk(91.3636% 48.1818% 0% 13.7255%)" },
-  {
-    rgb: "rgb(10%, 40.4%, 49.9%)",
-    cmyk: "device-cmyk(79.5275% 18.8975% 0% 50.1961%)"
-  },
-  { rgb: "rgb(200 138 39)", cmyk: "device-cmyk(0% 31.0001% 80.5% 21.5686%)" },
+  { rgb: "rgb(33, 199, 95)", cmyk: "device-cmyk(83.417% 0% 52.261% 21.961%)" },
+  { rgb: "rgb(19, 114, 220)", cmyk: "device-cmyk(91.364% 48.182% 0% 13.726%)" },
+  { rgb: "rgb(10%, 40.4%, 49.9%)", cmyk: "device-cmyk(79.528% 18.898% 0% 50.196%)" },
+  { rgb: "rgb(200 138 39)", cmyk: "device-cmyk(0% 31% 80.5% 21.569%)" },
   {
     rgb: "rgb(31 88 49 / 0.8)",
-    cmyk: "device-cmyk(64.7726% 0% 44.3181% 65.4902% / 0.8)"
+    cmyk: "device-cmyk(64.773% 0% 44.318% 65.49% / 0.8)"
   },
-  { rgb: "rgba(110, 33, 110, 0.75)", cmyk: "device-cmyk(0% 70% 0% 56.8627% / 0.75)" },
+  { rgb: "rgba(110, 33, 110, 0.75)", cmyk: "device-cmyk(0% 70% 0% 56.863% / 0.75)" },
   {
     rgb: "rgba(10, 119, 30, 30%)",
-    cmyk: "device-cmyk(91.5966% 0% 74.7899% 53.3333% / 0.3)"
+    cmyk: "device-cmyk(91.597% 0% 74.79% 53.333% / 0.3)"
   }
 ]
 #+end_src
@@ -2779,7 +2776,7 @@ export function lab(rgb) {
     precision(116 * FY - 16),
     precision(500 * (FX - FY)),
     precision(200 * (FY - FZ)),
-  ].map((V) => Math.sign(Math.round(V)) === 0 ? 0 : V);
+  ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : V));
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1
