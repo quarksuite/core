@@ -52,6 +52,15 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#color-format-conversion-assertions][Color Format Conversion Assertions]]
       - [[#color-format-conversion-results][Color Format Conversion Results]]
     - [[#scenarios-1][Scenarios]]
+  - [[#color-adjustment-srccoloradjustindexjs][Color Adjustment (=src/color/adjust/index.js=)]]
+    - [[#hue-srccoloradjusthuejs][hue (=src/color/adjust/hue.js=)]]
+    - [[#saturation-srccoloradjustsaturationjs][saturation (=src/color/adjust/saturation.js=)]]
+    - [[#lightness-srccoloradjustlightnessjs][lightness (=src/color/adjust/lightness.js=)]]
+    - [[#alpha-srccoloradjustalphajs][alpha (=src/color/adjust/alpha.js=)]]
+    - [[#tests-2][Tests]]
+      - [[#color-adjustment-assertions][Color Adjustment Assertions]]
+      - [[#color-adjustment-results][Color Adjustment Results]]
+    - [[#scenarios-2][Scenarios]]
 - [[#internals][Internals]]
   - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
   - [[#color][Color]]
@@ -1094,6 +1103,520 @@ test result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (111
 #+end_src
 
 *** Scenarios
+
+** Color Adjustment (=src/color/adjust/index.js=)
+
+After ensuring that color conversion is rock solid, the possibilities for adjustment open up. The
+main ways to adjust a color include:
+
++ Hue: the perceptual identity of a color. Hue is the way we perceive a color. The qualitative
+  difference between red and cyan.
++ Saturation/Chroma: the given amount of a color. Saturation represents color /intensity/.
++ Lightness/Luminance: the amount of light a color reflects or absorbs. An indication of whether a
+  a color is pure, a shade, or  a tint/pastel.
++ Alpha/Transparency: the opacity of a color. Whether a color is solid or lets light through.
+
+Many ways exist to change these qualities, but Quarks System Core explicitly does it from the HSL(A)
+color space for both ease of calculation and convention.
+
+#+BEGIN_SRC deno :tangle "./src/color/adjust/index.js" :comments link
+/** Color adjustment utilities */
+export { h, hue } from "./hue.js";
+export { s, sat, saturation } from "./saturation.js";
+export { l, lightness, luminance } from "./lightness.js";
+export { a, alpha, transparency } from "./alpha.js";
+#+END_SRC
+
+I also want to be able to preserve the input format of a color after adjustment so /you/ won't have to
+think about it when you use these functions.
+
+#+BEGIN_SRC deno :tangle "./src/color/adjust/setup.js" :comments link
+import * as format from "../../internals/color/format/index.js";
+import * as revert from "../conversion/index.js";
+
+// Secondary format validation
+export const preserve = (target, color) =>
+  Object.values({
+    hex: format.hex.validate(color) && revert.hex(target),
+    named: format.named.validate(color) && revert.hex(target),
+    rgb: format.rgb.validate(color) && revert.rgb(target),
+    hsl: format.hsl.validate(color) && revert.hsl(target),
+    cmyk: format.cmyk.validate(color) && revert.cmyk(target),
+    hwb: format.hwb.validate(color) && revert.hwb(target),
+    lab: format.lab.validate(color) && revert.lab(target),
+    lch: format.lch.validate(color) && revert.lch(target),
+  })
+    .filter((matched) => !!matched)
+    .toString();
+#+END_SRC
+
+The simple method performs a /secondary/ color validation for the input and passes the resulting HSL
+color after adjustment along to its conversion function.
+
+*** hue (=src/color/adjust/hue.js=)
+
+Each of the adjustment functions follow a similar pattern. First the input color is converted to
+HSL(A), and then its values are extracted. Finally, the relevant property is changed, and the color
+is reverted to its input format.
+
+#+BEGIN_SRC deno :tangle "./src/color/adjust/hue.js" :comments link
+import { extract } from "../../internals/color/format/hsl.js";
+import {
+  correctHueClockwise,
+  correctHueCounterClockwise,
+} from "../../internals/color/convert/setup.js";
+import { hsl } from "../conversion/hsl.js";
+import { preserve } from "./setup.js";
+import { pipe } from "../../utilities/pipe.js";
+
+/**
+ * A function that allows hue adjustment of any valid CSS color.
+ *
+ * ```ts
+ * // positive values adjust clockwise
+ * hue(30, "red");
+ *
+ * // negative vallues adjust counterclockwise
+ * hue(-45, "lime");
+ * ```
+ *
+ * @param {number} offset - the rotational offset from current hue
+ * @param {string} color - the color to adjust
+ * @returns {string} The adjusted color
+ */
+export function hue(offset, color) {
+  const [h, S, L, alpha] = pipe(color, hsl, extract);
+  const hue = parseFloat(h) + offset;
+
+  // Hue correction
+  let H;
+  if (hue > 360) {
+    H = correctHueClockwise(hue);
+  } else if (Math.sign(hue) === -1) {
+    H = pipe(hue, correctHueClockwise, correctHueCounterClockwise);
+  } else {
+    H = hue;
+  }
+
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return preserve(
+    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    color,
+  );
+}
+
+/** Shorthand for `hue()` */
+export const h = hue;
+#+END_SRC
+
+I added a hue correction step so that any adjustment values are acceptable.
+
+*** saturation (=src/color/adjust/saturation.js=)
+
+Saturation and lightness are bound by a linear range of  =0-100=.
+
+#+BEGIN_SRC deno :tangle "./src/color/adjust/saturation.js" :comments link
+import { extract } from "../../internals/color/format/hsl.js";
+import { normalize } from "../../internals/color/convert/setup.js";
+import { hsl } from "../conversion/hsl.js";
+import { preserve } from "./setup.js";
+import { pipe } from "../../utilities/pipe.js";
+
+/**
+ * A function that allows saturation adjustment of any valid CSS color.
+ *
+ * ```ts
+ * // positive values increase
+ * saturation(15, "red");
+ *
+ * // negative values decrease
+ * saturation(-30, "lime");
+ * ```
+ *
+ * @param {number} amount - the amount to adjust saturation (as a percentage)
+ * @param {string} color - the color to adjust
+ * @returns {string} The adjusted color
+ */
+export function saturation(amount, color) {
+  const [H, s, L, alpha] = pipe(color, hsl, extract);
+
+  const S = `${normalize(0, parseFloat(s) + amount, 100)}%`;
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return preserve(
+    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    color,
+  );
+}
+
+/** An alias for `saturation()` */
+export const sat = saturation;
+
+/** Shorthand for `saturation()` */
+export const s = saturation;
+#+END_SRC
+
+*** lightness (=src/color/adjust/lightness.js=)
+
+#+BEGIN_SRC deno :tangle "./src/color/adjust/lightness.js" :comments link
+import { extract } from "../../internals/color/format/hsl.js";
+import { normalize } from "../../internals/color/convert/setup.js";
+import { hsl } from "../conversion/hsl.js";
+import { preserve } from "./setup.js";
+import { pipe } from "../../utilities/pipe.js";
+
+/**
+ * A function that allows lightness/luminance adjustment of any valid CSS color.
+ *
+ * ```ts
+ * // positive values increase
+ * lightness(15, "red");
+ *
+ * // negative values decrease
+ * lightness(-30, "lime");
+ * ```
+ *
+ * @param {number} amount - the amount to adjust lightness (as a percentage)
+ * @param {string} color - the color to adjust
+ * @returns {string} The adjusted color
+ */
+export function lightness(amount, color) {
+  const [H, S, l, alpha] = pipe(color, hsl, extract);
+
+  const L = `${normalize(0, parseFloat(l) + amount, 100)}%`;
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return preserve(
+    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    color,
+  );
+}
+
+/** An alias for `lightness()` */
+export const luminance = lightness;
+
+/** Shorthand for `lightness()` */
+export const l = lightness;
+#+END_SRC
+
+*** alpha (=src/color/adjust/alpha.js=)
+
+#+BEGIN_SRC deno :tangle "./src/color/adjust/alpha.js" :comments link
+import { extract } from "../../internals/color/format/hsl.js";
+import {
+  calcFractionFromPercent,
+  calcPercentFromFraction,
+  normalize,
+} from "../../internals/color/convert/setup.js";
+import { hsl } from "../conversion/hsl.js";
+import { preserve } from "./setup.js";
+import { pipe } from "../../utilities/pipe.js";
+
+/**
+ * A function that allows alpha/transparency adjustment of any valid CSS color.
+ *
+ * ```ts
+ * // positive values increase
+ * alpha(12, "rgba(255, 0, 0, 0.48)");
+ *
+ * // negative values decrease
+ * lightness(-30, "lime");
+ * ```
+ *
+ * @param {number} amount - the amount to adjust transparency (as a percentage)
+ * @param {string} color - the color to adjust
+ * @returns {string} The adjusted color
+ */
+export function alpha(amount, color) {
+  const [H, S, L, alpha] = pipe(color, hsl, extract);
+
+  const A = calcFractionFromPercent(
+    normalize(0, calcPercentFromFraction(alpha ?? 1) + amount, 100),
+  );
+  return preserve(
+    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    color,
+  );
+}
+
+/** An alias for `alpha()` */
+export const transparency = alpha;
+
+/** Shorthand for `alpha()` */
+export const a = alpha;
+#+END_SRC
+
+*** Tests
+
+**** Color Adjustment Assertions
+
+#+BEGIN_SRC deno :tangle "./src/color/adjust/index_test.js" :comments link
+import {
+  a,
+  alpha,
+  h,
+  hue,
+  l,
+  lightness,
+  luminance,
+  s,
+  sat,
+  saturation,
+  transparency,
+} from "./index.js";
+
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+Deno.test("SPEC hue: can adjust clockwise", function () {
+  const color = "red";
+
+  assertEquals(hue(15, color), "#ff4000");
+  assertEquals(hue(30, color), "#ff8000");
+  assertEquals(hue(45, color), "#ffbf00");
+  assertEquals(hue(60, color), "#ffff00");
+  assertEquals(hue(75, color), "#bfff00");
+  assertEquals(hue(90, color), "#80ff00");
+});
+
+Deno.test("SPEC hue: can adjust counterclockwise", function () {
+  const color = "lime";
+
+  assertEquals(hue(-15, color), "#40ff00");
+  assertEquals(hue(-30, color), "#80ff00");
+  assertEquals(hue(-45, color), "#bfff00");
+  assertEquals(hue(-60, color), "#ffff00");
+  assertEquals(hue(-75, color), "#ffbf00");
+  assertEquals(hue(-90, color), "#ff8000");
+});
+
+Deno.test("SPEC hue: can adjust all supported formats", function () {
+  const colors = [
+    ["#c0ffee", "#ffc0d1"],
+    ["midnightblue", "#707019"],
+    ["rgb(255, 133, 30)", "rgb(30, 154, 255)"],
+    ["hsl(300, 40%, 70%)", "hsl(120, 40%, 70%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(0% 89.804% 19.608% 0%)"],
+    ["hwb(120 30% 20%)", "hwb(300 30.196% 20%)"],
+    ["lab(36.44% 30 -79)", "lab(72.191% 9.656 70.685)"],
+    ["lch(63.198% 36 135)", "lch(51.614% 36.568 318.756)"],
+  ];
+
+  colors.forEach(([input, target]) => assertEquals(hue(180, input), target));
+});
+
+Deno.test("EDGE hue: rejects invalid color", function () {
+  assertThrows(
+    () => {
+      throw hue(16, "invalid");
+    },
+    undefined,
+    "not a valid CSS color",
+  );
+});
+
+Deno.test("ALIAS h of hue", function () {
+  assertEquals(h(33, "hwb(60 38% 0%)"), "hwb(93 38.039% 0%)");
+});
+
+Deno.test("SPEC saturation: can saturate a color", function () {
+  const color = "cadetblue";
+
+  assertEquals(saturation(4, color), "#5ba2a4");
+  assertEquals(saturation(8, color), "#55a7aa");
+  assertEquals(saturation(16, color), "#4bb0b4");
+  assertEquals(saturation(32, color), "#37c3c8");
+  assertEquals(saturation(64, color), "#0ee9f1");
+});
+
+Deno.test("SPEC saturation: can desaturate a color", function () {
+  const color = "chartreuse";
+
+  assertEquals(saturation(-4, color), "#80fa05");
+  assertEquals(saturation(-8, color), "#80f50a");
+  assertEquals(saturation(-16, color), "#80eb14");
+  assertEquals(saturation(-32, color), "#80d629");
+  assertEquals(saturation(-64, color), "#80ad52");
+});
+
+Deno.test("SPEC saturation: can adjust all supported formats", function () {
+  const colors = [
+    ["#c0ffee", "#cff0e7"],
+    ["midnightblue", "#3a3a4f"],
+    ["rgb(255, 133, 30)", "rgb(201, 137, 84)"],
+    ["hsl(300, 40%, 70%)", "hsl(300, 0%, 70%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(59.5% 0% 46.5% 21.569%)"],
+    ["hwb(120 30% 20%)", "hwb(120 51.765% 41.569%)"],
+    ["lab(36.44% 30 -79)", "lab(43.941% 4.7393 -33.095)"],
+    ["lch(63.198% 36 135)", "lch(56.315% 0 0)"],
+  ];
+
+  colors.forEach(([input, target]) =>
+    assertEquals(saturation(-48, input), target)
+  );
+});
+
+Deno.test("EDGE saturation: rejects invalid color", function () {
+  assertThrows(
+    () => {
+      throw saturation(16, "invalid");
+    },
+    undefined,
+    "not a valid CSS color",
+  );
+});
+
+Deno.test("ALIAS sat of saturation", function () {
+  assertEquals(sat(-16, "chocolate"), "#bf6c31");
+});
+
+Deno.test("ALIAS s of saturation", function () {
+  assertEquals(s(-8, "burlywood"), "#d8b78d");
+});
+
+Deno.test("SPEC lightness: can lighten a color", function () {
+  const color = "midnightblue";
+
+  assertEquals(lightness(4, color), "#1d1d81");
+  assertEquals(lightness(8, color), "#212192");
+  assertEquals(lightness(16, color), "#2828b3");
+  assertEquals(lightness(32, color), "#5454d9");
+  assertEquals(lightness(64, color), "#d9d9f7");
+});
+
+Deno.test("SPEC lightness: can darken a color", function () {
+  const color = "cornsilk";
+
+  assertEquals(lightness(-4, color), "#fff4c7");
+  assertEquals(lightness(-8, color), "#fff0b3");
+  assertEquals(lightness(-16, color), "#ffe88a");
+  assertEquals(lightness(-32, color), "#ffd738");
+  assertEquals(lightness(-64, color), "#947600");
+});
+
+Deno.test("SPEC lightness: can adjust all supported formats", function () {
+  const colors = [
+    ["#c0ffee", "#ffffff"],
+    ["midnightblue", "#3737d2"],
+    ["rgb(255, 133, 30)", "rgb(255, 202, 158)"],
+    ["hsl(300, 40%, 70%)", "hsl(300, 40%, 95%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(40% 0% 31.372% 0%)"],
+    ["hwb(120 30% 20%)", "hwb(120 69.02% 9.0196%)"],
+    ["lab(36.44% 30 -79)", "lab(65.959% 6.3644 -44.264)"],
+    ["lch(63.198% 36 135)", "lch(82.966% 16.294 136.74)"],
+  ];
+
+  colors.forEach(([input, target]) =>
+    assertEquals(lightness(25, input), target)
+  );
+});
+
+Deno.test("EDGE lightness: rejects invalid color", function () {
+  assertThrows(
+    () => {
+      throw lightness(16, "invalid");
+    },
+    undefined,
+    "not a valid CSS color",
+  );
+});
+
+Deno.test("ALIAS luminance of lightness", function () {
+  assertEquals(
+    luminance(12, "lab(38.1993% -39 -147.39)"),
+    "lab(61.316% 0 -60.022)",
+  );
+});
+
+Deno.test("ALIAS l of lightness", function () {
+  assertEquals(l(30, "slategray"), "#c6ccd2");
+});
+
+Deno.test("SPEC alpha: can increase", function () {
+  const color = "#abcdef68";
+
+  assertEquals(alpha(4, color), "#abcdef73");
+  assertEquals(alpha(8, color), "#abcdef7d");
+  assertEquals(alpha(16, color), "#abcdef91");
+  assertEquals(alpha(32, color), "#abcdefba");
+  assertEquals(alpha(64, color), "#abcdef");
+});
+
+Deno.test("SPEC alpha: can decrease", function () {
+  const color = "#abcdef";
+
+  assertEquals(alpha(-4, color), "#abcdeff5");
+  assertEquals(alpha(-8, color), "#abcdefeb");
+  assertEquals(alpha(-16, color), "#abcdefd6");
+  assertEquals(alpha(-32, color), "#abcdefad");
+  assertEquals(alpha(-64, color), "#abcdef5c");
+});
+
+Deno.test("SPEC alpha: can adjust all supported formats", function () {
+  const colors = [
+    ["#c0ffee", "#c0ffeebf"],
+    ["midnightblue", "#191970bf"],
+    ["rgb(255, 133, 30)", "rgba(255, 131, 30, 0.75)"],
+    ["hsl(300, 40%, 70%)", "hsla(300, 40%, 70%, 0.75)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(89.804% 0% 70.196% 0% / 0.75)"],
+    ["hwb(120 30% 20%)", "hwb(120 30.196% 20% / 0.75)"],
+    ["lab(36.44% 30 -79)", "lab(36.64% 29.588 -78.743 / 0.75)"],
+    ["lch(63.198% 36 135)", "lch(63.182% 35.872 135.17 / 0.75)"],
+  ];
+
+  colors.forEach(([input, target]) => assertEquals(alpha(-25, input), target));
+});
+
+Deno.test("ALIAS transparency of alpha", function () {
+  assertEquals(transparency(-25, "#deaded"), "#deadedbf");
+});
+
+Deno.test("ALIAS a of alpha", function () {
+  assertEquals(a(-64, "#deaded"), "#deaded5c");
+});
+#+END_SRC
+
+**** Color Adjustment Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./src/color/adjust/index_test.js)
+#+END_SRC
+
+#+NAME: adjustment-test
+#+begin_src shell
+running 22 tests
+test SPEC hue: can adjust clockwise ... ok (16ms)
+test SPEC hue: can adjust counterclockwise ... ok (6ms)
+test SPEC hue: can adjust all supported formats ... ok (13ms)
+test EDGE hue: rejects invalid color ... ok (4ms)
+test ALIAS h of hue ... ok (3ms)
+test SPEC saturation: can saturate a color ... ok (4ms)
+test SPEC saturation: can desaturate a color ... ok (3ms)
+test SPEC saturation: can adjust all supported formats ... ok (6ms)
+test EDGE saturation: rejects invalid color ... ok (3ms)
+test ALIAS sat of saturation ... ok (3ms)
+test ALIAS s of saturation ... ok (2ms)
+test SPEC lightness: can lighten a color ... ok (4ms)
+test SPEC lightness: can darken a color ... ok (3ms)
+test SPEC lightness: can adjust all supported formats ... ok (6ms)
+test EDGE lightness: rejects invalid color ... ok (2ms)
+test ALIAS luminance of lightness ... ok (3ms)
+test ALIAS l of lightness ... ok (3ms)
+test SPEC alpha: can increase ... ok (4ms)
+test SPEC alpha: can decrease ... ok (5ms)
+test SPEC alpha: can adjust all supported formats ... ok (4ms)
+test ALIAS transparency of alpha ... ok (3ms)
+test ALIAS a of alpha ... ok (3ms)
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (106ms)
+
+#+end_src
+
+*** Scenarios
+
 * Internals
 
 This section documents and implements useful internal functions that aid in developing the core
