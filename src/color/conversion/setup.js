@@ -242,7 +242,7 @@ export const hwb = (color) =>
       format.rgb.extract,
       convert.rgb.hwb,
     ),
-
+    rgb: parseColor(color, format.rgb, convert.rgb.hwb),
     hsl: parseColor(
       color,
       format.hsl,
