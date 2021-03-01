@@ -61,6 +61,12 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#color-adjustment-assertions][Color Adjustment Assertions]]
       - [[#color-adjustment-results][Color Adjustment Results]]
     - [[#scenarios-2][Scenarios]]
+  - [[#color-mixing-srccolormixindexjs][Color Mixing (=src/color/mix/index.js=)]]
+    - [[#mix][mix]]
+    - [[#tests-3][Tests]]
+      - [[#color-mixing-assertions][Color Mixing Assertions]]
+      - [[#color-mixing-results][Color Mixing Results]]
+    - [[#scenarios-3][Scenarios]]
 - [[#internals][Internals]]
   - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
   - [[#color][Color]]
@@ -1633,6 +1639,230 @@ test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (106
 
 *** Scenarios
 
+** Color Mixing (=src/color/mix/index.js=)
+
+Mixing colors creates new colors. For digital displays, however, colors cannot be mixed like
+paint. While there are mixing implementations that mimic the RYB pigments color wheel, this isn't
+one of them.
+
+Not only because it adds extra complexity for no real gain, but also because this is a /digital/
+design systems project and the native, light-based RGB color wheel is more familiar for those of us
+working in this space.
+
+*** mix
+
++ =mix: (amount: number, target: string, color: string) => string=
++ =amount: number=: the amount to mix with target (as a percentage)
++ =target: string=: the blending target to mix with input color
++ =color: string=: the input color
+
+The color mixing implementation works similar to the color adjustment functions in that the result
+will have the same format as the /input/ color. This means the target color to mix with can be /any/
+valid CSS format; they'll both convert to RGB for calculation.
+
+First, I import some helpers from other modules and write a helper function to calculate RGB channel difference.
+
+#+BEGIN_SRC deno :tangle "./src/color/mix/index.js" :comments link
+import {
+  calcChannelFromFraction,
+  calcFractionFromChannel,
+  calcFractionFromPercent,
+  calcPercentFromFraction,
+  normalize,
+  significant,
+} from "../../internals/color/convert/setup.js";
+import { extract } from "../../internals/color/format/rgb.js";
+import { rgb } from "../conversion/rgb.js";
+import { preserve } from "../adjust/setup.js";
+import { pipe } from "../../utilities/pipe.js";
+
+const precision = significant.bind(null, 5);
+
+/** Calculate the difference between original and target */
+const calcChannelDifference = (original, target, p) =>
+  precision(((1 - p) * original ** 2 + p * target ** 2) ** 0.5);
+#+END_SRC
+
+Next, I set up a function to actually process the channels.
+
+#+BEGIN_SRC deno :tangle "./src/color/mix/index.js" :comments link
+function calcMixture(original, target, amount) {
+  const [OR, OG, OB] = original;
+  const [TR, TG, TB] = target;
+
+  return [
+    [OR, TR],
+    [OG, TG],
+    [OB, TB],
+  ].map(([X, Y]) => calcChannelDifference(X, Y, amount));
+}
+#+END_SRC
+
+Finally, the public function executes the mix.
+
+#+BEGIN_SRC deno :tangle "./src/color/mix/index.js" :comments link
+/**
+ * A function for mixing colors of any valid CSS format.
+ *
+ * ```ts
+ * // evenly
+ * mix(50, 'red', 'blue');
+ *
+ * // less
+ * mix(34, 'green', 'blue');
+ *
+ * // more
+ * mix(75, 'blue', 'white');
+ *
+ * // negative values invert the blend target
+ * mix(-25, "blue", "white");
+ * ```
+ *
+ * @param {number} amount - the amount to mix with target (as a percentage)
+ * @param {string} target - the mixture target
+ * @param {string} color - the input color
+ * @returns {string} The mixture result
+ */
+export function mix(amount, target, color) {
+  const [OR, OG, OB, OA] = pipe(color, rgb, extract);
+  const [TR, TG, TB, TA] = pipe(target, rgb, extract);
+  const p = calcFractionFromPercent(amount);
+
+  // Mix the channels
+  const [R, G, B] = calcMixture([OR, OG, OB], [TR, TG, TB], p).map((V) =>
+    Math.round(V)
+  );
+
+  // If one or both colors have an alpha value, calculate difference
+  const [A1, A2] = [OA, TA].map((V) =>
+    V != null ? calcChannelFromFraction(V) : 255
+  );
+
+  const A = calcFractionFromChannel(
+    normalize(0, calcChannelDifference(A1, A2, p), 255),
+  );
+
+  return preserve(
+    A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`,
+    color,
+  );
+}
+#+END_SRC
+
+*** Tests
+
+**** Color Mixing Assertions
+
+#+BEGIN_SRC deno :tangle "./src/color/mix/index_test.js" :comments link
+import { mix } from "./index.js";
+
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+Deno.test("SPEC mix: can mix colors", function () {
+  const red = "rgb(255, 0, 0)";
+  const yellow = "rgb(255, 255, 0)";
+  const green = "rgb(0, 255, 0)";
+  const cyan = "rgb(0, 255, 255)";
+  const blue = "rgb(0, 0, 255)";
+  const magenta = "rgb(255, 0, 255)";
+
+  const colors = [
+    [red, "rgb(255, 180, 0)", yellow],
+    [red, "rgb(180, 180, 0)", green],
+    [red, "rgb(180, 180, 180)", cyan],
+    [red, "rgb(180, 0, 180)", blue],
+    [red, "rgb(255, 0, 180)", magenta],
+    [yellow, "rgb(180, 255, 0)", green],
+    [yellow, "rgb(180, 255, 180)", cyan],
+    [yellow, "rgb(180, 180, 180)", blue],
+    [yellow, "rgb(255, 180, 180)", magenta],
+    [green, "rgb(0, 255, 180)", cyan],
+    [green, "rgb(0, 180, 180)", blue],
+    [green, "rgb(180, 180, 180)", magenta],
+    [cyan, "rgb(0, 180, 255)", blue],
+    [cyan, "rgb(180, 180, 255)", magenta],
+    [blue, "rgb(180, 0, 255)", magenta],
+  ];
+
+  colors.forEach(([color, blend, target]) =>
+    assertEquals(mix(50, target, color), blend)
+  );
+});
+
+Deno.test("SPEC mix: can mix colors with alpha property", function () {
+  assertEquals(mix(50, "#ce9ddaef", "#c91193"), "#cc70baf7");
+  assertEquals(mix(75, "#deaded", "#face"), "#e7ace5fb");
+  assertEquals(mix(95, "#3ad9cfc5", "#cc911df9"), "#49d6cac8");
+});
+
+Deno.test("SPEC mix: can mix colors of any valid format", function () {
+  const colors = [
+    ["#c99faa", "#ed5f66", "red"],
+    ["rgb(118, 20, 250)", "rgb(216, 204, 150)", "yellow"],
+    ["hsl(320, 70%, 31%)", "hsl(111, 59.514%, 51.569%)", "lime"],
+    [
+      "device-cmyk(0% 79% 32% 0%)",
+      "device-cmyk(33.188% 9.6069% 0% 10.196%)",
+      "cyan",
+    ],
+    ["hwb(148 28% 38%)", "hwb(222 16.863% 15.686%)", "blue"],
+    ["lab(46.48% -38 120)", "lab(54.802% 64.129 -40.944)", "magenta"],
+    ["lch(89.311% 63 300)", "lch(80.804% 32.723 315.73)", "#deaded"],
+  ];
+
+  colors.forEach(([color, blend, target]) =>
+    assertEquals(mix(64, target, color), blend)
+  );
+});
+
+Deno.test("EDGE mix: throws error when either color is invalid", function () {
+  assertThrows(
+    () => {
+      throw mix(40, "invalid", "#c0ffee");
+    },
+    undefined,
+    "not a valid CSS color",
+  );
+  assertThrows(
+    () => {
+      throw mix(40, "#deaded", "c0ffee");
+    },
+    undefined,
+    "not a valid CSS color",
+  );
+  assertThrows(
+    () => {
+      throw mix(40, "invalid", "c0ffee");
+    },
+    undefined,
+    "not a valid CSS color",
+  );
+});
+#+END_SRC
+
+**** Color Mixing Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./src/color/mix/index_test.js)
+#+END_SRC
+
+#+NAME: mix-test
+#+begin_src shell
+running 4 tests
+test SPEC mix: can mix colors ... ok (21ms)
+test SPEC mix: can mix colors with alpha property ... ok (4ms)
+test SPEC mix: can mix colors of any valid format ... ok (11ms)
+test EDGE mix: throws error when either color is invalid ... ok (4ms)
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (40ms)
+
+#+end_src
+
+*** Scenarios
+
 * Internals
 
 This section documents and implements useful internal functions that aid in developing the core
@@ -2808,11 +3038,6 @@ export const normalize = (a, x, b) => Math.round(Math.min(Math.max(x, a), b));
 export const calcHexFragmentFromAlpha = (alpha) =>
 channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
 
-// Differential helper for color mixing
-
-/** Calculate the differential between original and offset */
-export const calcDifferential = (original, target, p) =>
-significant(6, ((1 - p) * original ** 2 + p * target ** 2) ** 0.5);
 #+END_SRC
 
 Now, I'm ready to write the conversion algorithms.

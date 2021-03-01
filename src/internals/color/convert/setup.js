@@ -73,10 +73,4 @@ export const normalize = (a, x, b) => Math.round(Math.min(Math.max(x, a), b));
 /** Helper to convert alpha value to hex fragment */
 export const calcHexFragmentFromAlpha = (alpha) =>
 channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
-
-// Differential helper for color mixing
-
-/** Calculate the differential between original and offset */
-export const calcDifferential = (original, target, p) =>
-significant(6, ((1 - p) * original ** 2 + p * target ** 2) ** 0.5);
 // Math:1 ends here
