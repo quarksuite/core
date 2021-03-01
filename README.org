@@ -1155,6 +1155,10 @@ color after adjustment along to its conversion function.
 
 *** hue (=src/color/adjust/hue.js=)
 
++ =hue/h: (offset: number, color: string) => string=
++ =offset: number=: the rotational offset from current hue (positive or negative)
++ =color: string=: the color to adjust
+
 Each of the adjustment functions follow a similar pattern. First the input color is converted to
 HSL(A), and then its values are extracted. Finally, the relevant property is changed, and the color
 is reverted to its input format.
@@ -1214,6 +1218,10 @@ I added a hue correction step so that any adjustment values are acceptable.
 
 *** saturation (=src/color/adjust/saturation.js=)
 
++ =saturation/sat/s: (amount: number, color: string) => string=
++ =amount: number=: the amount to adjust saturation (as a percentage)
++ =color: string=: the color to adjust
+
 Saturation and lightness are bound by a linear range of  =0-100=.
 
 #+BEGIN_SRC deno :tangle "./src/color/adjust/saturation.js" :comments link
@@ -1259,6 +1267,10 @@ export const s = saturation;
 
 *** lightness (=src/color/adjust/lightness.js=)
 
++ =lightness/luminance/l: (amount: number, color: string) => string=
++ =amount: number=: the amount to adjust lightness (as a percentage)
++ =color: string=: the color to adjust
+
 #+BEGIN_SRC deno :tangle "./src/color/adjust/lightness.js" :comments link
 import { extract } from "../../internals/color/format/hsl.js";
 import { normalize } from "../../internals/color/convert/setup.js";
@@ -1301,6 +1313,10 @@ export const l = lightness;
 #+END_SRC
 
 *** alpha (=src/color/adjust/alpha.js=)
+
++ =alpha/transparency/a: (amount: number, color: string) => string=
++ =amount: number=: the amount to adjust transparency (as a percentage)
++ =color: string=: the color to adjust
 
 #+BEGIN_SRC deno :tangle "./src/color/adjust/alpha.js" :comments link
 import { extract } from "../../internals/color/format/hsl.js";
