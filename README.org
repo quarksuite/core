@@ -67,6 +67,18 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#color-mixing-assertions][Color Mixing Assertions]]
       - [[#color-mixing-results][Color Mixing Results]]
     - [[#scenarios-3][Scenarios]]
+  - [[#color-scheme-generation-srccolorschemeindexjs][Color Scheme Generation (=src/color/scheme/index.js=)]]
+    - [[#complementary-srccolorschemecomplementaryjs][complementary (=src/color/scheme/complementary.js=)]]
+    - [[#analogous-srccolorschemeanalogousjs][analogous (=src/color/scheme/analogous.js=)]]
+    - [[#splitcomplementary-srccolorschemesplitjs][splitComplementary (=src/color/scheme/split.js=)]]
+    - [[#triadic-srccolorschemetriadicjs][triadic (=src/color/scheme/triadic.js=)]]
+    - [[#tetradic-srccolorschemetetradicjs][tetradic (=src/color/scheme/tetradic.js=)]]
+    - [[#square-srccolorschemesquarejs][square (=src/color/scheme/square.js=)]]
+    - [[#scheme-srccolorschemecustomjs][scheme (=src/color/scheme/custom.js=)]]
+    - [[#tests-4][Tests]]
+      - [[#color-scheme-generation-assertions][Color Scheme Generation Assertions]]
+      - [[#color-scheme-generation-results][Color Scheme Generation Results]]
+    - [[#scenarios-4][Scenarios]]
 - [[#internals][Internals]]
   - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
   - [[#color][Color]]
@@ -1863,6 +1875,435 @@ test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (40ms
 
 *** Scenarios
 
+** Color Scheme Generation (=src/color/scheme/index.js=)
+
+Color schemes are a way of adding more visual interest and tension to a design. The primary scheme
+configurations used in digital design include:
+
++ Monochromatic: a single color scheme consisting of a base color and palette variants (tints,
+  tones, and/or shades) of that color
++ Analogous: a multi-color scheme consisting of a base color and a selection of hues directly next
+  to it on the color wheel. Examples: red, orange, yellow or red, magenta-red, magenta
++ Complementary: a two color scheme consisting of a base color and its complement (opposite) on the
+  color wheel. Examples: red and cyan or green and magenta
++ Split-Complementary: A three color scheme consisting of a base color and two hues on either side
+  of its complement. Example: red, cyan-blue, green-cyan
++ Triadic: a color scheme consisting of three colors equally spaced around the color wheel. Example:
+  red, green, blue
++ Tetradic/Dual: a four color scheme consisting of a base color, its complement, and a rotational
+  offset of both points; creating a rectangle
++ Square: a color scheme consisting of four colors equally spaced around the color wheel
+
+Besides providing functions for each of the basic color schemes, Quarks System Core also provides
+a function for generating advanced custom schemes.
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/index.js" :comments link
+export { complementary } from "./complementary.js";
+export { analogous } from "./analogous.js";
+export { splitComplementary } from "./split.js";
+export { triadic } from "./triadic.js";
+export { tetradic, dualComplementary } from "./tetradic.js";
+export { square } from "./square.js";
+export { scheme } from "./custom.js";
+#+END_SRC
+
+Compared with QuarkSuite 1, QSC eliminates scheme boilerplate and leaves calculation and offset
+adjustments for the advanced function.
+
+*** complementary (=src/color/scheme/complementary.js=)
+
++ =complementary: (color: string) => [string, string]=
++ =color: string=: the base color to generate from
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/complementary.js" :comments link
+import { hue } from "../adjust/hue.js";
+
+/**
+ * Creates a complementary color scheme from any valid CSS color.
+ *
+ * ```ts
+ * complementary("coral");
+ * ```
+ *
+ * @param {string} color - the base color to generate from
+ * @returns {[string, string]} The base hues for a complementary color scheme
+ */
+export const complementary = (color) => [hue(0, color), hue(180, color)];
+#+END_SRC
+
+*** analogous (=src/color/scheme/analogous.js=)
+
++ =analogous: (color: string) => [string, string, string]=
++ =color: string=: the base color to generate from
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/analogous.js" :comments link
+import { hue } from "../adjust/hue.js";
+
+const construct = (arc, color) => [
+  hue(0, color),
+  hue(-arc, color),
+  hue(arc, color),
+];
+
+/**
+ * Creates an analogous color scheme from any valid CSS color.
+ *
+ * ```ts
+ * analogous("coral");
+ * ```
+ *
+ * @param {string} color - the base color to generate from
+ * @returns {[string, string, string]} The base hues for a analogous color scheme
+ */
+export const analogous = (color) => construct(30, color);
+#+END_SRC
+
+*** splitComplementary (=src/color/scheme/split.js=)
+
++ =splitComplementary: (color: string) => [string, string, string]=
++ =color: string=: the base color to generate from
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/split.js" :comments link
+import { hue } from "../adjust/hue.js";
+
+export function construct(arc, color) {
+  const complement = hue.bind(null, 180);
+
+  return [
+    hue(0, color),
+    hue(arc, complement(color)),
+    hue(-arc, complement(color)),
+  ];
+}
+
+/**
+ * Creates a split complementary color scheme from any valid CSS color.
+ *
+ * ```ts
+ * splitComplementary("coral");
+ * ```
+ *
+ * @param {string} color - the base color to generate from
+ * @returns {[string, string, string]} The base hues for a split complementary color scheme
+ */
+export const splitComplementary = (color) => construct(30, color);
+#+END_SRC
+
+*** triadic (=src/color/scheme/triadic.js=)
+
++ =triadic: (color: string) => [string, string, string]=
++ =color: string=: the base color to generate from
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/triadic.js" :comments link
+import { hue } from "../adjust/hue.js";
+import { construct } from "./split.js";
+
+/**
+ * Creates a triadic color scheme from any valid CSS color.
+ *
+ * ```ts
+ * triadic("coral");
+ * ```
+ *
+ * @param {string} color - the base color to generate from
+ * @returns {[string, string, string]} The base hues for a triadic color scheme
+ */
+export const triadic = (color) => construct(60, color);
+#+END_SRC
+
+*** tetradic (=src/color/scheme/tetradic.js=)
+
++ =tetradic/dualComplementary: (color: string) => [string, string, string, string]=
++ =color: string=: the base color to generate from
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/tetradic.js" :comments link
+import { hue } from "../adjust/hue.js";
+
+export function construct(offset, color) {
+  const origin = hue(0, color);
+  const complement = hue(180, color);
+
+  return [origin, hue(-offset, origin), complement, hue(-offset, complement)];
+}
+
+/**
+ * Creates a tetradic color scheme from any valid CSS color.
+ *
+ * ```ts
+ * tetradic("coral");
+ * ```
+ *
+ * @param {string} color - the base color to generate from
+ * @returns {[string, string, string, string]} The base hues for a tetradic color scheme
+ */
+export const tetradic = (color) => construct(60, color);
+
+/** An alias for `tetradic()` */
+export const dualComplementary = tetradic;
+#+END_SRC
+
+*** square (=src/color/scheme/square.js=)
+
++ =square: (color: string) => [string, string, string, string]=
++ =color: string=: the base color to generate from
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/square.js" :comments link
+import { hue } from "../adjust/hue.js";
+import { construct } from "./tetradic.js";
+
+/**
+ * Creates a square color scheme from any valid CSS color.
+ *
+ * ```ts
+ * square("coral");
+ * ```
+ *
+ * @param {string} color - the base color to generate from
+ * @returns {[string, string, string, string]} The base hues for a square color scheme
+ */
+export const square = (color) => construct(90, color);
+#+END_SRC
+
+*** scheme (=src/color/scheme/custom.js=)
+
++ =scheme: (attrs: { hues: number, arc: number, offset?: number }, color: string) => string[]=
++ =attrs: { hues: number, arc: number, offset?: number }=
+  - =hues: number=: the number of total hues to generate (minus values that overlap)
+  - =arc: number=: the desired arc distance between each hue on the wheel
+  - =offset?: number=: an optional rotation offset for generated hues (does not change origin)
++ =color: string=: the base color to generate custom scheme
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/custom.js" :comments link
+import { hue } from "../adjust/hue.js";
+
+function generate({ hues, arc, offset = 0 }, color) {
+  const values = Array(offset ? hues - 1 : hues + 1).fill(arc);
+  const half = Math.ceil(values.length / 2);
+  const [leftOfOrigin, rightOfOrigin] = [
+    values.slice(0, half),
+    values.slice(half, values.length),
+  ];
+  return offset
+    ? [
+      ...new Set([
+        hue(0, color),
+        ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
+        ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
+      ]),
+    ] // Must preserve the origin with offset
+    : [
+      ...new Set([
+        ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
+        ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
+      ]),
+    ]; // Must add an extra hue to generate from origin
+}
+
+/**
+ * A function for creating advanced schemes from any valid CSS color.
+ *
+ * ```ts
+ * // pentad
+ * scheme({ hues: 5, arc: 72 }, "#e33a00");
+ *
+ * // hexad
+ * scheme({ hues: 6, arc: 60 }, "hsl(320grad, 75%, 50%)");
+ *
+ * // octad
+ * scheme({ hues: 8, arc: 45}, "rgb(120, 230, 72)");
+ *
+ * // with offset
+ * scheme({ hues: 4, arc: 30, offset: 180}, "royalblue");
+ * ```
+ *
+ * @param {{hues: number, arc: number, offset?: number}} attrs - A configuration object defining desired hues (minus overlapping values), arc distance between each hue from the origin, and optional rotation offset
+ * @param {string} color - the base color to generate scheme
+ * @returns {string[]} A collection of base hues for a custom scheme
+ */
+export const scheme = (attrs, color) => generate(attrs, color);
+#+END_SRC
+
+*** Tests
+
+**** Color Scheme Generation Assertions
+
+#+BEGIN_SRC deno :tangle "./src/color/scheme/index_test.js" :comments link
+import {
+  analogous,
+  complementary,
+  dualComplementary,
+  scheme,
+  splitComplementary,
+  square,
+  tetradic,
+  triadic,
+} from "./index.js";
+
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+Deno.test(
+  "SPEC complementary: generate base hues for complementary scheme",
+  function () {
+    assertEquals(complementary("red"), ["#ff0000", "#00ffff"]);
+    assertEquals(complementary("lime"), ["#00ff00", "#ff00ff"]);
+    assertEquals(complementary("blue"), ["#0000ff", "#ffff00"]);
+  },
+);
+
+Deno.test(
+  "SPEC analogous: generate base hues for analogous scheme",
+  function () {
+    assertEquals(analogous("red"), ["#ff0000", "#ff0080", "#ff8000"]);
+    assertEquals(analogous("lime"), ["#00ff00", "#80ff00", "#00ff80"]);
+    assertEquals(analogous("blue"), ["#0000ff", "#0080ff", "#8000ff"]);
+  },
+);
+
+Deno.test(
+  "SPEC splitComplementary: generate base hues for split complementary scheme",
+  function () {
+    assertEquals(splitComplementary("red"), ["#ff0000", "#0080ff", "#00ff80"]);
+    assertEquals(splitComplementary("lime"), ["#00ff00", "#ff0080", "#8000ff"]);
+    assertEquals(splitComplementary("blue"), ["#0000ff", "#80ff00", "#ff8000"]);
+  },
+);
+
+Deno.test("SPEC triadic: generate base hues for triadic scheme", function () {
+  assertEquals(triadic("red"), ["#ff0000", "#0000ff", "#00ff00"]);
+  assertEquals(triadic("cyan"), ["#00ffff", "#ffff00", "#ff00ff"]);
+});
+
+Deno.test("SPEC tetradic: generate base hues for tetradic scheme", function () {
+  assertEquals(tetradic("red"), ["#ff0000", "#ff00ff", "#00ffff", "#00ff00"]);
+  assertEquals(tetradic("lime"), ["#00ff00", "#ffff00", "#ff00ff", "#0000ff"]);
+  assertEquals(tetradic("blue"), ["#0000ff", "#00ffff", "#ffff00", "#ff0000"]);
+});
+
+Deno.test("ALIAS dualComplementary of tetradic", function () {
+  assertEquals(dualComplementary("cyan"), [
+    "#00ffff",
+    "#00ff00",
+    "#ff0000",
+    "#ff00ff",
+  ]);
+});
+
+Deno.test("SPEC square: generate base hues for square scheme", function () {
+  assertEquals(square("red"), ["#ff0000", "#8000ff", "#00ffff", "#80ff00"]);
+  assertEquals(square("lime"), ["#00ff00", "#ff8000", "#ff00ff", "#0080ff"]);
+  assertEquals(square("blue"), ["#0000ff", "#00ff80", "#ffff00", "#ff0080"]);
+});
+
+Deno.test("SPEC scheme: simulate complementary", function () {
+  assertEquals(scheme({ hues: 2, arc: 180 }, "red"), ["#ff0000", "#00ffff"]);
+});
+
+Deno.test("SPEC scheme: simulate triadic", function () {
+  assertEquals(scheme({ hues: 3, arc: 120 }, "red"), [
+    "#ff0000",
+    "#0000ff",
+    "#00ff00",
+  ]);
+});
+
+Deno.test("SPEC scheme: simulate square", function () {
+  assertEquals(scheme({ hues: 4, arc: 90 }, "red"), [
+    "#ff0000",
+    "#8000ff",
+    "#00ffff",
+    "#80ff00",
+  ]);
+});
+
+Deno.test("SPEC scheme: 4 color analogous", function () {
+  assertEquals(scheme({ hues: 4, arc: 30 }, "red"), [
+    "#ff0000",
+    "#ff0080",
+    "#ff00ff",
+    "#ff8000",
+  ]);
+});
+
+Deno.test("SPEC scheme: accented triad", function () {
+  assertEquals(scheme({ hues: 5, arc: 30, offset: 120 }, "red"), [
+    "#ff0000",
+    "#0000ff",
+    "#0080ff",
+    "#00ff00",
+    "#00ff80",
+  ]);
+});
+
+Deno.test("SPEC scheme: accented split complementary", function () {
+  assertEquals(scheme({ hues: 4, arc: 30, offset: 150 }, "red"), [
+    "#ff0000",
+    "#0080ff",
+    "#00ffff",
+    "#00ff80",
+  ]);
+});
+
+Deno.test("EDGE: rejects invalid color", function () {
+  const fns = [
+    complementary,
+    analogous,
+    splitComplementary,
+    triadic,
+    tetradic,
+    square,
+  ];
+
+  fns.map((fn) =>
+    assertThrows(
+      () => {
+        throw fn("invalid");
+      },
+      undefined,
+      "not a valid CSS color",
+    )
+  );
+  assertThrows(
+    () => {
+      throw scheme({ hues: 2, arc: 180 }, "invalid");
+    },
+    undefined,
+    "not a valid CSS color",
+  );
+});
+#+END_SRC
+
+**** Color Scheme Generation Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./src/color/scheme/index_test.js)
+#+END_SRC
+
+#+NAME: scheme-test
+#+begin_src shell
+running 14 tests
+test SPEC complementary: generate base hues for complementary scheme ... ok (17ms)
+test SPEC analogous: generate base hues for analogous scheme ... ok (6ms)
+test SPEC splitComplementary: generate base hues for split complementary scheme ... ok (8ms)
+test SPEC triadic: generate base hues for triadic scheme ... ok (5ms)
+test SPEC tetradic: generate base hues for tetradic scheme ... ok (5ms)
+test ALIAS dualComplementary of tetradic ... ok (3ms)
+test SPEC square: generate base hues for square scheme ... ok (3ms)
+test SPEC scheme: simulate complementary ... ok (1ms)
+test SPEC scheme: simulate triadic ... ok (3ms)
+test SPEC scheme: simulate square ... ok (3ms)
+test SPEC scheme: 4 color analogous ... ok (3ms)
+test SPEC scheme: accented triad ... ok (3ms)
+test SPEC scheme: accented split complementary ... ok (3ms)
+test EDGE: rejects invalid color ... ok (3ms)
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (70ms)
+
+#+end_src
+
+*** Scenarios
 * Internals
 
 This section documents and implements useful internal functions that aid in developing the core
