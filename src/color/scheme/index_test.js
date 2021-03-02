@@ -144,5 +144,4 @@ Deno.test("EDGE: rejects invalid color", function () {
     "not a valid CSS color",
   );
 });
-
 // Color Scheme Generation Assertions:1 ends here

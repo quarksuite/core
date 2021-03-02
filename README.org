@@ -79,6 +79,14 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#color-scheme-generation-assertions][Color Scheme Generation Assertions]]
       - [[#color-scheme-generation-results][Color Scheme Generation Results]]
     - [[#scenarios-4][Scenarios]]
+  - [[#color-palette-srccolorpaletteindexjs][Color Palette (=src/color/palette/index.js=)]]
+    - [[#tints-srccolorpalettetintsjs][tints (=src/color/palette/tints.js=)]]
+    - [[#tones-srccolorpalettetonesjs][tones (=src/color/palette/tones.js=)]]
+    - [[#shades-srccolorpaletteshadesjs][shades (=src/color/palette/shades.js=)]]
+    - [[#tests-5][Tests]]
+      - [[#color-palette-assertions][Color Palette Assertions]]
+      - [[#color-palette-results][Color Palette Results]]
+    - [[#scenarios-5][Scenarios]]
 - [[#internals][Internals]]
   - [[#error-handling-srcinternalserrorjs][Error Handling (=src/internals/error.js=)]]
   - [[#color][Color]]
@@ -2300,6 +2308,202 @@ test SPEC scheme: accented split complementary ... ok (3ms)
 test EDGE: rejects invalid color ... ok (3ms)
 
 test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (70ms)
+
+#+end_src
+
+*** Scenarios
+** Color Palette (=src/color/palette/index.js=)
+
+A color palette isn't complete without contrast, so we'll finish with tints, tones, and shades.
+
++ Tints: any color mixed with pure white
++ Tones: any color mixed with pure gray
++ Shades: any color mixed with pure black
+
+#+BEGIN_SRC deno :tangle "./src/color/palette/index.js" :comments link
+export { tints } from "./tints.js";
+export { tones } from "./tones.js";
+export { shades } from "./shades.js";
+#+END_SRC
+
+First, I'm setting up a helper for generating my variants.
+
+#+BEGIN_SRC deno :tangle "./src/color/palette/setup.js" :comments link
+import { mix } from "../mix/index.js";
+
+export const generate = (color, target, contrast, count) =>
+  Array.from(Array(count).fill(color)).map((base, index) =>
+    mix(contrast - (contrast / count) * index, target, base)
+  );
+#+END_SRC
+
+*** tints (=src/color/palette/tints.js=)
+
++ =tints: (count: number, contrast: number, color: string) => string[]=
++ =count: number=: number of tints to generate
++ =contrast: number=: contrast between generated values (as a percentage)
++ =color: string=: the base color to generate tints from
+
+#+BEGIN_SRC deno :tangle "./src/color/palette/tints.js" :comments link
+import { pipe } from "../../utilities/pipe.js";
+import { generate } from "./setup.js";
+import { extract } from "../../internals/color/format/hwb.js";
+import { hwb } from "../conversion/hwb.js";
+import { preserve } from "../adjust/setup.js";
+
+/**
+ * Generates tints from any valid CSS color.
+ *
+ * ```ts
+ * tints(4, 98, "royalblue");
+ * ```
+ *
+ * @param {number} count - number of tints to generate
+ * @param {number} contrast - contrast of palette (as a percentage)
+ * @param {string} color - the base color to generate from
+ * @returns {string[]} A generated scale of tints
+ */
+export const tints = (count, contrast, color) =>
+  generate(color, "white", contrast, count)
+    .map((color) => pipe(color, hwb, extract))
+    .sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]))
+    .map(([H, W, B, A]) => `hwb(${H} ${W} ${B} / ${A ?? 1})`)
+    .map((target) => preserve(target, color));
+#+END_SRC
+
+*** tones (=src/color/palette/tones.js=)
+
++ =tones: (count: number, contrast: number, color: string) => string[]=
++ =count: number=: number of tones to generate
++ =contrast: number=: contrast between generated values (as a percentage)
++ =color: string=: the base color to generate tones from
+
+#+BEGIN_SRC deno :tangle "./src/color/palette/tones.js" :comments link
+import { pipe } from "../../utilities/pipe.js";
+import { generate } from "./setup.js";
+import { extract } from "../../internals/color/format/hwb.js";
+import { hwb } from "../conversion/hwb.js";
+import { preserve } from "../adjust/setup.js";
+
+/**
+ * Generates tones from any valid CSS color.
+ *
+ * ```ts
+ * tones(4, 98, "royalblue");
+ * ```
+ *
+ * @param {number} count - number of tones to generate
+ * @param {number} contrast - contrast of palette (as a percentage)
+ * @param {string} color - the base color to generate from
+ * @returns {string[]} A generated scale of tones
+ */
+export const tones = (count, contrast, color) =>
+  generate(color, "gray", contrast, count)
+    .map((color) => pipe(color, hwb, extract))
+    .sort(
+      (a, b) =>
+        parseFloat(a[1]) +
+        parseFloat(a[2]) -
+        (parseFloat(b[1]) + parseFloat(b[2])),
+    )
+    .map(([H, W, B, A]) => `hwb(${H} ${W} ${B} ${A ?? 1})`)
+    .map((target) => preserve(target, color));
+#+END_SRC
+
+*** shades (=src/color/palette/shades.js=)
+
++ =shades: (count: number, contrast: number, color: string) => string[]=
++ =count: number=: number of shades to generate
++ =contrast: number=: contrast between generated values (as a percentage)
++ =color: string=: the base color to generate shades from
+
+#+BEGIN_SRC deno :tangle "./src/color/palette/shades.js" :comments link
+import { pipe } from "../../utilities/pipe.js";
+import { generate } from "./setup.js";
+import { extract } from "../../internals/color/format/hwb.js";
+import { hwb } from "../conversion/hwb.js";
+import { preserve } from "../adjust/setup.js";
+
+/**
+ * Generates shades from any valid CSS color.
+ *
+ * ```ts
+ * shades(4, 98, "royalblue");
+ * ```
+ *
+ * @param {number} count - number of shades to generate
+ * @param {number} contrast - contrast of palette (as a percentage)
+ * @param {string} color - the base color to generate from
+ * @returns {string[]} A generated scale of shades
+ */
+export const shades = (count, contrast, color) =>
+  generate(color, "black", contrast, count)
+    .map((color) => pipe(color, hwb, extract))
+    .sort((a, b) => parseFloat(a[2]) - parseFloat(b[2]))
+    .map(([H, W, B, A]) => `hwb(${H} ${W} ${B} / ${A ?? 1})`)
+    .map((target) => preserve(target, color));
+#+END_SRC
+
+*** Tests
+
+**** Color Palette Assertions
+
+#+BEGIN_SRC deno :tangle "./src/color/palette/index_test.js" :comments link
+import { shades, tints, tones } from "./index.js";
+
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+Deno.test("SPEC tints: can generate tints", function () {
+  assertEquals(tints(2, 100, "red"), ["#ffb4b4", "#ffffff"]);
+  assertEquals(tints(3, 100, "lime"), ["#93ff93", "#d0ffd0", "#ffffff"]);
+  assertEquals(tints(4, 100, "blue"), [
+    "#8080ff",
+    "#b4b4ff",
+    "#ddddff",
+    "#ffffff",
+  ]);
+});
+
+Deno.test("SPEC tones: can generate tones", function () {
+  assertEquals(tones(2, 100, "red"), ["#ca5b5b", "#808080"]);
+  assertEquals(tones(3, 100, "lime"), ["#4add4a", "#69b569", "#808080"]);
+  assertEquals(tones(4, 100, "blue"), [
+    "#4040e6",
+    "#5b5bca",
+    "#6f6fa9",
+    "#808080",
+  ]);
+});
+
+Deno.test("SPEC shades: can generate shades", function () {
+  assertEquals(shades(2, 100, "red"), ["#b40000", "#000000"]);
+  assertEquals(shades(3, 100, "lime"), ["#00d000", "#009300", "#000000"]);
+  assertEquals(shades(4, 100, "blue"), [
+    "#0000dd",
+    "#0000b4",
+    "#000080",
+    "#000000",
+  ]);
+});
+#+END_SRC
+
+**** Color Palette Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./src/color/palette/index_test.js)
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+running 3 tests
+test SPEC tints: can generate tints ... ok (30ms)
+test SPEC tones: can generate tones ... ok (9ms)
+test SPEC shades: can generate shades ... ok (11ms)
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (51ms)
 
 #+end_src
 
