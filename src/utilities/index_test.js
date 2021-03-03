@@ -40,21 +40,6 @@ Deno.test("EDGE compose: rejects values that are not functions", function () {
   );
 });
 
-Deno.test(
-  "EDGE compose: rejects functions that are not data operators",
-  function () {
-    const add = (y, x) => x + y;
-    const failsUnaryClause = compose(split, upper, add);
-    assertThrows(
-      () => {
-        throw failsUnaryClause("hello");
-      },
-      undefined,
-      "not a data operator",
-    );
-  },
-);
-
 Deno.test("SPEC pipe: can transform data", function () {
   assertEquals(pipe("hello", upper), "HELLO");
 });

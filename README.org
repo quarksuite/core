@@ -154,7 +154,6 @@ import { ErrorTemplate } from "../internals/error.js";
 
 // Error handling
 const isFunction = (x) => typeof x === "function";
-const hasArity1 = (x) => x.length === 1;
 
 /** Error thrown when value is not a function. */
 const FuncError = (output) =>
@@ -166,21 +165,6 @@ function, so it can't be composed.
 `,
     suggestion: `
 Check that every value in your composition chain is a function.
-`,
-    output,
-  });
-
-/** Error thrown when function has a modifier or arity > 1 */
-const ArityError = (output) =>
-  ErrorTemplate({
-    message: "not a data operator",
-    reason: `
-This error indicates that one or more of the functions is
-not a data operator. That is, not a single argument function.
-`,
-    suggestion: `
-Check that every function in your composition chain has an arity of 1.
-Ex: (data: any) => any
 `,
     output,
   });
@@ -208,7 +192,6 @@ export function compose(...operators) {
   return (data) =>
     operators.reduce((value, func) => {
       if (!isFunction(func)) return FuncError(func);
-      if (!hasArity1(func)) return ArityError(func);
       return func(value);
     }, data);
 }
@@ -351,21 +334,6 @@ Deno.test("EDGE compose: rejects values that are not functions", function () {
     "not a function",
   );
 });
-
-Deno.test(
-  "EDGE compose: rejects functions that are not data operators",
-  function () {
-    const add = (y, x) => x + y;
-    const failsUnaryClause = compose(split, upper, add);
-    assertThrows(
-      () => {
-        throw failsUnaryClause("hello");
-      },
-      undefined,
-      "not a data operator",
-    );
-  },
-);
 
 Deno.test("SPEC pipe: can transform data", function () {
   assertEquals(pipe("hello", upper), "HELLO");
