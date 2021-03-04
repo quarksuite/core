@@ -8,13 +8,24 @@ import { pipe } from "../../utilities/pipe.js";
 /**
  * A function that allows saturation adjustment of any valid CSS color.
  *
- * ```ts
- * // positive values increase
- * saturation(15, "red");
+ * @example Positive values increase
  *
- * // negative values decrease
+ * ```ts
+ * saturation(15, "red");
+ * ```
+ *
+ * @example Negative values decrease
+ *
+ * ```ts
  * saturation(-30, "lime");
  * ```
+ *
+ * @remarks
+ * As a percentage value, amount is locked to a range of 0-100%. If
+ * the calculation would yield a value out of bounds, the minimum or
+ * maximum is returned.
+ *
+ * At 0%, a color is achromatic (gray). At 100%, a color is fully saturated.
  *
  * @param {number} amount - the amount to adjust saturation (as a percentage)
  * @param {string} color - the color to adjust

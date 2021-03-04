@@ -4,6 +4,8 @@ import { lch as target } from "./setup.js";
 /**
  * A function that converts any valid CSS color to CIE LCH.
  *
+ * @example Convert CIELCH to RGB Hex
+ *
  * ```ts
  * lch("#face");
  * ```

@@ -4,6 +4,8 @@ import { hwb as target } from "./setup.js";
 /**
  * A function that converts any valid CSS color to HWB.
  *
+ * @example Converting CIELCH to HWB
+ *
  * ```ts
  * hwb("lch(78.31% 83 210)");
  * ```

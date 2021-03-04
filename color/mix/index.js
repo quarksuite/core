@@ -36,19 +36,28 @@ function calcMixture(original, target, amount) {
 /**
  * A function for mixing colors of any valid CSS format.
  *
+ *
+ * @example Even mixture
+ *
  * ```ts
- * // evenly
  * mix(50, 'red', 'blue');
- *
- * // less
- * mix(34, 'green', 'blue');
- *
- * // more
- * mix(75, 'blue', 'white');
- *
- * // negative values invert the blend target
- * mix(-25, "blue", "white");
  * ```
+ *
+ * @example Farther from target
+ *
+ * ```ts
+ * mix(34, 'green', 'blue');
+ * ```
+ *
+ * @example Closer to target
+ *
+ * ```ts
+ * mix(75, 'blue', 'white');
+ * ```
+ *
+ * @remarks
+ * As a percentage, the amount is bound to a range of 0-100%. At 0%
+ * it yields the input color. And at 100%, it yields the target color
  *
  * @param {number} amount - the amount to mix with target (as a percentage)
  * @param {string} target - the mixture target
@@ -58,7 +67,7 @@ function calcMixture(original, target, amount) {
 export function mix(amount, target, color) {
   const [OR, OG, OB, OA] = pipe(color, rgb, extract);
   const [TR, TG, TB, TA] = pipe(target, rgb, extract);
-  const p = calcFractionFromPercent(amount);
+  const p = calcFractionFromPercent(normalize(0, amount, 100));
 
   // Mix the channels
   const [R, G, B] = calcMixture([OR, OG, OB], [TR, TG, TB], p).map((V) =>

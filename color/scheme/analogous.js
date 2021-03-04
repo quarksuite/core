@@ -10,9 +10,16 @@ const construct = (arc, color) => [
 /**
  * Creates an analogous color scheme from any valid CSS color.
  *
+ * @example Creating an analogous color scheme
+ *
  * ```ts
  * analogous("coral");
  * ```
+ *
+ * @remarks
+ * An analogous color scheme is composed of a color and its directly
+ * adjacent counterparts on the color wheel; hues about 30° apart from
+ * the origin.
  *
  * @param {string} color - the base color to generate from
  * @returns {[string, string, string]} The base hues for a analogous color scheme

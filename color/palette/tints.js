@@ -8,9 +8,14 @@ import { preserve } from "../adjust/setup.js";
 /**
  * Generates tints from any valid CSS color.
  *
+ * @example Generating 4 high contrast tints
+ *
  * ```ts
  * tints(4, 98, "royalblue");
  * ```
+ *
+ * @remarks
+ * A color mixed with pure white creates a tint of that color.
  *
  * @param {number} count - number of tints to generate
  * @param {number} contrast - contrast of palette (as a percentage)

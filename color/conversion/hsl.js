@@ -4,6 +4,8 @@ import { hsl as target } from "./setup.js";
 /**
  * A function that converts any valid CSS color to HSL.
  *
+ * @example Converting Device CMYK to HSL
+ *
  * ```ts
  * hsl("device-cmyk(30% 0 60% 0)");
  * ```

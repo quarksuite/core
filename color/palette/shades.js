@@ -8,9 +8,14 @@ import { preserve } from "../adjust/setup.js";
 /**
  * Generates shades from any valid CSS color.
  *
+ * @example Generating 4 high contrast shades
+ *
  * ```ts
  * shades(4, 98, "royalblue");
  * ```
+ *
+ * @remarks
+ * A color mixed with pure black creates a shade of that color.
  *
  * @param {number} count - number of shades to generate
  * @param {number} contrast - contrast of palette (as a percentage)

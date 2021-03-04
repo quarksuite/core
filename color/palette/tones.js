@@ -8,9 +8,16 @@ import { preserve } from "../adjust/setup.js";
 /**
  * Generates tones from any valid CSS color.
  *
+ * @example Generating 4 high contrast tones
+ *
  * ```ts
  * tones(4, 98, "royalblue");
  * ```
+ *
+ * @remarks
+ * A color mixed with pure gray creates a tone of that color.
+ *
+ * Be aware that tone is also another way of referring to the hue.
  *
  * @param {number} count - number of tones to generate
  * @param {number} contrast - contrast of palette (as a percentage)

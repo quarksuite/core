@@ -12,13 +12,24 @@ import { pipe } from "../../utilities/pipe.js";
 /**
  * A function that allows alpha/transparency adjustment of any valid CSS color.
  *
- * ```ts
- * // positive values increase
- * alpha(12, "rgba(255, 0, 0, 0.48)");
+ * @example Positive values increase
  *
- * // negative values decrease
+ * ```ts
+ * alpha(12, "rgba(255, 0, 0, 0.48)");
+ * ```
+ *
+ * @example Negative values decrease
+ *
+ * ```ts
  * lightness(-30, "lime");
  * ```
+ *
+ * @remarks
+ * As a percentage value, amount is locked to a range of 0-100%. If
+ * the calculation would yield a value out of bounds, the minimum or
+ * maximum is returned.
+ *
+ * At 0%, a color is fully transparent. At 100%, fully opaque.
  *
  * @param {number} amount - the amount to adjust transparency (as a percentage)
  * @param {string} color - the color to adjust

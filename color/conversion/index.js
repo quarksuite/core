@@ -1,4 +1,4 @@
-// [[file:../../README.org::*Color Format Conversion (=color/conversion/index.js=)][Color Format Conversion (=color/conversion/index.js=):1]]
+// [[file:../../README.org::*Format Conversion (=color/conversion/index.js=)][Format Conversion (=color/conversion/index.js=):1]]
 /** Public color conversion utilities */
 export { hex } from "./hex.js";
 export { rgb } from "./rgb.js";
@@ -7,4 +7,4 @@ export { cmyk } from "./device-cmyk.js";
 export { hwb } from "./hwb.js";
 export { lab } from "./lab.js";
 export { lch } from "./lch.js";
-// Color Format Conversion (=color/conversion/index.js=):1 ends here
+// Format Conversion (=color/conversion/index.js=):1 ends here

@@ -1,4 +1,4 @@
-// [[file:../../README.org::*Color Adjustment (=color/adjust/index.js=)][Color Adjustment (=color/adjust/index.js=):2]]
+// [[file:../../README.org::*Properties Adjustment (=color/adjust/index.js=)][Properties Adjustment (=color/adjust/index.js=):2]]
 import * as format from "../../internals/color/format/index.js";
 import * as revert from "../conversion/index.js";
 
@@ -16,4 +16,4 @@ export const preserve = (target, color) =>
   })
     .filter((matched) => !!matched)
     .toString();
-// Color Adjustment (=color/adjust/index.js=):2 ends here
+// Properties Adjustment (=color/adjust/index.js=):2 ends here

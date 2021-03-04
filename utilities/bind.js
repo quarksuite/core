@@ -3,6 +3,8 @@
  * A higher order function that accepts a function and some of its arguments;
  * returning a function waiting for the rest of its arguments.
  *
+ * @example Binding add to add8
+ *
  * ```ts
  * const add = (y, x) => x + y;
  * const add8 = bind(add, 8);

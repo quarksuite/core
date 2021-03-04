@@ -5,6 +5,8 @@ import { compose } from "./compose.js";
  * A higher order function that pipes data through a sequence of functions and
  * outputs the result.
  *
+ * @example Transforming a string into an upcased array.
+
  * ```ts
  * const upper = (data) => data.toUpperCase();
  * const split = (data) => data.split("");

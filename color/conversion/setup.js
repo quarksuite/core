@@ -1,4 +1,4 @@
-// [[file:../../README.org::*Color Format Conversion (=color/conversion/index.js=)][Color Format Conversion (=color/conversion/index.js=):2]]
+// [[file:../../README.org::*Format Conversion (=color/conversion/index.js=)][Format Conversion (=color/conversion/index.js=):2]]
 import * as format from "../../internals/color/format/index.js";
 import * as convert from "../../internals/color/convert/index.js";
 import { ErrorTemplate } from "../../internals/error.js";
@@ -383,4 +383,4 @@ export const lch = (color) =>
   })
     .filter((found) => !!found)
     .toString() || ColorError(color);
-// Color Format Conversion (=color/conversion/index.js=):2 ends here
+// Format Conversion (=color/conversion/index.js=):2 ends here

@@ -8,13 +8,24 @@ import { pipe } from "../../utilities/pipe.js";
 /**
  * A function that allows lightness/luminance adjustment of any valid CSS color.
  *
- * ```ts
- * // positive values increase
- * lightness(15, "red");
+ * @example Positive values increase
  *
- * // negative values decrease
+ * ```ts
+ * lightness(15, "red");
+ * ```
+ *
+ * @example Negative values decrease
+ *
+ * ```ts
  * lightness(-30, "lime");
  * ```
+ *
+ * @remarks
+ * As a percentage value, amount is locked to a range of 0-100%. If
+ * the calculation would yield a value out of bounds, the minimum or
+ * maximum is returned.
+ *
+ * At 0%, sits pure black. At 100%, pure white.
  *
  * @param {number} amount - the amount to adjust lightness (as a percentage)
  * @param {string} color - the color to adjust

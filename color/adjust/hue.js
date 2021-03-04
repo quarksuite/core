@@ -11,13 +11,25 @@ import { pipe } from "../../utilities/pipe.js";
 /**
  * A function that allows hue adjustment of any valid CSS color.
  *
- * ```ts
- * // positive values adjust clockwise
- * hue(30, "red");
+ * @example Positive values adjust clockwise
  *
+ * ```ts
+ * hue(30, "red");
+ * ```
+ *
+ * @example Negative values adjust counterclockwise
+ *
+ * ```ts
  * // negative vallues adjust counterclockwise
  * hue(-45, "lime");
  * ```
+ *
+ * @remarks
+ * The hue is bound to one full revolution (360°) and automatically
+ * corrects an adjustment value to the expected output if out of range.
+ *
+ * It corrects clockwise if value after calculation is < 0;
+ * counterclockwise if value after calculation is > 360.
  *
  * @param {number} offset - the rotational offset from current hue
  * @param {string} color - the color to adjust

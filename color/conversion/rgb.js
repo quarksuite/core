@@ -4,6 +4,8 @@ import { rgb as target } from "./setup.js";
 /**
  * A function that converts any valid CSS color to RGB.
  *
+ * @example Converting RGB Hex to RGB
+ *
  * ```ts
  * rgb("#deaded");
  * ```

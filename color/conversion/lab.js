@@ -4,6 +4,8 @@ import { lab as target } from "./setup.js";
 /**
  * A function that converts any valid CSS color to CIE Lab.
  *
+ * @example Convert HWB to CIELAB
+ *
  * ```ts
  * lab("hwb(90 25% 10%)");
  * ```

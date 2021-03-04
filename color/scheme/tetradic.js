@@ -11,9 +11,16 @@ export function construct(offset, color) {
 /**
  * Creates a tetradic color scheme from any valid CSS color.
  *
+ * @example Creating a tetradic color scheme
+ *
  * ```ts
  * tetradic("coral");
  * ```
+ *
+ * @remarks
+ * A tetradic color scheme consists of a color, its opposite, and a
+ * second complementary pair of colors. They are also called dual
+ * complementary schemes.
  *
  * @param {string} color - the base color to generate from
  * @returns {[string, string, string, string]} The base hues for a tetradic color scheme

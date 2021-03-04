@@ -22,6 +22,8 @@ Check that every value in your composition chain is a function.
  * A higher order function that accepts a sequence of data operators and combines them
  * into a new function waiting for data.
  *
+ * @example Splitting a string after upcasing it.
+ *
  * ```ts
  *  const upper = (data) => data.toUpperCase();
  *  const split = (data) => data.split("");
