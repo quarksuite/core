@@ -73,6 +73,10 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#tones-colorpalettetonesjs][tones (=color/palette/tones.js=)]]
       - [[#shades-colorpaletteshadesjs][shades (=color/palette/shades.js=)]]
       - [[#tests-5][Tests]]
+    - [[#accessibility-colora11yindexjs][Accessibility (=color/a11y/index.js=)]]
+      - [[#clrs][clrs]]
+      - [[#contrast][contrast]]
+      - [[#tests-6][Tests]]
 - [[#internals][Internals]]
   - [[#error-handling-internalserrorjs][Error Handling (=internals/error.js=)]]
   - [[#color][Color]]
@@ -410,6 +414,7 @@ export * from "./adjust/index.js";
 export * from "./mix/index.js";
 export * from "./scheme/index.js";
 export * from "./palette/index.js";
+export * from "./a11y/index.js";
 #+END_SRC
 
 *** Format Conversion (=color/conversion/index.js=)
@@ -1808,6 +1813,7 @@ export function mix(amount, target, color) {
 #+END_SRC
 
 **** Tests
+
 ***** Color Mixing Assertions
 
 #+BEGIN_SRC deno :tangle "./color/mix/index_test.js" :comments link
