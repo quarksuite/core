@@ -22,10 +22,19 @@ import { preserve } from "../adjust/setup.js";
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of tints
  */
-export const tints = (count, contrast, color) =>
-  generate(color, "white", contrast, count)
-    .map((color) => pipe(color, hwb, extract))
-    .sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]))
-    .map(([H, W, B, A]) => `hwb(${H} ${W} ${B} / ${A ?? 1})`)
-    .map((target) => preserve(target, color));
+export const tints = (
+  count,
+  contrast,
+  color,
+) => [
+  ...new Set([
+    ...generate(color, "white", contrast, count)
+      .map((color) => pipe(color, hwb, extract))
+      .sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]))
+      .map(([H, W, B, A]) =>
+        !A ? `hwb(${H} ${W} ${B})` : `hwb(${H} ${W} ${B} / ${A})`
+      )
+      .map((target) => preserve(target, color)),
+  ]),
+];
 // tints (=color/palette/tints.js=):1 ends here

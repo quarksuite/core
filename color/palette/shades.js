@@ -22,10 +22,19 @@ import { preserve } from "../adjust/setup.js";
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of shades
  */
-export const shades = (count, contrast, color) =>
-  generate(color, "black", contrast, count)
-    .map((color) => pipe(color, hwb, extract))
-    .sort((a, b) => parseFloat(a[2]) - parseFloat(b[2]))
-    .map(([H, W, B, A]) => `hwb(${H} ${W} ${B} / ${A ?? 1})`)
-    .map((target) => preserve(target, color));
+export const shades = (
+  count,
+  contrast,
+  color,
+) => [
+  ...new Set([
+    ...generate(color, "black", contrast, count)
+      .map((color) => pipe(color, hwb, extract))
+      .sort((a, b) => parseFloat(a[2]) - parseFloat(b[2]))
+      .map(([H, W, B, A]) =>
+        !A ? `hwb(${H} ${W} ${B})` : `hwb(${H} ${W} ${B} / ${A})`
+      )
+      .map((target) => preserve(target, color)),
+  ]),
+];
 // shades (=color/palette/shades.js=):1 ends here

@@ -8,7 +8,7 @@ import {
 
 Deno.test("SPEC tints: can generate tints", function () {
   assertEquals(tints(2, 100, "red"), ["#ffb4b4", "#ffffff"]);
-  assertEquals(tints(3, 100, "lime"), ["#93ff93", "#d0ffd0", "#ffffff"]);
+  assertEquals(tints(3, 100, "lime"), ["#92ff92", "#d1ffd1", "#ffffff"]);
   assertEquals(tints(4, 100, "blue"), [
     "#8080ff",
     "#b4b4ff",
@@ -19,7 +19,7 @@ Deno.test("SPEC tints: can generate tints", function () {
 
 Deno.test("SPEC tones: can generate tones", function () {
   assertEquals(tones(2, 100, "red"), ["#ca5b5b", "#808080"]);
-  assertEquals(tones(3, 100, "lime"), ["#4add4a", "#69b569", "#808080"]);
+  assertEquals(tones(3, 100, "lime"), ["#4add4a", "#69b469", "#808080"]);
   assertEquals(tones(4, 100, "blue"), [
     "#4040e6",
     "#5b5bca",
@@ -30,7 +30,7 @@ Deno.test("SPEC tones: can generate tones", function () {
 
 Deno.test("SPEC shades: can generate shades", function () {
   assertEquals(shades(2, 100, "red"), ["#b40000", "#000000"]);
-  assertEquals(shades(3, 100, "lime"), ["#00d000", "#009300", "#000000"]);
+  assertEquals(shades(3, 100, "lime"), ["#00d100", "#009200", "#000000"]);
   assertEquals(shades(4, 100, "blue"), [
     "#0000dd",
     "#0000b4",
