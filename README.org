@@ -77,6 +77,15 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#clrs][clrs]]
       - [[#contrast][contrast]]
       - [[#tests-6][Tests]]
+  - [[#modular-scale-scaleindexjs][Modular Scale (=scale/index.js=)]]
+    - [[#create][create]]
+    - [[#update][update]]
+    - [[#merge][merge]]
+    - [[#chunk][chunk]]
+    - [[#units][units]]
+    - [[#tests-7][Tests]]
+      - [[#modular-scale-assertions][Modular Scale Assertions]]
+      - [[#modular-scale-results][Modular Scale Results]]
 - [[#internals][Internals]]
   - [[#error-handling-internalserrorjs][Error Handling (=internals/error.js=)]]
   - [[#color][Color]]
@@ -120,7 +129,6 @@ Each section is broken down into:
 
 + functions: the actual function definitions with developer commentary
 + Tests: proving each function does its job and doesn't choke on the unexpected
-+ Scenarios: Sandboxed demos powered by modern browsers
 
 ** Utilities (=utilities/index.js=)
 
@@ -2952,6 +2960,439 @@ test SPEC contrast: can generate WCAG AA (enhanced) compliant results ... ok (63
 test SPEC contrast: can generate WCAG AAA (enhanced) compliant results ... ok (64ms)
 
 test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (290ms)
+
+#+end_src
+
+** Modular Scale (=scale/index.js=)
+
+Now that I'm all set for color, I can begin thinking about sizing and proportion. Modular scales are
+the best way to manage consistency between values. They can be used for:
+
++ typographical hierarchy
++ spacing
++ sizing
++ borders
+
+The Quarks System Core scale module is more or less unchanged from QuarkSuite 1 with the addition of
+error handling to catch bad input.
+
+It begins with creating a scale as a collection of raw values that the remaining utilities consume
+and modify before finally attaching units for output.
+
+*** create
+
++ =create: (values: number, ratio: number, base: number) => number[]=
++ =values: number=: the number of values to include (output range)
++ =ratio: number=: the ratio maintained between each value in the scale
++ =base: number=: initial scale value
+
+The formula to calculate each value in the scale is straightforward. The array is first filled with
+the base value, then multiplied with ratio to the nth of the current index.
+
+Example: when =base = 1=, =ratio = 2=, =index = 2=, then ~base * ratio ** index === 1 * 2 ** 2 === 1 * 4 === 4~
+
+#+BEGIN_SRC deno :tangle "./scale/index.js" :comments link
+/**
+ * Create a new modular scale.
+ *
+ * @example Create a 6 value scale from base of 1 with ratio of 1.5
+ *
+ * ```ts
+ * create(6, 1.5, 1);
+ * ```
+ *
+ * @param {number} values - the number of values to include (output range)
+ * @param {number} ratio - the ratio maintained between each value
+ * @param {number} base - the initial scale value
+ * @returns {number[]} An array of raw modular scale values
+ */
+export const create = (values, ratio, base) =>
+  Array(values).fill(base).map((base, index) => base * ratio ** index);
+#+END_SRC
+
+*** update
+
++ =update: (calc: (n: number) => number, scale: number[]) => number[]=
++ =calc: (: number) => number=: the desired calculation to modify each scale value
++ =scale: number[]=: the scale to update
+
+This utility updates the values in created scales with a user-defined recalculation and outputs a
+new scale from the results.
+
+#+BEGIN_SRC deno :tangle "./scale/index.js" :comments link
+import { ErrorTemplate } from "../internals/error.js";
+
+const ScaleError = (output) =>
+  ErrorTemplate({
+    message: "not a modular scale",
+    reason: `
+This error triggers when the value passed in as scale is not actually
+a modular scale.
+`,
+    suggestion: `
+Ensure that you only use scale modification functions on modular scales.
+Create one with create()
+
+Example:
+
+create(8, 2, 1);
+
+  `,
+    output,
+  });
+
+function unlessMS(body, data) {
+  if (
+    Array.isArray(data) && data.length &&
+    data.every((n) => typeof n === "number")
+  ) {
+    return body;
+  }
+
+  return ScaleError(data);
+}
+
+/**
+ * Update a scale with a calculation mapping to each value.
+ *
+ * @example Add ten to each scale value
+ *
+ * ```ts
+ * update(n => n + 10, create(4, 2, 1));
+ * ```
+ *
+ * @param {(n: number) => number} calc - the desired calculation to modify each scale value
+ * @param {number[]} scale - the scale to update
+ * @returns {number[]} A new scale with updated values
+ */
+export const update = (calc, scale) =>
+  unlessMS(scale.map((n) => calc(n)), scale);
+#+END_SRC
+
+For each function beyond this point, I'll need to ensure that data passed in is a raw modular
+scale. I wrote a template function to tell the interpreter that nothing should be done unless the
+data is a modular scale and throw an error reminding the user to =create()= one if they haven't.
+
+*** merge
+
++ =merge: (...scales: number[][]) => number[]=
++ =...scales: number[][]=: any number of scales to merge
+
+#+BEGIN_SRC deno :tangle "./scale/index.js" :comments link
+/**
+ * Merge two or more scales into a scale of their unique values.
+ *
+ * @example Merge scale a with scale b
+ *
+ * ```ts
+ * merge(create(5, 1.5, 1), create(8, 1.25, 1));
+ * ```
+ *
+ * @param {number[][]} scales - the scales to merge
+ * @returns {number[]} A new scale of unique values
+ */
+export const merge = (...scales) =>
+  scales.every((scale) => unlessMS(scale, scale)) && [
+    ...new Set(scales.reduce((acc, scale) => [...acc, ...scale], [])),
+  ].sort((a, b) => a - b);
+#+END_SRC
+
+Using a Set guarantees that the merge will only return the unique values in each scale.
+
+*** chunk
+
++ =chunk: (size: number, scale: number[]) => number[][]=
++ =size: number=: number of values to capture in each chunk
++ =scale: number[]=: the scale you want to chunk
+
+#+BEGIN_SRC deno :tangle "./scale/index.js" :comments link
+/**
+ * Splits a scale into smaller scales of a given size.
+ *
+ * @example Split a 30 value scale into 6 chunks of 5 values
+ *
+ * ```ts
+ * chunk(6, create(30, 1.414, 1));
+ * ```
+ *
+ * @param {number} size - the number of values in each chunk
+ * @param {number[]} scale - the scale to chunk
+ * @returns {number[][]} A new scale of chunked scale values
+ */
+export const chunk = (size, scale) =>
+  unlessMS(
+    Array.from(scale).reduceRight(
+      (acc, _v, _i, arr) => [...acc, arr.splice(0, size)],
+      [],
+    ),
+    scale,
+  );
+#+END_SRC
+
+*** units
+
++ =units: (unit: string, scale: number[]) => string[]=
++ =unit: string=: any valid CSS relative or absolute unit
++ =scale: number[]=: raw value scale for processing
+
+#+BEGIN_SRC deno :tangle "./scale/index.js" :comments link
+import { significant } from "../internals/color/convert/setup.js";
+
+const precision = significant.bind(null, 4);
+
+/**
+ * Attach units to a raw scale to create a CSS-ready modular scale.
+ *
+ * @example Output a scale as rems
+ *
+ * ```ts
+ * units("rem", create(7, 1.25, 1));
+ * ```
+ *
+ * @param { "cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px" | "em" | "ex" | "ch" | "rem" | "lh" | "vw" | "vh" | "vmin" | "vmax" } unit - any valid relative or absolute CSS unit
+ * @param {number[]} scale - the raw scale to generate from
+ * @returns {string[]} A finished modular scale now ready to use
+ */
+export const units = (unit, scale) =>
+  unlessMS(scale.map((n) => `${precision(n)}${unit}`), scale);
+#+END_SRC
+
+*** Tests
+
+**** Modular Scale Assertions
+
+Alright. Time to test the scale creation flow and error handling.
+
+#+BEGIN_SRC deno :tangle "./scale/index_test.js" :comments link
+import { chunk, create, merge, units, update } from "./index.js";
+
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+Deno.test("SPEC create: can generate raw modular scales", function () {
+  assertEquals(create(6, 1.25, 1), [
+    1,
+    1.25,
+    1.5625,
+    1.953125,
+    2.44140625,
+    3.0517578125,
+  ]);
+  assertEquals(create(8, 1.5, 1), [
+    1,
+    1.5,
+    2.25,
+    3.375,
+    5.0625,
+    7.59375,
+    11.390625,
+    17.0859375,
+  ]);
+  assertEquals(create(10, 2, 1), [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+  ]);
+});
+
+Deno.test("SPEC update: can update values with an in-place recalculation", function () {
+  const scale = create(8, 2, 1);
+
+  assertEquals(update((n) => n + 16, scale), [
+    17,
+    18,
+    20,
+    24,
+    32,
+    48,
+    80,
+    144,
+  ]);
+  assertEquals(update((n) => n / 4, scale), [
+    0.25,
+    0.5,
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+  ]);
+  assertEquals(update((n) => n * 2, scale), [
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+  ]);
+});
+
+Deno.test("SPEC merge: can combine values from multiple scales into one scale", function () {
+  const a = create(8, 1.5, 1);
+  const b = create(6, 1.25, 1);
+  const c = create(4, 1.75, 1);
+
+  assertEquals(merge(a, b), [
+    1,
+    1.25,
+    1.5,
+    1.5625,
+    1.953125,
+    2.25,
+    2.44140625,
+    3.0517578125,
+    3.375,
+    5.0625,
+    7.59375,
+    11.390625,
+    17.0859375,
+  ]);
+  assertEquals(merge(a, c), [
+    1,
+    1.5,
+    1.75,
+    2.25,
+    3.0625,
+    3.375,
+    5.0625,
+    5.359375,
+    7.59375,
+    11.390625,
+    17.0859375,
+  ]);
+  assertEquals(merge(b, c), [
+    1,
+    1.25,
+    1.5625,
+    1.75,
+    1.953125,
+    2.44140625,
+    3.0517578125,
+    3.0625,
+    5.359375,
+  ]);
+});
+
+Deno.test("SPEC chunk: can split a larger set of scale values into multiple scales of a given size", function () {
+  const [first, second, third, ...rest] = chunk(5, create(24, 1.5, 1));
+
+  assertEquals(first, [1, 1.5, 2.25, 3.375, 5.0625]);
+  assertEquals(second, [
+    7.59375,
+    11.390625,
+    17.0859375,
+    25.62890625,
+    38.443359375,
+  ]);
+  assertEquals(third, [
+    57.6650390625,
+    86.49755859375,
+    129.746337890625,
+    194.6195068359375,
+    291.92926025390625,
+  ]);
+  assertEquals(rest, [
+    [
+      437.8938903808594,
+      656.8408355712891,
+      985.2612533569336,
+      1477.8918800354004,
+      2216.8378200531006,
+    ],
+    [
+      3325.256730079651,
+      4987.885095119476,
+      7481.8276426792145,
+      11222.741464018822,
+    ],
+  ]);
+});
+
+Deno.test("SPEC units: can attach units and output CSS-ready modular scales", function () {
+  assertEquals(units("rem", create(6, 1.5, 1)), [
+    "1rem",
+    "1.5rem",
+    "2.25rem",
+    "3.375rem",
+    "5.063rem",
+    "7.594rem",
+  ]);
+  assertEquals(units("ex", create(4, 2, 1)), [
+    "1ex",
+    "2ex",
+    "4ex",
+    "8ex",
+  ]);
+  assertEquals(units("pt", create(5, 1.25, 12)), [
+    "12pt",
+    "15pt",
+    "18.75pt",
+    "23.44pt",
+    "29.3pt",
+  ]);
+});
+
+Deno.test("EDGE: scale modifiers (update, merge, chunk, units) reject empty scales", function () {
+  assertThrows(
+    () => {
+      throw update((n) => n, []);
+    },
+    undefined,
+    "not a modular scale",
+  );
+  assertThrows(
+    () => {
+      throw merge([], []);
+    },
+    undefined,
+    "not a modular scale",
+  );
+  assertThrows(
+    () => {
+      throw chunk(3, []);
+    },
+    undefined,
+    "not a modular scale",
+  );
+  assertThrows(
+    () => {
+      throw units("rem", []);
+    },
+    undefined,
+    "not a modular scale",
+  );
+});
+#+END_SRC
+
+**** Modular Scale Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./scale/index_test.js)
+#+END_SRC
+
+#+NAME: scale-test
+#+begin_src shell
+running 6 tests
+test SPEC create: can generate raw modular scales ... ok (6ms)
+test SPEC update: can update values with an in-place recalculation ... ok (2ms)
+test SPEC merge: can combine values from multiple scales into one scale ... ok (1ms)
+test SPEC chunk: can split a larger set of scale values into multiple scales of a given size ... ok (2ms)
+test SPEC units: can attach units and output CSS-ready modular scales ... ok (3ms)
+test EDGE: scale modifiers (update, merge, chunk, units) reject empty scales ... ok (3ms)
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (18ms)
 
 #+end_src
 
