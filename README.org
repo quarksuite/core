@@ -77,13 +77,18 @@ absolute control, or you want to develop your own design system workflow with a 
       - [[#clrs][clrs]]
       - [[#contrast][contrast]]
       - [[#tests-6][Tests]]
+  - [[#typography-typographyindexjs][Typography (=typography/index.js=)]]
+    - [[#systemfonts][systemfonts]]
+    - [[#tests-7][Tests]]
+      - [[#typography-assertions][Typography Assertions]]
+      - [[#typography-results][Typography Results]]
   - [[#modular-scale-scaleindexjs][Modular Scale (=scale/index.js=)]]
     - [[#create][create]]
     - [[#update][update]]
     - [[#merge][merge]]
     - [[#chunk][chunk]]
     - [[#units][units]]
-    - [[#tests-7][Tests]]
+    - [[#tests-8][Tests]]
       - [[#modular-scale-assertions][Modular Scale Assertions]]
       - [[#modular-scale-results][Modular Scale Results]]
 - [[#internals][Internals]]
@@ -2960,6 +2965,133 @@ test SPEC contrast: can generate WCAG AA (enhanced) compliant results ... ok (63
 test SPEC contrast: can generate WCAG AAA (enhanced) compliant results ... ok (64ms)
 
 test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (290ms)
+
+#+end_src
+
+** Typography (=typography/index.js=)
+
+Quarks System Core isn't focused much on typography at this point, but it does provide a single
+function =systemfonts()= to aid [[https://systemfontstack.com][prototyping with system font stacks]]. I'll expand this module as
+needed in step with the project's growth.
+
+*** systemfonts
+
++ =systemfonts: (...families: ("san-serif" | "serif" | "monospace")[]) => string[]=
++ =...families: ("sans-serif" | "serif" | "monospace")[]=: keywords matching the available system font
+  stacks
+
+#+BEGIN_SRC deno :tangle "./typography/index.js" :comments link
+import { SystemFontStacks } from "../data/typography/system.js";
+import { ErrorTemplate } from "../internals/error.js";
+
+const SystemFamilyError = (output) =>
+  ErrorTemplate({
+    message: "key is not a system font stack family",
+    reason: `
+This error is triggered when one or more of the keys passed into
+systemfonts() is invalid.
+`,
+    suggestion: `
+Pass in valid system font stack keywords as strings.
+
+Examples:
+
+systemfonts("sans-serif", "monospace");
+systemfonts("sans-serif", "serif");
+systemfonts("sans-serif");
+systemfonts("sans-serif", "serif", "monospace");
+`,
+    output,
+  });
+
+/**
+ * Outputs a collection of system font stacks.
+ *
+ * @example Outputting a single family
+ *
+ * ```ts
+ * systemfonts("sans-serif");
+ * ```
+ *
+ * @example Outputting multiple families
+ *
+ * ```ts
+ * systemfonts("sans-serif", "serif");
+ * ```
+ *
+ * @example Outputting all families
+ *
+ * ```ts
+ * systemfonts("sans-serif", "serif", "monospace");
+ * ```
+ *
+ * @param {("sans-serif" | "serif" | "monospace")[]} families - keyword(s) matching available system font stacks
+ * @returns {string[]} An array of system font stacks
+ */
+export function systemfonts(...families) {
+  if (
+    families.every((family) =>
+      family === "sans-serif" || family === "serif" || family === "monospace"
+    )
+  ) {
+    return families.map((family) => SystemFontStacks[family]);
+  }
+
+  return SystemFamilyError(families);
+}
+#+END_SRC
+
+*** Tests
+
+**** Typography Assertions
+
+#+BEGIN_SRC deno :tangle "./typography/index_test.js" :comments link
+import { systemfonts } from "./index.js";
+
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+Deno.test("SPEC systemfonts: can output a collection of system font stacks for prototyping", function () {
+  assertEquals(systemfonts("sans-serif"), [
+    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+  ]);
+  assertEquals(systemfonts("sans-serif", "serif"), [
+    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+    "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+  ]);
+  assertEquals(systemfonts("sans-serif", "serif", "monospace"), [
+    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+    "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+  ]);
+});
+
+Deno.test("EGDE systemfonts: rejects invalid family keys", function () {
+  assertThrows(
+    () => {
+      throw systemfonts("invalid");
+    },
+    undefined,
+    "not a system font stack family",
+  );
+});
+#+END_SRC
+
+**** Typography Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./typography/index_test.js)
+#+END_SRC
+
+#+NAME: typography-test
+#+begin_src shell
+running 2 tests
+test SPEC systemfonts: can output a collection of system font stacks for prototyping ... ok (6ms)
+test EGDE systemfonts: rejects invalid family keys ... ok (3ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (10ms)
 
 #+end_src
 
@@ -5934,7 +6066,7 @@ stack to provide better fallbacks than =sans-serif=, =serif=, or =monospace=.
 
 #+BEGIN_SRC deno :tangle "./data/typography/system.js" :comments link
 /** System font stacks: https://systemfontstack.com */
-const SystemFontStacks = {
+export const SystemFontStacks = {
   "sans-serif":
     "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   serif:

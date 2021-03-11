@@ -1,6 +1,6 @@
 // [[file:../../README.org::*System Font Stacks (=data/typography/system.js=)][System Font Stacks (=data/typography/system.js=):1]]
 /** System font stacks: https://systemfontstack.com */
-const SystemFontStacks = {
+export const SystemFontStacks = {
   "sans-serif":
     "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   serif:
