@@ -1,37 +1,30 @@
 #+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
-#+DATE: <2021-02-23 Tue>
+#+DATE: <2021-03-19 Fri>
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
 #+PROPERTY: header-args:shell :results output code
 
-* Intro :noexport:
-
-This repository is part of a toolkit for creating, assembling, and distributing design
-systems. The whole kit lives under the umbrella of the QuarkSuite name.
+This repository is part of a toolkit for creating, assembling, and distributing design systems. The
+whole kit lives under the umbrella of the QuarkSuite name.
 
 Other appendages of QuarkSuite include:
 
 + Quarks System Language (QSL): A domain-specific language for codifying design language into design systems
-+ Quarks System User Interface (QSUI): A UI kit for design system documentation and visual development
-+ Quarks System Development Environment (QSDE): A complete development environment integrating all
-  the above and some extras
++ Quarks System User Interface (QSUI): A UI kit for design system documentation and visual
+  development
++ Quarks System Development Environment (QSDE): A complete development environment for design system
+  authoring and management
 
-If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for QuarkSuite 1]].
+If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for QuarkSuite
+1]].
 
-* Summary :noexport:
-
-The Quarks System Core is the oldest and most mature part of QuarkSuite. It's been refined from
-QuarkSuite 1 to serve as an engine powering the rest of the kit.
-
-That said, it can still be used as a standalone library if your needs are simple, you require
-absolute control, or you want to develop your own design system workflow with a QSC foundation.
-
-* Installation :noexport:
-* Features :noexport:
-* Source Code Index                                                   :TOC@4:
+* Table of Contents                                                   :TOC@4:
+- [[#summary][Summary]]
+- [[#features][Features]]
+- [[#installation][Installation]]
+- [[#user-guide][User Guide]]
 - [[#api][API]]
-  - [[#how-to-read-the-api][How to Read the API]]
   - [[#utilities-utilitiesindexjs][Utilities (=utilities/index.js=)]]
     - [[#compose-utilitiescomposejs][compose (=utilities/compose.js=)]]
     - [[#pipe-utilitiespipejs][pipe (=utilities/pipe.js=)]]
@@ -39,7 +32,6 @@ absolute control, or you want to develop your own design system workflow with a 
     - [[#tests][Tests]]
       - [[#utilities-assertions][Utilities Assertions]]
       - [[#utilities-results][Utilities Results]]
-    - [[#scenarios][Scenarios]]
   - [[#color-colorindexjs][Color (=color/index.js=)]]
     - [[#format-conversion-colorconversionindexjs][Format Conversion (=color/conversion/index.js=)]]
       - [[#hex-colorconversionhexjs][hex (=color/conversion/hex.js=)]]
@@ -91,6 +83,21 @@ absolute control, or you want to develop your own design system workflow with a 
     - [[#tests-8][Tests]]
       - [[#modular-scale-assertions][Modular Scale Assertions]]
       - [[#modular-scale-results][Modular Scale Results]]
+  - [[#design-token-formats-tokensindexjs][Design Token Formats (=tokens/index.js=)]]
+    - [[#css-tokenscssindexjs][CSS (=tokens/css/index.js=)]]
+      - [[#css][css]]
+      - [[#sass][sass]]
+      - [[#less][less]]
+      - [[#styl][styl]]
+      - [[#tests-9][Tests]]
+    - [[#data-tokensdataindexjs][Data (=tokens/data/index.js=)]]
+      - [[#raw][raw]]
+      - [[#yaml][yaml]]
+      - [[#tests-10][Tests]]
+    - [[#integrations-tokensintegrationsindexjs][Integrations (=tokens/integrations/index.js=)]]
+      - [[#tailwind][tailwind]]
+      - [[#styledict][styledict]]
+      - [[#tests-11][Tests]]
 - [[#internals][Internals]]
   - [[#error-handling-internalserrorjs][Error Handling (=internals/error.js=)]]
   - [[#color][Color]]
@@ -120,6 +127,17 @@ absolute control, or you want to develop your own design system workflow with a 
   - [[#typography][Typography]]
     - [[#system-font-stacks-datatypographysystemjs][System Font Stacks (=data/typography/system.js=)]]
 
+* Summary
+
+Quarks System Core is the oldest and most mature part of QuarkSuite. It's been refined from
+QuarkSuite 1 to serve as an engine powering the rest of the kit.
+
+That said, it can still be used as a standalone library if your needs are simple, you require
+absolute control, or you want to develop a custom design system workflow from a QSC baseline.
+
+* Features
+* Installation
+* User Guide
 * API
 
 The API is organized by the kind of data each function accepts.
@@ -127,8 +145,6 @@ The API is organized by the kind of data each function accepts.
 This means you can jump right to the section for what you need to do. The literate style isn't for
 everyone, so headings are appropriately marked with their source location in the repo if you prefer
 to get right into code.
-
-** How to Read the API
 
 Each section is broken down into:
 
@@ -411,8 +427,6 @@ test SPEC bind: when initial arguments match function arity, simply execute ... 
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (46ms)
 
 #+end_src
-
-*** Scenarios
 
 ** Color (=color/index.js=)
 
@@ -3525,6 +3539,726 @@ test SPEC units: can attach units and output CSS-ready modular scales ... ok (3m
 test EDGE: scale modifiers (update, merge, chunk, units) reject empty scales ... ok (3ms)
 
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (18ms)
+
+#+end_src
+
+** Design Token Formats (=tokens/index.js=)
+
+All the modules necessary to create a design system foundation are in place, but it wouldn't be very
+useful or portable in its current form. Data has to be packaged as a Quarks System Dictionary
+object and then transformed into design tokens with the below build functions.
+
+#+BEGIN_QUOTE
+Quarks System Core is the barest metal component and has no need for filesystem read/write
+access. Therefore, the build functions limit themselves to formatting data to a /file-ready/ state.
+
+If you want to /write/ the tokens to your filesystem, use the native filesystem API provided by your
+JavaScript environment or a filesystem library of your choice.
+#+END_QUOTE
+
+#+BEGIN_SRC deno :tangle "./tokens/index.js"
+export * from "./css/index.js";
+export * from "./data/index.js";
+export * from "./integrations/index.js";
+#+END_SRC
+
+*** CSS (=tokens/css/index.js=)
+
+QuarkSuite is made from web technologies for the web platform, so CSS format support is
+essential. Whether you like it vanilla or swear by preprocessors, it's covered.
+
+The output has mostly cosmetic differences between the formats, so I'll set up a general
+design token construction helper.
+
+#+BEGIN_SRC deno :tangle "./tokens/css/index.js" :comments link
+const formatter = ({
+  padding = "",
+  prefix = "--",
+  operator = ": ",
+  suffix = ";",
+  eol = "\n",
+}) =>
+  (collector, key, value) =>
+    collector.concat(padding, prefix, key, operator, value, suffix, eol);
+
+const variable = (collected, current, delimiter) =>
+  current === "base"
+    ? collected
+    : collected
+    ? [collected, current].join(delimiter)
+    : current;
+
+function construct(opts, dict) {
+  const aggregator = (head, node) =>
+    Object.entries(node).reduce((product, [key, value]) => {
+      const format = formatter(opts);
+      const delimiter = "-";
+
+      return typeof value === "object"
+        ? product.concat(aggregator(variable(head, key, delimiter), value))
+        : format(product, variable(head, key, delimiter), value);
+    }, "");
+
+  return "".concat("\n", aggregator("", dict));
+}
+#+END_SRC
+
+The =formatter= queues up any syntax options that need to change between formats before assembling
+the token itself. The =variable= is constructed by recursively walking the Quarks System Dictionary
+object passed in, only returning when the value is found at the end of the chain.
+
+**** css
+
++ =css: (dict: object) => string=
++ =dict: object=: the dictionary to process
+
+#+BEGIN_SRC deno :tangle "./tokens/css/index.js" :comments link
+/**
+ * Transforms Quark System Dictionaries into CSS custom properties.
+ *
+ * @example
+ *
+ * ```ts
+ * css(dict);
+ * ```
+ *
+ * @remarks
+ * This function does not actually build the files as the core has no need
+ * for read/write access.
+ *
+ * You'll want to use the native API or filesystem library of your choice in
+ * your JavaScript environment to output the files.
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as CSS custom properties (file-ready)
+ */
+export const css = (dict) => `\n:root {${construct({ padding: "  " }, dict)}}`;
+#+END_SRC
+
+**** sass
+
++ =sass: (dict: object) => string=
++ =dict: object=: the dictionary to process
+
+#+BEGIN_SRC deno :tangle "./tokens/css/index.js" :comments link
+/**
+ * Transforms Quark System Dictionaries into Sass variables.
+ *
+ * @example
+ *
+ * ```ts
+ * sass(dict);
+ * ```
+ *
+ * @remarks
+ * This function does not actually write files as the core has no need
+ * for read/write access.
+ *
+ * You'll want to use the native API or filesystem library of your choice in
+ * your JavaScript environment to output the files.
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as Sass variables (file-ready)
+ */
+export const sass = (dict) => construct({ prefix: "$" }, dict);
+#+END_SRC
+
+**** less
+
++ =less: (dict: object) => string=
++ =dict: object=: the dictionary to process
+
+#+BEGIN_SRC deno :tangle "./tokens/css/index.js" :comments link
+/**
+ * Transforms Quark System Dictionaries into Less variables.
+ *
+ * @example
+ *
+ * ```ts
+ * less(dict);
+ * ```
+ *
+ * @remarks
+ * This function does not actually write files as the core has no need
+ * for read/write access.
+ *
+ * You'll want to use the native API or filesystem library of your choice in
+ * your JavaScript environment to output the files.
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as Less variables (file-ready)
+ */
+export const less = (dict) => construct({ prefix: "@" }, dict);
+#+END_SRC
+
+**** styl
+
++ =styl: (dict: object) => string=
++ =dict: object=: the dictionary to process
+
+#+BEGIN_SRC deno :tangle "./tokens/css/index.js" :comments link
+/**
+ * Transforms Quark System Dictionaries into Stylus variables.
+ *
+ * @example
+ *
+ * ```ts
+ * styl(dict);
+ * ```
+ *
+ * @remarks
+ * This function does not actually write files as the core has no need
+ * for read/write access.
+ *
+ * You'll want to use the native API or filesystem library of your choice in
+ * your JavaScript environment to output the files.
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as Stylus variables (file-ready)
+ */
+export const styl = (dict) =>
+  construct({ prefix: "", operator: " = ", suffix: "" }, dict);
+#+END_SRC
+
+**** Tests
+
+***** CSS Format Assertions
+
+#+BEGIN_SRC deno :tangle "./tokens/css/index_test.js" :comments link
+import { css, less, sass, styl } from "./index.js";
+import { clrs, shades, tints, triadic } from "../../color/index.js";
+
+import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+const swatch = clrs("red");
+const [main, accent, highlight] = triadic(swatch);
+const light = tints.bind(null, 3, 99);
+const dark = shades.bind(null, 2, 99);
+
+const dict = {
+  color: {
+    main: {
+      base: main,
+      light: light(main),
+      dark: dark(main),
+    },
+    accent: {
+      base: accent,
+      dark: dark(accent),
+    },
+    highlight,
+  },
+};
+
+Deno.test(
+  "SPEC css: can process dictionary into CSS custom properties",
+  function () {
+    assertStrictEquals(
+      css(dict),
+      `
+:root {
+  --color-main: #ff4036;
+  --color-main-light-0: #ff9d99;
+  --color-main-light-1: #ffd3d2;
+  --color-main-light-2: #fffefe;
+  --color-main-dark-0: #b42d26;
+  --color-main-dark-1: #1a0605;
+  --color-accent: #4036ff;
+  --color-accent-dark-0: #2d26b4;
+  --color-accent-dark-1: #06051a;
+  --color-highlight: #36ff40;
+}`,
+    );
+  },
+);
+
+Deno.test(
+  "SPEC sass: can process dictionary into Sass variables",
+  function () {
+    assertStrictEquals(
+      sass(dict),
+      `
+$color-main: #ff4036;
+$color-main-light-0: #ff9d99;
+$color-main-light-1: #ffd3d2;
+$color-main-light-2: #fffefe;
+$color-main-dark-0: #b42d26;
+$color-main-dark-1: #1a0605;
+$color-accent: #4036ff;
+$color-accent-dark-0: #2d26b4;
+$color-accent-dark-1: #06051a;
+$color-highlight: #36ff40;
+`,
+    );
+  },
+);
+
+Deno.test(
+  "SPEC less: can process dictionary into Less variables",
+  function () {
+    assertStrictEquals(
+      less(dict),
+      `
+@color-main: #ff4036;
+@color-main-light-0: #ff9d99;
+@color-main-light-1: #ffd3d2;
+@color-main-light-2: #fffefe;
+@color-main-dark-0: #b42d26;
+@color-main-dark-1: #1a0605;
+@color-accent: #4036ff;
+@color-accent-dark-0: #2d26b4;
+@color-accent-dark-1: #06051a;
+@color-highlight: #36ff40;
+`,
+    );
+  },
+);
+
+Deno.test(
+  "SPEC styl: can process dictionary into Stylus variables",
+  function () {
+    assertStrictEquals(
+      styl(dict),
+      `
+color-main = #ff4036
+color-main-light-0 = #ff9d99
+color-main-light-1 = #ffd3d2
+color-main-light-2 = #fffefe
+color-main-dark-0 = #b42d26
+color-main-dark-1 = #1a0605
+color-accent = #4036ff
+color-accent-dark-0 = #2d26b4
+color-accent-dark-1 = #06051a
+color-highlight = #36ff40
+`,
+    );
+  },
+);
+#+END_SRC
+
+***** CSS Format Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./tokens/css/index_test.js)
+#+END_SRC
+
+#+NAME: css-test
+#+begin_src shell
+running 4 tests
+test SPEC css: can process dictionary into CSS custom properties ... ok (5ms)
+test SPEC sass: can process dictionary into Sass variables ... ok (2ms)
+test SPEC less: can process dictionary into Less variables ... ok (2ms)
+test SPEC styl: can process dictionary into Stylus variables ... ok (2ms)
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (12ms)
+
+#+end_src
+
+*** Data (=tokens/data/index.js=)
+
+Quarks System Core also supports exporting tokens in general data formats (raw JSON and YAML
+supported as of this writing). This allows complete detachment from the core and the portability to
+use system data outside of JavaScript environments.
+
+**** raw
+
++ =raw: (dict: object) => object=
++ =dict: object=: the dictionary to process
+
+#+BEGIN_SRC deno :tangle "./tokens/data/index.js" :comments link
+/**
+ * Transforms Quark System Dictionaries into raw JSON data.
+ *
+ * @example
+ *
+ * ```ts
+ * raw(dict);
+ * ```
+ *
+ * @remarks
+ * This function does not actually write files as the core has no need
+ * for read/write access.
+ *
+ * You'll want to use the native API or filesystem library of your choice in
+ * your JavaScript environment to output the files.
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as raw JSON data (file-ready)
+ */
+export const raw = (dict) => JSON.stringify(dict, null, 2);
+#+END_SRC
+
+**** yaml
+
++ =yaml: (dict: object) => string=
++ =dict: object=: the dictionary to process
+
+YAML is a whitespace-dependent data format, so I kept that in mind when constructing the helper
+bits. The way it works: specific data builders execute when the function encounters the right kind
+of data.
+
+And then the main function recursively walks through the dictionary to completion.
+
+#+BEGIN_SRC deno :tangle "./tokens/data/index.js" :comments link
+const whitespace = 2;
+
+const value = (level, str, key, value) =>
+  str.concat("".padStart(level), key, ": ", value, "\n");
+
+const scale = (level, str, key, value) =>
+  str.concat(
+    "".padStart(level),
+    key,
+    ":\n",
+    value.reduce(
+      (s, v) => s.concat("".padStart(level + whitespace), "- ", v, "\n"),
+      "",
+    ),
+  );
+
+const subcategory = (level, data) =>
+  Object.entries(data).reduce((str, [key, v]) => {
+    if (Array.isArray(v)) return scale(level, str, key, v);
+    return value(level, str, key, v);
+  }, "");
+
+const assemble = (level, tree) =>
+  Object.entries(tree).reduce((str, [key, data]) => {
+    if (typeof data === "string") return value(level, str, key, data);
+    if (Array.isArray(data)) return scale(level, str, key, data);
+    if (key === "base") return subcategory(level, data);
+    return str.concat(
+      "".padStart(level),
+      key,
+      ":\n",
+      assemble(level + whitespace, data),
+    );
+  }, "");
+
+/**
+ * Transforms Quark System Dictionaries into YAML data.
+ *
+ * @example
+ *
+ * ```ts
+ * yaml(dict);
+ * ```
+ *
+ * @remarks
+ * This function does not actually write files as the core has no need
+ * for read/write access.
+ *
+ * You'll want to use the native API or filesystem library of your choice in
+ * your JavaScript environment to output the files.
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as yaml data (file-ready)
+ */
+export const yaml = (dict) =>
+  Object.entries(dict)
+    .reduce((str, [key, data]) => {
+      if (typeof data === "string") return value(0, str, key, data);
+      if (Array.isArray(data)) return scale(0, str, key, data);
+      if (key === "base") return subcategory(0, data);
+      return str.concat("\n", key, ":\n", assemble(whitespace, data));
+    }, "")
+    .trimEnd();
+#+END_SRC
+
+**** Tests
+
+***** Data Format Assertions
+
+#+BEGIN_SRC deno :tangle "./tokens/data/index_test.js" :comments link
+import { raw, yaml } from "./index.js";
+import { clrs, shades, tints, triadic } from "../../color/index.js";
+
+import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+const swatch = clrs("red");
+const [main, accent, highlight] = triadic(swatch);
+const light = tints.bind(null, 3, 99);
+const dark = shades.bind(null, 2, 99);
+
+const dict = {
+  color: {
+    main: {
+      base: main,
+      light: light(main),
+      dark: dark(main),
+    },
+    accent: {
+      base: accent,
+      dark: dark(accent),
+    },
+    highlight,
+  },
+};
+
+Deno.test(
+  "SPEC raw: transforms a dictionary into its raw JSON data",
+  function () {
+    assertStrictEquals(
+      raw(dict),
+      `{
+  "color": {
+    "main": {
+      "base": "#ff4036",
+      "light": [
+        "#ff9d99",
+        "#ffd3d2",
+        "#fffefe"
+      ],
+      "dark": [
+        "#b42d26",
+        "#1a0605"
+      ]
+    },
+    "accent": {
+      "base": "#4036ff",
+      "dark": [
+        "#2d26b4",
+        "#06051a"
+      ]
+    },
+    "highlight": "#36ff40"
+  }
+}`,
+    );
+  },
+);
+
+Deno.test(
+  "SPEC yaml: transforms a dictionary to YAML formatted data",
+  function () {
+    assertStrictEquals(
+      yaml(dict),
+      `
+color:
+  main:
+    base: #ff4036
+    light:
+      - #ff9d99
+      - #ffd3d2
+      - #fffefe
+    dark:
+      - #b42d26
+      - #1a0605
+  accent:
+    base: #4036ff
+    dark:
+      - #2d26b4
+      - #06051a
+  highlight: #36ff40`,
+    );
+  },
+);
+#+END_SRC
+
+***** Data Format Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./tokens/data/index_test.js)
+#+END_SRC
+
+#+NAME: data-test
+#+begin_src shell
+running 2 tests
+test SPEC raw: transforms a dictionary into its raw JSON data ... ok (3ms)
+test SPEC yaml: transforms a dictionary to YAML formatted data ... ok (2ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (6ms)
+
+#+end_src
+
+*** Integrations (=tokens/integrations/index.js=)
+
+The final set of token formats are reserved for integrating with other tools that use and transform
+design data. Currently, it supports tools that I use regularly in my own projects (TailwindCSS and
+Style Dictionary), but more will be added as the project grows.
+
+**** tailwind
+
++ =tailwind: (dict: object) => string=
++ =dict: object=: the dictionary to process
+
+#+BEGIN_SRC deno :tangle "./tokens/integrations/index.js" :comments link
+/**
+ * Reformats Quark System Dictionaries as TailwindCSS theme data.
+ *
+ * @example
+ *
+ * ```ts
+ * tailwind(dict);
+ * ```
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as TailwindCSS theme data (file-ready)
+ */
+export const tailwind = (dict) =>
+  Object.entries(dict).reduce((acc, [key, data]) => {
+    if (key === "base") return { ...acc, DEFAULT: data };
+    if (Array.isArray(data)) {
+      return {
+        ...acc,
+        ...{
+          ...data.reduce((a, v, i) => {
+            return { ...a, [[key, i + 2].join("")]: v };
+          }, {}),
+        },
+      };
+    }
+    if (typeof data === "object") return { ...acc, [key]: tailwind(data) };
+    return { ...acc, [key]: data };
+  }, {});
+#+END_SRC
+
+**** styledict
+
++ =styledict: (dict: object) => string=
++ =dict: object=: the dictionary to process
+
+#+BEGIN_SRC deno :tangle "./tokens/integrations/index.js" :comments link
+/**
+ * Reformats Quark System Dictionaries as Style Dictionary properties.
+ *
+ * @example
+ *
+ * ```ts
+ * styledict(dict);
+ * ```
+ *
+ * @remarks
+ * This function does not actually write files as the core has no need
+ * for read/write access.
+ *
+ * You'll want to use the native API or filesystem library of your choice in
+ * your JavaScript environment to output the files.
+ *
+ * @param {object} dict - the dictionary data to process
+ * @returns {string} The transformed dictionary as Style Dictionary properties (file-ready)
+ */
+export const styledict = (dict) =>
+  Object.entries(dict).reduce((acc, [key, data]) => {
+    if (typeof data === "object") {
+      return { ...acc, [key]: styledict(data) };
+    }
+    return { ...acc, [key]: { value: String(data) } };
+  }, {});
+#+END_SRC
+
+**** Tests
+
+***** Tool Integration Assertions
+
+#+BEGIN_SRC deno :tangle "./tokens/integrations/index_test.js" :comments link
+import { styledict, tailwind } from "./index.js";
+import { clrs, shades, tints, triadic } from "../../color/index.js";
+
+import { assertEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
+
+const swatch = clrs("red");
+const [main, accent, highlight] = triadic(swatch);
+const light = tints.bind(null, 3, 99);
+const dark = shades.bind(null, 2, 99);
+
+const dict = {
+  color: {
+    main: {
+      base: main,
+      light: light(main)[0],
+      lighter: light(main)[1],
+      lightest: light(main)[2],
+      dark: dark(main)[0],
+      darker: dark(main)[1],
+    },
+    accent: {
+      base: accent,
+      dark: dark(accent)[0],
+      darker: dark(accent)[1],
+    },
+    highlight,
+  },
+};
+
+Deno.test(
+  "SPEC tailwind: can reformat a dictionary as Tailwind theme data",
+  function () {
+    assertEquals(tailwind(dict), {
+      color: {
+        main: {
+          DEFAULT: "#ff4036",
+          light: "#ff9d99",
+          lighter: "#ffd3d2",
+          lightest: "#fffefe",
+          dark: "#b42d26",
+          darker: "#1a0605",
+        },
+        accent: { DEFAULT: "#4036ff", dark: "#2d26b4", darker: "#06051a" },
+        highlight: "#36ff40",
+      },
+    });
+  },
+);
+
+Deno.test(
+  "SPEC styledict: can reformat a dictionary as Style Dictionary properties",
+  function () {
+    assertEquals(styledict(dict), {
+      color: {
+        main: {
+          base: {
+            value: "#ff4036",
+          },
+          dark: {
+            value: "#b42d26",
+          },
+          darker: {
+            value: "#1a0605",
+          },
+          light: {
+            value: "#ff9d99",
+          },
+          lighter: {
+            value: "#ffd3d2",
+          },
+          lightest: {
+            value: "#fffefe",
+          },
+        },
+        accent: {
+          base: {
+            value: "#4036ff",
+          },
+          dark: {
+            value: "#2d26b4",
+          },
+          darker: {
+            value: "#06051a",
+          },
+        },
+        highlight: {
+          value: "#36ff40",
+        },
+      },
+    });
+  },
+);
+#+END_SRC
+
+***** Tool Integration Results
+
+#+BEGIN_SRC shell
+printf '%s\n' (NO_COLOR=true deno test ./tokens/integrations/index_test.js)
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+running 2 tests
+test SPEC tailwind: can reformat a dictionary as Tailwind theme data ... ok (6ms)
+test SPEC styledict: can reformat a dictionary as Style Dictionary properties ... ok (13ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (19ms)
 
 #+end_src
 
