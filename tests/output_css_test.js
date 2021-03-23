@@ -1,8 +1,8 @@
 // [[file:../README.org::*CSS Format Assertions][CSS Format Assertions:1]]
-import { css, less, sass, styl } from "./output_css.js";
-import { clrs } from "./color_a11y.js";
-import { triadic } from "./color_scheme.js";
-import { shades, tints } from "./color_palette.js";
+import { css, less, sass, styl } from "../output_css.js";
+import { clrs } from "../color_a11y.js";
+import { triadic } from "../color_scheme.js";
+import { shades, tints } from "../color_palette.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 

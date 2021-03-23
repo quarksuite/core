@@ -1,5 +1,5 @@
 // [[file:../README.org::*Color Palette Assertions][Color Palette Assertions:1]]
-import { shades, tints, tones } from "./color_palette.js";
+import { shades, tints, tones } from "../color_palette.js";
 
 import {
   assertEquals,

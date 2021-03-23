@@ -1,5 +1,5 @@
 // [[file:../README.org::*Color Mixing Assertions][Color Mixing Assertions:1]]
-import { mix } from "./color_mix.js";
+import { mix } from "../color_mix.js";
 
 import {
   assertEquals,

@@ -1,8 +1,8 @@
 // [[file:../README.org::*Data Transform Assertions][Data Transform Assertions:1]]
-import { styledict, tailwind } from "./transform_data.js";
-import { clrs } from "./color_a11y.js";
-import { triadic } from "./color_scheme.js";
-import { shades, tints } from "./color_palette.js";
+import { styledict, tailwind } from "../transform_data.js";
+import { clrs } from "../color_a11y.js";
+import { triadic } from "../color_scheme.js";
+import { shades, tints } from "../color_palette.js";
 
 import { assertEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 

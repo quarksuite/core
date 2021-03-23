@@ -8,7 +8,7 @@ import {
   square,
   tetradic,
   triadic,
-} from "./color_scheme.js";
+} from "../color_scheme.js";
 
 import {
   assertEquals,

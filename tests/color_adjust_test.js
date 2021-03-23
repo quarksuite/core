@@ -11,7 +11,7 @@ import {
   sat,
   saturation,
   transparency,
-} from "./color_adjust.js";
+} from "../color_adjust.js";
 
 import {
   assertEquals,

@@ -3454,7 +3454,7 @@ plugging some values to test the conversion chaining and error reporting here.
 ****** Color Format Conversion Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/color_convert_test.js" :comments link
-import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "./color_convert.js";
+import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "../color_convert.js";
 
 import {
   assertEquals,
@@ -3870,7 +3870,7 @@ import {
   sat,
   saturation,
   transparency,
-} from "./color_adjust.js";
+} from "../color_adjust.js";
 
 import {
   assertEquals,
@@ -4245,7 +4245,7 @@ export function mix(amount, target, color) {
 ****** Color Mixing Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/color_mix_test.js" :comments link
-import { mix } from "./color_mix.js";
+import { mix } from "../color_mix.js";
 
 import {
   assertEquals,
@@ -4637,7 +4637,7 @@ import {
   square,
   tetradic,
   triadic,
-} from "./color_scheme.js";
+} from "../color_scheme.js";
 
 import {
   assertEquals,
@@ -4965,7 +4965,7 @@ export const shades = (
 ****** Color Palette Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/color_palette_test.js" :comments link
-import { shades, tints, tones } from "./color_palette.js";
+import { shades, tints, tones } from "../color_palette.js";
 
 import {
   assertEquals,
@@ -5178,8 +5178,8 @@ You can use the =contrast()= function in two main ways:
 ****** Color Accessibility Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/color_a11y_test.js" :comments link
-import { clrs, contrast } from "./color_a11y.js";
-import { shades, tints } from "./color_palette.js";
+import { clrs, contrast } from "../color_a11y.js";
+import { shades, tints } from "../color_palette.js";
 
 import {
   assertEquals,
@@ -5398,7 +5398,7 @@ export function systemfonts(...families) {
 ***** Typography Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/typography_test.js" :comments link
-import { systemfonts } from "./typography.js";
+import { systemfonts } from "../typography.js";
 
 import {
   assertEquals,
@@ -5648,7 +5648,7 @@ export const units = (unit, scale) =>
 Alright. Time to test the scale creation flow and error handling.
 
 #+BEGIN_SRC deno :tangle "./tests/modular_scale_test.js" :comments link
-import { chunk, create, merge, units, update } from "./modular_scale.js";
+import { chunk, create, merge, units, update } from "../modular_scale.js";
 
 import {
   assertEquals,
@@ -6063,10 +6063,10 @@ export const styl = (dict) =>
 ****** CSS Format Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/output_css_test.js" :comments link
-import { css, less, sass, styl } from "./output_css.js";
-import { clrs } from "./color_a11y.js";
-import { triadic } from "./color_scheme.js";
-import { shades, tints } from "./color_palette.js";
+import { css, less, sass, styl } from "../output_css.js";
+import { clrs } from "../color_a11y.js";
+import { triadic } from "../color_scheme.js";
+import { shades, tints } from "../color_palette.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -6310,10 +6310,10 @@ export const yaml = (dict) =>
 ****** Data Export Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/export_data_test.js" :comments link
-import { raw, yaml } from "./export_data.js";
-import { clrs } from "./color_a11y.js";
-import { triadic } from "./color_scheme.js";
-import { shades, tints } from "./color_palette.js";
+import { raw, yaml } from "../export_data.js";
+import { clrs } from "../color_a11y.js";
+import { triadic } from "../color_scheme.js";
+import { shades, tints } from "../color_palette.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -6494,10 +6494,10 @@ export const styledict = (dict) =>
 ****** Data Transform Assertions
 
 #+BEGIN_SRC deno :tangle "./tests/transform_data_test.js" :comments link
-import { styledict, tailwind } from "./transform_data.js";
-import { clrs } from "./color_a11y.js";
-import { triadic } from "./color_scheme.js";
-import { shades, tints } from "./color_palette.js";
+import { styledict, tailwind } from "../transform_data.js";
+import { clrs } from "../color_a11y.js";
+import { triadic } from "../color_scheme.js";
+import { shades, tints } from "../color_palette.js";
 
 import { assertEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
