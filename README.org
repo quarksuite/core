@@ -2673,7 +2673,18 @@ Each section is broken down into:
 + functions: the actual function definitions with developer commentary
 + Tests: proving each function does its job and doesn't choke on the unexpected
 
-As a rule, any files in the project root are public modules while any files in directories are internal.
+As a rule, any files in the project root are public modules while any files in directories are
+internal.
+
+Before anything, the package registry expects an entry point:
+
+#+BEGIN_SRC deno :tangle "./mod.js" :comments link
+export * from "./utilities.js";
+export * from "./color.js";
+export * from "./typography.js";
+export * from "./modular_scale.js";
+export * from "./design_tokens.js";
+#+END_SRC
 
 *** Utilities (=utilities.js=)
 
