@@ -45,7 +45,10 @@ export function clrs(color) {
 // clrs:1 ends here
 
 // [[file:README.org::*contrast][contrast:1]]
-import { calcFractionFromChannel, significant } from "./internals/color/convert/setup.js";
+import {
+  calcFractionFromChannel,
+  significant,
+} from "./internals/color/convert/setup.js";
 import { extract } from "./internals/color/format/rgb.js";
 import { pipe } from "./utilities.js";
 import { rgb } from "./color_convert.js";

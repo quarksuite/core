@@ -157,18 +157,18 @@ function generate({ hues, arc, offset = 0 }, color) {
   ];
   return offset
     ? [
-        ...new Set([
-          hue(0, color),
-          ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
-          ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
-        ]),
-      ] // Must preserve the origin with offset
+      ...new Set([
+        hue(0, color),
+        ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
+        ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
+      ]),
+    ] // Must preserve the origin with offset
     : [
-        ...new Set([
-          ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
-          ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
-        ]),
-      ]; // Must add an extra hue to generate from origin
+      ...new Set([
+        ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
+        ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
+      ]),
+    ]; // Must add an extra hue to generate from origin
 }
 
 /**

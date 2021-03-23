@@ -4,7 +4,6 @@ import { compose, pipe } from "../utilities.js";
 import {
   assertEquals,
   assertThrows,
-
 } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 const isString = (x) => typeof x === "string";
@@ -22,7 +21,7 @@ const unbox = (x) => isArray(x) && x.toString();
 
 Deno.test("SPEC compose: combines two data operators", function () {
   const splitSafe = compose(split, unbox);
-    assertEquals(splitSafe("hello"), "h,e,l,l,o");
+  assertEquals(splitSafe("hello"), "h,e,l,l,o");
 });
 
 Deno.test("SPEC compose: can combine a chain of data operators", function () {

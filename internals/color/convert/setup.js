@@ -4,7 +4,7 @@ export const hexFragmentToChannel = (fragment) => parseInt(fragment, 16);
 
 /** Helper for converting int->hex */
 export const channelToHexFragment = (channel) =>
-channel.toString(16).padStart(2, "0");
+  channel.toString(16).padStart(2, "0");
 // Hex RGB Fragments:1 ends here
 
 // [[file:../../../README.org::*Math][Math:1]]
@@ -27,11 +27,11 @@ const remainder = (y, x) => significant(6, x % y);
 
 /** Formula: n° = n㎭ ✕ 180∕π */
 export const calcHueFromRad = (radians) =>
-Math.round(product(quotient(Math.PI, 180), radians));
+  Math.round(product(quotient(Math.PI, 180), radians));
 
 /** Formula: n° = nᵍ✕ 180∕200 */
 export const calcHueFromGrad = (gradians) =>
-Math.round(product(quotient(200, 180), gradians));
+  Math.round(product(quotient(200, 180), gradians));
 
 /** Formula: n° = n% ✕ 360 */
 export const calcHueFromTurn = (turn) => Math.round(product(360, turn));
@@ -48,7 +48,7 @@ export const correctHueClockwise = (hue) => remainder(360, hue);
 
 /** Formula: n = n%∕100 */
 export const calcFractionFromPercent = (percentage) =>
-quotient(100, percentage);
+  quotient(100, percentage);
 
 /** Formula: n = n ✕ 100 */
 export const calcPercentFromFraction = (fraction) => product(100, fraction);
@@ -63,7 +63,7 @@ export const calcFractionFromChannel = (channel) => quotient(255, channel);
 
 /** Formula: n = n%∕100 ✕ 255 */
 export const calcChannelFromPercent = (percentage) =>
-Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
+  Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
 
 /** Normalization to define boundaries */
 export const normalize = (a, x, b) => Math.round(Math.min(Math.max(x, a), b));
@@ -72,5 +72,5 @@ export const normalize = (a, x, b) => Math.round(Math.min(Math.max(x, a), b));
 
 /** Helper to convert alpha value to hex fragment */
 export const calcHexFragmentFromAlpha = (alpha) =>
-channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
+  channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
 // Math:1 ends here
