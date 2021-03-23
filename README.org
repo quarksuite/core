@@ -2678,12 +2678,18 @@ As a rule, any files in the project root are public modules while any files in d
 *** Utilities (=utilities.js=)
 
 The Quarks System Core rests on a functional foundation. It uses a data-last architecture and the following
-tutilities are designed to take full advantage of this decision.
+utilities are designed to take full advantage of this decision.
 
 **** compose
 
 + =compose: (...operators) ==> (data) ==> unknown=
 + =operators: Array<(data: unknown) ==> unknown>=: a sequence of data operators
+
+
+Two conditions must be met for composition:
+
++ all operators must be functions
++ all functions must be monadic ( =(data: unknown) => unknown=)
 
 #+BEGIN_SRC deno :tangle "./utilities.js" :comments link
 import { ErrorTemplate } from "./internals/error.js";
@@ -2735,16 +2741,18 @@ export function compose(...operators) {
 }
 #+END_SRC
 
-Two conditions must be met for compose to work:
-
-+ all operators must be functions
-+ all operations must have a signature of =(data: unknown) => unknown=
-
 **** pipe
 
 + =(data, ...operators) => unknown=
 + =data: unknown=: the data to pass through the pipeline
 + =...operators: Array<(data: unknown) => unknown>=: a sequence of data operators
+
+=pipe= inverts the relationship between data and its operators. This is crucial because data
+pipelines can be bound (with =Function.bind=)which allows the construction of /queued/ data
+transformers.
+
+As you can see, it's a reimplementation of =compose= but with the data as the initial argument and
+immediately executes on call.
 
 #+BEGIN_SRC deno :tangle "./utilities.js" :comments link
 /**
@@ -2772,13 +2780,6 @@ export function pipe(data, ...operators) {
   return compose(...operators)(data);
 }
 #+END_SRC
-
-=pipe= inverts the relationship between data and its operators. This is crucial: data pipelines,
-because of the way they're defined can /themselves/ be bound. Data, rather than being the remaining
-argument, becomes the /initial/ argument and its operators can be applied freely after.
-
-As you can see, it's a reimplementation of =compose= but with the data as the initial argument and
-immediately executes on call.
 
 **** Tests
 
