@@ -1,4 +1,4 @@
-// [[file:README.org::*Color Format Conversion Assertions][Color Format Conversion Assertions:1]]
+// [[file:../README.org::*Color Format Conversion Assertions][Color Format Conversion Assertions:1]]
 import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "./color_convert.js";
 
 import {

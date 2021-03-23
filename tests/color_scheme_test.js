@@ -1,4 +1,4 @@
-// [[file:README.org::*Color Scheme Generation Assertions][Color Scheme Generation Assertions:1]]
+// [[file:../README.org::*Color Scheme Generation Assertions][Color Scheme Generation Assertions:1]]
 import {
   analogous,
   complementary,

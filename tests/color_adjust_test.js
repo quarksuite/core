@@ -1,4 +1,4 @@
-// [[file:README.org::*Color Adjustment Assertions][Color Adjustment Assertions:1]]
+// [[file:../README.org::*Color Adjustment Assertions][Color Adjustment Assertions:1]]
 import {
   a,
   alpha,

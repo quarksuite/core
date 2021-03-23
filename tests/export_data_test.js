@@ -1,4 +1,4 @@
-// [[file:README.org::*Data Export Assertions][Data Export Assertions:1]]
+// [[file:../README.org::*Data Export Assertions][Data Export Assertions:1]]
 import { raw, yaml } from "./export_data.js";
 import { clrs } from "./color_a11y.js";
 import { triadic } from "./color_scheme.js";

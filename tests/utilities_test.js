@@ -1,5 +1,5 @@
-// [[file:README.org::*Utilities Assertions][Utilities Assertions:1]]
-import { compose, pipe } from "./utilities.js";
+// [[file:../README.org::*Utilities Assertions][Utilities Assertions:1]]
+import { compose, pipe } from "../utilities.js";
 
 import {
   assertEquals,

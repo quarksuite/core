@@ -1,4 +1,4 @@
-// [[file:README.org::*Data Transform Assertions][Data Transform Assertions:1]]
+// [[file:../README.org::*Data Transform Assertions][Data Transform Assertions:1]]
 import { styledict, tailwind } from "./transform_data.js";
 import { clrs } from "./color_a11y.js";
 import { triadic } from "./color_scheme.js";

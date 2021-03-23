@@ -1,4 +1,4 @@
-// [[file:README.org::*Typography Assertions][Typography Assertions:1]]
+// [[file:../README.org::*Typography Assertions][Typography Assertions:1]]
 import { systemfonts } from "./typography.js";
 
 import {

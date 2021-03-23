@@ -1,6 +1,5 @@
 #+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
-#+DATE: <2021-03-19 Fri>
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args:deno :results output none
 #+PROPERTY: header-args:shell :results output code
@@ -45,7 +44,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
       - [[#compose][compose]]
       - [[#pipe][pipe]]
       - [[#tests][Tests]]
-    - [[#color-2][Color]]
+    - [[#color-colorjs][Color (=color.js=)]]
       - [[#format-conversion-color_convertjs][Format Conversion (=color_convert.js=)]]
       - [[#properties-adjustment-color_adjustjs][Properties Adjustment (=color_adjust.js=)]]
       - [[#mixing-color_mixjs][Mixing (=color_mix.js=)]]
@@ -62,7 +61,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
       - [[#chunk][chunk]]
       - [[#units][units]]
       - [[#tests-2][Tests]]
-    - [[#design-token-output-formats][Design Token Output Formats]]
+    - [[#design-token-output-formats-design_tokensjs][Design Token Output Formats (=design_tokens.js=)]]
       - [[#css-output_cssjs][CSS (=output_css.js=)]]
       - [[#data-export-export_datajs][Data Export (=export_data.js=)]]
       - [[#data-transforms-transform_datajs][Data Transforms (=transform_data.js=)]]
@@ -2674,6 +2673,8 @@ Each section is broken down into:
 + functions: the actual function definitions with developer commentary
 + Tests: proving each function does its job and doesn't choke on the unexpected
 
+As a rule, any files in the project root are public modules while any files in directories are internal.
+
 *** Utilities (=utilities.js=)
 
 The Quarks System Core rests on a functional foundation. It uses a data-last architecture and the following
@@ -2783,8 +2784,8 @@ immediately executes on call.
 
 ***** Utilities Assertions
 
-#+BEGIN_SRC deno :tangle "./utilities_test.js" :comments link
-import { compose, pipe } from "./utilities.js";
+#+BEGIN_SRC deno :tangle "./tests/utilities_test.js" :comments link
+import { compose, pipe } from "../utilities.js";
 
 import {
   assertEquals,
@@ -2848,7 +2849,7 @@ Deno.test("SPEC pipe: can chain operators", function () {
 ***** Utilities Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./utilities_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/utilities_test.js)
 #+END_SRC
 
 #+NAME: utilities-test
@@ -2864,11 +2865,19 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (14ms
 
 #+end_src
 
-*** Color
+*** Color (=color.js=)
 
 Quarks System Core is designed to work with all valid CSS color formats (current and future). The
 color module provides utilities for conversion, modification, mixing, generating schemes, and
 creating palettes.
+
+#+BEGIN_SRC deno :tangle "./color.js" :comments link
+export * from "./color_convert.js";
+export * from "./color_adjust.js";
+export * from "./color_mix.js";
+export * from "./color_scheme.js";
+export * from "./color_palette.js";
+#+END_SRC
 
 **** Format Conversion (=color_convert.js=)
 
@@ -3443,7 +3452,7 @@ plugging some values to test the conversion chaining and error reporting here.
 
 ****** Color Format Conversion Assertions
 
-#+BEGIN_SRC deno :tangle "./color_convert_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/color_convert_test.js" :comments link
 import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "./color_convert.js";
 
 import {
@@ -3508,7 +3517,7 @@ Deno.test(`EDGE: rejects invalid or unsupported color formats`, function () {
 ****** Color Format Conversion Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./color_convert_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_convert_test.js)
 #+END_SRC
 
 #+NAME: conversion-test
@@ -3847,7 +3856,7 @@ export const a = alpha;
 
 ****** Color Adjustment Assertions
 
-#+BEGIN_SRC deno :tangle "./color_adjust_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/color_adjust_test.js" :comments link
 import {
   a,
   alpha,
@@ -4078,7 +4087,7 @@ Deno.test("ALIAS a of alpha", function () {
 ****** Color Adjustment Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./color_adjust_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_adjust_test.js)
 #+END_SRC
 
 #+NAME: adjustment-test
@@ -4234,7 +4243,7 @@ export function mix(amount, target, color) {
 
 ****** Color Mixing Assertions
 
-#+BEGIN_SRC deno :tangle "./color_mix_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/color_mix_test.js" :comments link
 import { mix } from "./color_mix.js";
 
 import {
@@ -4327,7 +4336,7 @@ Deno.test("EDGE mix: throws error when either color is invalid", function () {
 ****** Color Mixing Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./color_mix_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_mix_test.js)
 #+END_SRC
 
 #+NAME: mix-test
@@ -4617,7 +4626,7 @@ export const custom = (attrs, color) => generate(attrs, color);
 
 ****** Color Scheme Generation Assertions
 
-#+BEGIN_SRC deno :tangle "./color_scheme_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/color_scheme_test.js" :comments link
 import {
   analogous,
   complementary,
@@ -4768,7 +4777,7 @@ Deno.test("EDGE: rejects invalid color", function () {
 ****** Color Scheme Generation Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./color_scheme_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_scheme_test.js)
 #+END_SRC
 
 #+NAME: scheme-test
@@ -4954,7 +4963,7 @@ export const shades = (
 
 ****** Color Palette Assertions
 
-#+BEGIN_SRC deno :tangle "./color_palette_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/color_palette_test.js" :comments link
 import { shades, tints, tones } from "./color_palette.js";
 
 import {
@@ -4999,7 +5008,7 @@ Deno.test("SPEC shades: can generate shades", function () {
 ****** Color Palette Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./color_palette_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_palette_test.js)
 #+END_SRC
 
 #+NAME: palette-test
@@ -5167,7 +5176,7 @@ You can use the =contrast()= function in two main ways:
 
 ****** Color Accessibility Assertions
 
-#+BEGIN_SRC deno :tangle "./color_a11y_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/color_a11y_test.js" :comments link
 import { clrs, contrast } from "./color_a11y.js";
 import { shades, tints } from "./color_palette.js";
 
@@ -5276,7 +5285,7 @@ Deno.test("SPEC contrast: can generate WCAG AAA (enhanced) compliant results", f
 ****** Color Accessibility Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./color_a11y_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_a11y_test.js)
 #+END_SRC
 
 #+NAME: accessibility-test
@@ -5387,7 +5396,7 @@ export function systemfonts(...families) {
 
 ***** Typography Assertions
 
-#+BEGIN_SRC deno :tangle "./typography_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/typography_test.js" :comments link
 import { systemfonts } from "./typography.js";
 
 import {
@@ -5424,7 +5433,7 @@ Deno.test("EGDE systemfonts: rejects invalid family keys", function () {
 ***** Typography Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./typography_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/typography_test.js)
 #+END_SRC
 
 #+NAME: typography-test
@@ -5637,7 +5646,7 @@ export const units = (unit, scale) =>
 
 Alright. Time to test the scale creation flow and error handling.
 
-#+BEGIN_SRC deno :tangle "./modular_scale_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/modular_scale_test.js" :comments link
 import { chunk, create, merge, units, update } from "./modular_scale.js";
 
 import {
@@ -5853,7 +5862,7 @@ Deno.test("EDGE: scale modifiers (update, merge, chunk, units) reject empty scal
 ***** Modular Scale Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./modular_scale_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/modular_scale_test.js)
 #+END_SRC
 
 #+NAME: scale-test
@@ -5870,7 +5879,7 @@ test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (18ms
 
 #+end_src
 
-*** Design Token Output Formats
+*** Design Token Output Formats (=design_tokens.js=)
 
 All the modules necessary to create a design system foundation are in place, but it wouldn't be very
 useful or portable in its current form. Data has to be packaged as a Quarks System Dictionary
@@ -5883,6 +5892,12 @@ access. Therefore, the build functions limit themselves to formatting data to a 
 If you want to /write/ the tokens to your filesystem, use the native filesystem API provided by your
 JavaScript environment or a filesystem library of your choice.
 #+END_QUOTE
+
+#+BEGIN_SRC deno :tangle "./design_tokens.js" :comments link
+export * from "./output_css.js";
+export * from "./export_data.js";
+export * from "./transform_data.js";
+#+END_SRC
 
 **** CSS (=output_css.js=)
 
@@ -6046,7 +6061,7 @@ export const styl = (dict) =>
 
 ****** CSS Format Assertions
 
-#+BEGIN_SRC deno :tangle "./output_css_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/output_css_test.js" :comments link
 import { css, less, sass, styl } from "./output_css.js";
 import { clrs } from "./color_a11y.js";
 import { triadic } from "./color_scheme.js";
@@ -6163,7 +6178,7 @@ color-highlight = #36ff40
 ****** CSS Format Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./output_css_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/output_css_test.js)
 #+END_SRC
 
 #+NAME: css-test
@@ -6293,7 +6308,7 @@ export const yaml = (dict) =>
 
 ****** Data Export Assertions
 
-#+BEGIN_SRC deno :tangle "./export_data_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/export_data_test.js" :comments link
 import { raw, yaml } from "./export_data.js";
 import { clrs } from "./color_a11y.js";
 import { triadic } from "./color_scheme.js";
@@ -6384,7 +6399,7 @@ color:
 ****** Data Export Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./export_data_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/export_data_test.js)
 #+END_SRC
 
 #+RESULTS:
@@ -6477,7 +6492,7 @@ export const styledict = (dict) =>
 
 ****** Data Transform Assertions
 
-#+BEGIN_SRC deno :tangle "./transform_data_test.js" :comments link
+#+BEGIN_SRC deno :tangle "./tests/transform_data_test.js" :comments link
 import { styledict, tailwind } from "./transform_data.js";
 import { clrs } from "./color_a11y.js";
 import { triadic } from "./color_scheme.js";
@@ -6577,7 +6592,7 @@ Deno.test(
 ****** Data Transform Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./data_transform_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/data_transform_test.js)
 #+END_SRC
 
 #+RESULTS:

@@ -1,4 +1,4 @@
-// [[file:README.org::*CSS Format Assertions][CSS Format Assertions:1]]
+// [[file:../README.org::*CSS Format Assertions][CSS Format Assertions:1]]
 import { css, less, sass, styl } from "./output_css.js";
 import { clrs } from "./color_a11y.js";
 import { triadic } from "./color_scheme.js";

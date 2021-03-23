@@ -1,4 +1,4 @@
-// [[file:README.org::*Modular Scale Assertions][Modular Scale Assertions:1]]
+// [[file:../README.org::*Modular Scale Assertions][Modular Scale Assertions:1]]
 import { chunk, create, merge, units, update } from "./modular_scale.js";
 
 import {
