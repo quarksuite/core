@@ -42,6 +42,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
   - [[#node-14160][Node (14.16.0+)]]
     - [[#setup][Setup]]
     - [[#indexjs][index.js]]
+    - [[#build][Build]]
   - [[#output][Output]]
 - [[#source-code][Source Code]]
   - [[#data][Data]]
@@ -169,8 +170,8 @@ After you install and enable that, the above code will work without issue.
 
 ** Bleeding Edge (Chromium 87+)
 
-If you're using the Quarks System Core in Chromium 87+ with HTTPS, you literally need nothing else to create
-a basic set of design tokens for your project.
+If you're using Quarks System Core in Chromium 87+ with HTTPS, you literally need nothing else to
+create a basic set of design tokens for your project.
 
 It means you'll be able to use the nascent [[https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API
 ][File System Access API]] to write data to disk.
@@ -221,7 +222,7 @@ So your entire workflow could happen in a single HTML file.
         systemfonts,
         tints,
         units,
-      } from "https://x.nest.land/quarksuite:core@0.1.0-2/mod.js";
+      } from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
 
       // Palette
       const main = hex("gainsboro");
@@ -298,7 +299,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.0-2/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -333,17 +334,15 @@ Next, we run the file with write access.
 deno run --allow-write ./build.js
 #+END_SRC
 
-That's it.
-
 ** Node (14.16.0+)
 
-You'll need Webpack/Rollup for this.
+You'll need Webpack/Rollup as mentioned above.
 
 I'm going to use Rollup for the example.
 
 *** Setup
 
-First, need to set  =type: module= in package.json and set up.
+First, need to set  =type: module= in package.json and declare dependencies.
 
 #+BEGIN_SRC json
 {
@@ -361,7 +360,7 @@ Now, install the packages.
 yarn add rollup import-http --dev
 #+END_SRC
 
-Next, setting up the Rollup configuration.
+Next, setting up the Rollup (=rollup.config.js=) configuration.
 
 #+BEGIN_SRC deno
 import import_http from "import-http/rollup";
@@ -378,8 +377,8 @@ export default {
 
 *** index.js
 
-From here, the code to build the example falls in line with the other environments, with the
-exception of using Node's native filesystem API.
+From here, the code to build the example mostly mirrors the other environments, with the exception
+of using Node's native filesystem API.
 
 #+BEGIN_SRC deno
 import {
@@ -414,6 +413,14 @@ const dict = {
 // Write to disk
 import { writeFile } from "node:fs/promises";
 await writeFile("./tokens.css", css(dict));
+#+END_SRC
+
+*** Build
+
+Now we run Rollup and execute the generated =build.js= script.
+
+#+BEGIN_SRC shell
+npx rollup -c && node ./build.js
 #+END_SRC
 
 ** Output
