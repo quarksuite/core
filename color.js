@@ -4,4 +4,5 @@ export * from "./color_adjust.js";
 export * from "./color_mix.js";
 export * from "./color_scheme.js";
 export * from "./color_palette.js";
+export * from "./color_a11y.js";
 // Color (=color.js=):1 ends here

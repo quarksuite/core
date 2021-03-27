@@ -57,68 +57,65 @@ const precision = significant.bind(null, 3);
 
 function calcRelativeLuminance(color) {
   const [R, G, B] = pipe(color, rgb, extract)
-    .map((V) =>
-      pipe(
-        V,
-        parseFloat,
-        calcFractionFromChannel,
-      )
-    ).map((V) => V <= 0.03928 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4);
+    .map((V) => pipe(V, parseFloat, calcFractionFromChannel))
+    .map((V) => (V <= 0.03928 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4));
 
   return R * 0.2126 + 0.7152 * G + B * 0.0722;
 }
 
-function calcRatio(foreground, background) {
-  const [L1, L2] = [foreground, background].sort((a, b) =>
-    calcRelativeLuminance(b) - calcRelativeLuminance(a)
-  ).map((V) => calcRelativeLuminance(V));
+function calcRatio(a, b) {
+  const [L1, L2] = [a, b]
+    .sort((a, b) => calcRelativeLuminance(b) - calcRelativeLuminance(a))
+    .map((V) => calcRelativeLuminance(V));
 
   return precision((L1 + 0.05) / (L2 + 0.05));
 }
 
 /**
- * A function that allows you to filter palettes by their contrast rating.
+ * A function that filters a palette by the colors usable with a given background.
  *
- * @example Filtering a palette to only contain colors with a WCAG AA rating
+ * Colors match only if they meet the WCAG color accessibility rating defined in opts.
+ *
+ * @example Filtering a palette to only contain the colors that can safely be
+ * used with coral while satisfying the AA contrast rating.
  *
  * ```ts
- * contrast({ rating: "AA" }, palette);
+ * contrast({ rating: "AA" }, "coral", palette);
  * ```
  *
- * @example Filtering a palette to only contain colors with a WCAG AAA rating
+ * @example Filtering a palette to only contain the colors that can safely be
+ * used with dodgerblue while satisfying the AAA rating.
  *
  * ```ts
- * contrast({ rating: "AAA" }, palette);
+ * contrast({ rating: "AAA" }, "dodgerblue", palette);
  * ```
  *
  * @example Using the enhanced recommendations flag
  *
  * ```ts
- * contrast({ rating: "AA", enhanced: true}, palette);
+ * contrast({ rating: "AA", enhanced: true}, "aliceblue", palette);
  * ```
  *
  * @param {{ rating: "AA" | "AAA", enhanced?: boolean }} opts - options for filtering the palette
- * @param {string[]} palette - the completed color palette to filter
- * @returns {string[]} A color palette filtered by accessibility standards
+ * @param {string} background - the background color to check against
+ * @param {string[]} palette - a palette of colors to filter
+ * @returns {string[]} A new palette of colors usable with the background while satisfying
+ * accessibility standards
  */
-export function contrast(opts, palette) {
+export function contrast(opts, background, palette) {
   const { rating, enhanced = false } = opts;
-  const [base, ...generated] = palette;
 
-  return [
-    base,
-    ...generated.filter((color) => {
-      const ratio = calcRatio(base, color);
-      const max = ratio <= 21;
+  return palette.filter((foreground) => {
+    const ratio = calcRatio(background, foreground);
+    const max = ratio <= 21;
 
-      if (rating === "AA") {
-        return (enhanced ? (ratio >= 4.5) : (ratio >= 3.1)) && max;
-      }
+    if (rating === "AA") {
+      return (enhanced ? ratio >= 4.5 : ratio >= 3.1) && max;
+    }
 
-      if (rating === "AAA") {
-        return (enhanced ? (ratio >= 7) : (ratio >= 4.5)) && max;
-      }
-    }),
-  ];
+    if (rating === "AAA") {
+      return (enhanced ? ratio >= 7 : ratio >= 4.5) && max;
+    }
+  });
 }
 // contrast:1 ends here

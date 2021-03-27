@@ -44,62 +44,58 @@ Deno.test("EDGE clrs: rejects undefined color", function () {
   );
 });
 
-Deno.test("SPEC contrast: can generate WCAG AA compliant results", function () {
-  const base = clrs("red");
-  const palette = [base, ...tints(16, 99, base), ...shades(16, 99, base)];
+Deno.test(
+  "SPEC contrast: returns the colors from a palette that can be used with a background and satisfy AA usability",
+  function () {
+    const color = clrs("red");
+    const [bg] = tints(5, 99, color).reverse();
+    const dark = shades(5, 99, color);
 
-  assertEquals(contrast({ rating: "AA" }, palette), [
-    "#ff4136",
-    "#ffefef",
-    "#fff7f6",
-    "#fffefe",
-    "#721d18",
-    "#5c1713",
-    "#43110e",
-    "#1a0705",
-  ]);
-});
+    assertEquals(contrast({ rating: "AA" }, bg, dark), [
+      "#e43930",
+      "#c6322a",
+      "#a32a23",
+      "#751e19",
+      "#1a0705",
+    ]);
+  },
+);
 
-Deno.test("SPEC contrast: can generate WCAG AAA compliant results", function () {
-  const base = clrs("lime");
-  const palette = [base, ...tints(32, 99, base), ...shades(32, 99, base)];
+Deno.test(
+  "SPEC contrast: returns the colors that satisfy AAA usability",
+  function () {
+    const color = clrs("red");
+    const [bg] = tints(5, 99, color).reverse();
+    const dark = shades(5, 99, color);
 
-  assertEquals(contrast({ rating: "AAA" }, palette), [
-    "#01ff70",
-    "#007232",
-    "#00662c",
-    "#005c28",
-    "#005123",
-    "#00431e",
-    "#003316",
-    "#001a0b",
-  ]);
-});
+    assertEquals(contrast({ rating: "AAA" }, bg, dark), [
+      "#c6322a",
+      "#a32a23",
+      "#751e19",
+      "#1a0705",
+    ]);
+  },
+);
 
-Deno.test("SPEC contrast: can generate WCAG AA (enhanced) compliant results", function () {
-  const base = clrs("aqua");
-  const palette = [base, ...tints(32, 99, base), ...shades(32, 99, base)];
+Deno.test(
+  "SPEC contrast: respects the enhanced rating boolean property",
+  function () {
+    const color = clrs("red");
+    const [bg] = tints(5, 99, color).reverse();
+    const dark = shades(5, 99, color);
 
-  assertEquals(contrast({ rating: "AA", enhanced: true }, palette), [
-    "#7fdbff",
-    "#335866",
-    "#2e4f5c",
-    "#284551",
-    "#223a43",
-    "#192c33",
-    "#0d161a",
-  ]);
-});
+    assertEquals(contrast({ rating: "AA", enhanced: true }, bg, dark), [
+      "#c6322a",
+      "#a32a23",
+      "#751e19",
+      "#1a0705",
+    ]);
 
-Deno.test("SPEC contrast: can generate WCAG AAA (enhanced) compliant results", function () {
-  const base = clrs("silver");
-  const palette = [base, ...tints(32, 99, base), ...shades(32, 99, base)];
-
-  assertEquals(contrast({ rating: "AAA", enhanced: true }, palette), [
-    "#dddddd",
-    "#3a3a3a",
-    "#2c2c2c",
-    "#161616",
-  ]);
-});
+    assertEquals(contrast({ rating: "AAA", enhanced: true }, bg, dark), [
+      "#a32a23",
+      "#751e19",
+      "#1a0705",
+    ]);
+  },
+);
 // Color Accessibility Assertions:1 ends here
