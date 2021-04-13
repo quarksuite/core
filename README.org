@@ -20,7 +20,7 @@ Other appendages of QuarkSuite include:
 
 If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for Quarksuite 1]].
 
-* Table of Contents                                                   :TOC@4:
+* Table of Contents                                                   :TOC@6:
 - [[#summary][Summary]]
 - [[#features][Features]]
   - [[#color-palettes][Color Palettes]]
@@ -45,47 +45,203 @@ If you're interested in how this project evolved, feel free to [[https://github.
   - [[#output][Output]]
 - [[#user-guide][User Guide]]
   - [[#baseline][Baseline]]
+    - [[#requirements][Requirements]]
     - [[#color][Color]]
       - [[#1-set-a-base-color][1. set a base color]]
       - [[#2-generate-a-color-scheme][2. generate a color scheme]]
-      - [[#3-create-color-variants][3. Create color variants]]
+      - [[#3-complete-the-palette][3. complete the palette]]
+    - [[#typography][Typography]]
+      - [[#1-set-fonts-and-styles][1. set fonts and styles]]
+      - [[#2-creating-a-text-size-scale][2. creating a text size scale]]
+    - [[#layout][Layout]]
+      - [[#1-create-a-measureline-length-scale][1. create a measure/line length scale]]
+      - [[#2-create-vertical-rhythmspacing-scale][2. create vertical rhythm/spacing scale]]
+  - [[#design-tokens][Design Tokens]]
+    - [[#interlude-quarks-system-dictionary][Interlude: Quarks System Dictionary]]
+      - [[#value][Value]]
+      - [[#scale][Scale]]
+      - [[#subcategory][Subcategory]]
+      - [[#context][Context]]
+      - [[#namespace][Namespace]]
+    - [[#assemble][Assemble]]
+    - [[#build-1][Build]]
+    - [[#output-1][Output]]
+      - [[#tokenscss][tokens.css]]
+      - [[#tokensjson][tokens.json]]
+  - [[#systemjs][system.js]]
+  - [[#advanced-concepts][Advanced Concepts]]
+    - [[#bound-utilities][Bound Utilities]]
+    - [[#data-pipelines][Data Pipelines]]
+    - [[#configurationsformulas][Configurations/Formulas]]
+  - [[#refactoring--restructuring][Refactoring & Restructuring]]
+    - [[#formulasjs][formulas.js]]
+      - [[#requirements-1][Requirements]]
+      - [[#color-1][Color]]
+        - [[#1-create-a-palette-formula][1. create a =Palette= formula]]
+      - [[#typography-1][Typography]]
+        - [[#1-create-a-stack-formula][1. create a =Stack= formula]]
+        - [[#2-create-a-content-configuration][2. create a =Content= configuration]]
+        - [[#3-use-the-content-configuration-to-create-a-size-formula][3. use the =Content= configuration to create a =Size= formula]]
+      - [[#layout-1][Layout]]
+        - [[#1-create-a-measure-formula][1. create a =Measure= formula]]
+        - [[#2-use-the-content-configuration-to-create-a-spacing-formula][2. use the =Content= configuration to create a =Spacing= formula]]
+    - [[#dictjs][dict.js]]
+      - [[#1-import-the-formulas-and-define-settings][1. import the formulas and define settings]]
+      - [[#2-construct-the-dictionary][2. construct the dictionary]]
+    - [[#buildjs-1][build.js]]
+      - [[#1-import-token-functions-and-dictionary][1. import token functions and dictionary]]
+      - [[#2-build-tokens][2. build tokens]]
+    - [[#run][run]]
 - [[#source-code][Source Code]]
   - [[#module-api][Module API]]
     - [[#utilities-utilitiesjs][Utilities (=utilities.js=)]]
       - [[#compose][compose]]
       - [[#pipe][pipe]]
       - [[#tests][Tests]]
+        - [[#utilities-assertions][Utilities Assertions]]
+        - [[#utilities-results][Utilities Results]]
     - [[#color-colorjs][Color (=color.js=)]]
       - [[#format-conversion-color_convertjs][Format Conversion (=color_convert.js=)]]
+        - [[#hex][hex]]
+        - [[#rgb][rgb]]
+        - [[#hsl][hsl]]
+        - [[#cmyk][cmyk]]
+        - [[#hwb][hwb]]
+        - [[#lab][lab]]
+        - [[#lch][lch]]
+        - [[#tests-1][Tests]]
+          - [[#color-format-conversion-assertions][Color Format Conversion Assertions]]
+          - [[#color-format-conversion-results][Color Format Conversion Results]]
       - [[#properties-adjustment-color_adjustjs][Properties Adjustment (=color_adjust.js=)]]
+        - [[#hue][hue]]
+        - [[#saturation][saturation]]
+        - [[#lightness][lightness]]
+        - [[#alpha][alpha]]
+        - [[#tests-2][Tests]]
+          - [[#color-adjustment-assertions][Color Adjustment Assertions]]
+          - [[#color-adjustment-results][Color Adjustment Results]]
       - [[#mixing-color_mixjs][Mixing (=color_mix.js=)]]
+        - [[#mix][mix]]
+        - [[#tests-3][Tests]]
+          - [[#color-mixing-assertions][Color Mixing Assertions]]
+          - [[#color-mixing-results][Color Mixing Results]]
       - [[#scheme-generation-color_schemejs][Scheme Generation (=color_scheme.js=)]]
+        - [[#complementary][complementary]]
+        - [[#analogous][analogous]]
+        - [[#splitcomplementary][splitComplementary]]
+        - [[#triadic][triadic]]
+        - [[#tetradic][tetradic]]
+        - [[#square][square]]
+        - [[#custom][custom]]
+        - [[#tests-4][Tests]]
+          - [[#color-scheme-generation-assertions][Color Scheme Generation Assertions]]
+          - [[#color-scheme-generation-results][Color Scheme Generation Results]]
       - [[#palette-creation-color_palettejs][Palette Creation (=color_palette.js=)]]
+        - [[#tints][tints]]
+        - [[#tones][tones]]
+        - [[#shades][shades]]
+        - [[#tests-5][Tests]]
+          - [[#color-palette-assertions][Color Palette Assertions]]
+          - [[#color-palette-results][Color Palette Results]]
       - [[#accessibility-color_a11yjs][Accessibility (=color_a11y.js=)]]
+        - [[#clrs][clrs]]
+        - [[#contrast][contrast]]
+        - [[#tests-6][Tests]]
+          - [[#color-accessibility-assertions][Color Accessibility Assertions]]
+          - [[#color-accessibility-results][Color Accessibility Results]]
     - [[#typography-typographyjs][Typography (=typography.js=)]]
       - [[#systemfonts][systemfonts]]
-      - [[#tests-1][Tests]]
+      - [[#tests-7][Tests]]
+        - [[#typography-assertions][Typography Assertions]]
+        - [[#typography-results][Typography Results]]
     - [[#modular-scale-modular_scalejs][Modular Scale (=modular_scale.js=)]]
       - [[#create][create]]
       - [[#update][update]]
       - [[#merge][merge]]
       - [[#chunk][chunk]]
       - [[#units][units]]
-      - [[#tests-2][Tests]]
+      - [[#tests-8][Tests]]
+        - [[#modular-scale-assertions][Modular Scale Assertions]]
+        - [[#modular-scale-results][Modular Scale Results]]
     - [[#design-token-output-formats-design_tokensjs][Design Token Output Formats (=design_tokens.js=)]]
       - [[#css-output_cssjs][CSS (=output_css.js=)]]
+        - [[#css][css]]
+        - [[#sass][sass]]
+        - [[#less][less]]
+        - [[#styl][styl]]
+        - [[#tests-9][Tests]]
+          - [[#css-format-assertions][CSS Format Assertions]]
+          - [[#css-format-results][CSS Format Results]]
       - [[#data-export-export_datajs][Data Export (=export_data.js=)]]
+        - [[#raw][raw]]
+        - [[#yaml][yaml]]
+        - [[#tests-10][Tests]]
+          - [[#data-export-assertions][Data Export Assertions]]
+          - [[#data-export-results][Data Export Results]]
       - [[#data-transforms-transform_datajs][Data Transforms (=transform_data.js=)]]
+        - [[#tailwind][tailwind]]
+        - [[#styledict][styledict]]
+        - [[#tests-11][Tests]]
+          - [[#data-transform-assertions][Data Transform Assertions]]
+          - [[#data-transform-results][Data Transform Results]]
   - [[#internals][Internals]]
     - [[#error-handling-internalserrorjs][Error Handling (=internals/error.js=)]]
-    - [[#color-1][Color]]
-      - [[#formats-internalscolorformatindexjs][Formats (=internals/color/format/index.js=)]]
-      - [[#conversion-internalscolorconvertindexjs][Conversion (=internals/color/convert/index.js=)]]
-  - [[#data][Data]]
     - [[#color-2][Color]]
+      - [[#formats-internalscolorformatindexjs][Formats (=internals/color/format/index.js=)]]
+        - [[#rgb-hex-internalscolorformathexjs][RGB Hex (=internals/color/format/hex.js=)]]
+          - [[#hex-validator][Hex Validator]]
+          - [[#hex-value-extractor][Hex Value Extractor]]
+        - [[#w3c-x11-internalscolorformatnamedjs][W3C-X11 (=internals/color/format/named.js=)]]
+        - [[#functional-rgb-internalscolorformatrgbjs][Functional RGB (=internals/color/format/rgb.js=)]]
+          - [[#rgb-validator][RGB Validator]]
+          - [[#rgb-extractor][RGB Extractor]]
+        - [[#functional-hsl-internalscolorformathsljs][Functional HSL (=internals/color/format/hsl.js=)]]
+          - [[#hsl-validator][HSL Validator]]
+          - [[#hsl-extractor][HSL Extractor]]
+        - [[#device-cmyk-internalscolorformatdevice-cmykjs][Device CMYK (=internals/color/format/device-cmyk.js=)]]
+          - [[#cmyk-validator][CMYK Validator]]
+          - [[#cmyk-extractor][CMYK Extractor]]
+        - [[#functional-hwb-internalscolorformathwbjs][Functional HWB (=internals/color/format/hwb.js=)]]
+          - [[#hwb-validator][HWB Validator]]
+          - [[#hwb-extractor][HWB Extractor]]
+        - [[#functional-cie-lab-internalscolorformatlabjs][Functional CIE Lab (=internals/color/format/lab.js=)]]
+          - [[#cie-lab-validator][CIE Lab Validator]]
+          - [[#cie-lab-extractor][CIE Lab Extractor]]
+        - [[#functional-cie-lch-internalscolorformatlchjs][Functional CIE LCH (=internals/color/format/lch.js=)]]
+          - [[#cie-lch-validator][CIE LCH Validator]]
+          - [[#cie-lch-extractor][CIE LCH Extractor]]
+      - [[#conversion-internalscolorconvertindexjs][Conversion (=internals/color/convert/index.js=)]]
+        - [[#setup-internalscolorconvertsetupjs][Setup (=internals/color/convert/setup.js=)]]
+          - [[#hex-rgb-fragments][Hex RGB Fragments]]
+          - [[#math][Math]]
+        - [[#rgb-hex-conversion-internalscolorconverthexjs][RGB Hex Conversion (=internals/color/convert/hex.js=)]]
+          - [[#rgb-hex---functional-rgb-hexrgb][RGB Hex -> Functional RGB (=hex.rgb=)]]
+        - [[#w3c-x11-conversion-internalscolorconvertnamedjs][W3C-X11 Conversion (=internals/color/convert/named.js=)]]
+          - [[#rgb-hex---w3c-x11][RGB Hex <- W3C-X11]]
+        - [[#functional-rgb-conversion-internalscolorconvertrgbjs][Functional RGB Conversion (=internals/color/convert/rgb.js=)]]
+          - [[#rgb-conversion-setup][RGB Conversion Setup]]
+          - [[#rgb-hex---functional-rgb-rgbhex][RGB Hex <- Functional RGB (=rgb.hex=)]]
+          - [[#functional-rgb---functional-hsl-rgbhsl][Functional RGB -> Functional HSL (=rgb.hsl=)]]
+          - [[#functional-rgb---device-cmyk-rgbcmyk][Functional RGB -> Device CMYK (=rgb.cmyk=)]]
+          - [[#functional-rgb---functional-hwb-rgbhwb][Functional RGB -> Functional HWB (=rgb.hwb=)]]
+          - [[#functional-rgb---functional-cie-lab-rgblab][Functional RGB -> Functional CIE Lab (=rgb.lab=)]]
+        - [[#functional-hsl-conversion-internalscolorconverthsljs][Functional HSL Conversion (=internals/color/convert/hsl.js=)]]
+          - [[#functional-rgb---functional-hsl-hslrgb][Functional RGB <- Functional HSL (=hsl.rgb=)]]
+        - [[#device-cmyk-conversion-internalscolorconvertdevice-cmykjs][Device CMYK Conversion (=internals/color/convert/device-cmyk.js=)]]
+          - [[#functional-rgb---device-cmyk-cmykrgb][Functional RGB <- Device CMYK (=cmyk.rgb=)]]
+        - [[#functional-hwb-conversion-internalscolorconverthwbjs][Functional HWB Conversion (=internals/color/convert/hwb.js=)]]
+          - [[#functional-rgb---functional-hwb][Functional RGB <- Functional HWB]]
+        - [[#functional-cie-lab-conversion-internalscolorconvertlabjs][Functional CIE Lab Conversion (=internals/color/convert/lab.js=)]]
+          - [[#cie-lab-conversion-setup][CIE Lab Conversion Setup]]
+          - [[#functional-rgb---cie-lab][Functional RGB <- CIE Lab]]
+          - [[#functional-cie-lab---functional-cie-lch][Functional CIE Lab -> Functional CIE LCH]]
+        - [[#functional-cie-lch-conversion-internalscolorconvertlchjs][Functional CIE LCH Conversion (=internals/color/convert/lch.js=)]]
+          - [[#functional-cie-lab---functional-cie-lch-1][Functional CIE Lab <- Functional CIE LCH]]
+  - [[#data][Data]]
+    - [[#color-3][Color]]
       - [[#w3c-x11-color-definitions-datacolorw3c-x11js][W3C X11 Color Definitions (=data/color/w3c-x11.js=)]]
       - [[#accesible-web-defaults-datacolora11yjs][Accesible Web Defaults (=data/color/a11y.js=)]]
-    - [[#typography][Typography]]
+    - [[#typography-2][Typography]]
       - [[#system-font-stacks-datatypographysystemjs][System Font Stacks (=data/typography/system.js=)]]
 
 * Summary
@@ -149,11 +305,15 @@ For modern V8 ECMAScript environments, there's nothing to install. All you need 
 
 ** Kitchen Sink
 
+You can import the whole library under a namespace or pick out the functions you need.
+
 #+BEGIN_SRC deno
 import * as quarks from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
 #+END_SRC
 
 ** Modular
+
+You can also import discrete modules in the library to use only what you need.
 
 #+BEGIN_SRC deno
 import {
@@ -178,7 +338,7 @@ After you install and enable that, the above code will work without issue.
 If you're using Quarks System Core in Chromium 87+ with HTTPS, you literally need nothing else to
 create a basic set of design tokens for your project.
 
-It means you'll be able to use the nascent [[https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API ][File System Access API]] to write data to disk.
+It means you'll be able to use the experimental [[https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API ][File System Access API]] to write data to disk.
 
 So your entire workflow could happen in a single HTML file.
 
@@ -465,23 +625,45 @@ can do with Quarks System Core.
 This section is meant to demonstrate, step-by-step, the process of creating a design system
 foundation with the Quarks System Core. It uses QuarkSuite's own design tokens as an example.
 
-It's less complex than the QuarkSuite 1 manual as the core's role and intended functionality is much
-more targeted and specific.
+After building a baseline token set, I'll show you some patterns to enhance the workflow and truly
+make it your own.
 
 ** Baseline
 
 Every web design project is different, but every shared design language begins with conversations
-boiling down to three key concerns: color, typography, and layout. These are the minimum
-requirements of good design. The unique details can't shine if fundamentals aren't on point.
+about three key concerns: color, typography, and layout. These are the minimum requirements of good
+design. Unique details can't shine with shoddy fundamentals.
 
-A solid baseline is essential.
+*** Requirements
+
+#+BEGIN_SRC js
+import {
+  // Color
+  rgb,
+  triadic,
+  tints,
+  shades,
+
+  // Typography
+  systemfonts,
+
+  // Layout
+  create,
+  update,
+  units,
+
+  // Tokens
+  css,
+  raw
+} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+#+END_SRC
 
 *** Color
 
 Quarks System Core provides a bevy of utilities to help you use the colors and palettes you
 want. You'll want to inspect the =color.js= module in a console to see what's available.
 
-Color values are treated as a whole data type in the QSC. It will process /any/ valid CSS color and
+Color values are treated as a whole data type in QSC. It will process /any/ valid CSS color and
 includes the following modules:
 
 + =color.js=: aggregates the below submodules
@@ -507,40 +689,841 @@ convert the /base/ color to your desired format to carry it through the palette.
 
 **** 2. generate a color scheme
 
-Now, generate a color scheme from the base and capture the hues through destructuring assignment.
+Now, generate a color scheme from the base.
 
 #+BEGIN_SRC js
-const [main, accent, highlight] = triadic(color);
+const scheme = triadic(color);
 #+END_SRC
 
 In this case, I want a triadic color scheme for QuarkSuite.
 
-**** 3. Create color variants
+**** 3. complete the palette
 
-To complete the palette, I want three tints and two shades, but I don't want to create them
-arbitrarily. I want to ensure that my palette data is composed of colors that retain the project
-identity, but not at the cost of accessibility and ignoring WCAG color contrast guidelines.
+To complete the palette, generate some tints and shades and then wrap it all in a Quarks System Dictionary.
 
-#+BEGIN_SRC deno :results output replace code :allow net
-import { rgb, triadic, tints, shades, contrast } from "https://x.nest.land/quarksuite:core@0.1.0-3/mod.js";
-
-const color = rgb("#348ec9");
-
-const [main, accent, highlight] = triadic(color);
-
-const light = tints.bind(null, 3, 99);
-const dark = shades.bind(null, 3, 99);
-const [[fg], [bg]] = [dark(main).reverse(), light(main).reverse()];
-
-const [[, ...mText], [, ...aText], [, ...hText]] = [main, accent, highlight].map((color) => contrast({ rating: "AAA" }, [bg, ...dark(color)]));
-
-console.log(hText);
+#+BEGIN_SRC js
+const palette = {
+  main: {
+    base: scheme[0],
+    light: tints(3, 99, scheme[0]),
+    dark: shades(2, 99, scheme[0])
+  },
+  accent: {
+    base: scheme[1],
+    dark: shades(2, 99, scheme[1])
+  },
+  highlight: {
+    base: scheme[2],
+    dark: shades(2, 99, scheme[2])
+  },
+};
 #+END_SRC
 
-#+RESULTS:
-#+begin_src deno
-[ "rgb(165, 43, 114)", "rgb(117, 30, 82)", "rgb(20, 5, 14)" ]
-#+end_src
+The QuarkSuite palette contains three tints and two shades for its main color and then two shades
+for the remaining colors. All are set to 99% contrast.
+
+*** Typography
+
+Quarks System Core isn't worried about the fonts you use or how you serve them. Instead it provides
+a utility for attaching system font stacks under the =typography.js= module.
+
+Most of this section will make use of the =modular_scale.js= module.
+
+Functions under this module:
+
++ =create()=: create a new scale
++ =update()=: update a scale with a calculation
++ =merge()=: merge two or more scales
++ =chunk()=: split a scale into smaller scales of =n= values
++ =units()=: attach valid CSS units to complete a scale for output
+
+Modular scales are the bread and butter of any robust design system. They define and enforce
+consistent values and measurements. The base and ratio ought to remain constant.
+
+The general flow of creating modular scales you can use in real projects:
+
+1) Create a basic, global scale
+2) Manipulate the scale as needed by merging or chunking
+3) Perform calculations to create additional scales based on context
+4) Attach the appropriate units before output
+
+Every following scale adheres to this procedure.
+
+**** 1. set fonts and styles
+
+Create the font dictionary for holding typography data.
+
+#+BEGIN_SRC js
+const font = {
+  body: "Zilla Slab".concat(", ", systemfonts("serif")),
+  headings: "Rubik".concat(", ", systemfonts("sans-serif")),
+  code: systemfonts("monospace"),
+  leading: { base: 1.5, tight: 1.25, loose: 1.75 },
+  style: { extralight: 100, regular: 400, bold: 700, black: 900 }
+};
+#+END_SRC
+
+For QuarkSuite, I'm using Zilla Slab and Rubik from Google Fonts with system font fallbacks while
+using system monospace for code.
+
+In addition, I also set the leading and styles I want to use.
+
+**** 2. creating a text size scale
+
+ Now create the global scale and use it to set a text size subcategory.
+
+#+BEGIN_SRC js
+const values = 8;
+const ratio = 1.5;
+const base = 1;
+
+const scale = create(values, ratio, base);
+const rem = units("rem", scale);
+const inversion = update((n) => base / n, scale);
+const [b, ...x] = rem;
+const [, ...d] = units("em", inversion);
+
+const size = { base: b, x, d };
+#+END_SRC
+
+Font sizes are derived directly from the global scale. They serve as a logical anchor for derivative
+scales. And this is because text size is the *base value* informing all layout decisions.
+
+*** Layout
+
+This section is the most opinionated in the whole user guide, because it promotes an approach to
+layout based on font-dependent units (ch and ex for width and height respectively).
+
+**** 1. create a measure/line length scale
+
+Layout based on content requires that we define a minimum and maximum measure.
+
+When combined with CSS Grid, this will allow the layout to reflow around the content it contains and
+ensure readability.
+
+The [[https://developer.mozilla.org/en-US/docs/Web/CSS/length][=ch= unit in CSS]]:
+
+#+BEGIN_QUOTE
+Represents the width, or more precisely the advance measure, of the glyph "0" (zero, the Unicode character U+0030) in the element's font.
+#+END_QUOTE
+
+The ch unit responds directly to the *current size* of an element's font.
+
+#+BEGIN_SRC js
+const min = 48;
+const max = 72;
+
+const fragment = units(
+  "ch",
+  update((v) => Math.trunc(min + v - ratio), scale).filter(
+    (v) => v > min && v < max
+  )
+);
+
+const measure = {
+  min: units("ch", [min]).toString(),
+  fragment,
+  max: units("ch", [max]).toString(),
+};
+#+END_SRC
+
+QuarkSuite uses a minimum length of =48ch=, a maximum of =72ch=, and a collection of line fragments
+for special purposes.
+
+**** 2. create vertical rhythm/spacing scale
+
+The vertical dimension of layout based on content requires a measurement of its approximate
+x-height.
+
+This scale is used for both setting vertical rhythm and whitespace (margins and padding).
+
+The [[https://developer.mozilla.org/en-US/docs/Web/CSS/length][=ex= unit in CSS]]:
+
+#+BEGIN_QUOTE
+Represents the x-height of the element's font. On fonts with the "x" letter, this is generally the height of lowercase letters in the font; 1ex ≈ 0.5em in many fonts.
+#+END_QUOTE
+
+Whitespace using the ex unit will adjust with the size and attributes of the font in use.
+
+#+BEGIN_SRC js
+const ex = units("ex", scale);
+const [sp, ...spx] = ex;
+const [, ...spd] = units("ex", inversion);
+
+const spacing = { base: sp, x: spx, d: spd };
+#+END_SRC
+
+QuarkSuite simply uses the global scale, but attaches different units.
+
+** Design Tokens
+
+Finally, all the data must be assembled and then exported as design tokens.
+
+For modular use, Quarks System Core provides the =design_tokens.js= module which contains:
+
++ Stylesheet formats
+  - =css=: outputs tokens as CSS custom properties wrapped in a =:root= selector
+  - =sass=: outputs tokens as Sass variables
+  - =less=: outputs tokens as Less variables
+  - =styl=: outputs tokens as Stylus variables
++ Data exports
+  - =raw=: exports data as a raw JSON
+  - =yaml=: exports data as YAML
++ Data transforms
+  - =tailwind=: transforms data into Tailwind CSS theme data
+  - =styledict=: transforms data into Style Dictionary properties
+
+*** Interlude: Quarks System Dictionary
+
+Before building design tokens, all data must be assembled into a standard Quarks System
+dictionary object. It's an ordinary JavaScript object with a particular structure for properties.
+
+If you've used Styled System before, the data structure [[https://styled-system.com/theme-specification/][takes heavy inspiration from its spec]].
+
+Quarks System dictionaries also draw their hierachical ideas from [[https://amzn.github.io/style-dictionary/#/properties
+][Style Dictionary properties]].
+
+**** Value
+
+#+BEGIN_SRC js
+const dict = { color: { main: "red" } };
+#+END_SRC
+
+A string property will be treated as a value and directly translated to a design token.
+
+**** Scale
+
+#+BEGIN_SRC js
+const dict = { color: { main: ["red", "crimson", "firebrick"] } };
+#+END_SRC
+
+An array property will be treated as a scale of values. Another way to think of scales is as
+/implicit/ subcategories where the keys are indexes.
+
+**** Subcategory
+
+#+BEGIN_SRC js
+const dict = {
+  color: {
+    main: {
+      base: "red",
+      shade: ["crimson", "firebrick"]
+    }
+  }
+};
+#+END_SRC
+
+An object property with an internal =base= property defines an /explicit/ subcategory. The value of
+the base is treated as the default state for a design token while the additional properties are
+treated as variants.
+
+**** Context
+
+#+BEGIN_SRC js
+const dict = {
+  color: {
+    light: {
+      main: {
+        base: "red",
+        shade: ["crimson", "firebrick"]
+      }
+    },
+    dark: {
+      main: {
+        base: "lime",
+        shade: ["forestgreen", "darkgreen"]
+      }
+    }
+  }
+};
+#+END_SRC
+
+Every design token function recursively consumes a Quarks System dictionary. Data transformations
+are performed based on the /kind/ of data found. This frees you to structure dictionaries however
+you want.
+
+One way is context; for example a light and dark color palette.
+
+**** Namespace
+
+#+BEGIN_SRC js
+const dict = {
+  quarks: {
+    color: {
+      main: "red",
+      accent: "cyan",
+      highlight: "lime"
+    },
+    font: {
+      body: "sans-serif",
+      heading: "serif",
+      code: "monospace"
+    }
+  }
+};
+#+END_SRC
+
+Another way is defining a namespace. It's usually the name of your project or design system.
+
+*** Assemble
+
+Going back to the data, assemble the dictionary.
+
+#+BEGIN_SRC js
+const dict = {
+  quarks: {
+    color: palette,
+    text: { ...font, size },
+    content: { measure, spacing }
+  }
+};
+#+END_SRC
+
+The QuarkSuite dictionary is contained under the =quarks= namespace and defines =color=, =text=, and
+=content= as contexts containing the acutal data.
+
+*** Build
+
+Now, build the data and write it to the filesystem using the runtime's native JavaScript API.
+
+#+BEGIN_SRC js
+const encoder = new TextEncoder();
+
+[
+  [css, "./tokens.css"],
+  [raw, "./tokens.json"],
+].forEach(([fn, file]) => Deno.writeFile(file, encoder.encode(fn(dict))));
+#+END_SRC
+
+For QuarkSuite's design tokens, I want a collection of CSS custom properties as well as a raw data
+export for backup. In addition, QuarkSuite prefers Deno for development but it's not required.
+
+*** Output
+
+It's recommended to place system logic in its own file (typically =system.js=) and then execute it.
+
+#+BEGIN_SRC shell
+deno run --allow-write ./system.js
+#+END_SRC
+
+**** tokens.css
+
+#+BEGIN_SRC css
+
+:root {
+  --quarks-color-main: rgb(52, 141, 201);
+  --quarks-color-main-light-0: rgb(153, 187, 220);
+  --quarks-color-main-light-1: rgb(209, 223, 238);
+  --quarks-color-main-light-2: rgb(254, 254, 255);
+  --quarks-color-main-dark-0: rgb(37, 100, 142);
+  --quarks-color-main-dark-1: rgb(5, 14, 20);
+  --quarks-color-accent: rgb(141, 201, 52);
+  --quarks-color-accent-dark-0: rgb(100, 142, 37);
+  --quarks-color-accent-dark-1: rgb(14, 20, 5);
+  --quarks-color-highlight: rgb(201, 52, 141);
+  --quarks-color-highlight-dark-0: rgb(142, 37, 100);
+  --quarks-color-highlight-dark-1: rgb(20, 5, 14);
+  --quarks-text-body: Zilla Slab, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  --quarks-text-headings: Rubik, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+  --quarks-text-code-0: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  --quarks-text-leading: 1.5;
+  --quarks-text-leading-tight: 1.25;
+  --quarks-text-leading-loose: 1.75;
+  --quarks-text-style-extralight: 100;
+  --quarks-text-style-regular: 400;
+  --quarks-text-style-bold: 700;
+  --quarks-text-style-black: 900;
+  --quarks-text-size: 1rem;
+  --quarks-text-size-x-0: 1.5rem;
+  --quarks-text-size-x-1: 2.25rem;
+  --quarks-text-size-x-2: 3.375rem;
+  --quarks-text-size-x-3: 5.063rem;
+  --quarks-text-size-x-4: 7.594rem;
+  --quarks-text-size-x-5: 11.39rem;
+  --quarks-text-size-x-6: 17.09rem;
+  --quarks-text-size-d-0: 0.6667em;
+  --quarks-text-size-d-1: 0.4444em;
+  --quarks-text-size-d-2: 0.2963em;
+  --quarks-text-size-d-3: 0.1975em;
+  --quarks-text-size-d-4: 0.1317em;
+  --quarks-text-size-d-5: 0.08779em;
+  --quarks-text-size-d-6: 0.05853em;
+  --quarks-content-measure-min: 48ch;
+  --quarks-content-measure-fragment-0: 49ch;
+  --quarks-content-measure-fragment-1: 51ch;
+  --quarks-content-measure-fragment-2: 54ch;
+  --quarks-content-measure-fragment-3: 57ch;
+  --quarks-content-measure-fragment-4: 63ch;
+  --quarks-content-measure-max: 72ch;
+  --quarks-content-spacing: 1ex;
+  --quarks-content-spacing-x-0: 1.5ex;
+  --quarks-content-spacing-x-1: 2.25ex;
+  --quarks-content-spacing-x-2: 3.375ex;
+  --quarks-content-spacing-x-3: 5.063ex;
+  --quarks-content-spacing-x-4: 7.594ex;
+  --quarks-content-spacing-x-5: 11.39ex;
+  --quarks-content-spacing-x-6: 17.09ex;
+  --quarks-content-spacing-d-0: 0.6667ex;
+  --quarks-content-spacing-d-1: 0.4444ex;
+  --quarks-content-spacing-d-2: 0.2963ex;
+  --quarks-content-spacing-d-3: 0.1975ex;
+  --quarks-content-spacing-d-4: 0.1317ex;
+  --quarks-content-spacing-d-5: 0.08779ex;
+  --quarks-content-spacing-d-6: 0.05853ex;
+}
+#+END_SRC
+
+**** tokens.json
+
+#+BEGIN_SRC json
+{
+  "quarks": {
+    "color": {
+      "main": {
+        "base": "rgb(52, 141, 201)",
+        "light": [
+          "rgb(153, 187, 220)",
+          "rgb(209, 223, 238)",
+          "rgb(254, 254, 255)"
+        ],
+        "dark": [
+          "rgb(37, 100, 142)",
+          "rgb(5, 14, 20)"
+        ]
+      },
+      "accent": {
+        "base": "rgb(141, 201, 52)",
+        "dark": [
+          "rgb(100, 142, 37)",
+          "rgb(14, 20, 5)"
+        ]
+      },
+      "highlight": {
+        "base": "rgb(201, 52, 141)",
+        "dark": [
+          "rgb(142, 37, 100)",
+          "rgb(20, 5, 14)"
+        ]
+      }
+    },
+    "text": {
+      "body": "Zilla Slab, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+      "headings": "Rubik, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+      "code": [
+        "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace"
+      ],
+      "leading": {
+        "base": 1.5,
+        "tight": 1.25,
+        "loose": 1.75
+      },
+      "style": {
+        "extralight": 100,
+        "regular": 400,
+        "bold": 700,
+        "black": 900
+      },
+      "size": {
+        "base": "1rem",
+        "x": [
+          "1.5rem",
+          "2.25rem",
+          "3.375rem",
+          "5.063rem",
+          "7.594rem",
+          "11.39rem",
+          "17.09rem"
+        ],
+        "d": [
+          "0.6667em",
+          "0.4444em",
+          "0.2963em",
+          "0.1975em",
+          "0.1317em",
+          "0.08779em",
+          "0.05853em"
+        ]
+      }
+    },
+    "content": {
+      "measure": {
+        "min": "48ch",
+        "fragment": [
+          "49ch",
+          "51ch",
+          "54ch",
+          "57ch",
+          "63ch"
+        ],
+        "max": "72ch"
+      },
+      "spacing": {
+        "base": "1ex",
+        "x": [
+          "1.5ex",
+          "2.25ex",
+          "3.375ex",
+          "5.063ex",
+          "7.594ex",
+          "11.39ex",
+          "17.09ex"
+        ],
+        "d": [
+          "0.6667ex",
+          "0.4444ex",
+          "0.2963ex",
+          "0.1975ex",
+          "0.1317ex",
+          "0.08779ex",
+          "0.05853ex"
+        ]
+      }
+    }
+  }
+}
+#+END_SRC
+
+** system.js
+
+Before demonstrating advanced patterns and features, let's see what we have so far.
+
+#+BEGIN_SRC js
+import {
+  rgb,
+  triadic,
+  tints,
+  shades,
+  systemfonts,
+  create,
+  update,
+  units,
+  css,
+  raw,
+} from "https://x.nest.land/quarksuite:core@0.1.0-4/mod.js";
+
+// Color
+
+const color = rgb("#348ec9");
+const scheme = triadic(color);
+const palette = {
+  main: {
+    base: scheme[0],
+    light: tints(3, 99, scheme[0]),
+    dark: shades(2, 99, scheme[0]),
+  },
+  accent: {
+    base: scheme[1],
+    dark: shades(2, 99, scheme[1]),
+  },
+  highlight: {
+    base: scheme[2],
+    dark: shades(2, 99, scheme[2]),
+  },
+};
+
+// Typography
+
+const font = {
+  body: "Zilla Slab".concat(", ", systemfonts("serif")),
+  headings: "Rubik".concat(", ", systemfonts("sans-serif")),
+  code: systemfonts("monospace"),
+  leading: { base: 1.5, tight: 1.25, loose: 1.75 },
+  style: { extralight: 100, regular: 400, bold: 700, black: 900 },
+};
+
+const values = 8;
+const ratio = 1.5;
+const base = 1;
+
+const scale = create(values, ratio, base);
+const rem = units("rem", scale);
+const inversion = update((n) => base / n, scale);
+const [b, ...x] = rem;
+const [, ...d] = units("em", inversion);
+
+const size = { base: b, x, d };
+
+// Layout
+
+const min = 48;
+const max = 72;
+
+const fragment = units(
+  "ch",
+  update((v) => Math.trunc(min + v - ratio), scale).filter(
+    (v) => v > min && v < max
+  )
+);
+
+const measure = {
+  min: units("ch", [min]).toString(),
+  fragment,
+  max: units("ch", [max]).toString(),
+};
+
+const ex = units("ex", scale);
+const [sp, ...spx] = ex;
+const [, ...spd] = units("ex", inversion);
+
+const spacing = { base: sp, x: spx, d: spd };
+
+// Design Tokens
+
+const dict = {
+  quarks: {
+    color: palette,
+    text: { ...font, size },
+    content: { spacing, measure },
+  },
+};
+
+const encoder = new TextEncoder();
+
+[
+  [css, "./tokens.css"],
+  [raw, "./tokens.json"],
+].forEach(([fn, file]) => Deno.writeFile(file, encoder.encode(fn(dict))));
+#+END_SRC
+
+** Advanced Concepts
+
+The following sections introduce advanced patterns you can use to refactor the system logic.
+
+*** Bound Utilities
+
+JavaScript provides a built-in way (=Function.bind=) to bind a variadic function's arguments and
+return a new *unary function* from the remaining data argument: =f(z, y, x)= to =f(z, y) => g(x)=
+for example.
+
+Quarks System Core uses an architecture for its modules where the last argument of a function is
+always the data it transforms (=x=). This allows the preceding arguments to be /modifiers/ and,
+combined with the previous, sets the groundwork for the remaining patterns.
+
+*** Data Pipelines
+
+Data pipelines represent a chain of complex operations performed on an initial piece of data. Its
+main purpose is providing a generic method of transforming values into scales and programmatically
+assembling dictionaries.
+
+*** Configurations/Formulas
+
+Combining data pipelines with complex data structures and conditional logic gives rise to
+configurations and formulas. These are ideal for situations where you have approaches to building
+your dictionaries that you want to use across projects or you're otherwise building a framework
+around your process.
+
+Think of it as a way of embedding your expectations and axioms into code.
+
+** Refactoring & Restructuring
+
+Now, it's time to refactor =system.js= section by section with the above patterns. In addition to
+changes in the system, the code has been restructured:
+
++ =formulas.js=: contains all the system logic
++ =dict.js=: assembles the Quarks System dictionary via formulas
++ =build.js=: executed by the runtime environment
+
+*** formulas.js
+
+**** Requirements
+
+First, at the top of the file, import the advanced utilities.
+
+#+BEGIN_SRC js
+import {
+  compose,
+  pipe,
+  rgb,
+  triadic,
+  tints,
+  shades,
+  systemfonts,
+  update,
+  units,
+} from "https://x.nest.land/quarksuite:core@0.1.0-4/mod.js";
+#+END_SRC
+
+**** Color
+
+***** 1. create a =Palette= formula
+
+The =Palette= formula is a function composition that converts a valid color into its RGB format,
+creates a set of triadic base hues, and then slots each color into its own subcategory.
+
+#+BEGIN_SRC js
+const light = tints.bind(null, 3, 99);
+const dark = shades.bind(null, 2, 99);
+export const Palette = compose(rgb, triadic, (scheme) =>
+  scheme.reduce((acc, base, index) => {
+    const categories = ["main", "accent", "highlight"];
+    return {
+      ...acc,
+      [categories[index]]: {
+        base,
+        ...(index === 0
+            ? { light: light(base), dark: dark(base) }
+            : { dark: dark(base) }),
+      },
+    };
+  }, {})
+);
+#+END_SRC
+
+**** Typography
+
+***** 1. create a =Stack= formula
+
+The =Stack= formula does nothing but set different behavior based on whether the font is explicitly
+set to =null=. If it is, only the system stack returns, otherwise the font is prepended to the
+system stack as the main font.
+
+#+BEGIN_SRC js
+export const Stack = (font, fallback = "sans-serif") =>
+font === null
+  ? systemfonts(fallback).toString()
+  : font.concat(", ", systemfonts(fallback));
+#+END_SRC
+
+***** 2. create a =Content= configuration
+
+The =Content= configuration sets up a general abstraction for content-based numeric scales. It
+defines them with a subcategory dictionary structure covering scale values and their inversions.
+
+In situations where the inversion units are different from the scale units, it uses that unit instead.
+
+#+BEGIN_SRC js
+const toString = (value) => value.toString();
+const Content = (unit, inversionUnit, scale) => {
+  const [base, ...remaining] = scale;
+  return {
+    base: pipe([base], unit, toString),
+    x: pipe(remaining, unit),
+    d: pipe(
+      remaining,
+      update.bind(null, (n) => base / n),
+      inversionUnit !== unit ? inversionUnit : unit
+    ),
+  };
+};
+#+END_SRC
+
+***** 3. use the =Content= configuration to create a =Size= formula
+
+#+BEGIN_SRC js
+const rem = units.bind(null, "rem");
+const em = units.bind(null, "em");
+export const Size = Content.bind(null, rem, em);
+#+END_SRC
+
+**** Layout
+
+***** 1. create a =Measure= formula
+
+The =Measure= formula accepts a mininum CPL (characters per line), maximum CPL, and a scale to
+derive a collection of line fragments from.
+
+#+BEGIN_SRC js
+const ch = units.bind(null, "ch");
+export const Measure = (min, max, scale) =>
+[max, scale, min].reduce((acc, value, index) => {
+  const categories = ["base", "fragment", "min"];
+  if (Array.isArray(value)) {
+    const [, ratio] = value;
+    return {
+      ...acc,
+      [categories[index]]: pipe(
+        value.reverse(),
+        update.bind(null, (n) => Math.trunc(min + n - ratio)),
+        (cpl) => cpl.filter((n) => n > min && n < max),
+        ch
+      ),
+    };
+  }
+
+  return { ...acc, [categories[index]]: pipe([value], ch, toString) };
+}, {});
+#+END_SRC
+
+***** 2. use the =Content= configuration to create a =Spacing= formula
+
+#+BEGIN_SRC js
+const ex = units.bind(null, "ex");
+export const Spacing = Content.bind(null, ex, ex);
+#+END_SRC
+
+*** dict.js
+
+**** 1. import the formulas and define settings
+
+#+BEGIN_SRC js
+import { create } from "https://x.nest.land/quarksuite:core@0.1.0-4/modular_scale.js";
+import { Palette, Stack, Size, Measure, Spacing } from "./config.js";
+
+// Settings
+const color = "#348ec9";
+const scale = create(8, 1.5, 1);
+#+END_SRC
+
+**** 2. construct the dictionary
+
+#+BEGIN_SRC js
+export default {
+  quarks: {
+    color: Palette(color),
+    text: {
+      body: Stack("Zilla Slab", "serif"),
+      headings: Stack("Rubik"),
+      code: Stack(null, "monospace"),
+      leading: { base: 1.5, tight: 1.25, loose: 1.75 },
+      style: { extralight: 100, regular: 400, bold: 700, black: 900 },
+      size: Size(scale),
+    },
+    content: { line: Measure(48, 72, scale), spacing: Spacing(scale) },
+  },
+};
+#+END_SRC
+
+*** build.js
+
+**** 1. import token functions and dictionary
+
+#+BEGIN_SRC js
+import { exists } from "https://deno.land/std@0.92.0/fs/exists.ts";
+import {
+  css,
+  raw,
+} from "https://x.nest.land/quarksuite:core@0.1.0-4/design_tokens.js";
+import { default as dict } from "./dict.js";
+#+END_SRC
+
+**** 2. build tokens
+
+#+BEGIN_SRC js
+async function main() {
+  const encoder = new TextEncoder();
+  const path = "tokens";
+  const build = () => [
+    [css, "index.css"],
+    [raw, "index.json"]
+  ].forEach(([format, target]) =>
+    Deno.writeFile(`${path}/${target}`, encoder.encode(format(dict))));
+
+  if (await exists(path)) {
+    build();
+  } else {
+    await Deno.mkdir(path);
+    build();
+  }
+}
+
+main();
+#+END_SRC
+
+*** run
+
+#+BEGIN_SRC shell
+deno run --allow-read --allow-write ./build.js
+#+END_SRC
 
 * Source Code
 ** Module API
