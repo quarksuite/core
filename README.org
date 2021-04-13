@@ -319,7 +319,7 @@ import {
   triadic
   tints,
   shades
-} from from "https://x.nest.land/quarksuite:core@0.1.0/color.js";
+} from "https://x.nest.land/quarksuite:core@0.1.0/color.js";
 #+END_SRC
 
 ** Webpack/Rollup
@@ -485,7 +485,7 @@ const dict = {
 const encoder = new TextEncoder();
 const data = encoder.encode(css(dict));
 
-await Js.writeFile("./tokens.css", data);
+await Deno.writeFile("./tokens.css", data);
 #+END_SRC
 
 *** deno run
@@ -493,7 +493,7 @@ await Js.writeFile("./tokens.css", data);
 Next, we run the file with write access.
 
 #+BEGIN_SRC shell
-js run --allow-write ./build.js
+deno run --allow-write ./build.js
 #+END_SRC
 
 ** Node (14.16.0+)
@@ -552,7 +552,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.0-2/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -990,7 +990,7 @@ const encoder = new TextEncoder();
 [
   [css, "./tokens.css"],
   [raw, "./tokens.json"],
-].forEach(([fn, file]) => Js.writeFile(file, encoder.encode(fn(dict))));
+].forEach(([fn, file]) => Deno.writeFile(file, encoder.encode(fn(dict))));
 #+END_SRC
 
 For QuarkSuite's design tokens, I want a collection of CSS custom properties as well as a raw data
@@ -1001,7 +1001,7 @@ export for backup. In addition, QuarkSuite prefers Js for development but it's n
 It's recommended to place system logic in its own file (typically =system.js=) and then execute it.
 
 #+BEGIN_SRC shell
-js run --allow-write ./system.js
+deno run --allow-write ./system.js
 #+END_SRC
 
 **** tokens.css
@@ -1197,7 +1197,7 @@ import {
   units,
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.1.0-4/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
 
 // Color
 
@@ -1338,7 +1338,7 @@ import {
   systemfonts,
   update,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.0-4/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
 #+END_SRC
 
 **** Color
@@ -1454,7 +1454,7 @@ export const Spacing = Content.bind(null, ex, ex);
 **** 1. import the formulas and define settings
 
 #+BEGIN_SRC js
-import { create } from "https://x.nest.land/quarksuite:core@0.1.0-4/modular_scale.js";
+import { create } from "https://x.nest.land/quarksuite:core@0.1.0/modular_scale.js";
 import { Palette, Stack, Size, Measure, Spacing } from "./config.js";
 
 // Settings
@@ -1486,11 +1486,11 @@ export default {
 **** 1. import token functions and dictionary
 
 #+BEGIN_SRC js
-import { exists } from "https://js.land/std@0.92.0/fs/exists.ts";
+import { exists } from "https://deno.land/std@0.92.0/fs/exists.ts";
 import {
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.1.0-4/design_tokens.js";
+} from "https://x.nest.land/quarksuite:core@0.1.0/design_tokens.js";
 import { default as dict } from "./dict.js";
 #+END_SRC
 
@@ -1504,12 +1504,12 @@ async function main() {
     [css, "index.css"],
     [raw, "index.json"]
   ].forEach(([format, target]) =>
-    Js.writeFile(`${path}/${target}`, encoder.encode(format(dict))));
+    Deno.writeFile(`${path}/${target}`, encoder.encode(format(dict))));
 
   if (await exists(path)) {
     build();
   } else {
-    await Js.mkdir(path);
+    await Deno.mkdir(path);
     build();
   }
 }
@@ -1682,17 +1682,17 @@ const split = (x) => isString(x) && x.split("");
 const box = (x) => [x];
 const unbox = (x) => isArray(x) && x.toString();
 
-Js.test("SPEC compose: combines two data operators", function () {
+Deno.test("SPEC compose: combines two data operators", function () {
   const splitSafe = compose(split, unbox);
     assertEquals(splitSafe("hello"), "h,e,l,l,o");
 });
 
-Js.test("SPEC compose: can combine a chain of data operators", function () {
+Deno.test("SPEC compose: can combine a chain of data operators", function () {
   const upperSplitSafe = compose(trim, upper, split);
   assertEquals(upperSplitSafe("   hello      "), ["H", "E", "L", "L", "O"]);
 });
 
-Js.test("EDGE compose: rejects values that are not functions", function () {
+Deno.test("EDGE compose: rejects values that are not functions", function () {
   const failsFuncClause = compose(split, 5);
   assertThrows(
     () => {
@@ -1703,11 +1703,11 @@ Js.test("EDGE compose: rejects values that are not functions", function () {
   );
 });
 
-Js.test("SPEC pipe: can transform data", function () {
+Deno.test("SPEC pipe: can transform data", function () {
   assertEquals(pipe("hello", upper), "HELLO");
 });
 
-Js.test("SPEC pipe: can chain operators", function () {
+Deno.test("SPEC pipe: can chain operators", function () {
   assertEquals(
     pipe(
       "hello",
@@ -2360,7 +2360,7 @@ const colors = [
 
 colors.forEach((color) => {
   Object.entries(conversions).forEach(([format, fn]) =>
-    Js.test(
+    Deno.test(
       `SPEC try ${color} ${format.toUpperCase()}: "${fn(color)}"`,
       function () {
         assertEquals(fn(color), fn(color));
@@ -2369,7 +2369,7 @@ colors.forEach((color) => {
   );
 });
 
-Js.test(
+Deno.test(
   `EDGE: does nothing when input is the same format as target conversion`,
   function () {
     Object.entries(conversions).forEach(([format, fn]) =>
@@ -2378,7 +2378,7 @@ Js.test(
   },
 );
 
-Js.test(`EDGE: rejects invalid or unsupported color formats`, function () {
+Deno.test(`EDGE: rejects invalid or unsupported color formats`, function () {
   Object.values(conversions).forEach((fn) =>
     assertThrows(
       () => {
@@ -2753,7 +2753,7 @@ import {
   assertThrows,
 } from "https://js.land/std@0.86.0/testing/asserts.ts";
 
-Js.test("SPEC hue: can adjust clockwise", function () {
+Deno.test("SPEC hue: can adjust clockwise", function () {
   const color = "red";
 
   assertEquals(hue(15, color), "#ff4000");
@@ -2764,7 +2764,7 @@ Js.test("SPEC hue: can adjust clockwise", function () {
   assertEquals(hue(90, color), "#80ff00");
 });
 
-Js.test("SPEC hue: can adjust counterclockwise", function () {
+Deno.test("SPEC hue: can adjust counterclockwise", function () {
   const color = "lime";
 
   assertEquals(hue(-15, color), "#40ff00");
@@ -2775,7 +2775,7 @@ Js.test("SPEC hue: can adjust counterclockwise", function () {
   assertEquals(hue(-90, color), "#ff8000");
 });
 
-Js.test("SPEC hue: can adjust all supported formats", function () {
+Deno.test("SPEC hue: can adjust all supported formats", function () {
   const colors = [
     ["#c0ffee", "#ffc0d1"],
     ["midnightblue", "#707019"],
@@ -2790,7 +2790,7 @@ Js.test("SPEC hue: can adjust all supported formats", function () {
   colors.forEach(([input, target]) => assertEquals(hue(180, input), target));
 });
 
-Js.test("EDGE hue: rejects invalid color", function () {
+Deno.test("EDGE hue: rejects invalid color", function () {
   assertThrows(
     () => {
       throw hue(16, "invalid");
@@ -2800,11 +2800,11 @@ Js.test("EDGE hue: rejects invalid color", function () {
   );
 });
 
-Js.test("ALIAS h of hue", function () {
+Deno.test("ALIAS h of hue", function () {
   assertEquals(h(33, "hwb(60 38% 0%)"), "hwb(93 38.039% 0%)");
 });
 
-Js.test("SPEC saturation: can saturate a color", function () {
+Deno.test("SPEC saturation: can saturate a color", function () {
   const color = "cadetblue";
 
   assertEquals(saturation(4, color), "#5ba2a4");
@@ -2814,7 +2814,7 @@ Js.test("SPEC saturation: can saturate a color", function () {
   assertEquals(saturation(64, color), "#0ee9f1");
 });
 
-Js.test("SPEC saturation: can desaturate a color", function () {
+Deno.test("SPEC saturation: can desaturate a color", function () {
   const color = "chartreuse";
 
   assertEquals(saturation(-4, color), "#80fa05");
@@ -2824,7 +2824,7 @@ Js.test("SPEC saturation: can desaturate a color", function () {
   assertEquals(saturation(-64, color), "#80ad52");
 });
 
-Js.test("SPEC saturation: can adjust all supported formats", function () {
+Deno.test("SPEC saturation: can adjust all supported formats", function () {
   const colors = [
     ["#c0ffee", "#cff0e7"],
     ["midnightblue", "#3a3a4f"],
@@ -2841,7 +2841,7 @@ Js.test("SPEC saturation: can adjust all supported formats", function () {
   );
 });
 
-Js.test("EDGE saturation: rejects invalid color", function () {
+Deno.test("EDGE saturation: rejects invalid color", function () {
   assertThrows(
     () => {
       throw saturation(16, "invalid");
@@ -2851,15 +2851,15 @@ Js.test("EDGE saturation: rejects invalid color", function () {
   );
 });
 
-Js.test("ALIAS sat of saturation", function () {
+Deno.test("ALIAS sat of saturation", function () {
   assertEquals(sat(-16, "chocolate"), "#bf6c31");
 });
 
-Js.test("ALIAS s of saturation", function () {
+Deno.test("ALIAS s of saturation", function () {
   assertEquals(s(-8, "burlywood"), "#d8b78d");
 });
 
-Js.test("SPEC lightness: can lighten a color", function () {
+Deno.test("SPEC lightness: can lighten a color", function () {
   const color = "midnightblue";
 
   assertEquals(lightness(4, color), "#1d1d81");
@@ -2869,7 +2869,7 @@ Js.test("SPEC lightness: can lighten a color", function () {
   assertEquals(lightness(64, color), "#d9d9f7");
 });
 
-Js.test("SPEC lightness: can darken a color", function () {
+Deno.test("SPEC lightness: can darken a color", function () {
   const color = "cornsilk";
 
   assertEquals(lightness(-4, color), "#fff4c7");
@@ -2879,7 +2879,7 @@ Js.test("SPEC lightness: can darken a color", function () {
   assertEquals(lightness(-64, color), "#947600");
 });
 
-Js.test("SPEC lightness: can adjust all supported formats", function () {
+Deno.test("SPEC lightness: can adjust all supported formats", function () {
   const colors = [
     ["#c0ffee", "#ffffff"],
     ["midnightblue", "#3737d2"],
@@ -2896,7 +2896,7 @@ Js.test("SPEC lightness: can adjust all supported formats", function () {
   );
 });
 
-Js.test("EDGE lightness: rejects invalid color", function () {
+Deno.test("EDGE lightness: rejects invalid color", function () {
   assertThrows(
     () => {
       throw lightness(16, "invalid");
@@ -2906,18 +2906,18 @@ Js.test("EDGE lightness: rejects invalid color", function () {
   );
 });
 
-Js.test("ALIAS luminance of lightness", function () {
+Deno.test("ALIAS luminance of lightness", function () {
   assertEquals(
     luminance(12, "lab(38.1993% -39 -147.39)"),
     "lab(61.316% 0 -60.022)",
   );
 });
 
-Js.test("ALIAS l of lightness", function () {
+Deno.test("ALIAS l of lightness", function () {
   assertEquals(l(30, "slategray"), "#c6ccd2");
 });
 
-Js.test("SPEC alpha: can increase", function () {
+Deno.test("SPEC alpha: can increase", function () {
   const color = "#abcdef68";
 
   assertEquals(alpha(4, color), "#abcdef73");
@@ -2927,7 +2927,7 @@ Js.test("SPEC alpha: can increase", function () {
   assertEquals(alpha(64, color), "#abcdef");
 });
 
-Js.test("SPEC alpha: can decrease", function () {
+Deno.test("SPEC alpha: can decrease", function () {
   const color = "#abcdef";
 
   assertEquals(alpha(-4, color), "#abcdeff5");
@@ -2937,7 +2937,7 @@ Js.test("SPEC alpha: can decrease", function () {
   assertEquals(alpha(-64, color), "#abcdef5c");
 });
 
-Js.test("SPEC alpha: can adjust all supported formats", function () {
+Deno.test("SPEC alpha: can adjust all supported formats", function () {
   const colors = [
     ["#c0ffee", "#c0ffeebf"],
     ["midnightblue", "#191970bf"],
@@ -2952,11 +2952,11 @@ Js.test("SPEC alpha: can adjust all supported formats", function () {
   colors.forEach(([input, target]) => assertEquals(alpha(-25, input), target));
 });
 
-Js.test("ALIAS transparency of alpha", function () {
+Deno.test("ALIAS transparency of alpha", function () {
   assertEquals(transparency(-25, "#deaded"), "#deadedbf");
 });
 
-Js.test("ALIAS a of alpha", function () {
+Deno.test("ALIAS a of alpha", function () {
   assertEquals(a(-64, "#deaded"), "#deaded5c");
 });
 #+END_SRC
@@ -3128,7 +3128,7 @@ import {
   assertThrows,
 } from "https://js.land/std@0.86.0/testing/asserts.ts";
 
-Js.test("SPEC mix: can mix colors", function () {
+Deno.test("SPEC mix: can mix colors", function () {
   const red = "rgb(255, 0, 0)";
   const yellow = "rgb(255, 255, 0)";
   const green = "rgb(0, 255, 0)";
@@ -3159,13 +3159,13 @@ Js.test("SPEC mix: can mix colors", function () {
   );
 });
 
-Js.test("SPEC mix: can mix colors with alpha property", function () {
+Deno.test("SPEC mix: can mix colors with alpha property", function () {
   assertEquals(mix(50, "#ce9ddaef", "#c91193"), "#cc70baf7");
   assertEquals(mix(75, "#deaded", "#face"), "#e7ace5fb");
   assertEquals(mix(95, "#3ad9cfc5", "#cc911df9"), "#49d6cac8");
 });
 
-Js.test("SPEC mix: can mix colors of any valid format", function () {
+Deno.test("SPEC mix: can mix colors of any valid format", function () {
   const colors = [
     ["#c99faa", "#ed5f66", "red"],
     ["rgb(118, 20, 250)", "rgb(216, 204, 150)", "yellow"],
@@ -3185,7 +3185,7 @@ Js.test("SPEC mix: can mix colors of any valid format", function () {
   );
 });
 
-Js.test("EDGE mix: throws error when either color is invalid", function () {
+Deno.test("EDGE mix: throws error when either color is invalid", function () {
   assertThrows(
     () => {
       throw mix(40, "invalid", "#c0ffee");
@@ -3520,7 +3520,7 @@ import {
   assertThrows,
 } from "https://js.land/std@0.86.0/testing/asserts.ts";
 
-Js.test(
+Deno.test(
   "SPEC complementary: generate base hues for complementary scheme",
   function () {
     assertEquals(complementary("red"), ["#ff0000", "#00ffff"]);
@@ -3529,7 +3529,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC analogous: generate base hues for analogous scheme",
   function () {
     assertEquals(analogous("red"), ["#ff0000", "#ff0080", "#ff8000"]);
@@ -3538,7 +3538,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC splitComplementary: generate base hues for split complementary scheme",
   function () {
     assertEquals(splitComplementary("red"), ["#ff0000", "#0080ff", "#00ff80"]);
@@ -3547,18 +3547,18 @@ Js.test(
   },
 );
 
-Js.test("SPEC triadic: generate base hues for triadic scheme", function () {
+Deno.test("SPEC triadic: generate base hues for triadic scheme", function () {
   assertEquals(triadic("red"), ["#ff0000", "#0000ff", "#00ff00"]);
   assertEquals(triadic("cyan"), ["#00ffff", "#ffff00", "#ff00ff"]);
 });
 
-Js.test("SPEC tetradic: generate base hues for tetradic scheme", function () {
+Deno.test("SPEC tetradic: generate base hues for tetradic scheme", function () {
   assertEquals(tetradic("red"), ["#ff0000", "#ff00ff", "#00ffff", "#00ff00"]);
   assertEquals(tetradic("lime"), ["#00ff00", "#ffff00", "#ff00ff", "#0000ff"]);
   assertEquals(tetradic("blue"), ["#0000ff", "#00ffff", "#ffff00", "#ff0000"]);
 });
 
-Js.test("ALIAS dualComplementary of tetradic", function () {
+Deno.test("ALIAS dualComplementary of tetradic", function () {
   assertEquals(dualComplementary("cyan"), [
     "#00ffff",
     "#00ff00",
@@ -3567,17 +3567,17 @@ Js.test("ALIAS dualComplementary of tetradic", function () {
   ]);
 });
 
-Js.test("SPEC square: generate base hues for square scheme", function () {
+Deno.test("SPEC square: generate base hues for square scheme", function () {
   assertEquals(square("red"), ["#ff0000", "#8000ff", "#00ffff", "#80ff00"]);
   assertEquals(square("lime"), ["#00ff00", "#ff8000", "#ff00ff", "#0080ff"]);
   assertEquals(square("blue"), ["#0000ff", "#00ff80", "#ffff00", "#ff0080"]);
 });
 
-Js.test("SPEC custom: simulate complementary", function () {
+Deno.test("SPEC custom: simulate complementary", function () {
   assertEquals(custom({ hues: 2, arc: 180 }, "red"), ["#ff0000", "#00ffff"]);
 });
 
-Js.test("SPEC custom: simulate triadic", function () {
+Deno.test("SPEC custom: simulate triadic", function () {
   assertEquals(custom({ hues: 3, arc: 120 }, "red"), [
     "#ff0000",
     "#0000ff",
@@ -3585,7 +3585,7 @@ Js.test("SPEC custom: simulate triadic", function () {
   ]);
 });
 
-Js.test("SPEC custom: simulate square", function () {
+Deno.test("SPEC custom: simulate square", function () {
   assertEquals(custom({ hues: 4, arc: 90 }, "red"), [
     "#ff0000",
     "#8000ff",
@@ -3594,7 +3594,7 @@ Js.test("SPEC custom: simulate square", function () {
   ]);
 });
 
-Js.test("SPEC custom: 4 color analogous", function () {
+Deno.test("SPEC custom: 4 color analogous", function () {
   assertEquals(custom({ hues: 4, arc: 30 }, "red"), [
     "#ff0000",
     "#ff0080",
@@ -3603,7 +3603,7 @@ Js.test("SPEC custom: 4 color analogous", function () {
   ]);
 });
 
-Js.test("SPEC custom: accented triad", function () {
+Deno.test("SPEC custom: accented triad", function () {
   assertEquals(custom({ hues: 5, arc: 30, offset: 120 }, "red"), [
     "#ff0000",
     "#0000ff",
@@ -3613,7 +3613,7 @@ Js.test("SPEC custom: accented triad", function () {
   ]);
 });
 
-Js.test("SPEC custom: accented split complementary", function () {
+Deno.test("SPEC custom: accented split complementary", function () {
   assertEquals(custom({ hues: 4, arc: 30, offset: 150 }, "red"), [
     "#ff0000",
     "#0080ff",
@@ -3622,7 +3622,7 @@ Js.test("SPEC custom: accented split complementary", function () {
   ]);
 });
 
-Js.test("EDGE: rejects invalid color", function () {
+Deno.test("EDGE: rejects invalid color", function () {
   const fns = [
     complementary,
     analogous,
@@ -3848,7 +3848,7 @@ import {
   assertThrows,
 } from "https://js.land/std@0.86.0/testing/asserts.ts";
 
-Js.test("SPEC tints: can generate tints", function () {
+Deno.test("SPEC tints: can generate tints", function () {
   assertEquals(tints(2, 100, "red"), ["#ffb4b4", "#ffffff"]);
   assertEquals(tints(3, 100, "lime"), ["#92ff92", "#d1ffd1", "#ffffff"]);
   assertEquals(tints(4, 100, "blue"), [
@@ -3859,7 +3859,7 @@ Js.test("SPEC tints: can generate tints", function () {
   ]);
 });
 
-Js.test("SPEC tones: can generate tones", function () {
+Deno.test("SPEC tones: can generate tones", function () {
   assertEquals(tones(2, 100, "red"), ["#ca5b5b", "#808080"]);
   assertEquals(tones(3, 100, "lime"), ["#4add4a", "#69b469", "#808080"]);
   assertEquals(tones(4, 100, "blue"), [
@@ -3870,7 +3870,7 @@ Js.test("SPEC tones: can generate tones", function () {
   ]);
 });
 
-Js.test("SPEC shades: can generate shades", function () {
+Deno.test("SPEC shades: can generate shades", function () {
   assertEquals(shades(2, 100, "red"), ["#b40000", "#000000"]);
   assertEquals(shades(3, 100, "lime"), ["#00d100", "#009200", "#000000"]);
   assertEquals(shades(4, 100, "blue"), [
@@ -4084,12 +4084,12 @@ const Colors = [
 ];
 
 Colors.forEach(([name, value]) =>
-  Js.test(`SPEC clrs: ${value} matches ${name}`, function () {
+  Deno.test(`SPEC clrs: ${value} matches ${name}`, function () {
     assertEquals(clrs(name), value);
   })
 );
 
-Js.test("EDGE clrs: rejects undefined color", function () {
+Deno.test("EDGE clrs: rejects undefined color", function () {
   assertThrows(
     () => {
       throw clrs("invalid");
@@ -4099,7 +4099,7 @@ Js.test("EDGE clrs: rejects undefined color", function () {
   );
 });
 
-Js.test(
+Deno.test(
   "SPEC contrast: returns the colors from a palette that can be used with a background and satisfy AA usability",
   function () {
     const color = clrs("red");
@@ -4116,7 +4116,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC contrast: returns the colors that satisfy AAA usability",
   function () {
     const color = clrs("red");
@@ -4132,7 +4132,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC contrast: respects the enhanced rating boolean property",
   function () {
     const color = clrs("red");
@@ -4276,7 +4276,7 @@ import {
   assertThrows,
 } from "https://js.land/std@0.86.0/testing/asserts.ts";
 
-Js.test("SPEC systemfonts: can output a collection of system font stacks for prototyping", function () {
+Deno.test("SPEC systemfonts: can output a collection of system font stacks for prototyping", function () {
   assertEquals(systemfonts("sans-serif"), [
     "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   ]);
@@ -4291,7 +4291,7 @@ Js.test("SPEC systemfonts: can output a collection of system font stacks for pro
   ]);
 });
 
-Js.test("EGDE systemfonts: rejects invalid family keys", function () {
+Deno.test("EGDE systemfonts: rejects invalid family keys", function () {
   assertThrows(
     () => {
       throw systemfonts("invalid");
@@ -4526,7 +4526,7 @@ import {
   assertThrows,
 } from "https://js.land/std@0.86.0/testing/asserts.ts";
 
-Js.test("SPEC create: can generate raw modular scales", function () {
+Deno.test("SPEC create: can generate raw modular scales", function () {
   assertEquals(create(6, 1.25, 1), [
     1,
     1.25,
@@ -4559,7 +4559,7 @@ Js.test("SPEC create: can generate raw modular scales", function () {
   ]);
 });
 
-Js.test("SPEC update: can update values with an in-place recalculation", function () {
+Deno.test("SPEC update: can update values with an in-place recalculation", function () {
   const scale = create(8, 2, 1);
 
   assertEquals(update((n) => n + 16, scale), [
@@ -4594,7 +4594,7 @@ Js.test("SPEC update: can update values with an in-place recalculation", functio
   ]);
 });
 
-Js.test("SPEC merge: can combine values from multiple scales into one scale", function () {
+Deno.test("SPEC merge: can combine values from multiple scales into one scale", function () {
   const a = create(8, 1.5, 1);
   const b = create(6, 1.25, 1);
   const c = create(4, 1.75, 1);
@@ -4640,7 +4640,7 @@ Js.test("SPEC merge: can combine values from multiple scales into one scale", fu
   ]);
 });
 
-Js.test("SPEC chunk: can split a larger set of scale values into multiple scales of a given size", function () {
+Deno.test("SPEC chunk: can split a larger set of scale values into multiple scales of a given size", function () {
   const [first, second, third, ...rest] = chunk(5, create(24, 1.5, 1));
 
   assertEquals(first, [1, 1.5, 2.25, 3.375, 5.0625]);
@@ -4675,7 +4675,7 @@ Js.test("SPEC chunk: can split a larger set of scale values into multiple scales
   ]);
 });
 
-Js.test("SPEC units: can attach units and output CSS-ready modular scales", function () {
+Deno.test("SPEC units: can attach units and output CSS-ready modular scales", function () {
   assertEquals(units("rem", create(6, 1.5, 1)), [
     "1rem",
     "1.5rem",
@@ -4699,7 +4699,7 @@ Js.test("SPEC units: can attach units and output CSS-ready modular scales", func
   ]);
 });
 
-Js.test("EDGE: scale modifiers (update, merge, chunk, units) reject empty scales", function () {
+Deno.test("EDGE: scale modifiers (update, merge, chunk, units) reject empty scales", function () {
   assertThrows(
     () => {
       throw update((n) => n, []);
@@ -4961,7 +4961,7 @@ const dict = {
   },
 };
 
-Js.test(
+Deno.test(
   "SPEC css: can process dictionary into CSS custom properties",
   function () {
     assertStrictEquals(
@@ -4983,7 +4983,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC sass: can process dictionary into Sass variables",
   function () {
     assertStrictEquals(
@@ -5004,7 +5004,7 @@ $color-highlight: #36ff40;
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC less: can process dictionary into Less variables",
   function () {
     assertStrictEquals(
@@ -5025,7 +5025,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC styl: can process dictionary into Stylus variables",
   function () {
     assertStrictEquals(
@@ -5208,7 +5208,7 @@ const dict = {
   },
 };
 
-Js.test(
+Deno.test(
   "SPEC raw: exports dictionary data as raw JSON",
   function () {
     assertStrictEquals(
@@ -5241,7 +5241,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC yaml: exports dictionary data as YAML",
   function () {
     assertStrictEquals(
@@ -5396,7 +5396,7 @@ const dict = {
   },
 };
 
-Js.test(
+Deno.test(
   "SPEC tailwind: transforms dictionary data into TailwindCSS theme",
   function () {
     assertEquals(tailwind(dict), {
@@ -5416,7 +5416,7 @@ Js.test(
   },
 );
 
-Js.test(
+Deno.test(
   "SPEC styledict: transforms dictionary data into Style Dictionary properties",
   function () {
     assertEquals(styledict(dict), {
@@ -5579,7 +5579,7 @@ export const validate = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
 Let's see if all the colors defined in the format table pass:
 
 #+BEGIN_SRC js :results output code replace :allow read :var hexTable=hex-samples
-const hex = await import(`${Js.cwd()}/internals/color/format/hex.js`);
+const hex = await import(`${Deno.cwd()}/internals/color/format/hex.js`);
 const colors = hexTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => hex.validate(color)))
@@ -5632,7 +5632,7 @@ export const extract = (hex) => expander(hex).match(/[\da-f]{2}/g);
 Then, I'm going to test that the channel values are plucked as =[R, G, B, A]=:
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hex = await import (`${Js.cwd()}/internals/color/format/hex.js`);
+const hex = await import (`${Deno.cwd()}/internals/color/format/hex.js`);
 
 <<valid-hex>>
 
@@ -5743,7 +5743,7 @@ export function validate(color) {
 Next up is seeing if the format tests pass.
 
 #+BEGIN_SRC js :results output code replace :allow read :var rgbTable=rgb-samples
-const rgb = await import(`${Js.cwd()}/internals/color/format/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/format/rgb.js`);
 const colors = rgbTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => rgb.validate(color)))
@@ -5789,7 +5789,7 @@ need to be intensive.
 Now, I'll test that the values are properly pulled.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Js.cwd()}/internals/color/format/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/format/rgb.js`);
 
 <<valid-rgb>>
 
@@ -5896,7 +5896,7 @@ export function validate(color) {
 Now, I'll perform the tests:
 
 #+BEGIN_SRC js :results output code replace :allow read :var hslTable=hsl-samples
-const hsl = await import(`${Js.cwd()}/internals/color/format/hsl.js`);
+const hsl = await import(`${Deno.cwd()}/internals/color/format/hsl.js`);
 const colors = hslTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => hsl.validate(color)))
@@ -5938,7 +5938,7 @@ extracting the hue units along with percentages.
 Finally, I'll test that the values are extracted.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hsl = await import(`${Js.cwd()}/internals/color/format/hsl.js`);
+const hsl = await import(`${Deno.cwd()}/internals/color/format/hsl.js`);
 
 <<valid-hsl>>
 
@@ -6044,7 +6044,7 @@ export function validate(color) {
 Now, on to the format tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :var cmykTable=cmyk-samples
-const cmyk = await import(`${Js.cwd()}/internals/color/format/device-cmyk.js`);
+const cmyk = await import(`${Deno.cwd()}/internals/color/format/device-cmyk.js`);
 const colors = cmykTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => cmyk.validate(color)));
@@ -6082,7 +6082,7 @@ export const extract = (cmyk) => cmyk.match(/([\d.]+)%?/g);
 Finally, the extraction tests:
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const cmyk = await import(`${Js.cwd()}/internals/color/format/device-cmyk.js`);
+const cmyk = await import(`${Deno.cwd()}/internals/color/format/device-cmyk.js`);
 
 <<valid-cmyk>>
 
@@ -6187,7 +6187,7 @@ export function validate(color) {
 Alright, now the format tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :var hwbTable=hwb-samples
-const hwb = await import(`${Js.cwd()}/internals/color/format/hwb.js`);
+const hwb = await import(`${Deno.cwd()}/internals/color/format/hwb.js`);
 const colors = hwbTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => hwb.validate(color)))
@@ -6224,7 +6224,7 @@ export const extract = (hwb) => hwb.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 Finally, the tests for value extraction.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hwb = await import(`${Js.cwd()}/internals/color/format/hwb.js`);
+const hwb = await import(`${Deno.cwd()}/internals/color/format/hwb.js`);
 
 <<valid-hwb>>
 
@@ -6324,7 +6324,7 @@ export function validate(color) {
 Now, it's validator testing time.
 
 #+BEGIN_SRC js :results output code replace :allow read :var labTable=lab-samples
-const lab = await import(`${Js.cwd()}/internals/color/format/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/format/lab.js`);
 const colors = labTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => lab.validate(color)))
@@ -6364,7 +6364,7 @@ export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
 Time to test it.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Js.cwd()}/internals/color/format/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/format/lab.js`);
 
 <<valid-lab>>
 
@@ -6469,7 +6469,7 @@ export function validate(color) {
 And it's format validation test time.
 
 #+BEGIN_SRC js :results output code replace :allow read :var lchTable=lch-samples
-const lch = await import(`${Js.cwd()}/internals/color/format/lch.js`);
+const lch = await import(`${Deno.cwd()}/internals/color/format/lch.js`);
 const colors = lchTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => lch.validate(color)))
@@ -6506,7 +6506,7 @@ export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 Now, I'll set up some extraction tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lch = await import(`${Js.cwd()}/internals/color/format/lch.js`);
+const lch = await import(`${Deno.cwd()}/internals/color/format/lch.js`);
 
 <<valid-lch>>
 
@@ -6689,7 +6689,7 @@ export function rgb(hex) {
 For testing my implementation, I'll reuse the extracted hex results above.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hex = await import(`${Js.cwd()}/internals/color/convert/hex.js`);
+const hex = await import(`${Deno.cwd()}/internals/color/convert/hex.js`);
 
 <<hex-values>>
 
@@ -6803,7 +6803,7 @@ export function hex(rgb) {
 Now, I'll use the extracted RGB defined earlier to test my conversions for accuracy.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Js.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
 
 <<rgb-values>>
 
@@ -6895,7 +6895,7 @@ export function hsl(rgb) {
 Time for some color conversion tests!
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Js.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
 
 <<rgb-values>>
 
@@ -6958,7 +6958,7 @@ export function cmyk(rgb) {
 Now, I'm checking the math.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Js.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
 
 <<rgb-values>>
 
@@ -7023,7 +7023,7 @@ export function hwb(rgb) {
 I'm suspicious of the math here, so let's see the proof.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Js.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
 
 <<rgb-values>>
 
@@ -7169,7 +7169,7 @@ export function lab(rgb) {
 That was a lot, so I'm going to run my tests now.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Js.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
 
 <<rgb-values>>
 
@@ -7312,7 +7312,7 @@ export function rgb(hsl) {
 Now, the tests with my extracted HSL to verify that the math checks out.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hsl = await import(`${Js.cwd()}/internals/color/convert/hsl.js`);
+const hsl = await import(`${Deno.cwd()}/internals/color/convert/hsl.js`);
 
 <<hsl-values>>
 
@@ -7387,7 +7387,7 @@ export function rgb(cmyk) {
 Time to see if the math stacks up.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const cmyk = await import(`${Js.cwd()}/internals/color/convert/device-cmyk.js`);
+const cmyk = await import(`${Deno.cwd()}/internals/color/convert/device-cmyk.js`);
 
 <<cmyk-values>>
 
@@ -7484,7 +7484,7 @@ export function rgb(hwb) {
 Now the fun part: seeing if anything breaks.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hwb = await import(`${Js.cwd()}/internals/color/convert/hwb.js`);
+const hwb = await import(`${Deno.cwd()}/internals/color/convert/hwb.js`);
 
 <<hwb-values>>
 
@@ -7637,7 +7637,7 @@ export function rgb(lab) {
 That was a lot to parse. Time to see if the calculations check out.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Js.cwd()}/internals/color/convert/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/convert/lab.js`);
 
 <<lab-values>>
 
@@ -7698,7 +7698,7 @@ export function lch(lab) {
 Now to make sure it returns what I expect.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Js.cwd()}/internals/color/convert/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/convert/lab.js`);
 
 <<lab-values>>
 
@@ -7776,7 +7776,7 @@ export function lab(lch) {
 Alright, time to test the LCH color table.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lch = await import(`${Js.cwd()}/internals/color/convert/lch.js`);
+const lch = await import(`${Deno.cwd()}/internals/color/convert/lch.js`);
 
 <<lch-values>>
 
