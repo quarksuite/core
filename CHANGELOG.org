@@ -32,6 +32,7 @@ target environments. Basic type information is provided for development via TSDo
 Top level source files are now modules by default, and the below modules should be preferred for importing:
 
 + =mod.js=: the entry point for the entire public API (aggregates the following)
+  - =utilities.js=: contains advanced functional utilities
   - =color.js=: contains all color functions
   - =typography.js=: contains all typography functions
   - =modular_scale.js=: contains all functions for using modular scales
@@ -69,6 +70,7 @@ implementation details, so you'll find [[https://github.com/quarksuite/core/blob
 
 *** output functions
 
++ =yaml= data export added
 + =tw= changed to =tailwind=
 + =sd= changed to =styledict=
 
