@@ -1521,7 +1521,7 @@ main();
 *** run
 
 #+BEGIN_SRC shell
-js run --allow-read --allow-write ./build.js
+deno run --allow-read --allow-write ./build.js
 #+END_SRC
 
 * Source Code
@@ -1726,7 +1726,7 @@ Deno.test("SPEC pipe: can chain operators", function () {
 ***** Utilities Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/utilities_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/utilities_test.js)
 #+END_SRC
 
 #+NAME: utilities-test
@@ -2395,7 +2395,7 @@ Deno.test(`EDGE: rejects invalid or unsupported color formats`, function () {
 ****** Color Format Conversion Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/color_convert_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_convert_test.js)
 #+END_SRC
 
 #+NAME: conversion-test
@@ -2965,7 +2965,7 @@ Deno.test("ALIAS a of alpha", function () {
 ****** Color Adjustment Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/color_adjust_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_adjust_test.js)
 #+END_SRC
 
 #+NAME: adjustment-test
@@ -3214,7 +3214,7 @@ Deno.test("EDGE mix: throws error when either color is invalid", function () {
 ****** Color Mixing Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/color_mix_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_mix_test.js)
 #+END_SRC
 
 #+NAME: mix-test
@@ -3655,7 +3655,7 @@ Deno.test("EDGE: rejects invalid color", function () {
 ****** Color Scheme Generation Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/color_scheme_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_scheme_test.js)
 #+END_SRC
 
 #+NAME: scheme-test
@@ -3886,7 +3886,7 @@ Deno.test("SPEC shades: can generate shades", function () {
 ****** Color Palette Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/color_palette_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_palette_test.js)
 #+END_SRC
 
 #+NAME: palette-test
@@ -4159,7 +4159,7 @@ Deno.test(
 ****** Color Accessibility Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/color_a11y_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_a11y_test.js)
 #+END_SRC
 
 #+NAME: a11y-test
@@ -4306,7 +4306,7 @@ Deno.test("EGDE systemfonts: rejects invalid family keys", function () {
 ***** Typography Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/typography_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/typography_test.js)
 #+END_SRC
 
 #+NAME: typography-test
@@ -4735,7 +4735,7 @@ Deno.test("EDGE: scale modifiers (update, merge, chunk, units) reject empty scal
 ***** Modular Scale Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/modular_scale_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/modular_scale_test.js)
 #+END_SRC
 
 #+NAME: scale-test
@@ -5051,7 +5051,7 @@ color-highlight = #36ff40
 ****** CSS Format Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/output_css_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/output_css_test.js)
 #+END_SRC
 
 #+NAME: css-test
@@ -5272,7 +5272,7 @@ color:
 ****** Data Export Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/export_data_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/export_data_test.js)
 #+END_SRC
 
 #+NAME: export-test
@@ -5465,7 +5465,7 @@ Deno.test(
 ****** Data Transform Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true js test ./tests/data_transform_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/data_transform_test.js)
 #+END_SRC
 
 #+NAME: transform-test
