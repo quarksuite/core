@@ -299,7 +299,7 @@ Execute it, and now you have access to every bit of the core to play with.
 
 * Installation
 
-For modern V8 ECMAScript environments, there's nothing to install. All you need is the package URL.
+For modern v8 ECMAScript environments, there's nothing to install. All you need is the package URL.
 
 ** Kitchen Sink
 
@@ -994,7 +994,8 @@ const encoder = new TextEncoder();
 #+END_SRC
 
 For QuarkSuite's design tokens, I want a collection of CSS custom properties as well as a raw data
-export for backup. In addition, QuarkSuite prefers Js for development but it's not required.
+export for backup. In addition, QuarkSuite prefers the Deno runtime for development but doesn't
+require it.
 
 *** Output
 
@@ -1280,7 +1281,7 @@ const encoder = new TextEncoder();
 [
   [css, "./tokens.css"],
   [raw, "./tokens.json"],
-].forEach(([fn, file]) => Js.writeFile(file, encoder.encode(fn(dict))));
+].forEach(([fn, file]) => Deno.writeFile(file, encoder.encode(fn(dict))));
 #+END_SRC
 
 ** Advanced Concepts
