@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
+* Table of Contents :TOC@3:
+- [[#010---2021-04-13][[0.1.0] - 2021-04-13]]
+  - [[#added][Added]]
+    - [[#functional-utilities][functional utilities]]
+    - [[#color-conversion][color conversion]]
+    - [[#scheme-functions][scheme functions]]
+    - [[#color-accessibility][color accessibility]]
+  - [[#changed][Changed]]
+    - [[#scheme-functions-1][scheme functions]]
+    - [[#output-functions][output functions]]
+  - [[#removed][Removed]]
+    - [[#functional-utilities-1][functional utilities]]
+
 * [0.1.0] - 2021-04-13
 
 The initial release of Quarks System Core adds several improvements over QuarkSuite 1. For a full
@@ -40,6 +53,9 @@ Top level source files are now modules by default, and the below modules should 
   functions provided for basic schemes; no longer need to set modifiers
 
 *** color accessibility
+
++ =contrast= function for validating or filtering palettes with WCAG color contrast ratios
+  recommendations
 
 ** Changed
 
