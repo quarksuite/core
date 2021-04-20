@@ -37,6 +37,9 @@ Top level source files are now modules by default, and the below modules should 
   - =modular_scale.js=: contains all functions for using modular scales
   - =design_tokens.js=: contains all build functions
 
+Lastly, I've used literate programming through the development of Quarks System Core to clarify the
+implementation details, so you'll find [[https://github.com/quarksuite/core/blob/main/README.org#source-code][the documentation is also the source]].
+
 ** Added
 
 *** functional utilities
