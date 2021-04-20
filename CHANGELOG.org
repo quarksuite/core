@@ -1,0 +1,60 @@
+#+TITLE: Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
+
+* [0.1.0] - 2021-04-13
+
+The initial release of Quarks System Core adds several improvements over QuarkSuite 1. For a full
+overview of what's different from legacy, consult the [[https://github.com/quarksuite/legacy/blob/master/CHANGELOG.md#v500---2020-12-05][Changelog of QuarkSuite 1]].
+
+This project no longer relies on Node or NPM and is instead served directly from the Arweave
+permaweb via [[https://nest.land][nest.land]]. Use =https://x.nest.land/quarksuite:core/mod.js= in a browser console or in
+your scripts to get started.
+
+TypeScript is also gone to remove the compile step that would conflict with using the library in its
+target environments. Basic type information is provided for development via TSDoc comments.
+
+Top level source files are now modules by default, and the below modules should be preferred for importing:
+
++ =mod.js=: the entry point for the entire public API (aggregates the following)
+  - =color.js=: contains all color functions
+  - =typography.js=: contains all typography functions
+  - =modular_scale.js=: contains all functions for using modular scales
+  - =design_tokens.js=: contains all build functions
+
+** Added
+
+*** functional utilities
+
++ =compose= function for straightforward composition
+
+*** color conversion
+
++ =device-cmyk=, =hwb=, =lab=, =lch= CSS formats now valid
+
+*** scheme functions
+
++ simplified =analogous=, =splitComplementary=, =triadic=, =tetradic/dualComplementary=, =square=
+  functions provided for basic schemes; no longer need to set modifiers
+
+*** color accessibility
+
+** Changed
+
+*** scheme functions
+
++ output of basic schemes slightly rearranged
++ =custom= color scheme generation modified to create colors around the input color symmetrically
+
+*** output functions
+
++ =tw= changed to =tailwind=
++ =sd= changed to =styledict=
+
+** Removed
+
+*** functional utilities
+
++ =bind= scrapped in favor of JavaScript's native =Function.bind=
