@@ -12,8 +12,8 @@ It's built for modern JavaScript environments and slots neatly into [[https://bu
 Other appendages of QuarkSuite include:
 
 + Quarks System Language (QSL): A domain-specific language for codifying design language into design
-  systems (TBD)
-+ Quarks System User Interface (QSUI): A UI kit for design system documentation and visual
+  tokens (TBD)
++ Quarks System User Interface (QSUI): A UI kit for design token documentation and visual
   development (WIP)
 + Quarks System Development Environment (QSDE): A complete development environment for design system
   authoring and management (TBD)
@@ -44,7 +44,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
     - [[#build][Build]]
   - [[#output][Output]]
 - [[#user-guide][User Guide]]
-  - [[#baseline][Baseline]]
+  - [[#basics][Basics]]
     - [[#requirements][Requirements]]
     - [[#color][Color]]
       - [[#1-set-a-base-color][1. set a base color]]
@@ -61,19 +61,20 @@ If you're interested in how this project evolved, feel free to [[https://github.
       - [[#value][Value]]
       - [[#scale][Scale]]
       - [[#subcategory][Subcategory]]
-      - [[#context][Context]]
-      - [[#namespace][Namespace]]
+      - [[#hierarchy][Hierarchy]]
+        - [[#context][Context]]
+        - [[#namespace][Namespace]]
     - [[#assemble][Assemble]]
     - [[#build-1][Build]]
     - [[#output-1][Output]]
       - [[#tokenscss][tokens.css]]
       - [[#tokensjson][tokens.json]]
-  - [[#systemjs][system.js]]
-  - [[#advanced-concepts][Advanced Concepts]]
+  - [[#recap][Recap]]
+  - [[#introduction-to-advanced-concepts][Introduction to Advanced Concepts]]
     - [[#bound-utilities][Bound Utilities]]
     - [[#data-pipelines][Data Pipelines]]
     - [[#configurationsformulas][Configurations/Formulas]]
-  - [[#refactoring--restructuring][Refactoring & Restructuring]]
+  - [[#applying-advanced-concepts][Applying Advanced Concepts]]
     - [[#formulasjs][formulas.js]]
       - [[#requirements-1][Requirements]]
       - [[#color-1][Color]]
@@ -252,18 +253,18 @@ QuarkSuite 1 to serve as the engine of the kit.
 That said, it can still be used as a standalone library if your needs are simple, you require
 absolute control, or you want to develop a custom design system workflow from a QSC baseline.
 
-As such, the included modules have /not/ been bundled or minified. Consider that in your process.
+Keep in mind that the core is /not/ bundled or minified. I leave that to your own needs.
 
 * Features
 
 ** Color Palettes
 
-+ Convert to/from any valid CSS color format (current and future)
-+ Adjust color properties and create mixtures
-+ Generate basic and advanced color schemes
-+ Add on tints, tones, and shades to complete the palette
++ Convert to/from any valid CSS color format (current and upcoming)
++ Adjust properties and create mixtures
++ Generate basic and advanced schemes
++ Create tints, tones, and shades
 + Use accessible default colors from the Colors project
-+ Ensure accessible palettes by filtering colors against AA/AAA contrast ratios
++ Ensure accessible palettes by comparing contrast ratios against WCAG recommendations
 
 ** Modular Scales
 
@@ -274,44 +275,43 @@ As such, the included modules have /not/ been bundled or minified. Consider that
 
 ** Token Formats
 
-+ Supports popular stylesheet formats (vanilla CSS custom properties, Sass/Less/Stylus preprocessor
++ Stylesheet formats (vanilla CSS custom properties, Sass/Less/Stylus preprocessor
   variables)
-+ Supports general data formats (raw JSON and YAML)
-+ Supports integrations (TailwindCSS themes, Style Dictionary properties)
++ General data as raw JSON/YAML
++ Tool integrations (TailwindCSS themes, Style Dictionary properties)
 
 ** Workflow
 
-+ Supports and encourages function composition and data pipelining
-+ Construct data through simple types: values (strings) and scales (array of strings)
-+ Codify your structure with formulas for reuse
-+ Assemble with a standard, nestable dictionary object to use as-is or export as design tokens
++ Supports and encourages function composition and data pipelines
++ Construct data through simple types: values (strings) and scales (array of values)
++ Assemble nestable dictionary objects to use as-is or export as design tokens
++ Create axiomatic configurations and formulas to use across projects
 
 * Getting Started
 
-If all you want to do is try it out, then open a console right in your development browser and paste
-the following:
+If you only want to try things out, paste the following line in the console of your preferred development browser.
 
 #+BEGIN_SRC js
-const quarks = await import("https://x.nest.land/quarksuite:core@0.1.0/mod.js");
+const quarks = await import("https://x.nest.land/quarksuite:core@0.1.1/mod.js");
 #+END_SRC
 
-Execute it, and now you have access to every bit of the core to play with.
+Execute it, and now you have access to every bit of the core to play with once it loads.
 
 * Installation
 
-For modern v8 ECMAScript environments, there's nothing to install. All you need is the package URL.
+For modern v8 environments, there's nothing to install. All you need is the package URL.
 
 ** Kitchen Sink
 
 You can import the whole library under a namespace or pick out the functions you need.
 
 #+BEGIN_SRC js
-import * as quarks from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+import * as quarks from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
 #+END_SRC
 
 ** Modular
 
-You can also import discrete modules in the library to use only what you need.
+You can also import just the parts of the library you need from any of its module entry points.
 
 #+BEGIN_SRC js
 import {
@@ -319,26 +319,22 @@ import {
   triadic
   tints,
   shades
-} from "https://x.nest.land/quarksuite:core@0.1.0/color.js";
+} from "https://x.nest.land/quarksuite:core@0.1.1/color.js";
 #+END_SRC
 
 ** Webpack/Rollup
 
 If you're still not quite convinced that buildless is the way forward, the ever awesome @egoist
-created a [[https://github.com/egoist/import-http][Webpack/Rollup plugin]] to allow package imports from source code URLs.
-
-After you install and enable that, the above code will work without issue.
+created a [[https://github.com/egoist/import-http][Webpack/Rollup plugin]] to allow package imports from source code URLs. This allows the
+above code to work without any additional steps.
 
 * Examples
 
 ** Bleeding Edge (Chromium 87+)
 
-If you're using Quarks System Core in Chromium 87+ with HTTPS, you literally need nothing else to
-create a basic set of design tokens for your project.
-
-It means you'll be able to use the experimental [[https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API ][File System Access API]] to write data to disk.
-
-So your entire workflow could happen in a single HTML file.
+If you're using Quarks System Core in Chromium 87+ with HTTPS, you have everything you need to
+create a basic set of design tokens right in the browser thanks to the experimental [[https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API ][File System
+Access API]].
 
 *** index.html
 
@@ -384,7 +380,7 @@ So your entire workflow could happen in a single HTML file.
         systemfonts,
         tints,
         units,
-      } from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+      } from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
 
       // Palette
       const main = hex("gainsboro");
@@ -439,10 +435,8 @@ So your entire workflow could happen in a single HTML file.
 </html>
 #+END_SRC
 
-If you copy this HTML to a file and open it in a supporting browser, you can choose where to save a
+If you paste this HTML to a file and open it in a supporting browser, you can choose where to save a
 simple collection of design tokens as CSS custom properties and then use them with any web project.
-
-This is where the web as a platform is /today/. You love to see it.
 
 ** Deno (1.6.0+)
 
@@ -461,7 +455,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -552,7 +546,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -620,17 +614,19 @@ can do with Quarks System Core.
 
 * User Guide
 
-This section is meant to demonstrate, step-by-step, the process of creating a design system
-foundation with the Quarks System Core. It uses QuarkSuite's own design tokens as an example.
+This section is meant to demonstrate, step-by-step, the process of creating a set of design tokens
+with the Quarks System Core. The tokens we'll create are enough for a basic project.
 
-After building a baseline token set, I'll show you some patterns to enhance the workflow and truly
-make it your own.
+After that, I'll introduce advanced concepts that allow you to scale your data and make it portable.
 
-** Baseline
+** Basics
 
-Every web design project is different, but every shared design language begins with conversations
-about three key concerns: color, typography, and layout. These are the minimum requirements of good
-design. Unique details can't shine with shoddy fundamentals.
+Every web design project is different, but every design language begins with conversations about
+three key concerns: color, typography, and layout.
+
+These are the minimum requirements. Your unique details won't hold up under shoddy scaffolding.
+
+First, create a new JS file and name it =system.js=. We'll put all of our code here.
 
 *** Requirements
 
@@ -653,7 +649,7 @@ import {
   // Tokens
   css,
   raw
-} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
 #+END_SRC
 
 *** Color
@@ -661,7 +657,7 @@ import {
 Quarks System Core provides a bevy of utilities to help you use the colors and palettes you
 want. You'll want to inspect the =color.js= module in a console to see what's available.
 
-Color values are treated as a whole data type in QSC. It will process /any/ valid CSS color and
+Color values are treated as a data type in QSC. It will process /any/ valid CSS color and
 includes the following modules:
 
 + =color.js=: aggregates the below submodules
@@ -672,7 +668,7 @@ includes the following modules:
   - =color_palette.js=: color palette variant functions
   - =color_a11y.js=: color accessibility functions
 
-Now, it's time to set up the QuarkSuite project's palette.
+Let's set up our palette.
 
 **** 1. set a base color
 
@@ -682,22 +678,24 @@ First, define a base color. This is typically a brand or identity color.
 const color = rgb("#348ec9");
 #+END_SRC
 
-Color conversion is accounted for in every function that consumes a color type, so you only need to
+Conversion is accounted for in every function that consumes a color, so you only need to
 convert the /base/ color to your desired format to carry it through the palette.
 
 **** 2. generate a color scheme
 
 Now, generate a color scheme from the base.
 
+For our example, we're going to create a triadic color scheme.
+
 #+BEGIN_SRC js
 const scheme = triadic(color);
 #+END_SRC
 
-In this case, I want a triadic color scheme for QuarkSuite.
-
 **** 3. complete the palette
 
 To complete the palette, generate some tints and shades and then wrap it all in a Quarks System Dictionary.
+
+In this case, we want tints and shades of the main color but only shades of the
 
 #+BEGIN_SRC js
 const palette = {
@@ -716,9 +714,6 @@ const palette = {
   },
 };
 #+END_SRC
-
-The QuarkSuite palette contains three tints and two shades for its main color and then two shades
-for the remaining colors. All are set to 99% contrast.
 
 *** Typography
 
@@ -751,6 +746,11 @@ Every following scale adheres to this procedure.
 
 Create the font dictionary for holding typography data.
 
+For our example, we're using Zilla Slab and Rubik from Google Fonts and attaching appropriate system
+fonts as fallbacks. We'll also set a system monospace stack as the code font.
+
+In addition, we'll pass in some raw values for leading and style.
+
 #+BEGIN_SRC js
 const font = {
   body: "Zilla Slab".concat(", ", systemfonts("serif")),
@@ -761,14 +761,12 @@ const font = {
 };
 #+END_SRC
 
-For QuarkSuite, I'm using Zilla Slab and Rubik from Google Fonts with system font fallbacks while
-using system monospace for code.
-
-In addition, I also set the leading and styles I want to use.
-
 **** 2. creating a text size scale
 
  Now create the global scale and use it to set a text size subcategory.
+
+Font sizes are derived directly from the global scale. They serve as a logical anchor for derivative
+scales. And this is because content is the *base value* informing all layout decisions.
 
 #+BEGIN_SRC js
 const values = 8;
@@ -783,9 +781,6 @@ const [, ...d] = units("em", inversion);
 
 const size = { base: b, x, d };
 #+END_SRC
-
-Font sizes are derived directly from the global scale. They serve as a logical anchor for derivative
-scales. And this is because text size is the *base value* informing all layout decisions.
 
 *** Layout
 
@@ -805,7 +800,10 @@ The [[https://developer.mozilla.org/en-US/docs/Web/CSS/length][=ch= unit in CSS]
 Represents the width, or more precisely the advance measure, of the glyph "0" (zero, the Unicode character U+0030) in the element's font.
 #+END_QUOTE
 
-The ch unit responds directly to the *current size* of an element's font.
+The =ch= unit responds directly to the *current size* of an element's font.
+
+Our example has a minimum measure of =48ch= and a maximum of =72ch=. We'll also generate some
+intermediate lengths for special purposes.
 
 #+BEGIN_SRC js
 const min = 48;
@@ -825,9 +823,6 @@ const measure = {
 };
 #+END_SRC
 
-QuarkSuite uses a minimum length of =48ch=, a maximum of =72ch=, and a collection of line fragments
-for special purposes.
-
 **** 2. create vertical rhythm/spacing scale
 
 The vertical dimension of layout based on content requires a measurement of its approximate
@@ -841,7 +836,9 @@ The [[https://developer.mozilla.org/en-US/docs/Web/CSS/length][=ex= unit in CSS]
 Represents the x-height of the element's font. On fonts with the "x" letter, this is generally the height of lowercase letters in the font; 1ex ≈ 0.5em in many fonts.
 #+END_QUOTE
 
-Whitespace using the ex unit will adjust with the size and attributes of the font in use.
+Whitespace using the =ex= unit will adjust with the size and attributes of the font in use.
+
+We'll generate from the global scale, this time attaching =ex= units.
 
 #+BEGIN_SRC js
 const ex = units("ex", scale);
@@ -850,8 +847,6 @@ const [, ...spd] = units("ex", inversion);
 
 const spacing = { base: sp, x: spx, d: spd };
 #+END_SRC
-
-QuarkSuite simply uses the global scale, but attaches different units.
 
 ** Design Tokens
 
@@ -883,66 +878,64 @@ Quarks System dictionaries also draw their hierachical ideas from [[https://amzn
 
 **** Value
 
-#+BEGIN_SRC js
-const dict = { color: { main: "red" } };
-#+END_SRC
+A string will be treated as a value and directly translated to a design token.
 
-A string property will be treated as a value and directly translated to a design token.
+#+BEGIN_SRC js
+const color = { main: "red" };
+#+END_SRC
 
 **** Scale
 
-#+BEGIN_SRC js
-const dict = { color: { main: ["red", "crimson", "firebrick"] } };
-#+END_SRC
+An array will be treated as a scale of values.
 
-An array property will be treated as a scale of values. Another way to think of scales is as
-/implicit/ subcategories where the keys are indexes.
+#+BEGIN_SRC js
+const color = { main: ["red", "crimson", "firebrick"] };
+#+END_SRC
 
 **** Subcategory
 
+An object with an internal =base= property defines a subcategory. The base is treated as the
+default value of that subcategory with any additional properties as variants or states.
+
 #+BEGIN_SRC js
-const dict = {
-  color: {
+const color = {
+  main: {
+    base: "red",
+    shade: ["crimson", "firebrick"]
+  }
+};
+#+END_SRC
+
+**** Hierarchy
+
+Every design token function recursively consumes a Quarks System dictionary. Transformations are
+performed based on the /kind/ of data found. This frees you to structure dictionaries any way you like.
+
+***** Context
+
+One way is to define a context. Such as having dark and light palettes.
+
+#+BEGIN_SRC js
+const color = {
+  light: {
     main: {
       base: "red",
       shade: ["crimson", "firebrick"]
     }
-  }
-};
-#+END_SRC
-
-An object property with an internal =base= property defines an /explicit/ subcategory. The value of
-the base is treated as the default state for a design token while the additional properties are
-treated as variants.
-
-**** Context
-
-#+BEGIN_SRC js
-const dict = {
-  color: {
-    light: {
-      main: {
-        base: "red",
-        shade: ["crimson", "firebrick"]
-      }
-    },
-    dark: {
-      main: {
-        base: "lime",
-        shade: ["forestgreen", "darkgreen"]
-      }
+  },
+  dark: {
+    main: {
+      base: "lime",
+      shade: ["forestgreen", "darkgreen"]
     }
   }
 };
 #+END_SRC
 
-Every design token function recursively consumes a Quarks System dictionary. Data transformations
-are performed based on the /kind/ of data found. This frees you to structure dictionaries however
-you want.
+***** Namespace
 
-One way is context; for example a light and dark color palette.
-
-**** Namespace
+You may also want to create an aggregate dictionary that wraps all of your data under a project
+namespace.
 
 #+BEGIN_SRC js
 const dict = {
@@ -961,11 +954,10 @@ const dict = {
 };
 #+END_SRC
 
-Another way is defining a namespace. It's usually the name of your project or design system.
-
 *** Assemble
 
-Going back to the data, assemble the dictionary.
+Continuing on, we'll wrap all of our data under a namespace of =quarks= with =color=, =text=, and
+=content= serving as contexts.
 
 #+BEGIN_SRC js
 const dict = {
@@ -977,12 +969,10 @@ const dict = {
 };
 #+END_SRC
 
-The QuarkSuite dictionary is contained under the =quarks= namespace and defines =color=, =text=, and
-=content= as contexts containing the acutal data.
-
 *** Build
 
-Now, build the data and write it to the filesystem using the runtime's native JavaScript API.
+For the data we've created, let's export a collection of CSS custom properties as well as some
+JSON. This example uses Deno, but you can use the environment and API you prefer.
 
 #+BEGIN_SRC js
 const encoder = new TextEncoder();
@@ -993,17 +983,15 @@ const encoder = new TextEncoder();
 ].forEach(([fn, file]) => Deno.writeFile(file, encoder.encode(fn(dict))));
 #+END_SRC
 
-For QuarkSuite's design tokens, I want a collection of CSS custom properties as well as a raw data
-export for backup. In addition, QuarkSuite prefers the Deno runtime for development but doesn't
-require it.
-
 *** Output
 
-It's recommended to place system logic in its own file (typically =system.js=) and then execute it.
+Finally, we execute the file.
 
 #+BEGIN_SRC shell
 deno run --allow-write ./system.js
 #+END_SRC
+
+This should leave us with the following files:
 
 **** tokens.css
 
@@ -1182,7 +1170,7 @@ deno run --allow-write ./system.js
 }
 #+END_SRC
 
-** system.js
+** Recap
 
 Before demonstrating advanced patterns and features, let's see what we have so far.
 
@@ -1198,7 +1186,7 @@ import {
   units,
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
 
 // Color
 
@@ -1284,7 +1272,7 @@ const encoder = new TextEncoder();
 ].forEach(([fn, file]) => Deno.writeFile(file, encoder.encode(fn(dict))));
 #+END_SRC
 
-** Advanced Concepts
+** Introduction to Advanced Concepts
 
 The following sections introduce advanced patterns you can use to refactor the system logic.
 
@@ -1295,14 +1283,14 @@ return a new *unary function* from the remaining data argument: =f(z, y, x)= to 
 for example.
 
 Quarks System Core uses an architecture for its modules where the last argument of a function is
-always the data it transforms (=x=). This allows the preceding arguments to be /modifiers/ and,
-combined with the previous, sets the groundwork for the remaining patterns.
+always the data it transforms (=x=). This allows the preceding arguments to be /modifiers/ and once
+bound, sets the groundwork for the remaining patterns.
 
 *** Data Pipelines
 
-Data pipelines represent a chain of complex operations performed on an initial piece of data. Its
-main purpose is providing a generic method of transforming values into scales and programmatically
-assembling dictionaries.
+Data pipelines represent a chain of complex operations performed on a data value. Its main purpose
+is providing a generic method of transforming values into scales, but it can also be used to
+programmatically assemble dictionaries.
 
 *** Configurations/Formulas
 
@@ -1311,15 +1299,15 @@ configurations and formulas. These are ideal for situations where you have appro
 your dictionaries that you want to use across projects or you're otherwise building a framework
 around your process.
 
-Think of it as a way of embedding your expectations and axioms into code.
+Think of it as a way of embedding your axioms into code.
 
-** Refactoring & Restructuring
+** Applying Advanced Concepts
 
-Now, it's time to refactor =system.js= section by section with the above patterns. In addition to
-changes in the system, the code has been restructured:
+Now, it's time to refactor =system.js= section by section with the above patterns. Without any
+changes to the output, the code splits into the following files.
 
-+ =formulas.js=: contains all the system logic
-+ =dict.js=: assembles the Quarks System dictionary via formulas
++ =formulas.js=: contains all the system logic embedded into reusable formulas
++ =dict.js=: assembles a Quarks System dictionary from our formulas
 + =build.js=: executed by the runtime environment
 
 *** formulas.js
@@ -1339,7 +1327,7 @@ import {
   systemfonts,
   update,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
 #+END_SRC
 
 **** Color
@@ -1455,7 +1443,7 @@ export const Spacing = Content.bind(null, ex, ex);
 **** 1. import the formulas and define settings
 
 #+BEGIN_SRC js
-import { create } from "https://x.nest.land/quarksuite:core@0.1.0/modular_scale.js";
+import { create } from "https://x.nest.land/quarksuite:core@0.1.1/modular_scale.js";
 import { Palette, Stack, Size, Measure, Spacing } from "./config.js";
 
 // Settings
@@ -1491,7 +1479,7 @@ import { exists } from "https://deno.land/std@0.92.0/fs/exists.ts";
 import {
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.1.0/design_tokens.js";
+} from "https://x.nest.land/quarksuite:core@0.1.1/design_tokens.js";
 import { default as dict } from "./dict.js";
 #+END_SRC
 
@@ -1558,14 +1546,14 @@ utilities are designed to take full advantage of this decision.
 
 **** compose
 
-+ =compose: (...operators) ==> (data) ==> unknown=
-+ =operators: Array<(data: unknown) ==> unknown>=: a sequence of data operators
++ =compose: (...operators: Array<(data: any) => any>) => (data: any) => any=
++ =operators: Array<(data: any) ==> any>=: a sequence of data operators
 
 
 Two conditions must be met for composition:
 
 + all operators must be functions
-+ all functions must be monadic ( =(data: unknown) => unknown=)
++ all functions must be monadic ( =(data: any) => any=)
 
 #+BEGIN_SRC js :tangle "./utilities.js" :comments link
 import { ErrorTemplate } from "./internals/error.js";
@@ -1606,8 +1594,8 @@ Check that every value in your composition chain is a function.
  * A data operator is also called a unary function. These are both ways of saying a function
  * takes a single argument.
  *
- * @param {((data: unknown) => unknown)[]} operators - a sequence of functions to combine
- * @returns {(data: unknown) => unknown} the composed function waiting for data  */
+ * @param {((data: any) => any)[]} operators - a sequence of functions to combine
+ * @returns {(data: any) => any} the composed function waiting for data  */
 export function compose(...operators) {
   return (data) =>
     operators.reduce((value, func) => {
@@ -1619,9 +1607,9 @@ export function compose(...operators) {
 
 **** pipe
 
-+ =(data, ...operators) => unknown=
++ =(data: any, ...operators: Array<(data: any) => any>) => unknown=
 + =data: unknown=: the data to pass through the pipeline
-+ =...operators: Array<(data: unknown) => unknown>=: a sequence of data operators
++ =...operators: Array<(data: any) => any>=: a sequence of data operators
 
 =pipe= inverts the relationship between data and its operators. This is crucial because data
 pipelines can be bound (with =Function.bind=)which allows the construction of /queued/ data
@@ -1648,9 +1636,9 @@ immediately executes on call.
  * This function simply inverts `compose` so that the data is immediately transformed
  * instead of combining the functions.
  *
- * @param {unknown} data - the data to pass through the pipeline
- * @param {((data: unknown) => unknown)[]} operators - the sequence of functions to transform data
- * @returns {unknown} The transformed data
+ * @param {any} data - the data to pass through the pipeline
+ * @param {((data: any) => any)[]} operators - the sequence of functions to transform data
+ * @returns {any} The transformed data
  */
 export function pipe(data, ...operators) {
   return compose(...operators)(data);
@@ -1668,7 +1656,7 @@ import {
   assertEquals,
   assertThrows,
 
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 const isString = (x) => typeof x === "string";
 const isArray = (x) => Array.isArray(x);
@@ -1767,8 +1755,7 @@ For example: =hex("rgb(255, 0, 0)")= will yield =#ff0000=.
 Each utility checks the validity of the input color before doing anything with it, and will throw a
 helpful error message if something goes wrong.
 
-To streamline the conversion process and make it easier to add future formats, Quarks System Core
-provides a collection of conversion pipelines for each format.
+To streamline the conversion process, I pass each format in the chain through as a sequence of keys.
 
 #+BEGIN_SRC js :tangle "./color_convert.js" :comments link
 import * as format from "./internals/color/format/index.js";
@@ -1813,351 +1800,38 @@ lch(38% 78 147)
     output,
   });
 
-const parseColor = (color, input, ...conversionChain) =>
-  input.validate(color) && pipe(color, input.extract, ...conversionChain);
+const parseColor = (color, input, ...chain) =>
+  input.validate(color) && pipe(color, ...chain);
 
-const parseNamedColor = (color, chain = false, ...conversionChain) =>
-  format.named.validate(color) && chain
-    ? pipe(color, convert.named.hex, format.hex.extract, ...conversionChain)
-    : pipe(color, convert.named.hex);
+// Conversion
+function convertColor(color, ...chain) {
+  return parseColor(
+    color,
+    format[chain[0]],
+    ...chain.reduce((acc, _, index, array) => {
+      if (index === array.length - 1) return acc; // end of sequence
+      if (array[index] === "named" && array[index + 1] === "hex") {
+        // implicit named color conversion
+        return [convert.named.hex];
+      }
+      return [
+        ...acc,
+        format[array[index]].extract,
+        convert[array[index]][array[index + 1]],
+      ];
+    }, []),
+  );
+}
 
-const parseSelf = (color, input) => input.validate(color) && color;
-
-// Possible RGB hex conversion chains
-const toHex = (color) =>
-  Object.values({
-    hex: parseSelf(color, format.hex),
-    named: parseNamedColor(color),
-    rgb: parseColor(color, format.rgb, convert.rgb.hex),
-    hsl: parseColor(
-      color,
-      format.hsl,
-      convert.hsl.rgb,
-      format.rgb.extract,
-      convert.rgb.hex,
-    ),
-    cmyk: parseColor(
-      color,
-      format.cmyk,
-      convert.cmyk.rgb,
-      format.rgb.extract,
-      convert.rgb.hex,
-    ),
-    hwb: parseColor(
-      color,
-      format.hwb,
-      convert.hwb.rgb,
-      format.rgb.extract,
-      convert.rgb.hex,
-    ),
-    lab: parseColor(
-      color,
-      format.lab,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.hex,
-    ),
-    lch: parseColor(
-      color,
-      format.lch,
-      convert.lch.lab,
-      format.lab.extract,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.hex,
-    ),
-  })
-    .filter((found) => !!found)
-    .toString() || ColorError(color);
-
-// Possible RGB conversion chains
-const toRGB = (color) =>
-  Object.values({
-    hex: parseColor(color, format.hex, convert.hex.rgb),
-    named: parseNamedColor(color, true, convert.hex.rgb),
-    rgb: parseSelf(color, format.rgb),
-    hsl: parseColor(color, format.hsl, convert.hsl.rgb),
-    cmyk: parseColor(color, format.cmyk, convert.cmyk.rgb),
-    hwb: parseColor(color, format.hwb, convert.hwb.rgb),
-    lab: parseColor(color, format.lab, convert.lab.rgb),
-    lch: parseColor(
-      color,
-      format.lch,
-      convert.lch.lab,
-      format.lab.extract,
-      convert.lab.rgb,
-    ),
-  })
-    .filter((found) => !!found)
-    .toString() || ColorError(color);
-
-// Possible HSL conversion chains
-const toHSL = (color) =>
-  Object.values({
-    hex: parseColor(
-      color,
-      format.hex,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.hsl,
-    ),
-    named: parseNamedColor(
-      color,
-      true,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.hsl,
-    ),
-    rgb: parseColor(color, format.rgb, convert.rgb.hsl),
-    hsl: parseSelf(color, format.hsl),
-    cmyk: parseColor(
-      color,
-      format.cmyk,
-      convert.cmyk.rgb,
-      format.rgb.extract,
-      convert.rgb.hsl,
-    ),
-    hwb: parseColor(
-      color,
-      format.hwb,
-      convert.hwb.rgb,
-      format.rgb.extract,
-      convert.rgb.hsl,
-    ),
-    lab: parseColor(
-      color,
-      format.lab,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.hsl,
-    ),
-    lch: parseColor(
-      color,
-      format.lch,
-      convert.lch.lab,
-      format.lab.extract,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.hsl,
-    ),
-  })
-    .filter((found) => !!found)
-    .toString() || ColorError(color);
-
-// Possible CMYK conversion chains
-const toCMYK = (color) =>
-  Object.values({
-    hex: parseColor(
-      color,
-      format.hex,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.cmyk,
-    ),
-    named: parseNamedColor(
-      color,
-      true,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.cmyk,
-    ),
-    rgb: parseColor(color, format.rgb, convert.rgb.cmyk),
-    hsl: parseColor(
-      color,
-      format.hsl,
-      convert.hsl.rgb,
-      format.rgb.extract,
-      convert.rgb.cmyk,
-    ),
-    cmyk: parseSelf(color, format.cmyk),
-    hwb: parseColor(
-      color,
-      format.hwb,
-      convert.hwb.rgb,
-      format.rgb.extract,
-      convert.rgb.cmyk,
-    ),
-    lab: parseColor(
-      color,
-      format.lab,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.cmyk,
-    ),
-    lch: parseColor(
-      color,
-      format.lch,
-      convert.lch.lab,
-      format.lab.extract,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.cmyk,
-    ),
-  })
-    .filter((found) => !!found)
-    .toString() || ColorError(color);
-
-// Possible HWB conversion chains
-const toHWB = (color) =>
-  Object.values({
-    hex: parseColor(
-      color,
-      format.hex,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.hwb,
-    ),
-    named: parseNamedColor(
-      color,
-      true,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.hwb,
-    ),
-    rgb: parseColor(color, format.rgb, convert.rgb.hwb),
-    hsl: parseColor(
-      color,
-      format.hsl,
-      convert.hsl.rgb,
-      format.rgb.extract,
-      convert.rgb.hwb,
-    ),
-    cmyk: parseColor(
-      color,
-      format.cmyk,
-      convert.cmyk.rgb,
-      format.rgb.extract,
-      convert.rgb.hwb,
-    ),
-    hwb: parseSelf(color, format.hwb),
-    lab: parseColor(
-      color,
-      format.lab,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.hwb,
-    ),
-    lch: parseColor(
-      color,
-      format.lch,
-      convert.lch.lab,
-      format.lab.extract,
-      convert.lab.rgb,
-      format.rgb.extract,
-      convert.rgb.hwb,
-    ),
-  })
-    .filter((found) => !!found)
-    .toString() || ColorError(color);
-
-// Possible CIE Lab conversion chains
-const toLAB = (color) =>
-  Object.values({
-    hex: parseColor(
-      color,
-      format.hex,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-    ),
-    named: parseNamedColor(
-      color,
-      true,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-    ),
-    rgb: parseColor(color, format.rgb, convert.rgb.lab),
-    hsl: parseColor(
-      color,
-      format.hsl,
-      convert.hsl.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-    ),
-    cmyk: parseColor(
-      color,
-      format.cmyk,
-      convert.cmyk.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-    ),
-    hwb: parseColor(
-      color,
-      format.hwb,
-      convert.hwb.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-    ),
-    lab: parseSelf(color, format.lab),
-    lch: parseColor(color, format.lch, convert.lch.lab),
-  })
-    .filter((found) => !!found)
-    .toString() || ColorError(color);
-
-// Possible CIE LCH conversion chains
-const toLCH = (color) =>
-  Object.values({
-    hex: parseColor(
-      color,
-      format.hex,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-      format.lab.extract,
-      convert.lab.lch,
-    ),
-    named: parseNamedColor(
-      color,
-      true,
-      convert.hex.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-      format.lab.extract,
-      convert.lab.lch,
-    ),
-    rgb: parseColor(
-      color,
-      format.rgb,
-      convert.rgb.lab,
-      format.lab.extract,
-      convert.lab.lch,
-    ),
-    hsl: parseColor(
-      color,
-      format.hsl,
-      convert.hsl.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-      format.lab.extract,
-      convert.lab.lch,
-    ),
-    cmyk: parseColor(
-      color,
-      format.cmyk,
-      convert.cmyk.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-      format.lab.extract,
-      convert.lab.lch,
-    ),
-    hwb: parseColor(
-      color,
-      format.hwb,
-      convert.hwb.rgb,
-      format.rgb.extract,
-      convert.rgb.lab,
-      format.lab.extract,
-      convert.lab.lch,
-    ),
-    lab: parseColor(color, format.lab, convert.lab.lch),
-    lch: parseSelf(color, format.lch),
-  })
-    .filter((found) => !!found)
-    .toString() || ColorError(color);
+const checkConversion = (color, formats) =>
+  formats.filter((found) => !!found).toString() || ColorError(color);
 #+END_SRC
 
-I'll be using these conversion trees to allow target formats to consume any input format.
+Conversion is a two step process: first =convertColor= reads the keys and executes the chain based
+on what it finds. It allows both progressive and regressive conversions.
+
+Finally, to return the color, =checkConversion= filters the formats and returns the color it finds
+at the end of the chain. If it exists. Otherwise, it throws an error.
 
 ***** hex
 
@@ -2178,7 +1852,15 @@ I'll be using these conversion trees to allow target formats to consume any inpu
  * @returns {string} the input color converted to RGB hex
  */
 export function hex(color) {
-  return toHex(color);
+  return format.hex.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "named", "hex"),
+    convertColor(color, "rgb", "hex"),
+    convertColor(color, "hsl", "rgb", "hex"),
+    convertColor(color, "cmyk", "rgb", "hex"),
+    convertColor(color, "hwb", "rgb", "hex"),
+    convertColor(color, "lab", "rgb", "hex"),
+    convertColor(color, "lch", "lab", "rgb", "hex"),
+  ]);
 }
 #+END_SRC
 
@@ -2201,7 +1883,15 @@ export function hex(color) {
  * @returns {string} the input color converted to RGB
  */
 export function rgb(color) {
-  return toRGB(color);
+  return format.rgb.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb"),
+    convertColor(color, "named", "hex", "rgb"),
+    convertColor(color, "hsl", "rgb"),
+    convertColor(color, "cmyk", "rgb"),
+    convertColor(color, "hwb", "rgb"),
+    convertColor(color, "lab", "rgb"),
+    convertColor(color, "lch", "lab", "rgb"),
+  ]);
 }
 #+END_SRC
 
@@ -2224,7 +1914,15 @@ export function rgb(color) {
  * @returns {string} the input color converted to HSL
  */
 export function hsl(color) {
-  return toHSL(color);
+  return format.hsl.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb", "hsl"),
+    convertColor(color, "named", "hex", "rgb", "hsl"),
+    convertColor(color, "rgb", "hsl"),
+    convertColor(color, "cmyk", "rgb", "hsl"),
+    convertColor(color, "hwb", "rgb", "hsl"),
+    convertColor(color, "lab", "rgb", "hsl"),
+    convertColor(color, "lch", "lab", "rgb", "hsl"),
+  ]);
 }
 #+END_SRC
 
@@ -2247,7 +1945,15 @@ export function hsl(color) {
  * @returns {string} the input color converted to CMYK
  */
 export function cmyk(color) {
-  return toCMYK(color);
+  return format.cmyk.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb", "cmyk"),
+    convertColor(color, "named", "hex", "rgb", "cmyk"),
+    convertColor(color, "rgb", "cmyk"),
+    convertColor(color, "hsl", "rgb", "cmyk"),
+    convertColor(color, "hwb", "rgb", "cmyk"),
+    convertColor(color, "lab", "rgb", "cmyk"),
+    convertColor(color, "lch", "lab", "rgb", "cmyk"),
+  ]);
 }
 #+END_SRC
 
@@ -2263,14 +1969,22 @@ export function cmyk(color) {
  * @example Converting CIELCH to HWB
  *
  * ```ts
- * hwb("lch(78.31% 83 210)");
+ * hwb("lch(78% 83 210)");
  * ```
  *
  * @param {string} color - the input color to convert
  * @returns {string} the input color converted to HWB
  */
 export function hwb(color) {
-  return toHWB(color);
+  return format.hwb.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb", "hwb"),
+    convertColor(color, "named", "hex", "rgb", "hwb"),
+    convertColor(color, "rgb", "hwb"),
+    convertColor(color, "hsl", "rgb", "hwb"),
+    convertColor(color, "cmyk", "rgb", "hwb"),
+    convertColor(color, "lab", "rgb", "hwb"),
+    convertColor(color, "lch", "lab", "rgb", "hwb"),
+  ]);
 }
 #+END_SRC
 
@@ -2293,7 +2007,15 @@ export function hwb(color) {
  * @returns {string} the input color converted to CIE Lab
  */
 export function lab(color) {
-  return toLAB(color);
+  return format.lab.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb", "lab"),
+    convertColor(color, "named", "hex", "rgb", "lab"),
+    convertColor(color, "rgb", "lab"),
+    convertColor(color, "hsl", "rgb", "lab"),
+    convertColor(color, "cmyk", "rgb", "lab"),
+    convertColor(color, "hwb", "rgb", "lab"),
+    convertColor(color, "lch", "lab"),
+  ]);
 }
 #+END_SRC
 
@@ -2316,7 +2038,15 @@ export function lab(color) {
  * @returns {string} the input color converted to CIE LCH
  */
 export function lch(color) {
-  return toLCH(color);
+  return format.lch.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb", "lab", "lch"),
+    convertColor(color, "named", "hex", "rgb", "lab", "lch"),
+    convertColor(color, "rgb", "lab", "lch"),
+    convertColor(color, "hsl", "rgb", "lab", "lch"),
+    convertColor(color, "cmyk", "rgb", "lab", "lch"),
+    convertColor(color, "hwb", "rgb", "lab", "lch"),
+    convertColor(color, "lab", "lch"),
+  ]);
 }
 #+END_SRC
 
@@ -2336,7 +2066,7 @@ import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "../color_convert.js";
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 const conversions = { hex, rgb, hsl, cmyk, hwb, lab, lch };
 
@@ -2752,7 +2482,7 @@ import {
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 Deno.test("SPEC hue: can adjust clockwise", function () {
   const color = "red";
@@ -3127,7 +2857,7 @@ import { mix } from "../color_mix.js";
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 Deno.test("SPEC mix: can mix colors", function () {
   const red = "rgb(255, 0, 0)";
@@ -3519,7 +3249,7 @@ import {
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 Deno.test(
   "SPEC complementary: generate base hues for complementary scheme",
@@ -3847,7 +3577,7 @@ import { shades, tints, tones } from "../color_palette.js";
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 Deno.test("SPEC tints: can generate tints", function () {
   assertEquals(tints(2, 100, "red"), ["#ffb4b4", "#ffffff"]);
@@ -4061,7 +3791,7 @@ import { shades, tints } from "../color_palette.js";
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 const Colors = [
   ["navy", "#001f3f"],
@@ -4275,7 +4005,7 @@ import { systemfonts } from "../typography.js";
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 Deno.test("SPEC systemfonts: can output a collection of system font stacks for prototyping", function () {
   assertEquals(systemfonts("sans-serif"), [
@@ -4525,7 +4255,7 @@ import { chunk, create, merge, units, update } from "../modular_scale.js";
 import {
   assertEquals,
   assertThrows,
-} from "https://js.land/std@0.86.0/testing/asserts.ts";
+} from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 Deno.test("SPEC create: can generate raw modular scales", function () {
   assertEquals(create(6, 1.25, 1), [
@@ -4940,7 +4670,7 @@ import { clrs } from "../color_a11y.js";
 import { triadic } from "../color_scheme.js";
 import { shades, tints } from "../color_palette.js";
 
-import { assertStrictEquals } from "https://js.land/std@0.86.0/testing/asserts.ts";
+import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 const swatch = clrs("red");
 const [main, accent, highlight] = triadic(swatch);
@@ -5187,7 +4917,7 @@ import { clrs } from "../color_a11y.js";
 import { triadic } from "../color_scheme.js";
 import { shades, tints } from "../color_palette.js";
 
-import { assertStrictEquals } from "https://js.land/std@0.86.0/testing/asserts.ts";
+import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 const swatch = clrs("red");
 const [main, accent, highlight] = triadic(swatch);
@@ -5371,7 +5101,7 @@ import { clrs } from "../color_a11y.js";
 import { triadic } from "../color_scheme.js";
 import { shades, tints } from "../color_palette.js";
 
-import { assertEquals } from "https://js.land/std@0.86.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
 const swatch = clrs("red");
 const [main, accent, highlight] = triadic(swatch);

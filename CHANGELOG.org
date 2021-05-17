@@ -5,17 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v011---2020-04-29][v0.1.1 - 2020-04-29]]
+  - [[#changed][Changed]]
+    - [[#color-conversion][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
   - [[#added][Added]]
     - [[#functional-utilities][functional utilities]]
-    - [[#color-conversion][color conversion]]
+    - [[#color-conversion-1][color conversion]]
     - [[#scheme-functions][scheme functions]]
     - [[#color-accessibility][color accessibility]]
-  - [[#changed][Changed]]
+  - [[#changed-1][Changed]]
     - [[#scheme-functions-1][scheme functions]]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v0.1.1 - 2020-04-29
+
+** Changed
+
+*** color conversion
+
++ refactored conversion logic to be simpler
 
 * v0.1.0 - 2021-04-13
 

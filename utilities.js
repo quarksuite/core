@@ -37,8 +37,8 @@ Check that every value in your composition chain is a function.
  * A data operator is also called a unary function. These are both ways of saying a function
  * takes a single argument.
  *
- * @param {((data: unknown) => unknown)[]} operators - a sequence of functions to combine
- * @returns {(data: unknown) => unknown} the composed function waiting for data  */
+ * @param {((data: any) => any)[]} operators - a sequence of functions to combine
+ * @returns {(data: any) => any} the composed function waiting for data  */
 export function compose(...operators) {
   return (data) =>
     operators.reduce((value, func) => {
@@ -66,9 +66,9 @@ export function compose(...operators) {
  * This function simply inverts `compose` so that the data is immediately transformed
  * instead of combining the functions.
  *
- * @param {unknown} data - the data to pass through the pipeline
- * @param {((data: unknown) => unknown)[]} operators - the sequence of functions to transform data
- * @returns {unknown} The transformed data
+ * @param {any} data - the data to pass through the pipeline
+ * @param {((data: any) => any)[]} operators - the sequence of functions to transform data
+ * @returns {any} The transformed data
  */
 export function pipe(data, ...operators) {
   return compose(...operators)(data);
