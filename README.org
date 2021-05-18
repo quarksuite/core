@@ -2192,8 +2192,9 @@ main ways to adjust a color include:
   a color is pure, a shade, or  a tint/pastel.
 + Alpha/Transparency: the opacity of a color. Whether a color is solid or lets light through.
 
-Many ways exist to change these qualities, but Quarks System Core explicitly does it from the HSL(A)
-color space for both ease of calculation and convention.
+Quark System Core used to adjust through the HSL color space, but then I realized it would be far
+more accurate to handle them through CIELCH. As a perceptually uniform space, it allows explicit
+adjustment of color properties whereas HSL would usually implicitly adjust some other property.
 
 I also want to be able to preserve the input format of a color after adjustment so /you/ won't have to
 think about it when you use these functions.
@@ -2218,7 +2219,7 @@ export const preserve = (target, color) =>
     .toString();
 #+END_SRC
 
-The simple method performs a /secondary/ color validation for the input and passes the resulting HSL
+The simple method performs a /secondary/ color validation for the input and passes the resulting CIELCH
 color after adjustment along to its conversion function.
 
 ***** hue
@@ -2227,18 +2228,19 @@ color after adjustment along to its conversion function.
 + =offset: number=: the rotational offset from current hue (positive or negative)
 + =color: string=: the color to adjust
 
-Each of the adjustment functions follow a similar pattern. First the input color is converted to
-HSL(A), and then its values are extracted. Finally, the relevant property is changed, and the color
-is reverted to its input format.
+Each of the adjustment functions follow a similar pattern.
+
+First the input color is converted to CIELCH and its values are extracted. The relevant property is
+changed, and the color is reverted to its original format.
 
 #+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
-import { extract } from "./internals/color/format/hsl.js";
+import { extract } from "./internals/color/format/lch.js";
 import {
   correctHueClockwise,
   correctHueCounterClockwise,
 } from "./internals/color/convert/setup.js";
-import { hsl } from "./color_convert.js";
-import { pipe } from "./utilities.js";
+import { lch } from "./color_convert.js";
+import { compose, pipe } from "./utilities.js";
 
 /**
  * A function that allows hue adjustment of any valid CSS color.
@@ -2263,12 +2265,14 @@ import { pipe } from "./utilities.js";
  * It corrects clockwise if value after calculation is < 0;
  * counterclockwise if value after calculation is > 360.
  *
+ * As of v0.2.0, hue adjustment is done in the CIELCH space instead of HSL.
+ *
  * @param {number} offset - the rotational offset from current hue
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function hue(offset, color) {
-  const [h, S, L, alpha] = pipe(color, hsl, extract);
+  const [L, C, h, alpha] = pipe(color, lch, extract);
   const hue = parseFloat(h) + offset;
 
   // Hue correction
@@ -2284,7 +2288,7 @@ export function hue(offset, color) {
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2301,10 +2305,13 @@ I added a hue correction step so that any adjustment values are acceptable.
 + =amount: number=: the amount to adjust saturation (as a percentage)
 + =color: string=: the color to adjust
 
-Saturation and lightness are bound by a linear range of  =0-100=.
+Saturation, lightness, and alpha are bound by a linear range of  =0-100%=.
 
 #+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
-import { normalize } from "./internals/color/convert/setup.js";
+import {
+  calcFractionFromPercent,
+  normalize,
+} from "./internals/color/convert/setup.js";
 
 /**
  * A function that allows saturation adjustment of any valid CSS color.
@@ -2322,24 +2329,31 @@ import { normalize } from "./internals/color/convert/setup.js";
  * ```
  *
  * @remarks
- * As a percentage value, amount is locked to a range of 0-100%. If
+ * As a value, amount is locked to a range of 0-100%. If
  * the calculation would yield a value out of bounds, the minimum or
  * maximum is returned.
  *
  * At 0%, a color is achromatic (gray). At 100%, a color is fully saturated.
+ *
+ * As of v0.2.0, saturation adjustment is done in the CIELCH space instead of HSL.
  *
  * @param {number} amount - the amount to adjust saturation (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function saturation(amount, color) {
-  const [H, s, L, alpha] = pipe(color, hsl, extract);
+  const [L, c, H, alpha] = pipe(color, lch, extract);
 
-  const S = `${normalize(0, parseFloat(s) + amount, 100)}%`;
+  const calcChromaFromPercent = compose(
+    calcFractionFromPercent,
+    (n) => n * 132,
+  );
+
+  const C = normalize(0, parseFloat(c) + calcChromaFromPercent(amount), 132);
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2380,18 +2394,20 @@ export const s = saturation;
  *
  * At 0%, sits pure black. At 100%, pure white.
  *
+ * As of v0.2.0, lightness adjustment is done in the CIELCH space instead of HSL.
+ *
  * @param {number} amount - the amount to adjust lightness (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function lightness(amount, color) {
-  const [H, S, l, alpha] = pipe(color, hsl, extract);
+  const [l, C, H, alpha] = pipe(color, lch, extract);
 
-  const L = `${normalize(0, parseFloat(l) + amount, 100)}%`;
+  const L = normalize(0, parseFloat(l) + amount, 100);
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2410,10 +2426,7 @@ export const l = lightness;
 + =color: string=: the color to adjust
 
 #+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
-import {
-  calcFractionFromPercent,
-  calcPercentFromFraction,
-} from "./internals/color/convert/setup.js";
+import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
 
 /**
  * A function that allows alpha/transparency adjustment of any valid CSS color.
@@ -2437,18 +2450,20 @@ import {
  *
  * At 0%, a color is fully transparent. At 100%, fully opaque.
  *
+ * As of v0.2.0, alpha adjustment is done in the CIELCH space instead of HSL.
+ *
  * @param {number} amount - the amount to adjust transparency (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function alpha(amount, color) {
-  const [H, S, L, alpha] = pipe(color, hsl, extract);
+  const [L, C, H, alpha] = pipe(color, lch, extract);
 
   const A = calcFractionFromPercent(
     normalize(0, calcPercentFromFraction(alpha ?? 1) + amount, 100),
   );
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2487,35 +2502,35 @@ import {
 Deno.test("SPEC hue: can adjust clockwise", function () {
   const color = "red";
 
-  assertEquals(hue(15, color), "#ff4000");
-  assertEquals(hue(30, color), "#ff8000");
-  assertEquals(hue(45, color), "#ffbf00");
-  assertEquals(hue(60, color), "#ffff00");
-  assertEquals(hue(75, color), "#bfff00");
-  assertEquals(hue(90, color), "#80ff00");
+  assertEquals(hue(15, color), "#e64800");
+  assertEquals(hue(30, color), "#c86700");
+  assertEquals(hue(45, color), "#a37b00");
+  assertEquals(hue(60, color), "#798a00");
+  assertEquals(hue(75, color), "#3e9500");
+  assertEquals(hue(90, color), "#009c00");
 });
 
 Deno.test("SPEC hue: can adjust counterclockwise", function () {
   const color = "lime";
 
-  assertEquals(hue(-15, color), "#40ff00");
-  assertEquals(hue(-30, color), "#80ff00");
-  assertEquals(hue(-45, color), "#bfff00");
-  assertEquals(hue(-60, color), "#ffff00");
-  assertEquals(hue(-75, color), "#ffbf00");
-  assertEquals(hue(-90, color), "#ff8000");
+  assertEquals(hue(-15, color), "#8ef600");
+  assertEquals(hue(-30, color), "#cce900");
+  assertEquals(hue(-45, color), "#ffd900");
+  assertEquals(hue(-60, color), "#ffc400");
+  assertEquals(hue(-75, color), "#ffaa00");
+  assertEquals(hue(-90, color), "#ff8c46");
 });
 
 Deno.test("SPEC hue: can adjust all supported formats", function () {
   const colors = [
-    ["#c0ffee", "#ffc0d1"],
-    ["midnightblue", "#707019"],
-    ["rgb(255, 133, 30)", "rgb(30, 154, 255)"],
-    ["hsl(300, 40%, 70%)", "hsl(120, 40%, 70%)"],
-    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(0% 89.804% 19.608% 0%)"],
-    ["hwb(120 30% 20%)", "hwb(300 30.196% 20%)"],
-    ["lab(36.44% 30 -79)", "lab(72.191% 9.656 70.685)"],
-    ["lch(63.198% 36 135)", "lch(51.614% 36.568 318.756)"],
+    ["#c0ffee", "#ffe2f6"],
+    ["midnightblue", "#112d00"],
+    ["rgb(255, 133, 30)", "rgb(0, 193, 255)"],
+    ["hsl(300, 40%, 70%)", "hsl(129, 31.428%, 58.824%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(0% 37.647% 0% 0%)"],
+    ["hwb(120 30% 20%)", "hwb(293 54.51% 0%)"],
+    ["lab(36.44% 30 -79)", "lab(36.44% -30 79)"],
+    ["lch(63.198% 36 135)", "lch(63.198% 36 315)"],
   ];
 
   colors.forEach(([input, target]) => assertEquals(hue(180, input), target));
@@ -2532,39 +2547,39 @@ Deno.test("EDGE hue: rejects invalid color", function () {
 });
 
 Deno.test("ALIAS h of hue", function () {
-  assertEquals(h(33, "hwb(60 38% 0%)"), "hwb(93 38.039% 0%)");
+  assertEquals(h(33, "hwb(60 38% 0%)"), "hwb(106 54.118% 0%)");
 });
 
 Deno.test("SPEC saturation: can saturate a color", function () {
   const color = "cadetblue";
 
-  assertEquals(saturation(4, color), "#5ba2a4");
-  assertEquals(saturation(8, color), "#55a7aa");
-  assertEquals(saturation(16, color), "#4bb0b4");
-  assertEquals(saturation(32, color), "#37c3c8");
-  assertEquals(saturation(64, color), "#0ee9f1");
+  assertEquals(saturation(4, color), "#4fa0a3");
+  assertEquals(saturation(8, color), "#34a3a6");
+  assertEquals(saturation(16, color), "#00a6ac");
+  assertEquals(saturation(32, color), "#00aeb9");
+  assertEquals(saturation(64, color), "#00b9d4");
 });
 
 Deno.test("SPEC saturation: can desaturate a color", function () {
   const color = "chartreuse";
 
-  assertEquals(saturation(-4, color), "#80fa05");
-  assertEquals(saturation(-8, color), "#80f50a");
-  assertEquals(saturation(-16, color), "#80eb14");
-  assertEquals(saturation(-32, color), "#80d629");
-  assertEquals(saturation(-64, color), "#80ad52");
+  assertEquals(saturation(-4, color), "#86fe25");
+  assertEquals(saturation(-8, color), "#8ffc3a");
+  assertEquals(saturation(-16, color), "#9bfa54");
+  assertEquals(saturation(-32, color), "#b2f57d");
+  assertEquals(saturation(-64, color), "#d5e9c3");
 });
 
 Deno.test("SPEC saturation: can adjust all supported formats", function () {
   const colors = [
-    ["#c0ffee", "#cff0e7"],
-    ["midnightblue", "#3a3a4f"],
-    ["rgb(255, 133, 30)", "rgb(201, 137, 84)"],
-    ["hsl(300, 40%, 70%)", "hsl(300, 0%, 70%)"],
-    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(59.5% 0% 46.5% 21.569%)"],
-    ["hwb(120 30% 20%)", "hwb(120 51.765% 41.569%)"],
-    ["lab(36.44% 30 -79)", "lab(43.941% 4.7393 -33.095)"],
-    ["lch(63.198% 36 135)", "lch(56.315% 0 0)"],
+    ["#c0ffee", "#f2f2f2"],
+    ["midnightblue", "#262626"],
+    ["rgb(255, 133, 30)", "rgb(194, 161, 139)"],
+    ["hsl(300, 40%, 70%)", "hsl(0, 0%, 65.882%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(24.576% 0% 26.695% 7.451%)"],
+    ["hwb(120 30% 20%)", "hwb(110 65.098% 27.843%)"],
+    ["lab(36.44% 30 -79)", "lab(36.44% 7.4552 -19.632)"],
+    ["lch(63.198% 36 135)", "lch(63.198% 0 135)"],
   ];
 
   colors.forEach(([input, target]) =>
@@ -2583,47 +2598,47 @@ Deno.test("EDGE saturation: rejects invalid color", function () {
 });
 
 Deno.test("ALIAS sat of saturation", function () {
-  assertEquals(sat(-16, "chocolate"), "#bf6c31");
+  assertEquals(sat(-16, "chocolate"), "#c07442");
 });
 
 Deno.test("ALIAS s of saturation", function () {
-  assertEquals(s(-8, "burlywood"), "#d8b78d");
+  assertEquals(s(-8, "burlywood"), "#d5ba9a");
 });
 
 Deno.test("SPEC lightness: can lighten a color", function () {
   const color = "midnightblue";
 
-  assertEquals(lightness(4, color), "#1d1d81");
-  assertEquals(lightness(8, color), "#212192");
-  assertEquals(lightness(16, color), "#2828b3");
-  assertEquals(lightness(32, color), "#5454d9");
-  assertEquals(lightness(64, color), "#d9d9f7");
+  assertEquals(lightness(4, color), "#26227b");
+  assertEquals(lightness(8, color), "#322a85");
+  assertEquals(lightness(16, color), "#483c9a");
+  assertEquals(lightness(32, color), "#7362c6");
+  assertEquals(lightness(64, color), "#ccb5ff");
 });
 
 Deno.test("SPEC lightness: can darken a color", function () {
   const color = "cornsilk";
 
-  assertEquals(lightness(-4, color), "#fff4c7");
-  assertEquals(lightness(-8, color), "#fff0b3");
-  assertEquals(lightness(-16, color), "#ffe88a");
-  assertEquals(lightness(-32, color), "#ffd738");
-  assertEquals(lightness(-64, color), "#947600");
+  assertEquals(lightness(-4, color), "#f5eed2");
+  assertEquals(lightness(-8, color), "#e9e2c7");
+  assertEquals(lightness(-16, color), "#d2ccb1");
+  assertEquals(lightness(-32, color), "#a7a086");
+  assertEquals(lightness(-64, color), "#555039");
 });
 
 Deno.test("SPEC lightness: can adjust all supported formats", function () {
   const colors = [
-    ["#c0ffee", "#ffffff"],
-    ["midnightblue", "#3737d2"],
-    ["rgb(255, 133, 30)", "rgb(255, 202, 158)"],
-    ["hsl(300, 40%, 70%)", "hsl(300, 40%, 95%)"],
-    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(40% 0% 31.372% 0%)"],
-    ["hwb(120 30% 20%)", "hwb(120 69.02% 9.0196%)"],
-    ["lab(36.44% 30 -79)", "lab(65.959% 6.3644 -44.264)"],
-    ["lch(63.198% 36 135)", "lch(82.966% 16.294 136.74)"],
+    ["#c0ffee", "#cdfffb"],
+    ["midnightblue", "#9f8bf4"],
+    ["rgb(255, 133, 30)", "rgb(255, 220, 117)"],
+    ["hsl(300, 40%, 70%)", "hsl(300, 100%, 95.882%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(64.314% 0% 56.078% 0%)"],
+    ["hwb(120 30% 20%)", "hwb(114 58.431% 0%)"],
+    ["lab(36.44% 30 -79)", "lab(84% 30 -79)"],
+    ["lch(63.198% 36 135)", "lch(100% 36 135)"],
   ];
 
   colors.forEach(([input, target]) =>
-    assertEquals(lightness(25, input), target)
+    assertEquals(lightness(48, input), target)
   );
 });
 
@@ -2640,12 +2655,12 @@ Deno.test("EDGE lightness: rejects invalid color", function () {
 Deno.test("ALIAS luminance of lightness", function () {
   assertEquals(
     luminance(12, "lab(38.1993% -39 -147.39)"),
-    "lab(61.316% 0 -60.022)",
+    "lab(50% -38.997 -147.39)",
   );
 });
 
 Deno.test("ALIAS l of lightness", function () {
-  assertEquals(l(30, "slategray"), "#c6ccd2");
+  assertEquals(l(30, "slategray"), "#c0d1e3");
 });
 
 Deno.test("SPEC alpha: can increase", function () {
@@ -2672,12 +2687,12 @@ Deno.test("SPEC alpha: can adjust all supported formats", function () {
   const colors = [
     ["#c0ffee", "#c0ffeebf"],
     ["midnightblue", "#191970bf"],
-    ["rgb(255, 133, 30)", "rgba(255, 131, 30, 0.75)"],
-    ["hsl(300, 40%, 70%)", "hsla(300, 40%, 70%, 0.75)"],
-    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(89.804% 0% 70.196% 0% / 0.75)"],
+    ["rgb(255, 133, 30)", "rgba(255, 133, 30, 0.75)"],
+    ["hsl(300, 40%, 70%)", "hsla(300, 39.869%, 70%, 0.75)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(89.804% 0% 69.804% 0% / 0.75)"],
     ["hwb(120 30% 20%)", "hwb(120 30.196% 20% / 0.75)"],
-    ["lab(36.44% 30 -79)", "lab(36.64% 29.588 -78.743 / 0.75)"],
-    ["lch(63.198% 36 135)", "lch(63.182% 35.872 135.17 / 0.75)"],
+    ["lab(36.44% 30 -79)", "lab(36.44% 30 -79 / 0.75)"],
+    ["lch(63.198% 36 135)", "lch(63.198% 36 135 / 0.75)"],
   ];
 
   colors.forEach(([input, target]) => assertEquals(alpha(-25, input), target));
@@ -2701,30 +2716,30 @@ printf '%s\n' (NO_COLOR=true deno test ./tests/color_adjust_test.js)
 #+NAME: adjustment-test
 #+begin_src shell
 running 22 tests
-test SPEC hue: can adjust clockwise ... ok (16ms)
-test SPEC hue: can adjust counterclockwise ... ok (6ms)
-test SPEC hue: can adjust all supported formats ... ok (13ms)
-test EDGE hue: rejects invalid color ... ok (4ms)
+test SPEC hue: can adjust clockwise ... ok (21ms)
+test SPEC hue: can adjust counterclockwise ... ok (12ms)
+test SPEC hue: can adjust all supported formats ... ok (10ms)
+test EDGE hue: rejects invalid color ... ok (1ms)
 test ALIAS h of hue ... ok (3ms)
 test SPEC saturation: can saturate a color ... ok (4ms)
 test SPEC saturation: can desaturate a color ... ok (3ms)
 test SPEC saturation: can adjust all supported formats ... ok (6ms)
-test EDGE saturation: rejects invalid color ... ok (3ms)
-test ALIAS sat of saturation ... ok (3ms)
-test ALIAS s of saturation ... ok (2ms)
+test EDGE saturation: rejects invalid color ... ok (2ms)
+test ALIAS sat of saturation ... ok (2ms)
+test ALIAS s of saturation ... ok (1ms)
 test SPEC lightness: can lighten a color ... ok (4ms)
-test SPEC lightness: can darken a color ... ok (3ms)
-test SPEC lightness: can adjust all supported formats ... ok (6ms)
+test SPEC lightness: can darken a color ... ok (4ms)
+test SPEC lightness: can adjust all supported formats ... ok (5ms)
 test EDGE lightness: rejects invalid color ... ok (2ms)
-test ALIAS luminance of lightness ... ok (3ms)
-test ALIAS l of lightness ... ok (3ms)
+test ALIAS luminance of lightness ... ok (2ms)
+test ALIAS l of lightness ... ok (2ms)
 test SPEC alpha: can increase ... ok (4ms)
-test SPEC alpha: can decrease ... ok (5ms)
-test SPEC alpha: can adjust all supported formats ... ok (4ms)
-test ALIAS transparency of alpha ... ok (3ms)
-test ALIAS a of alpha ... ok (3ms)
+test SPEC alpha: can decrease ... ok (4ms)
+test SPEC alpha: can adjust all supported formats ... ok (3ms)
+test ALIAS transparency of alpha ... ok (2ms)
+test ALIAS a of alpha ... ok (2ms)
 
-test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (106ms)
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (103ms)
 
 #+end_src
 

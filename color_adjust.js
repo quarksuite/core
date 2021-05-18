@@ -19,13 +19,13 @@ export const preserve = (target, color) =>
 // Properties Adjustment (=color_adjust.js=):1 ends here
 
 // [[file:README.org::*hue][hue:1]]
-import { extract } from "./internals/color/format/hsl.js";
+import { extract } from "./internals/color/format/lch.js";
 import {
   correctHueClockwise,
   correctHueCounterClockwise,
 } from "./internals/color/convert/setup.js";
-import { hsl } from "./color_convert.js";
-import { pipe } from "./utilities.js";
+import { lch } from "./color_convert.js";
+import { compose, pipe } from "./utilities.js";
 
 /**
  * A function that allows hue adjustment of any valid CSS color.
@@ -50,12 +50,14 @@ import { pipe } from "./utilities.js";
  * It corrects clockwise if value after calculation is < 0;
  * counterclockwise if value after calculation is > 360.
  *
+ * As of v0.2.0, hue adjustment is done in the CIELCH space instead of HSL.
+ *
  * @param {number} offset - the rotational offset from current hue
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function hue(offset, color) {
-  const [h, S, L, alpha] = pipe(color, hsl, extract);
+  const [L, C, h, alpha] = pipe(color, lch, extract);
   const hue = parseFloat(h) + offset;
 
   // Hue correction
@@ -71,7 +73,7 @@ export function hue(offset, color) {
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -81,7 +83,10 @@ export const h = hue;
 // hue:1 ends here
 
 // [[file:README.org::*saturation][saturation:1]]
-import { normalize } from "./internals/color/convert/setup.js";
+import {
+  calcFractionFromPercent,
+  normalize,
+} from "./internals/color/convert/setup.js";
 
 /**
  * A function that allows saturation adjustment of any valid CSS color.
@@ -99,24 +104,31 @@ import { normalize } from "./internals/color/convert/setup.js";
  * ```
  *
  * @remarks
- * As a percentage value, amount is locked to a range of 0-100%. If
+ * As a value, amount is locked to a range of 0-100%. If
  * the calculation would yield a value out of bounds, the minimum or
  * maximum is returned.
  *
  * At 0%, a color is achromatic (gray). At 100%, a color is fully saturated.
+ *
+ * As of v0.2.0, saturation adjustment is done in the CIELCH space instead of HSL.
  *
  * @param {number} amount - the amount to adjust saturation (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function saturation(amount, color) {
-  const [H, s, L, alpha] = pipe(color, hsl, extract);
+  const [L, c, H, alpha] = pipe(color, lch, extract);
 
-  const S = `${normalize(0, parseFloat(s) + amount, 100)}%`;
+  const calcChromaFromPercent = compose(
+    calcFractionFromPercent,
+    (n) => n * 132,
+  );
+
+  const C = normalize(0, parseFloat(c) + calcChromaFromPercent(amount), 132);
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -151,18 +163,20 @@ export const s = saturation;
  *
  * At 0%, sits pure black. At 100%, pure white.
  *
+ * As of v0.2.0, lightness adjustment is done in the CIELCH space instead of HSL.
+ *
  * @param {number} amount - the amount to adjust lightness (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function lightness(amount, color) {
-  const [H, S, l, alpha] = pipe(color, hsl, extract);
+  const [l, C, H, alpha] = pipe(color, lch, extract);
 
-  const L = `${normalize(0, parseFloat(l) + amount, 100)}%`;
+  const L = normalize(0, parseFloat(l) + amount, 100);
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -175,10 +189,7 @@ export const l = lightness;
 // lightness:1 ends here
 
 // [[file:README.org::*alpha][alpha:1]]
-import {
-  calcFractionFromPercent,
-  calcPercentFromFraction,
-} from "./internals/color/convert/setup.js";
+import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
 
 /**
  * A function that allows alpha/transparency adjustment of any valid CSS color.
@@ -202,18 +213,20 @@ import {
  *
  * At 0%, a color is fully transparent. At 100%, fully opaque.
  *
+ * As of v0.2.0, alpha adjustment is done in the CIELCH space instead of HSL.
+ *
  * @param {number} amount - the amount to adjust transparency (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function alpha(amount, color) {
-  const [H, S, L, alpha] = pipe(color, hsl, extract);
+  const [L, C, H, alpha] = pipe(color, lch, extract);
 
   const A = calcFractionFromPercent(
     normalize(0, calcPercentFromFraction(alpha ?? 1) + amount, 100),
   );
   return preserve(
-    A === 1 ? `hsl(${H}, ${S}, ${L})` : `hsla(${H}, ${S}, ${L}, ${A})`,
+    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
