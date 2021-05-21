@@ -1,4 +1,4 @@
-// [[file:../../../README.org::*Functional RGB <- Functional HWB][Functional RGB <- Functional HWB:1]]
+// [[file:../../../README.org::*Functional RGB <- Functional HWB (=hwb.rgb=)][Functional RGB <- Functional HWB (=hwb.rgb=):1]]
 import {
   calcChannelFromFraction,
   calcFractionFromChannel,
@@ -18,9 +18,9 @@ function parseHWB(hwb) {
 
   return A === 1 ? [H, W, BLK] : [H, W, BLK, A];
 }
-// Functional RGB <- Functional HWB:1 ends here
+// Functional RGB <- Functional HWB (=hwb.rgb=):1 ends here
 
-// [[file:../../../README.org::*Functional RGB <- Functional HWB][Functional RGB <- Functional HWB:2]]
+// [[file:../../../README.org::*Functional RGB <- Functional HWB (=hwb.rgb=)][Functional RGB <- Functional HWB (=hwb.rgb=):2]]
 /** Functional RGB <- Functional HWB */
 export function rgb(hwb) {
   const [h, w, blk, alpha] = parseHWB(hwb);
@@ -46,4 +46,4 @@ export function rgb(hwb) {
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
-// Functional RGB <- Functional HWB:2 ends here
+// Functional RGB <- Functional HWB (=hwb.rgb=):2 ends here

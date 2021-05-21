@@ -1,4 +1,4 @@
-// [[file:../../../README.org::*CIE Lab Conversion Setup][CIE Lab Conversion Setup:1]]
+// [[file:../../../README.org::*CIELAB Conversion Setup][CIELAB Conversion Setup:1]]
 import {
   calcChannelFromFraction,
   calcFractionFromPercent,
@@ -7,9 +7,9 @@ import {
   normalize,
   significant,
 } from "./setup.js";
-// CIE Lab Conversion Setup:1 ends here
+// CIELAB Conversion Setup:1 ends here
 
-// [[file:../../../README.org::*CIE XYZ <- Functonal CIE Lab][CIE XYZ <- Functonal CIE Lab:1]]
+// [[file:../../../README.org::*CIE XYZ <- Functonal CIELAB][CIE XYZ <- Functonal CIELAB:1]]
 function calcXYZ(lab) {
   const [L, a, b] = lab.map((v) => parseFloat(v));
 
@@ -32,9 +32,9 @@ function calcXYZ(lab) {
 
   return [x, y, z].map((V, i) => V * white[i]);
 }
-// CIE XYZ <- Functonal CIE Lab:1 ends here
+// CIE XYZ <- Functonal CIELAB:1 ends here
 
-// [[file:../../../README.org::*Linear RGB <- CIE XYZ][Linear RGB <- CIE XYZ:1]]
+// [[file:../../../README.org::*CIE XYZ -> Linear RGB][CIE XYZ -> Linear RGB:1]]
 function calcLinearRGB(lab) {
   const [x, y, z] = calcXYZ(lab);
   /**
@@ -65,13 +65,13 @@ function calcLinearRGB(lab) {
     X * 0.0556434 + Y * -0.2040259 + Z * 1.0572252,
   ];
 }
-// Linear RGB <- CIE XYZ:1 ends here
+// CIE XYZ -> Linear RGB:1 ends here
 
 // [[file:../../../README.org::*Linear RGB >-< Functional RGB][Linear RGB >-< Functional RGB:1]]
 const calcRGB = (lrgb) =>
   lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
 
-/** Functional CIE Lab <- Functional RGB */
+/** Functional CIELAB <- Functional RGB */
 export function rgb(lab) {
   const [l, a, b, alpha] = lab;
 
@@ -88,10 +88,10 @@ export function rgb(lab) {
 }
 // Linear RGB >-< Functional RGB:1 ends here
 
-// [[file:../../../README.org::*Functional CIE Lab -> Functional CIE LCH][Functional CIE Lab -> Functional CIE LCH:1]]
+// [[file:../../../README.org::*Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=)][Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=):1]]
 const precision = significant.bind(null, 5);
 
-/** Functional CIE Lab -> Functional CIE LCH */
+/** Functional CIELAB -> Functional CIELCh(ab) */
 export function lch(lab) {
   const [L, a, b, alpha] = lab;
   const [C, h] = [
@@ -109,4 +109,4 @@ export function lch(lab) {
 
   return A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`;
 }
-// Functional CIE Lab -> Functional CIE LCH:1 ends here
+// Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=):1 ends here

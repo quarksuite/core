@@ -205,12 +205,15 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#functional-hwb-internalscolorformathwbjs][Functional HWB (=internals/color/format/hwb.js=)]]
           - [[#hwb-validator][HWB Validator]]
           - [[#hwb-extractor][HWB Extractor]]
-        - [[#functional-cie-lab-internalscolorformatlabjs][Functional CIE Lab (=internals/color/format/lab.js=)]]
-          - [[#cie-lab-validator][CIE Lab Validator]]
-          - [[#cie-lab-extractor][CIE Lab Extractor]]
-        - [[#functional-cie-lch-internalscolorformatlchjs][Functional CIE LCH (=internals/color/format/lch.js=)]]
-          - [[#cie-lch-validator][CIE LCH Validator]]
-          - [[#cie-lch-extractor][CIE LCH Extractor]]
+        - [[#functional-cielab-internalscolorformatlabjs][Functional CIELAB (=internals/color/format/lab.js=)]]
+          - [[#cielab-validator][CIELAB Validator]]
+          - [[#cielab-extractor][CIELAB Extractor]]
+        - [[#functional-cielchab-internalscolorformatlchjs][Functional CIELCh(ab) (=internals/color/format/lch.js=)]]
+          - [[#cielchab-validator][CIELCh(ab) Validator]]
+          - [[#cielchab-extractor][CIELCh(ab) Extractor]]
+        - [[#oklab-lch-internalscolorformatoklabjs][Oklab (LCh) (=internals/color/format/oklab.js=)]]
+          - [[#oklab-lch-validator][Oklab (LCh) Validator]]
+          - [[#oklab-lch-extractor][Oklab (LCh) Extractor]]
       - [[#conversion-internalscolorconvertindexjs][Conversion (=internals/color/convert/index.js=)]]
         - [[#setup-internalscolorconvertsetupjs][Setup (=internals/color/convert/setup.js=)]]
           - [[#hex-rgb-fragments][Hex RGB Fragments]]
@@ -225,19 +228,21 @@ If you're interested in how this project evolved, feel free to [[https://github.
           - [[#functional-rgb---functional-hsl-rgbhsl][Functional RGB -> Functional HSL (=rgb.hsl=)]]
           - [[#functional-rgb---device-cmyk-rgbcmyk][Functional RGB -> Device CMYK (=rgb.cmyk=)]]
           - [[#functional-rgb---functional-hwb-rgbhwb][Functional RGB -> Functional HWB (=rgb.hwb=)]]
-          - [[#functional-rgb---functional-cie-lab-rgblab][Functional RGB -> Functional CIE Lab (=rgb.lab=)]]
+          - [[#functional-rgb---functional-cielab-rgblab][Functional RGB -> Functional CIELAB (=rgb.lab=)]]
+          - [[#functional-rgb---oklab-lch-rgboklab][Functional RGB -> Oklab (LCh) (=rgb.oklab=)]]
         - [[#functional-hsl-conversion-internalscolorconverthsljs][Functional HSL Conversion (=internals/color/convert/hsl.js=)]]
           - [[#functional-rgb---functional-hsl-hslrgb][Functional RGB <- Functional HSL (=hsl.rgb=)]]
         - [[#device-cmyk-conversion-internalscolorconvertdevice-cmykjs][Device CMYK Conversion (=internals/color/convert/device-cmyk.js=)]]
           - [[#functional-rgb---device-cmyk-cmykrgb][Functional RGB <- Device CMYK (=cmyk.rgb=)]]
         - [[#functional-hwb-conversion-internalscolorconverthwbjs][Functional HWB Conversion (=internals/color/convert/hwb.js=)]]
-          - [[#functional-rgb---functional-hwb][Functional RGB <- Functional HWB]]
-        - [[#functional-cie-lab-conversion-internalscolorconvertlabjs][Functional CIE Lab Conversion (=internals/color/convert/lab.js=)]]
-          - [[#cie-lab-conversion-setup][CIE Lab Conversion Setup]]
-          - [[#functional-rgb---cie-lab][Functional RGB <- CIE Lab]]
-          - [[#functional-cie-lab---functional-cie-lch][Functional CIE Lab -> Functional CIE LCH]]
-        - [[#functional-cie-lch-conversion-internalscolorconvertlchjs][Functional CIE LCH Conversion (=internals/color/convert/lch.js=)]]
-          - [[#functional-cie-lab---functional-cie-lch-1][Functional CIE Lab <- Functional CIE LCH]]
+          - [[#functional-rgb---functional-hwb-hwbrgb][Functional RGB <- Functional HWB (=hwb.rgb=)]]
+        - [[#functional-cielab-conversion-internalscolorconvertlabjs][Functional CIELAB Conversion (=internals/color/convert/lab.js=)]]
+          - [[#cielab-conversion-setup][CIELAB Conversion Setup]]
+          - [[#functional-rgb---functional-cielab-labrgb][Functional RGB <- Functional CIELAB (=lab.rgb=)]]
+          - [[#functional-cielab---functional-cielchab-lablch][Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=)]]
+        - [[#functional-cielch-conversion-internalscolorconvertlchjs][Functional CIELCh Conversion (=internals/color/convert/lch.js=)]]
+          - [[#functional-cielab---functional-cielchab-lchlab][Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)]]
+        - [[#oklab-lch-conversion-internalscolorconvertoklabjs][Oklab (LCh) Conversion (=internals/color/convert/oklab.js=)]]
   - [[#data][Data]]
     - [[#color-3][Color]]
       - [[#w3c-x11-color-definitions-datacolorw3c-x11js][W3C X11 Color Definitions (=data/color/w3c-x11.js=)]]
@@ -1995,7 +2000,7 @@ export function hwb(color) {
 
 #+BEGIN_SRC js :tangle "./color_convert.js" :comments link
 /**
- * A function that converts any valid CSS color to CIE Lab.
+ * A function that converts any valid CSS color to CIELAB.
  *
  * @example Convert HWB to CIELAB
  *
@@ -2004,7 +2009,7 @@ export function hwb(color) {
  * ```
  *
  * @param {string} color - the input color to convert
- * @returns {string} the input color converted to CIE Lab
+ * @returns {string} the input color converted to CIELAB
  */
 export function lab(color) {
   return format.lab.validate(color) ? color : checkConversion(color, [
@@ -2026,7 +2031,7 @@ export function lab(color) {
 
 #+BEGIN_SRC js :tangle "./color_convert.js" :comments link
 /**
- * A function that converts any valid CSS color to CIE LCH.
+ * A function that converts any valid CSS color to CIELCh(ab).
  *
  * @example Convert CIELCH to RGB Hex
  *
@@ -2035,7 +2040,7 @@ export function lab(color) {
  * ```
  *
  * @param {string} color - the input color to convert
- * @returns {string} the input color converted to CIE LCH
+ * @returns {string} the input color converted to CIELCh(ab)
  */
 export function lch(color) {
   return format.lch.validate(color) ? color : checkConversion(color, [
@@ -5271,16 +5276,25 @@ OUTPUT: "and what actually happened";
 QuarkSuite is designed primarily for web technologies and handles all current (and upcoming) CSS color
 formats. This section documents how the QSC validates colors and extracts color values.
 
+It also includes a pseudo-implementation of a non-standard format for special purposes: Oklab.
+
 #+BEGIN_SRC js :tangle "./internals/color/format/index.js" :comments link
 /** Internal format validation/extraction utilities */
+
+// Currently supported CSS formats
 export * as hex from "./hex.js";
 export * as named from "./named.js";
 export * as rgb from "./rgb.js";
 export * as hsl from "./hsl.js";
+
+// Proposed future formats
 export * as cmyk from "./device-cmyk.js";
 export * as hwb from "./hwb.js";
 export * as lab from "./lab.js";
 export * as lch from "./lch.js";
+
+// Non-standard
+export * as oklab from "./oklab.js";
 #+END_SRC
 
 From the format index, you can see at a glance which color formats are currently supported.
@@ -5996,12 +6010,12 @@ const colors = [
 ]
 #+end_src
 
-***** Functional CIE Lab (=internals/color/format/lab.js=)
+***** Functional CIELAB (=internals/color/format/lab.js=)
 
 The CSS Color Module Level 4 is currently drafting [[https://www.w3.org/TR/css-color-4/#lab-colors][support for device-independent color
 formats]]. Quarks System Core supports both.
 
-First up is the CIE Lab (often called Lab for short) color format. The format specification is better
+First up is the CIELAB (often called Lab for short) color format. The format specification is better
 explained on the linked W3C page above, but I'll summarize the components:
 
 + Lightness (L): a percentage value which, unlike HSL, is /not/ capped at =100%= for this space
@@ -6027,15 +6041,15 @@ The hue axes are unbound, but for use with the RGB space /must/ cap at =±128=.
 |         | =lab(83.119% 49.34 -3.99 / 0.75)= |
 |         | =lab(199% 38 13 / 78%)=         |
 
-****** CIE Lab Validator
+****** CIELAB Validator
 
 The Lab validator is not complex. It reuses the alpha validation expression and modifies the RGB
 channel validation expression slightly.
 
 #+BEGIN_SRC js :tangle "./internals/color/format/lab.js" :comments link
-/** Validate: functional CIE Lab format */
+/** Validate: functional CIELAB format */
 export function validate(color) {
-  // CIE Lab regexp
+  // CIELAB regexp
 
   // prefix: "lab("
   // L: float<0->%
@@ -6097,13 +6111,13 @@ const colors = [
 
 Good to go.
 
-****** CIE Lab Extractor
+****** CIELAB Extractor
 
-The CIE Lab value extractor is a slight modification from the HSL extractor. The CIE Lab extractor
+The CIELAB value extractor is a slight modification from the HSL extractor. The CIELAB extractor
 needs to be able to capture negative and positive values as well as percentages.
 
 #+BEGIN_SRC js :tangle "./internals/color/format/lab.js" :comments link
-/** Extract: CIE Lab values */
+/** Extract: CIELAB values */
 export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
 #+END_SRC
 
@@ -6139,15 +6153,14 @@ const colors = [
 ]
 #+end_src
 
-***** Functional CIE LCH (=internals/color/format/lch.js=)
+***** Functional CIELCh(ab) (=internals/color/format/lch.js=)
 
-The CIE LCH color space is another device-independent color format with added support in the CSS Color
-Module Level 4 spec. It's an offshoot of CIE Lab designed to be a little more useful for people. It
-consists of:
+The CIELCh(ab) color space is another device-independent color format with added support in the CSS
+Color Module Level 4 spec. It's CIELAB converted directly to polar coordinates. It consists of:
 
-+ Lightness (L): a percentage value interpreted identically to CIE Lab lightness
++ Lightness (L): a percentage value interpreted identically to CIELAB lightness
 + Chroma (C): a value corresponding to the amount of color desired
-+ Hue (H): interpreted similar to HSL, but the angles map to the *a/*b axes
++ Hue (h): interpreted similar to HSL, but the angles map to the *a/*b axes
 
 The chroma is theoretically boundless, but in everyday use caps at =230=. The hues at =0deg= and =180deg=
 map to magenta-red and green-cyan, respectively. The hues at =90deg= and =270deg= map to a mustard
@@ -6170,16 +6183,16 @@ yellow and sky blue, respectively.
 |         | =lch(24.494% 74.9 193grad)=          |
 |         | =lch(47.39% 111.193 0.62turn / 75%)= |
 
-****** CIE LCH Validator
+****** CIELCh(ab) Validator
 
-As a refinement of CIE Lab, the CIE LCH validator is a slightly modified implementation. It reuses the
-CIE Lab lightness expression but also pulls in the HSL hue expression. They accept the same input
+As a polar conversion of CIELAB, the CIELCh(ab) validator is a slightly modified implementation. It reuses the
+CIELAB lightness expression but also pulls in the HSL hue expression. They accept the same input
 even if they don't function the same way.
 
 #+BEGIN_SRC js :tangle "./internals/color/format/lch.js" :comments link
-/** Validate: functional CIE LCH format */
+/** Validate: functional CIELCh(ab) format */
 export function validate(color) {
-  // CIE LCH regexp
+  // CIELCh(ab) regexp
 
   // prefix: "lch("
   // lightness: float<0->%
@@ -6240,12 +6253,12 @@ const colors = [
 ]
 #+end_src
 
-****** CIE LCH Extractor
+****** CIELCh(ab) Extractor
 
-The CIE LCH extractor is identical to the HSL extractor.
+The CIELCh(ab) extractor is identical to the HSL extractor.
 
 #+BEGIN_SRC js :tangle "./internals/color/format/lch.js" :comments link
-/** Extract: CIE LCH values */
+/** Extract: CIELCh(ab) values */
 export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 #+END_SRC
 
@@ -6287,6 +6300,165 @@ const colors = [
 And that's it. Full support for validating and extracting the values of all current (and future) CSS
 color formats. Not very useful  by itself, so I'm going to write functionality to convert between them.
 
+***** Oklab (LCh) (=internals/color/format/oklab.js=)
+
+Oklab is a non-standard perceptual color space created by Björn Ottosson. It's a derivative of
+CIELAB that fixes some of its shortcomings in predicting hue and especially sudden hue shifting of
+blues toward purple.
+
+I decided to support it after realizing that HSL is a terrible space to make color adjustments in
+and standard CIELCh(ab) fell just short of my expectations for color scheme and variant generation.
+
+It was this [[https://observablehq.com/@joshdata/perceptually-valid-color-scales][demonstration of perceptually valid color scales]] that finally convinced me that Oklab
+had that special sauce. As a bonus, it's simple to implement. Quarks System Core processes Oklab
+colors in its polar coordinates form similar to CIELCh(ab) to ease value extraction and adjustment.
+
+It behaves similarly to CIELCh(ab).
+
+#+NAME: oklab-samples
+| Color   | Value                       |
+|---------+-----------------------------|
+| Black   | =oklab(0% 0 0)=             |
+| Gray    | =oklab(59.987% 0 0)=        |
+| White   | =oklab(100% 0 0)=           |
+| Red     | =oklab(62.795% 0.25768 29.234)= |
+| Yellow  | =oklab(96.768% 0.21101 109.77)= |
+| Green   | =oklab(86.644% 0.29483 142.5)= |
+| Cyan    | =oklab(90.54% 0.15455 194.77)= |
+| Blue    | =oklab(45.201% 0.31321 264.052)= |
+| Magenta | =oklab(70.167% 0.32249 328.363)= |
+| Etc.    | =oklab(37.119% 0.482 90)=   |
+|         | =oklab(29.11% 0.25 180)=    |
+|         | =oklab(53.33% 0.5 270)=     |
+|         | =oklab(84% 0.1043 350.31)=  |
+|         | =oklab(25.14% 0.44 60 / 0.8)= |
+
+****** Oklab (LCh) Validator
+
+The Oklab validator has a similar pattern to CIELCh(ab) but chroma is a range of =0-0.5=.
+
+#+BEGIN_SRC js :tangle "./internals/color/format/oklab.js" :comments link
+/** Validate: Oklab (LCh) format */
+export function validate(color) {
+  // OKlab (LCh) regexp
+
+  // prefix: "oklab("
+  // lightness: float<0->%
+  const lightness = /(?:(?:\d\.?\d?){1,}%)/;
+  // chroma: float<0-0.5>
+  const chroma = /(?:(?:0|0\.\d+|0.5))/;
+  // hue: float<0->
+  const hue = /(?:(?:\d\.?\d?)+)/;
+  // transparency: float<0-1> || float<0-100>%
+  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+  // separators: " " || " /"
+  const valueSep = /(?:[\s]+)/;
+  const alphaSep = /(?:[\s/]+)/;
+  // suffix: ")"
+
+  return new RegExp(
+    [
+      "(?:^oklab\\(",
+      lightness.source,
+      valueSep.source,
+      chroma.source,
+      valueSep.source,
+      hue.source,
+      "(?:",
+      alphaSep.source,
+      alpha.source,
+      ")?\\))$",
+    ].join(""),
+  ).test(color);
+}
+#+END_SRC
+
+Now for some tests.
+
+#+BEGIN_SRC js :results output code replace :allow read :var oklabTable=oklab-samples
+const oklab = await import(`${Deno.cwd()}/internals/color/format/oklab.js`);
+const colors = oklabTable.map(([a, b]) => b.replace(/=/g, ""));
+
+console.log("const colors =", colors.filter((color) => oklab.validate(color)))
+#+END_SRC
+
+#+NAME: valid-oklab
+#+begin_src deno
+const colors = [
+  "oklab(0% 0 0)",
+  "oklab(59.987% 0 0)",
+  "oklab(100% 0 0)",
+  "oklab(62.795% 0.25768 29.234)",
+  "oklab(96.768% 0.21101 109.77)",
+  "oklab(86.644% 0.29483 142.5)",
+  "oklab(90.54% 0.15455 194.77)",
+  "oklab(45.201% 0.31321 264.052)",
+  "oklab(70.167% 0.32249 328.363)",
+  "oklab(37.119% 0.482 90)",
+  "oklab(29.11% 0.25 180)",
+  "oklab(53.33% 0.5 270)",
+  "oklab(84% 0.1043 350.31)",
+  "oklab(25.14% 0.44 60 / 0.8)"
+]
+#+end_src
+
+****** Oklab (LCh) Extractor
+
+The Oklab extractor is a purely numeric extractor.
+
+#+BEGIN_SRC js :tangle "./internals/color/format/oklab.js" :comments link
+/** Extract: Oklab (LCh) values */
+export const extract = (oklab) => oklab.match(/([\d.]%?)+/g);
+#+END_SRC
+
+Now, I'll make sure the values are properly extracted.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const oklab = await import(`${Deno.cwd()}/internals/color/format/oklab.js`);
+
+<<valid-oklab>>
+
+console.log("const colors =", colors.map((color) => ({ color, values: oklab.extract(color) })));
+#+END_SRC
+
+#+NAME: oklab-values
+#+begin_src deno
+const colors = [
+  { color: "oklab(0% 0 0)", values: [ "0%", "0", "0" ] },
+  { color: "oklab(59.987% 0 0)", values: [ "59.987%", "0", "0" ] },
+  { color: "oklab(100% 0 0)", values: [ "100%", "0", "0" ] },
+  {
+    color: "oklab(62.795% 0.25768 29.234)",
+    values: [ "62.795%", "0.25768", "29.234" ]
+  },
+  {
+    color: "oklab(96.768% 0.21101 109.77)",
+    values: [ "96.768%", "0.21101", "109.77" ]
+  },
+  {
+    color: "oklab(86.644% 0.29483 142.5)",
+    values: [ "86.644%", "0.29483", "142.5" ]
+  },
+  {
+    color: "oklab(90.54% 0.15455 194.77)",
+    values: [ "90.54%", "0.15455", "194.77" ]
+  },
+  {
+    color: "oklab(45.201% 0.31321 264.052)",
+    values: [ "45.201%", "0.31321", "264.052" ]
+  },
+  {
+    color: "oklab(70.167% 0.32249 328.363)",
+    values: [ "70.167%", "0.32249", "328.363" ]
+  },
+  { color: "oklab(37.119% 0.482 90)", values: [ "37.119%", "0.482", "90" ] },
+  { color: "oklab(29.11% 0.25 180)", values: [ "29.11%", "0.25", "180" ] },
+  { color: "oklab(53.33% 0.5 270)", values: [ "53.33%", "0.5", "270" ] },
+  { color: "oklab(84% 0.1043 350.31)", values: [ "84%", "0.1043", "350.31" ] },
+  { color: "oklab(25.14% 0.44 60 / 0.8)", values: [ "25.14%", "0.44", "60", "0.8" ] }
+]
+#+end_src
+
 **** Conversion (=internals/color/convert/index.js=)
 
 The internal color conversion functions are organized by format. They follow a convention of
@@ -6298,14 +6470,21 @@ formatting functions remain separate from conversion functions for the reasons d
 
 #+BEGIN_SRC js :tangle "./internals/color/convert/index.js" :comments link
 /** Internal color conversion utilities */
+
+// Currently supported CSS formats
 export * as hex from "./hex.js";
 export * as named from "./named.js";
 export * as rgb from "./rgb.js";
 export * as hsl from "./hsl.js";
+
+// Proposed future formats
 export * as cmyk from "./device-cmyk.js";
 export * as hwb from "./hwb.js";
 export * as lab from "./lab.js";
 export * as lch from "./lch.js";
+
+// Non-standard
+export * as oklab from "./oklab.js";
 #+END_SRC
 
 ***** Setup (=internals/color/convert/setup.js=)
@@ -6489,7 +6668,8 @@ Functional RGB leads to the first progressive conversion fork and regression opt
 + =Functional RGB -> Functional HSL=: a progressive conversion to HSL
 + =Functional RGB -> Device CMYK=: a progressive conversion to CMYK
 + =Functional RGB -> Functional HWB=: a progressive conversion to HWB
-+ =Functional RGB -> Functional CIE Lab=: a progressive conversion to Lab
++ =Functional RGB -> Functional CIELAB=: a progressive conversion to CIELAB
++ =Functional RGB  -> Oklab (LCh)=: a progressive conversion to [[https://bottosson.github.io/posts/oklab/][Oklab]]
 
 ****** RGB Conversion Setup
 
@@ -6502,9 +6682,11 @@ import {
   calcFractionFromChannel,
   calcFractionFromPercent,
   calcHexFragmentFromAlpha,
+  calcHueFromRad,
   calcPercentFromFraction,
   channelToHexFragment,
   correctHueCounterClockwise,
+  normalize,
   significant,
 } from "./setup.js";
 
@@ -6800,30 +6982,30 @@ console.log(colors.map(({color, values}) => ({rgb: color, hwb: rgb.hwb(values)})
 
 I'll test this more , but the results are about what I'd expect.
 
-****** Functional RGB -> Functional CIE Lab (=rgb.lab=)
+****** Functional RGB -> Functional CIELAB (=rgb.lab=)
 
-Converting RGB to CIE Lab is another multistep process. The chain is as follows:
+Converting RGB to CIELAB is another multistep process. The chain is as follows:
 
 1) =Functional RGB >-< Linear RGB=
 2) =Linear RGB -> CIE XYZ=
-3) =CIE XYZ -> Functional CIE Lab=
+3) =CIE XYZ -> Functional CIELAB=
 
 The =>-<= indicates a lateral conversion. One that isn't a completely different format, but a
 modification of the original format for some special purpose.
 
-CIE XYZ is a necessary waypoint on the road to CIE Lab conversion indicating a set of general
+CIEXYZ is a necessary waypoint on the road to CIELAB conversion indicating a set of general
 coordinates based on the range of colors perceptible by the human eye.
 
 #+BEGIN_QUOTE
-In some color conversion implementations, it would also be a waypoint in CIE LCH conversion, but I
-think it's easier to complete the =Functional RGB <-> Functional CIE Lab= link and then allow
-=Functional CIE Lab <-> Functional CIE LCH= to form its own separate link.
+In some color conversion implementations, it would also be a waypoint in CIELCh(ab) conversion, but I
+think it's easier to complete the =Functional RGB <-> Functional CIELAB= link and then allow
+=Functional CIELAB <-> Functional CIELCh(ab)= to form its own separate link.
 #+END_QUOTE
 
 ******* Functional RGB >-< Linear RGB
 
-Linear RGB is RGB without the gamma function applied as that would throw off the calculation of CIE
-XYZ.
+Linear RGB is RGB without the gamma function applied as that would throw off the calculation of
+CIEXYZ.
 
 You can [[https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz][read more about the actual formula]] if you're curious.
 
@@ -6836,13 +7018,10 @@ const removeGamma = (rgb) =>
   });
 #+END_SRC
 
-******* Linear RGB -> CIE XYZ
+******* Linear RGB -> CIEXYZ
 
 Now, to convert the ungamma-ed RGB to XYZ data, we have to pass it through a transformation matrix
 of values representing the D65 reference white point defined in sRGB, which CSS uses.
-
-For that, I'm going to use a simple array calculation that /approximates/ what matrix multiplication
-is under the hood instead of wiring up a needlessly complex implementation.
 
 #+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
 /** Linear RGB -> CIE XYZ */
@@ -6856,10 +7035,10 @@ function calcXYZ(rgb) {
 }
 #+END_SRC
 
-******* CIE XYZ -> Functional CIE Lab
+******* CIEXYZ -> Functional CIELAB
 
 First, I need to apply the [[http://www.brucelindbloom.com/Eqn_ChromAdapt.html][Bradford method of chromatic adaptation]] to convert from D65 to D50, which
-CIE Lab uses.
+CIELAB uses.
 
 And then I need to apply the actual [[http://www.brucelindbloom.com/index.html?Equations.html][conversion formula]].
 
@@ -6881,7 +7060,7 @@ function calcD50XYZ(rgb) {
   ];
 }
 
-/** Functional RGB -> Functional CIE Lab */
+/** Functional RGB -> Functional CIELAB */
 export function lab(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
   const [x, y, z] = calcD50XYZ([r, g, b]);
@@ -6945,6 +7124,88 @@ console.log(colors.map(({color, values}) => ({rgb: color, lab: rgb.lab(values)})
 #+end_src
 
 Awesome.
+
+****** Functional RGB -> Oklab (LCh) (=rgb.oklab=)
+
+[[https://bottoson.github.io/posts/oklab][Oklab]] is a perceptual color space for image processing created by Björn Ottosson. It has all the
+advantages of CIELAB but fewer of its drawbacks in hue shifting (especially with blues).
+
+This makes it excellent for adjusting color properties and blending colors.
+
+I specifically use the formulas for converting Linear RGB to/from Oklab to convert to Oklab (LCh)
+and ensure the output stays within the sRGB gamut.
+
+#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+function calcOklab(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [R, G, B] = removeGamma([r, g, b]);
+
+  // Convert to LMS cone activations and apply non-linearity
+  const [L, M, S] = [
+    R * 0.4122214708 + G * 0.5363325363 + B * 0.0514459929,
+    R * 0.2119034982 + G * 0.6806995451 + B * 0.1073969566,
+    R * 0.0883024619 + G * 0.2817188376 + B * 0.6299787005,
+  ].map((V) => Math.cbrt(V));
+
+  // Calculate Oklab values
+  return [
+    L * 0.2104542553 + M * 0.793617785 - S * 0.0040720468,
+    L * 1.9779984951 - M * 2.428592205 + S * 0.4505937099,
+    L * 0.0259040371 + M * 0.7827717662 - S * 0.808675766,
+    (alpha && (alpha ?? 1)) || 1, // slot in alpha
+  ];
+}
+
+export function oklab(rgb) {
+  const [l, a, b, alpha] = calcOklab(rgb);
+  const truncate = significant.bind(null, 3);
+
+  const L = `${precision(calcPercentFromFraction(l))}%`;
+  const c = precision(Math.sqrt(a ** 2 + b ** 2));
+  const h = precision(Math.atan2(b, a) * (180 / Math.PI));
+
+  const C = +c.toFixed(5); // Ensure negative exponent is rendered as 0
+  const H = Math.sign(h) === -1 ? correctHueCounterClockwise(h) : h;
+
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`;
+}
+#+END_SRC
+
+Now, I'll do some quick tests.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
+
+<<rgb-values>>
+
+console.log(colors.map(({color, values}) => ({rgb: color, oklab: rgb.oklab(values)})));
+#+END_SRC
+
+#+RESULTS:
+#+begin_src deno
+[
+  { rgb: "rgb(0, 0, 0)", oklab: "oklab(0% 0 0)" },
+  { rgb: "rgb(128, 128, 128)", oklab: "oklab(59.987% 0 89.876)" },
+  { rgb: "rgb(255, 255, 255)", oklab: "oklab(100% 0 89.876)" },
+  { rgb: "rgb(255, 0, 0)", oklab: "oklab(62.795% 0.25768 29.234)" },
+  { rgb: "rgb(255, 255, 0)", oklab: "oklab(96.798% 0.21101 109.77)" },
+  { rgb: "rgb(0, 255, 0)", oklab: "oklab(86.644% 0.29483 142.5)" },
+  { rgb: "rgb(0, 255, 255)", oklab: "oklab(90.54% 0.15455 194.77)" },
+  { rgb: "rgb(0, 0, 255)", oklab: "oklab(45.201% 0.31321 264.052)" },
+  { rgb: "rgb(255, 0, 255)", oklab: "oklab(70.167% 0.32249 328.363)" },
+  { rgb: "rgb(33, 199, 95)", oklab: "oklab(72.803% 0.19376 149.64)" },
+  { rgb: "rgb(19, 114, 220)", oklab: "oklab(56.178% 0.18151 255.9)" },
+  { rgb: "rgb(10%, 40.4%, 49.9%)", oklab: "oklab(47.981% 0.08068 223.7)" },
+  { rgb: "rgb(200 138 39)", oklab: "oklab(67.957% 0.13135 73.667)" },
+  { rgb: "rgb(31 88 49 / 0.8)", oklab: "oklab(41.183% 0.08802 150.97 / 0.8)" },
+  { rgb: "rgba(110, 33, 110, 0.75)", oklab: "oklab(39.98% 0.14447 327.865 / 0.75)" },
+  { rgb: "rgba(10, 119, 30, 30%)", oklab: "oklab(49.592% 0.15347 144.63 / 0.3)" }
+]
+#+end_src
+
+The back conversion will confirm the correctness of this code.
 
 ***** Functional HSL Conversion (=internals/color/convert/hsl.js=)
 
@@ -7165,7 +7426,7 @@ console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)
 The only possible conversion from HWB is a regressive conversion to RGB. This provides the necessary
 bridge to other format conversions.
 
-****** Functional RGB <- Functional HWB
+****** Functional RGB <- Functional HWB (=hwb.rgb=)
 
 As with the progressive conversion, the regressive conversion is a composite. It first splits the
 hue with a call to =calcRGB()= from the HSL conversion module, setting the saturation and lightness to
@@ -7258,12 +7519,12 @@ console.log(colors.map(({color, values}) => ({hwb: color, rgb: hwb.rgb(values)})
 
 Looks like we're golden.
 
-***** Functional CIE Lab Conversion (=internals/color/convert/lab.js=)
+***** Functional CIELAB Conversion (=internals/color/convert/lab.js=)
 
-CIE Lab requires a regressive conversion to Functional RGB. With this, the link is complete and CIE
+CIELAB requires a regressive conversion to Functional RGB. With this, the link is complete and CIE
 Lab colors now have a bridge to other conversions.
 
-****** CIE Lab Conversion Setup
+****** CIELAB Conversion Setup
 
 I'll have to grab the RGB channel conversion function from my math kit.
 
@@ -7278,17 +7539,17 @@ import {
 } from "./setup.js";
 #+END_SRC
 
-****** Functional RGB <- CIE Lab
+****** Functional RGB <- Functional CIELAB (=lab.rgb=)
 
 Now, I follow an inversion of the progressive conversion algorithm.
 
-1) =CIE XYZ <- Functional CIE Lab=
+1) =CIE XYZ <- Functional CIELAB=
 2) =Linear RGB <- CIE XYZ=
 3) =Linear RGB >-< Functional RGB=
 
-******* CIE XYZ <- Functonal CIE Lab
+******* CIE XYZ <- Functonal CIELAB
 
-The [[http://www.brucelindbloom.com/index.html?Equations.html][formula for regressing CIE Lab to CIE XYZ]] is cleanly outlined. So, I'll follow that.
+The [[http://www.brucelindbloom.com/index.html?Equations.html][formula for regressing CIELAB to CIE XYZ]] is cleanly outlined. So, I'll follow that.
 
 #+BEGIN_SRC js :tangle "./internals/color/convert/lab.js" :comments link
 function calcXYZ(lab) {
@@ -7315,7 +7576,7 @@ function calcXYZ(lab) {
 }
 #+END_SRC
 
-******* Linear RGB <- CIE XYZ
+******* CIE XYZ -> Linear RGB
 
 The next step is converting the D50 XYZ to sRGB native D65 XYZ via chromatic adaptation.
 
@@ -7363,7 +7624,7 @@ range.
 const calcRGB = (lrgb) =>
   lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
 
-/** Functional CIE Lab <- Functional RGB */
+/** Functional CIELAB <- Functional RGB */
 export function rgb(lab) {
   const [l, a, b, alpha] = lab;
 
@@ -7411,9 +7672,9 @@ console.log(colors.map(({color, values}) => ({lab: color, rgb: lab.rgb(values)})
 
 I'll stamp this as Good Enough™.
 
-****** Functional CIE Lab -> Functional CIE LCH
+****** Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=)
 
-The final bridge is a progressive conversion of CIE Lab to CIE LCH. With this, all known and proposed
+The final bridge is a progressive conversion of CIELAB to CIELCh(ab). With this, all known and proposed
 CSS color formats are supported by the Quarks System Core.
 
 And thankfully, [[http://www.brucelindbloom.com/Eqn_Lab_to_LCH.html][the formula]] is a dead simple conversion of rectangle coordinates to polar coordinates.
@@ -7421,7 +7682,7 @@ And thankfully, [[http://www.brucelindbloom.com/Eqn_Lab_to_LCH.html][the formula
 #+BEGIN_SRC js :tangle "./internals/color/convert/lab.js" :comments link
 const precision = significant.bind(null, 5);
 
-/** Functional CIE Lab -> Functional CIE LCH */
+/** Functional CIELAB -> Functional CIELCh(ab) */
 export function lch(lab) {
   const [L, a, b, alpha] = lab;
   const [C, h] = [
@@ -7475,13 +7736,13 @@ console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})
 
 That'll do it.
 
-***** Functional CIE LCH Conversion (=internals/color/convert/lch.js=)
+***** Functional CIELCh Conversion (=internals/color/convert/lch.js=)
 
 Now, I need to calculate the regressive conversion of LCH back to Lab. This final algorithm closes
 the conversion chain and allows any supported format to convert to and from any other supported
 format.
 
-****** Functional CIE Lab <- Functional CIE LCH
+****** Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)
 
 First, a little setup.
 
@@ -7498,7 +7759,7 @@ const precision = significant.bind(null, 5);
 The [[http://www.brucelindbloom.com/Eqn_LCH_to_Lab.html][conversion algorithm itself]] is short and sweet.
 
 #+BEGIN_SRC js :tangle "./internals/color/convert/lch.js" :comments link
-/** Functional CIE Lab <- Functional CIE LCH */
+/** Functional CIELAB <- Functional CIELCh(ab) */
 export function lab(lch) {
   const [L, c, h, alpha] = lch;
   const C = parseFloat(c);
@@ -7552,6 +7813,107 @@ console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})
 #+end_src
 
 And that's it for color conversion.
+
+***** Oklab (LCh) Conversion (=internals/color/convert/oklab.js=)
+
+Now I need to allow for a regressive conversion of Oklab (LCh) back to sRGB. This creates a bridge
+back to standard supported formats and closes the loop.
+
+First, I'll need to convert Oklab (LCh) values back to raw Oklab values.
+
+#+BEGIN_SRC js :tangle "./internals/color/convert/oklab.js" :comments link
+import {
+  calcChannelFromFraction,
+  calcFractionFromChannel,
+  calcFractionFromPercent,
+  normalize,
+} from "./setup.js";
+
+function parseOklab(oklab) {
+  const [l, c, h, alpha] = oklab;
+
+  // Convert values back to their raw Oklab form
+  const L = calcFractionFromPercent(parseFloat(l));
+  const C = c;
+  const H = 2 * Math.PI * (h / 360);
+
+  // Calculate a, b
+  const [a, b] = [C * Math.cos(H), C * Math.sin(H)];
+
+  return [L, a, b, alpha];
+}
+#+END_SRC
+
+Having done that, I can now use the conversion formula to convert to linear sRGB.
+
+#+BEGIN_SRC js :tangle "./internals/color/convert/oklab.js" :comments link
+function calcLinearRGB(oklab) {
+  const [l, a, b, alpha] = parseOklab(oklab);
+
+  // Calculate LMS cone activations
+  const [L, M, S] = [
+    l + a * 0.3963377774 + b * 0.2158037573,
+    l - a * 0.1055613458 - b * 0.0638541728,
+    l - a * 0.0894841775 - b * 1.291485548,
+  ].map((V) => V ** 3);
+
+  // Calculate linear RGB
+  return [
+    L * 4.076416621 - M * 3.3077115913 + S * 0.2309699292,
+    L * -1.2684380046 + M * 2.6097574011 - S * 0.3413193965,
+    L * -0.0041960863 - M * 0.7034186147 + S * 1.707614701,
+    alpha, // slot in alpha
+  ];
+}
+#+END_SRC
+
+Next, I apply the gamma, normalize the channels, and return the color.
+
+#+BEGIN_SRC js :tangle "./internals/color/convert/oklab.js" :comments link
+export function rgb(oklab) {
+  const [r, g, b, alpha] = calcLinearRGB(oklab);
+
+  const [R, G, B] = [r, g, b]
+        .map((V) => (V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055))
+        .map((V) => normalize(0, calcChannelFromFraction(V), 255));
+
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
+}
+#+END_SRC
+
+That was a straightforward process, but I'm going to check that it works.
+
+#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
+const oklab = await import(`${Deno.cwd()}/internals/color/convert/oklab.js`);
+
+<<oklab-values>>
+
+console.log(colors.map(({color, values}) => ({oklab: color, rgb: oklab.rgb(values)})));
+#+END_SRC
+
+#+RESULTS:
+#+begin_src deno
+[
+  { oklab: "oklab(0% 0 0)", rgb: "rgb(0, 0, 0)" },
+  { oklab: "oklab(59.987% 0 0)", rgb: "rgb(128, 128, 128)" },
+  { oklab: "oklab(100% 0 0)", rgb: "rgb(255, 255, 255)" },
+  { oklab: "oklab(62.795% 0.25768 29.234)", rgb: "rgb(255, 0, 0)" },
+  { oklab: "oklab(96.768% 0.21101 109.77)", rgb: "rgb(255, 255, 0)" },
+  { oklab: "oklab(86.644% 0.29483 142.5)", rgb: "rgb(0, 255, 0)" },
+  { oklab: "oklab(90.54% 0.15455 194.77)", rgb: "rgb(0, 255, 255)" },
+  { oklab: "oklab(45.201% 0.31321 264.052)", rgb: "rgb(0, 0, 255)" },
+  { oklab: "oklab(70.167% 0.32249 328.363)", rgb: "rgb(255, 0, 255)" },
+  { oklab: "oklab(37.119% 0.482 90)", rgb: "rgb(150, 0, 0)" },
+  { oklab: "oklab(29.11% 0.25 180)", rgb: "rgb(0, 72, 48)" },
+  { oklab: "oklab(53.33% 0.5 270)", rgb: "rgb(87, 0, 255)" },
+  { oklab: "oklab(84% 0.1043 350.31)", rgb: "rgb(255, 175, 212)" },
+  { oklab: "oklab(25.14% 0.44 60 / 0.8)", rgb: "rgba(142, 0, 0, 0.8)" }
+]
+#+end_src
+
+And that completes the implementation.
 
 ** Data
 

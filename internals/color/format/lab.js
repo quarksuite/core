@@ -1,7 +1,7 @@
-// [[file:../../../README.org::*CIE Lab Validator][CIE Lab Validator:1]]
-/** Validate: functional CIE Lab format */
+// [[file:../../../README.org::*CIELAB Validator][CIELAB Validator:1]]
+/** Validate: functional CIELAB format */
 export function validate(color) {
-  // CIE Lab regexp
+  // CIELAB regexp
 
   // prefix: "lab("
   // L: float<0->%
@@ -31,9 +31,9 @@ export function validate(color) {
     ].join(""),
   ).test(color);
 }
-// CIE Lab Validator:1 ends here
+// CIELAB Validator:1 ends here
 
-// [[file:../../../README.org::*CIE Lab Extractor][CIE Lab Extractor:1]]
-/** Extract: CIE Lab values */
+// [[file:../../../README.org::*CIELAB Extractor][CIELAB Extractor:1]]
+/** Extract: CIELAB values */
 export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
-// CIE Lab Extractor:1 ends here
+// CIELAB Extractor:1 ends here

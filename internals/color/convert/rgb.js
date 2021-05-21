@@ -4,9 +4,11 @@ import {
   calcFractionFromChannel,
   calcFractionFromPercent,
   calcHexFragmentFromAlpha,
+  calcHueFromRad,
   calcPercentFromFraction,
   channelToHexFragment,
   correctHueCounterClockwise,
+  normalize,
   significant,
 } from "./setup.js";
 
@@ -149,7 +151,7 @@ const removeGamma = (rgb) =>
   });
 // Functional RGB >-< Linear RGB:1 ends here
 
-// [[file:../../../README.org::*Linear RGB -> CIE XYZ][Linear RGB -> CIE XYZ:1]]
+// [[file:../../../README.org::*Linear RGB -> CIEXYZ][Linear RGB -> CIEXYZ:1]]
 /** Linear RGB -> CIE XYZ */
 function calcXYZ(rgb) {
   const [R, G, B] = removeGamma(rgb);
@@ -159,9 +161,9 @@ function calcXYZ(rgb) {
     R * 0.0193339 + G * 0.119192 + B * 0.9503041,
   ]; // [X, Y, Z]
 }
-// Linear RGB -> CIE XYZ:1 ends here
+// Linear RGB -> CIEXYZ:1 ends here
 
-// [[file:../../../README.org::*CIE XYZ -> Functional CIE Lab][CIE XYZ -> Functional CIE Lab:1]]
+// [[file:../../../README.org::*CIEXYZ -> Functional CIELAB][CIEXYZ -> Functional CIELAB:1]]
 function calcD50XYZ(rgb) {
   const [X, Y, Z] = calcXYZ(rgb);
   /*
@@ -179,7 +181,7 @@ function calcD50XYZ(rgb) {
   ];
 }
 
-/** Functional RGB -> Functional CIE Lab */
+/** Functional RGB -> Functional CIELAB */
 export function lab(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
   const [x, y, z] = calcD50XYZ([r, g, b]);
@@ -208,4 +210,42 @@ export function lab(rgb) {
     ? `lab(${L}% ${aHue} ${bHue})`
     : `lab(${L}% ${aHue} ${bHue} / ${A})`;
 }
-// CIE XYZ -> Functional CIE Lab:1 ends here
+// CIEXYZ -> Functional CIELAB:1 ends here
+
+// [[file:../../../README.org::*Functional RGB -> Oklab (LCh) (=rgb.oklab=)][Functional RGB -> Oklab (LCh) (=rgb.oklab=):1]]
+function calcOklab(rgb) {
+  const [r, g, b, alpha] = parseRGB(rgb);
+  const [R, G, B] = removeGamma([r, g, b]);
+
+  // Convert to LMS cone activations and apply non-linearity
+  const [L, M, S] = [
+    R * 0.4122214708 + G * 0.5363325363 + B * 0.0514459929,
+    R * 0.2119034982 + G * 0.6806995451 + B * 0.1073969566,
+    R * 0.0883024619 + G * 0.2817188376 + B * 0.6299787005,
+  ].map((V) => Math.cbrt(V));
+
+  // Calculate Oklab values
+  return [
+    L * 0.2104542553 + M * 0.793617785 - S * 0.0040720468,
+    L * 1.9779984951 - M * 2.428592205 + S * 0.4505937099,
+    L * 0.0259040371 + M * 0.7827717662 - S * 0.808675766,
+    (alpha && (alpha ?? 1)) || 1, // slot in alpha
+  ];
+}
+
+export function oklab(rgb) {
+  const [l, a, b, alpha] = calcOklab(rgb);
+  const truncate = significant.bind(null, 3);
+
+  const L = `${precision(calcPercentFromFraction(l))}%`;
+  const c = precision(Math.sqrt(a ** 2 + b ** 2));
+  const h = precision(Math.atan2(b, a) * (180 / Math.PI));
+
+  const C = +c.toFixed(5); // Ensure negative exponent is rendered as 0
+  const H = Math.sign(h) === -1 ? correctHueCounterClockwise(h) : h;
+
+  const A = (alpha && (alpha ?? 1)) || 1;
+
+  return A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`;
+}
+// Functional RGB -> Oklab (LCh) (=rgb.oklab=):1 ends here

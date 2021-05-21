@@ -1,7 +1,7 @@
-// [[file:../../../README.org::*CIE LCH Validator][CIE LCH Validator:1]]
-/** Validate: functional CIE LCH format */
+// [[file:../../../README.org::*CIELCh(ab) Validator][CIELCh(ab) Validator:1]]
+/** Validate: functional CIELCh(ab) format */
 export function validate(color) {
-  // CIE LCH regexp
+  // CIELCh(ab) regexp
 
   // prefix: "lch("
   // lightness: float<0->%
@@ -32,9 +32,9 @@ export function validate(color) {
     ].join(""),
   ).test(color);
 }
-// CIE LCH Validator:1 ends here
+// CIELCh(ab) Validator:1 ends here
 
-// [[file:../../../README.org::*CIE LCH Extractor][CIE LCH Extractor:1]]
-/** Extract: CIE LCH values */
+// [[file:../../../README.org::*CIELCh(ab) Extractor][CIELCh(ab) Extractor:1]]
+/** Extract: CIELCh(ab) values */
 export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
-// CIE LCH Extractor:1 ends here
+// CIELCh(ab) Extractor:1 ends here

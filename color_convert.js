@@ -200,7 +200,7 @@ export function hwb(color) {
 
 // [[file:README.org::*lab][lab:1]]
 /**
- * A function that converts any valid CSS color to CIE Lab.
+ * A function that converts any valid CSS color to CIELAB.
  *
  * @example Convert HWB to CIELAB
  *
@@ -209,7 +209,7 @@ export function hwb(color) {
  * ```
  *
  * @param {string} color - the input color to convert
- * @returns {string} the input color converted to CIE Lab
+ * @returns {string} the input color converted to CIELAB
  */
 export function lab(color) {
   return format.lab.validate(color) ? color : checkConversion(color, [
@@ -226,7 +226,7 @@ export function lab(color) {
 
 // [[file:README.org::*lch][lch:1]]
 /**
- * A function that converts any valid CSS color to CIE LCH.
+ * A function that converts any valid CSS color to CIELCh(ab).
  *
  * @example Convert CIELCH to RGB Hex
  *
@@ -235,7 +235,7 @@ export function lab(color) {
  * ```
  *
  * @param {string} color - the input color to convert
- * @returns {string} the input color converted to CIE LCH
+ * @returns {string} the input color converted to CIELCh(ab)
  */
 export function lch(color) {
   return format.lch.validate(color) ? color : checkConversion(color, [

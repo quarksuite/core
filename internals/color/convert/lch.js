@@ -1,12 +1,12 @@
-// [[file:../../../README.org::*Functional CIE Lab <- Functional CIE LCH][Functional CIE Lab <- Functional CIE LCH:1]]
+// [[file:../../../README.org::*Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)][Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):1]]
 import { calcFractionFromPercent, normalize, significant } from "./setup.js";
 import { parseHSL } from "./hsl.js";
 
 const precision = significant.bind(null, 5);
-// Functional CIE Lab <- Functional CIE LCH:1 ends here
+// Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):1 ends here
 
-// [[file:../../../README.org::*Functional CIE Lab <- Functional CIE LCH][Functional CIE Lab <- Functional CIE LCH:2]]
-/** Functional CIE Lab <- Functional CIE LCH */
+// [[file:../../../README.org::*Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)][Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):2]]
+/** Functional CIELAB <- Functional CIELCh(ab) */
 export function lab(lch) {
   const [L, c, h, alpha] = lch;
   const C = parseFloat(c);
@@ -25,4 +25,4 @@ export function lab(lch) {
 
   return A === 1 ? `lab(${L} ${a} ${b})` : `lab(${L} ${a} ${b} / ${A})`;
 }
-// Functional CIE Lab <- Functional CIE LCH:2 ends here
+// Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):2 ends here
