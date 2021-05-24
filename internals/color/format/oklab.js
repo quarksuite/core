@@ -6,8 +6,8 @@ export function validate(color) {
   // prefix: "oklab("
   // lightness: float<0->%
   const lightness = /(?:(?:\d\.?\d?){1,}%)/;
-  // chroma: float<0-0.5>
-  const chroma = /(?:(?:0|0\.\d+|0.5))/;
+  // chroma: -?float<0-0.5>
+  const chroma = /(?:-?(?:0|0\.\d+|0.5))/;
   // hue: float<0->
   const hue = /(?:(?:\d\.?\d?)+)/;
   // transparency: float<0-1> || float<0-100>%

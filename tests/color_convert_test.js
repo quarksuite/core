@@ -1,12 +1,12 @@
 // [[file:../README.org::*Color Format Conversion Assertions][Color Format Conversion Assertions:1]]
-import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "../color_convert.js";
+import { cmyk, hex, hsl, hwb, lab, lch, oklab, rgb } from "../color_convert.js";
 
 import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
-const conversions = { hex, rgb, hsl, cmyk, hwb, lab, lch };
+const conversions = { hex, rgb, hsl, cmyk, hwb, lab, lch, oklab };
 
 const samples = {
   hex: "#348ec9",
@@ -16,6 +16,7 @@ const samples = {
   hwb: "hwb(145 30% 5%)",
   lab: "lab(43.319% -42 -8)",
   lch: "lch(85.19% 73.81 67.142)",
+  oklab: "oklab(67.39% 0.3418 42)",
 };
 
 const colors = [

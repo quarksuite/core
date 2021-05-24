@@ -110,6 +110,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#hwb][hwb]]
         - [[#lab][lab]]
         - [[#lch][lch]]
+        - [[#oklab][oklab]]
         - [[#tests-1][Tests]]
           - [[#color-format-conversion-assertions][Color Format Conversion Assertions]]
           - [[#color-format-conversion-results][Color Format Conversion Results]]
@@ -1865,6 +1866,7 @@ export function hex(color) {
     convertColor(color, "hwb", "rgb", "hex"),
     convertColor(color, "lab", "rgb", "hex"),
     convertColor(color, "lch", "lab", "rgb", "hex"),
+    convertColor(color, "oklab", "rgb", "hex"),
   ]);
 }
 #+END_SRC
@@ -1896,6 +1898,7 @@ export function rgb(color) {
     convertColor(color, "hwb", "rgb"),
     convertColor(color, "lab", "rgb"),
     convertColor(color, "lch", "lab", "rgb"),
+    convertColor(color, "oklab", "rgb"),
   ]);
 }
 #+END_SRC
@@ -1927,6 +1930,7 @@ export function hsl(color) {
     convertColor(color, "hwb", "rgb", "hsl"),
     convertColor(color, "lab", "rgb", "hsl"),
     convertColor(color, "lch", "lab", "rgb", "hsl"),
+    convertColor(color, "oklab", "rgb", "hsl"),
   ]);
 }
 #+END_SRC
@@ -1958,6 +1962,7 @@ export function cmyk(color) {
     convertColor(color, "hwb", "rgb", "cmyk"),
     convertColor(color, "lab", "rgb", "cmyk"),
     convertColor(color, "lch", "lab", "rgb", "cmyk"),
+    convertColor(color, "oklab", "rgb", "cmyk"),
   ]);
 }
 #+END_SRC
@@ -1989,6 +1994,7 @@ export function hwb(color) {
     convertColor(color, "cmyk", "rgb", "hwb"),
     convertColor(color, "lab", "rgb", "hwb"),
     convertColor(color, "lch", "lab", "rgb", "hwb"),
+    convertColor(color, "oklab", "rgb", "hwb"),
   ]);
 }
 #+END_SRC
@@ -2020,6 +2026,7 @@ export function lab(color) {
     convertColor(color, "cmyk", "rgb", "lab"),
     convertColor(color, "hwb", "rgb", "lab"),
     convertColor(color, "lch", "lab"),
+    convertColor(color, "oklab", "rgb", "lab"),
   ]);
 }
 #+END_SRC
@@ -2033,7 +2040,7 @@ export function lab(color) {
 /**
  * A function that converts any valid CSS color to CIELCh(ab).
  *
- * @example Convert CIELCH to RGB Hex
+ * @example Convert CIELCh(ab) to RGB Hex
  *
  * ```ts
  * lch("#face");
@@ -2051,6 +2058,39 @@ export function lch(color) {
     convertColor(color, "cmyk", "rgb", "lab", "lch"),
     convertColor(color, "hwb", "rgb", "lab", "lch"),
     convertColor(color, "lab", "lch"),
+    convertColor(color, "oklab", "rgb", "lab", "lch"),
+  ]);
+}
+#+END_SRC
+
+***** oklab
+
++ =oklab: (color: string) => string=
++ =color: string=: the input color to convert
+
+#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+/**
+ * A function that converts any valid CSS color to _non-standard_ Oklab (LCh).
+ *
+ * @example Convert Oklab (LCh) to RGB Hex
+ *
+ * ```ts
+ * oklab("#face");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to Oklab (LCh)
+ */
+export function oklab(color) {
+  return format.oklab.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb", "oklab"),
+    convertColor(color, "named", "hex", "rgb", "oklab"),
+    convertColor(color, "rgb", "oklab"),
+    convertColor(color, "hsl", "rgb", "oklab"),
+    convertColor(color, "cmyk", "rgb", "oklab"),
+    convertColor(color, "hwb", "rgb", "oklab"),
+    convertColor(color, "lab", "rgb", "oklab"),
+    convertColor(color, "lch", "lab", "rgb", "oklab"),
   ]);
 }
 #+END_SRC
@@ -2061,19 +2101,19 @@ Catching color errors before they show up in someone else's interface is crucial
 hard*.
 
 Since I've included extensive conversion examples in the internal conversion documentation, I'll be
-plugging some values to test the conversion chaining and error reporting here.
+plugging some values to test the conversion chaining and error reporting.
 
 ****** Color Format Conversion Assertions
 
 #+BEGIN_SRC js :tangle "./tests/color_convert_test.js" :comments link
-import { cmyk, hex, hsl, hwb, lab, lch, rgb } from "../color_convert.js";
+import { cmyk, hex, hsl, hwb, lab, lch, oklab, rgb } from "../color_convert.js";
 
 import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
-const conversions = { hex, rgb, hsl, cmyk, hwb, lab, lch };
+const conversions = { hex, rgb, hsl, cmyk, hwb, lab, lch, oklab };
 
 const samples = {
   hex: "#348ec9",
@@ -2083,6 +2123,7 @@ const samples = {
   hwb: "hwb(145 30% 5%)",
   lab: "lab(43.319% -42 -8)",
   lch: "lch(85.19% 73.81 67.142)",
+  oklab: "oklab(67.39% 0.3418 42)",
 };
 
 const colors = [
@@ -2135,53 +2176,59 @@ printf '%s\n' (NO_COLOR=true deno test ./tests/color_convert_test.js)
 
 #+NAME: conversion-test
 #+begin_src shell
-running 44 tests
-test SPEC try midnightblue HEX: "#191970" ... ok (5ms)
+running 50 tests
+test SPEC try midnightblue HEX: "#191970" ... ok (4ms)
 test SPEC try midnightblue RGB: "rgb(25, 25, 112)" ... ok (2ms)
 test SPEC try midnightblue HSL: "hsl(240, 63.504%, 26.863%)" ... ok (2ms)
-test SPEC try midnightblue CMYK: "device-cmyk(77.679% 77.679% 0% 56.078%)" ... ok (3ms)
+test SPEC try midnightblue CMYK: "device-cmyk(77.679% 77.679% 0% 56.078%)" ... ok (2ms)
 test SPEC try midnightblue HWB: "hwb(240 9.8039% 56.078%)" ... ok (2ms)
-test SPEC try midnightblue LAB: "lab(14.928% 25.96 -50.904)" ... ok (1ms)
+test SPEC try midnightblue LAB: "lab(14.928% 25.96 -50.904)" ... ok (2ms)
 test SPEC try midnightblue LCH: "lch(14.928% 57.141 297.021)" ... ok (2ms)
+test SPEC try midnightblue OKLAB: "oklab(28.812% 0.14363 272.765)" ... ok (2ms)
 test SPEC try gainsboro HEX: "#dcdcdc" ... ok (2ms)
 test SPEC try gainsboro RGB: "rgb(220, 220, 220)" ... ok (2ms)
 test SPEC try gainsboro HSL: "hsl(0, 0%, 86.275%)" ... ok (2ms)
 test SPEC try gainsboro CMYK: "device-cmyk(0% 0% 0% 13.726%)" ... ok (2ms)
 test SPEC try gainsboro HWB: "hwb(0 86.275% 13.726%)" ... ok (2ms)
-test SPEC try gainsboro LAB: "lab(87.761% 0 0)" ... ok (3ms)
-test SPEC try gainsboro LCH: "lch(87.761% 0 0)" ... ok (1ms)
+test SPEC try gainsboro LAB: "lab(87.761% 0 0)" ... ok (2ms)
+test SPEC try gainsboro LCH: "lch(87.761% 0 0)" ... ok (2ms)
+test SPEC try gainsboro OKLAB: "oklab(89.449% 0 89.876)" ... ok (2ms)
 test SPEC try cornsilk HEX: "#fff8dc" ... ok (2ms)
 test SPEC try cornsilk RGB: "rgb(255, 248, 220)" ... ok (2ms)
-test SPEC try cornsilk HSL: "hsl(48, 100%, 93.137%)" ... ok (1ms)
+test SPEC try cornsilk HSL: "hsl(48, 100%, 93.137%)" ... ok (2ms)
 test SPEC try cornsilk CMYK: "device-cmyk(0% 2.7451% 13.726% 0%)" ... ok (2ms)
-test SPEC try cornsilk HWB: "hwb(48 86.275% 0%)" ... ok (1ms)
+test SPEC try cornsilk HWB: "hwb(48 86.275% 0%)" ... ok (2ms)
 test SPEC try cornsilk LAB: "lab(97.584% -0.95546 14.387)" ... ok (2ms)
 test SPEC try cornsilk LCH: "lch(97.584% 14.419 93.8)" ... ok (2ms)
+test SPEC try cornsilk OKLAB: "oklab(97.73% 0.03726 95.439)" ... ok (2ms)
 test SPEC try crimson HEX: "#dc143c" ... ok (2ms)
 test SPEC try crimson RGB: "rgb(220, 20, 60)" ... ok (2ms)
-test SPEC try crimson HSL: "hsl(348, 83.333%, 47.059%)" ... ok (3ms)
+test SPEC try crimson HSL: "hsl(348, 83.333%, 47.059%)" ... ok (2ms)
 test SPEC try crimson CMYK: "device-cmyk(0% 90.909% 72.727% 13.726%)" ... ok (2ms)
-test SPEC try crimson HWB: "hwb(348 7.8431% 13.726%)" ... ok (2ms)
+test SPEC try crimson HWB: "hwb(348 7.8431% 13.726%)" ... ok (3ms)
 test SPEC try crimson LAB: "lab(47.88% 71.283 35.481)" ... ok (2ms)
-test SPEC try crimson LCH: "lch(47.88% 79.625 26.462)" ... ok (1ms)
-test SPEC try springgreen HEX: "#00ff7f" ... ok (2ms)
-test SPEC try springgreen RGB: "rgb(0, 255, 127)" ... ok (1ms)
-test SPEC try springgreen HSL: "hsl(150, 100%, 50%)" ... ok (2ms)
+test SPEC try crimson LCH: "lch(47.88% 79.625 26.462)" ... ok (3ms)
+test SPEC try crimson OKLAB: "oklab(57.119% 0.22194 20.087)" ... ok (2ms)
+test SPEC try springgreen HEX: "#00ff7f" ... ok (3ms)
+test SPEC try springgreen RGB: "rgb(0, 255, 127)" ... ok (2ms)
+test SPEC try springgreen HSL: "hsl(150, 100%, 50%)" ... ok (3ms)
 test SPEC try springgreen CMYK: "device-cmyk(100% 0% 50.196% 0%)" ... ok (2ms)
-test SPEC try springgreen HWB: "hwb(150 0% 0%)" ... ok (1ms)
-test SPEC try springgreen LAB: "lab(88.435% -72.513 45.975)" ... ok (2ms)
-test SPEC try springgreen LCH: "lch(88.435% 85.859 147.62)" ... ok (2ms)
+test SPEC try springgreen HWB: "hwb(150 0% 0%)" ... ok (3ms)
+test SPEC try springgreen LAB: "lab(88.435% -72.513 45.975)" ... ok (3ms)
+test SPEC try springgreen LCH: "lch(88.435% 85.859 147.62)" ... ok (3ms)
+test SPEC try springgreen OKLAB: "oklab(87.493% 0.23526 151.02)" ... ok (1ms)
 test SPEC try rebeccapurple HEX: "#663399" ... ok (2ms)
 test SPEC try rebeccapurple RGB: "rgb(102, 51, 153)" ... ok (2ms)
 test SPEC try rebeccapurple HSL: "hsl(270, 50%, 40%)" ... ok (3ms)
-test SPEC try rebeccapurple CMYK: "device-cmyk(33.333% 66.667% 0% 40%)" ... ok (2ms)
-test SPEC try rebeccapurple HWB: "hwb(270 20% 40%)" ... ok (3ms)
-test SPEC try rebeccapurple LAB: "lab(32.393% 38.428 -47.69)" ... ok (3ms)
-test SPEC try rebeccapurple LCH: "lch(32.393% 61.246 308.861)" ... ok (2ms)
+test SPEC try rebeccapurple CMYK: "device-cmyk(33.333% 66.667% 0% 40%)" ... ok (1ms)
+test SPEC try rebeccapurple HWB: "hwb(270 20% 40%)" ... ok (2ms)
+test SPEC try rebeccapurple LAB: "lab(32.393% 38.428 -47.69)" ... ok (2ms)
+test SPEC try rebeccapurple LCH: "lch(32.393% 61.246 308.861)" ... ok (3ms)
+test SPEC try rebeccapurple OKLAB: "oklab(44.027% 0.1603 303.373)" ... ok (2ms)
 test EDGE: does nothing when input is the same format as target conversion ... ok (3ms)
-test EDGE: rejects invalid or unsupported color formats ... ok (4ms)
+test EDGE: rejects invalid or unsupported color formats ... ok (5ms)
 
-test result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (97ms)
+test result: ok. 50 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (115ms)
 
 #+end_src
 
@@ -2198,8 +2245,11 @@ main ways to adjust a color include:
 + Alpha/Transparency: the opacity of a color. Whether a color is solid or lets light through.
 
 Quark System Core used to adjust through the HSL color space, but then I realized it would be far
-more accurate to handle them through CIELCH. As a perceptually uniform space, it allows explicit
+more accurate to handle them through CIELCh(ab). As a perceptually uniform space, it allows explicit
 adjustment of color properties whereas HSL would usually implicitly adjust some other property.
+
+However, I ran into some hue shifting issues and wasn't satisfied with the way CIELAB handles chroma
+and lightness predictions which led me to implement Oklab as the color space for property adjustments.
 
 I also want to be able to preserve the input format of a color after adjustment so /you/ won't have to
 think about it when you use these functions.
@@ -2219,13 +2269,14 @@ export const preserve = (target, color) =>
     hwb: format.hwb.validate(color) && revert.hwb(target),
     lab: format.lab.validate(color) && revert.lab(target),
     lch: format.lch.validate(color) && revert.lch(target),
+    oklab: format.oklab.validate(color) && revert.oklab(target),
   })
     .filter((matched) => !!matched)
     .toString();
 #+END_SRC
 
-The simple method performs a /secondary/ color validation for the input and passes the resulting CIELCH
-color after adjustment along to its conversion function.
+The simple method performs a /secondary/ color validation for the input and passes the resulting
+Oklab (LCh) color after adjustment along to its conversion function.
 
 ***** hue
 
@@ -2235,7 +2286,7 @@ color after adjustment along to its conversion function.
 
 Each of the adjustment functions follow a similar pattern.
 
-First the input color is converted to CIELCH and its values are extracted. The relevant property is
+First the input color is converted to Oklab (LCh) and its values are extracted. The relevant property is
 changed, and the color is reverted to its original format.
 
 #+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
@@ -2244,8 +2295,8 @@ import {
   correctHueClockwise,
   correctHueCounterClockwise,
 } from "./internals/color/convert/setup.js";
-import { lch } from "./color_convert.js";
-import { compose, pipe } from "./utilities.js";
+import { lch, oklab } from "./color_convert.js";
+import { pipe } from "./utilities.js";
 
 /**
  * A function that allows hue adjustment of any valid CSS color.
@@ -2270,14 +2321,14 @@ import { compose, pipe } from "./utilities.js";
  * It corrects clockwise if value after calculation is < 0;
  * counterclockwise if value after calculation is > 360.
  *
- * As of v0.2.0, hue adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, hue adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} offset - the rotational offset from current hue
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function hue(offset, color) {
-  const [L, C, h, alpha] = pipe(color, lch, extract);
+  const [L, C, h, alpha] = pipe(color, oklab, extract);
   const hue = parseFloat(h) + offset;
 
   // Hue correction
@@ -2293,7 +2344,7 @@ export function hue(offset, color) {
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2315,6 +2366,7 @@ Saturation, lightness, and alpha are bound by a linear range of  =0-100%=.
 #+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
 import {
   calcFractionFromPercent,
+  calcPercentFromFraction,
   normalize,
 } from "./internals/color/convert/setup.js";
 
@@ -2340,25 +2392,31 @@ import {
  *
  * At 0%, a color is achromatic (gray). At 100%, a color is fully saturated.
  *
- * As of v0.2.0, saturation adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, saturation adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} amount - the amount to adjust saturation (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function saturation(amount, color) {
-  const [L, c, H, alpha] = pipe(color, lch, extract);
+  const [L, c, H, alpha] = pipe(color, oklab, extract);
 
-  const calcChromaFromPercent = compose(
-    calcFractionFromPercent,
-    (n) => n * 132,
-  );
+  const chroma = parseFloat(c) + calcFractionFromPercent(amount * 0.5);
 
-  const C = normalize(0, parseFloat(c) + calcChromaFromPercent(amount), 132);
+  // Chroma should be >0 and <=0.5
+  let C;
+  if (Math.sign(chroma) === -1) {
+    C = 0;
+  } else if (chroma > 0.5) {
+    C = 0.5;
+  } else {
+    C = chroma;
+  }
+
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2399,20 +2457,30 @@ export const s = saturation;
  *
  * At 0%, sits pure black. At 100%, pure white.
  *
- * As of v0.2.0, lightness adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, lightness adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} amount - the amount to adjust lightness (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function lightness(amount, color) {
-  const [l, C, H, alpha] = pipe(color, lch, extract);
+  const [l, C, H, alpha] = pipe(color, oklab, extract);
 
-  const L = normalize(0, parseFloat(l) + amount, 100);
+  const lightness = parseFloat(l) + calcFractionFromPercent(amount * 100);
+
+  let L;
+  if (Math.sign(lightness) === -1) {
+    L = 0;
+  } else if (lightness > 100) {
+    L = 100;
+  } else {
+    L = lightness;
+  }
+
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L}% ${C} ${H})` : `oklab(${L}% ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2431,8 +2499,6 @@ export const l = lightness;
 + =color: string=: the color to adjust
 
 #+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
-import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
-
 /**
  * A function that allows alpha/transparency adjustment of any valid CSS color.
  *
@@ -2445,7 +2511,7 @@ import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
  * @example Negative values decrease
  *
  * ```ts
- * lightness(-30, "lime");
+ * alpha(-30, "lime");
  * ```
  *
  * @remarks
@@ -2455,20 +2521,28 @@ import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
  *
  * At 0%, a color is fully transparent. At 100%, fully opaque.
  *
- * As of v0.2.0, alpha adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, alpha adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} amount - the amount to adjust transparency (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function alpha(amount, color) {
-  const [L, C, H, alpha] = pipe(color, lch, extract);
+  const [L, C, H, a] = pipe(color, oklab, extract);
 
-  const A = calcFractionFromPercent(
-    normalize(0, calcPercentFromFraction(alpha ?? 1) + amount, 100),
-  );
+  const alpha = parseFloat(a ?? 1) + calcFractionFromPercent(amount);
+
+  let A;
+  if (Math.sign(alpha) === -1) {
+    A = 0;
+  } else if (alpha > 1) {
+    A = 1;
+  } else {
+    A = alpha;
+  }
+
   return preserve(
-    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -2507,35 +2581,36 @@ import {
 Deno.test("SPEC hue: can adjust clockwise", function () {
   const color = "red";
 
-  assertEquals(hue(15, color), "#e64800");
-  assertEquals(hue(30, color), "#c86700");
-  assertEquals(hue(45, color), "#a37b00");
-  assertEquals(hue(60, color), "#798a00");
-  assertEquals(hue(75, color), "#3e9500");
-  assertEquals(hue(90, color), "#009c00");
+  assertEquals(hue(15, color), "#fa2a00");
+  assertEquals(hue(30, color), "#ef4600");
+  assertEquals(hue(45, color), "#de5f00");
+  assertEquals(hue(60, color), "#c57500");
+  assertEquals(hue(75, color), "#a58900");
+  assertEquals(hue(90, color), "#7b9900");
 });
 
 Deno.test("SPEC hue: can adjust counterclockwise", function () {
   const color = "lime";
 
-  assertEquals(hue(-15, color), "#8ef600");
-  assertEquals(hue(-30, color), "#cce900");
-  assertEquals(hue(-45, color), "#ffd900");
-  assertEquals(hue(-60, color), "#ffc400");
-  assertEquals(hue(-75, color), "#ffaa00");
-  assertEquals(hue(-90, color), "#ff8c46");
+  assertEquals(hue(-15, color), "#9bf200");
+  assertEquals(hue(-30, color), "#dbe100");
+  assertEquals(hue(-45, color), "#ffcc00");
+  assertEquals(hue(-60, color), "#ffb400");
+  assertEquals(hue(-75, color), "#ff9b00");
+  assertEquals(hue(-90, color), "#ff8300");
 });
 
 Deno.test("SPEC hue: can adjust all supported formats", function () {
   const colors = [
-    ["#c0ffee", "#ffe2f6"],
-    ["midnightblue", "#112d00"],
-    ["rgb(255, 133, 30)", "rgb(0, 193, 255)"],
-    ["hsl(300, 40%, 70%)", "hsl(129, 31.428%, 58.824%)"],
-    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(0% 37.647% 0% 0%)"],
-    ["hwb(120 30% 20%)", "hwb(293 54.51% 0%)"],
-    ["lab(36.44% 30 -79)", "lab(36.44% -30 79)"],
-    ["lch(63.198% 36 135)", "lch(63.198% 36 315)"],
+    ["#c0ffee", "#ffdef1"],
+    ["midnightblue", "#432300"],
+    ["rgb(255, 133, 30)", "rgb(0, 186, 255)"],
+    ["hsl(300, 40%, 70%)", "hsl(125, 34.021%, 61.961%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(0% 46.667% 0% 0%)"],
+    ["hwb(120 30% 20%)", "hwb(294 47.843% 3.9216%)"],
+    ["lab(36.44% 30 -79)", "lab(39.711% 31.523 49.911)"],
+    ["lch(63.198% 36 135)", "lch(60.635% 35.048 318.44)"],
+    ["oklab(56% 0.25 240)", "oklab(56% 0.25 60)"],
   ];
 
   colors.forEach(([input, target]) => assertEquals(hue(180, input), target));
@@ -2552,39 +2627,40 @@ Deno.test("EDGE hue: rejects invalid color", function () {
 });
 
 Deno.test("ALIAS h of hue", function () {
-  assertEquals(h(33, "hwb(60 38% 0%)"), "hwb(106 54.118% 0%)");
+  assertEquals(h(33, "hwb(60 38% 0%)"), "hwb(114 64.314% 0%)");
 });
 
 Deno.test("SPEC saturation: can saturate a color", function () {
   const color = "cadetblue";
 
-  assertEquals(saturation(4, color), "#4fa0a3");
-  assertEquals(saturation(8, color), "#34a3a6");
-  assertEquals(saturation(16, color), "#00a6ac");
-  assertEquals(saturation(32, color), "#00aeb9");
-  assertEquals(saturation(64, color), "#00b9d4");
+  assertEquals(saturation(4, color), "#48a1a4");
+  assertEquals(saturation(8, color), "#22a5a9");
+  assertEquals(saturation(16, color), "#00abb2");
+  assertEquals(saturation(32, color), "#00b5c3");
+  assertEquals(saturation(64, color), "#00c5e6");
 });
 
 Deno.test("SPEC saturation: can desaturate a color", function () {
   const color = "chartreuse";
 
-  assertEquals(saturation(-4, color), "#86fe25");
-  assertEquals(saturation(-8, color), "#8ffc3a");
-  assertEquals(saturation(-16, color), "#9bfa54");
-  assertEquals(saturation(-32, color), "#b2f57d");
-  assertEquals(saturation(-64, color), "#d5e9c3");
+  assertEquals(saturation(-4, color), "#88fd39");
+  assertEquals(saturation(-8, color), "#91fb51");
+  assertEquals(saturation(-16, color), "#a0f673");
+  assertEquals(saturation(-32, color), "#bceba6");
+  assertEquals(saturation(-64, color), "#dbdbdb");
 });
 
 Deno.test("SPEC saturation: can adjust all supported formats", function () {
   const colors = [
-    ["#c0ffee", "#f2f2f2"],
-    ["midnightblue", "#262626"],
-    ["rgb(255, 133, 30)", "rgb(194, 161, 139)"],
-    ["hsl(300, 40%, 70%)", "hsl(0, 0%, 65.882%)"],
-    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(24.576% 0% 26.695% 7.451%)"],
-    ["hwb(120 30% 20%)", "hwb(110 65.098% 27.843%)"],
-    ["lab(36.44% 30 -79)", "lab(36.44% 7.4552 -19.632)"],
-    ["lch(63.198% 36 135)", "lch(63.198% 0 135)"],
+    ["#c0ffee", "#efefef"],
+    ["midnightblue", "#2b2b2b"],
+    ["rgb(255, 133, 30)", "rgb(171, 171, 171)"],
+    ["hsl(300, 40%, 70%)", "hsl(0, 0%, 67.451%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(7.7982% 0% 7.7982% 14.51%)"],
+    ["hwb(120 30% 20%)", "hwb(0 67.843% 32.157%)"],
+    ["lab(36.44% 30 -79)", "lab(39.49% 0 0)"],
+    ["lch(63.198% 36 135)", "lch(62.082% 0 0)"],
+    ["oklab(56% 0.25 240)", "oklab(56% 0.010000000000000009 240)"],
   ];
 
   colors.forEach(([input, target]) =>
@@ -2603,43 +2679,44 @@ Deno.test("EDGE saturation: rejects invalid color", function () {
 });
 
 Deno.test("ALIAS sat of saturation", function () {
-  assertEquals(sat(-16, "chocolate"), "#c07442");
+  assertEquals(sat(-16, "chocolate"), "#b07d61");
 });
 
 Deno.test("ALIAS s of saturation", function () {
-  assertEquals(s(-8, "burlywood"), "#d5ba9a");
+  assertEquals(s(-8, "burlywood"), "#cebca5");
 });
 
 Deno.test("SPEC lightness: can lighten a color", function () {
   const color = "midnightblue";
 
-  assertEquals(lightness(4, color), "#26227b");
-  assertEquals(lightness(8, color), "#322a85");
-  assertEquals(lightness(16, color), "#483c9a");
-  assertEquals(lightness(32, color), "#7362c6");
-  assertEquals(lightness(64, color), "#ccb5ff");
+  assertEquals(lightness(4, color), "#21267d");
+  assertEquals(lightness(8, color), "#293289");
+  assertEquals(lightness(16, color), "#3c4aa3");
+  assertEquals(lightness(32, color), "#677ad8");
+  assertEquals(lightness(64, color), "#c7e0ff");
 });
 
 Deno.test("SPEC lightness: can darken a color", function () {
   const color = "cornsilk";
 
-  assertEquals(lightness(-4, color), "#f5eed2");
-  assertEquals(lightness(-8, color), "#e9e2c7");
-  assertEquals(lightness(-16, color), "#d2ccb1");
-  assertEquals(lightness(-32, color), "#a7a086");
-  assertEquals(lightness(-64, color), "#555039");
+  assertEquals(lightness(-4, color), "#f2ebcf");
+  assertEquals(lightness(-8, color), "#e4ddc2");
+  assertEquals(lightness(-16, color), "#cac4a9");
+  assertEquals(lightness(-32, color), "#989278");
+  assertEquals(lightness(-64, color), "#3d3721");
 });
 
 Deno.test("SPEC lightness: can adjust all supported formats", function () {
   const colors = [
-    ["#c0ffee", "#cdfffb"],
-    ["midnightblue", "#9f8bf4"],
-    ["rgb(255, 133, 30)", "rgb(255, 220, 117)"],
-    ["hsl(300, 40%, 70%)", "hsl(300, 100%, 95.882%)"],
-    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(64.314% 0% 56.078% 0%)"],
-    ["hwb(120 30% 20%)", "hwb(114 58.431% 0%)"],
-    ["lab(36.44% 30 -79)", "lab(84% 30 -79)"],
-    ["lch(63.198% 36 135)", "lch(100% 36 135)"],
+    ["#c0ffee", "#cffffe"],
+    ["midnightblue", "#95acff"],
+    ["rgb(255, 133, 30)", "rgb(255, 219, 131)"],
+    ["hsl(300, 40%, 70%)", "hsl(300, 100%, 95.098%)"],
+    ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(59.608% 0% 50.98% 0%)"],
+    ["hwb(120 30% 20%)", "hwb(117 62.745% 0%)"],
+    ["lab(36.44% 30 -79)", "lab(88.646% -18.579 -17.461)"],
+    ["lch(63.198% 36 135)", "lch(96.589% 25.863 133.94)"],
+    ["oklab(56% 0.25 240)", "oklab(100% 0.25 240)"],
   ];
 
   colors.forEach(([input, target]) =>
@@ -2660,19 +2737,19 @@ Deno.test("EDGE lightness: rejects invalid color", function () {
 Deno.test("ALIAS luminance of lightness", function () {
   assertEquals(
     luminance(12, "lab(38.1993% -39 -147.39)"),
-    "lab(50% -38.997 -147.39)",
+    "lab(63.564% -4.8385 -56.459)",
   );
 });
 
 Deno.test("ALIAS l of lightness", function () {
-  assertEquals(l(30, "slategray"), "#c0d1e3");
+  assertEquals(l(30, "slategray"), "#ccdef0");
 });
 
 Deno.test("SPEC alpha: can increase", function () {
   const color = "#abcdef68";
 
-  assertEquals(alpha(4, color), "#abcdef73");
-  assertEquals(alpha(8, color), "#abcdef7d");
+  assertEquals(alpha(4, color), "#abcdef72");
+  assertEquals(alpha(8, color), "#abcdef7c");
   assertEquals(alpha(16, color), "#abcdef91");
   assertEquals(alpha(32, color), "#abcdefba");
   assertEquals(alpha(64, color), "#abcdef");
@@ -2696,8 +2773,9 @@ Deno.test("SPEC alpha: can adjust all supported formats", function () {
     ["hsl(300, 40%, 70%)", "hsla(300, 39.869%, 70%, 0.75)"],
     ["device-cmyk(90% 0% 70% 0%)", "device-cmyk(89.804% 0% 69.804% 0% / 0.75)"],
     ["hwb(120 30% 20%)", "hwb(120 30.196% 20% / 0.75)"],
-    ["lab(36.44% 30 -79)", "lab(36.44% 30 -79 / 0.75)"],
-    ["lch(63.198% 36 135)", "lch(63.198% 36 135 / 0.75)"],
+    ["lab(36.44% 30 -79)", "lab(36.39% 30.198 -79.154 / 0.75)"],
+    ["lch(63.198% 36 135)", "lch(63.182% 35.872 135.17 / 0.75)"],
+    ["oklab(56% 0.25 240)", "oklab(56% 0.25 240 / 0.75)"],
   ];
 
   colors.forEach(([input, target]) => assertEquals(alpha(-25, input), target));
@@ -2721,30 +2799,30 @@ printf '%s\n' (NO_COLOR=true deno test ./tests/color_adjust_test.js)
 #+NAME: adjustment-test
 #+begin_src shell
 running 22 tests
-test SPEC hue: can adjust clockwise ... ok (21ms)
-test SPEC hue: can adjust counterclockwise ... ok (12ms)
-test SPEC hue: can adjust all supported formats ... ok (10ms)
-test EDGE hue: rejects invalid color ... ok (1ms)
-test ALIAS h of hue ... ok (3ms)
+test SPEC hue: can adjust clockwise ... ok (18ms)
+test SPEC hue: can adjust counterclockwise ... ok (5ms)
+test SPEC hue: can adjust all supported formats ... ok (11ms)
+test EDGE hue: rejects invalid color ... ok (3ms)
+test ALIAS h of hue ... ok (2ms)
 test SPEC saturation: can saturate a color ... ok (4ms)
 test SPEC saturation: can desaturate a color ... ok (3ms)
 test SPEC saturation: can adjust all supported formats ... ok (6ms)
 test EDGE saturation: rejects invalid color ... ok (2ms)
 test ALIAS sat of saturation ... ok (2ms)
-test ALIAS s of saturation ... ok (1ms)
+test ALIAS s of saturation ... ok (2ms)
 test SPEC lightness: can lighten a color ... ok (4ms)
-test SPEC lightness: can darken a color ... ok (4ms)
+test SPEC lightness: can darken a color ... ok (3ms)
 test SPEC lightness: can adjust all supported formats ... ok (5ms)
 test EDGE lightness: rejects invalid color ... ok (2ms)
 test ALIAS luminance of lightness ... ok (2ms)
-test ALIAS l of lightness ... ok (2ms)
-test SPEC alpha: can increase ... ok (4ms)
+test ALIAS l of lightness ... ok (3ms)
+test SPEC alpha: can increase ... ok (2ms)
 test SPEC alpha: can decrease ... ok (4ms)
-test SPEC alpha: can adjust all supported formats ... ok (3ms)
+test SPEC alpha: can adjust all supported formats ... ok (6ms)
 test ALIAS transparency of alpha ... ok (2ms)
 test ALIAS a of alpha ... ok (2ms)
 
-test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (103ms)
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (94ms)
 
 #+end_src
 
@@ -6345,8 +6423,8 @@ export function validate(color) {
   // prefix: "oklab("
   // lightness: float<0->%
   const lightness = /(?:(?:\d\.?\d?){1,}%)/;
-  // chroma: float<0-0.5>
-  const chroma = /(?:(?:0|0\.\d+|0.5))/;
+  // chroma: -?float<0-0.5>
+  const chroma = /(?:-?(?:0|0\.\d+|0.5))/;
   // hue: float<0->
   const hue = /(?:(?:\d\.?\d?)+)/;
   // transparency: float<0-1> || float<0-100>%

@@ -13,6 +13,7 @@ export const preserve = (target, color) =>
     hwb: format.hwb.validate(color) && revert.hwb(target),
     lab: format.lab.validate(color) && revert.lab(target),
     lch: format.lch.validate(color) && revert.lch(target),
+    oklab: format.oklab.validate(color) && revert.oklab(target),
   })
     .filter((matched) => !!matched)
     .toString();
@@ -24,8 +25,8 @@ import {
   correctHueClockwise,
   correctHueCounterClockwise,
 } from "./internals/color/convert/setup.js";
-import { lch } from "./color_convert.js";
-import { compose, pipe } from "./utilities.js";
+import { lch, oklab } from "./color_convert.js";
+import { pipe } from "./utilities.js";
 
 /**
  * A function that allows hue adjustment of any valid CSS color.
@@ -50,14 +51,14 @@ import { compose, pipe } from "./utilities.js";
  * It corrects clockwise if value after calculation is < 0;
  * counterclockwise if value after calculation is > 360.
  *
- * As of v0.2.0, hue adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, hue adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} offset - the rotational offset from current hue
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function hue(offset, color) {
-  const [L, C, h, alpha] = pipe(color, lch, extract);
+  const [L, C, h, alpha] = pipe(color, oklab, extract);
   const hue = parseFloat(h) + offset;
 
   // Hue correction
@@ -73,7 +74,7 @@ export function hue(offset, color) {
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -85,6 +86,7 @@ export const h = hue;
 // [[file:README.org::*saturation][saturation:1]]
 import {
   calcFractionFromPercent,
+  calcPercentFromFraction,
   normalize,
 } from "./internals/color/convert/setup.js";
 
@@ -110,25 +112,31 @@ import {
  *
  * At 0%, a color is achromatic (gray). At 100%, a color is fully saturated.
  *
- * As of v0.2.0, saturation adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, saturation adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} amount - the amount to adjust saturation (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function saturation(amount, color) {
-  const [L, c, H, alpha] = pipe(color, lch, extract);
+  const [L, c, H, alpha] = pipe(color, oklab, extract);
 
-  const calcChromaFromPercent = compose(
-    calcFractionFromPercent,
-    (n) => n * 132,
-  );
+  const chroma = parseFloat(c) + calcFractionFromPercent(amount * 0.5);
 
-  const C = normalize(0, parseFloat(c) + calcChromaFromPercent(amount), 132);
+  // Chroma should be >0 and <=0.5
+  let C;
+  if (Math.sign(chroma) === -1) {
+    C = 0;
+  } else if (chroma > 0.5) {
+    C = 0.5;
+  } else {
+    C = chroma;
+  }
+
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -163,20 +171,30 @@ export const s = saturation;
  *
  * At 0%, sits pure black. At 100%, pure white.
  *
- * As of v0.2.0, lightness adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, lightness adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} amount - the amount to adjust lightness (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function lightness(amount, color) {
-  const [l, C, H, alpha] = pipe(color, lch, extract);
+  const [l, C, H, alpha] = pipe(color, oklab, extract);
 
-  const L = normalize(0, parseFloat(l) + amount, 100);
+  const lightness = parseFloat(l) + calcFractionFromPercent(amount * 100);
+
+  let L;
+  if (Math.sign(lightness) === -1) {
+    L = 0;
+  } else if (lightness > 100) {
+    L = 100;
+  } else {
+    L = lightness;
+  }
+
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `lch(${L}% ${C} ${H})` : `lch(${L}% ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L}% ${C} ${H})` : `oklab(${L}% ${C} ${H} / ${A})`,
     color,
   );
 }
@@ -189,8 +207,6 @@ export const l = lightness;
 // lightness:1 ends here
 
 // [[file:README.org::*alpha][alpha:1]]
-import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
-
 /**
  * A function that allows alpha/transparency adjustment of any valid CSS color.
  *
@@ -203,7 +219,7 @@ import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
  * @example Negative values decrease
  *
  * ```ts
- * lightness(-30, "lime");
+ * alpha(-30, "lime");
  * ```
  *
  * @remarks
@@ -213,20 +229,28 @@ import { calcPercentFromFraction } from "./internals/color/convert/setup.js";
  *
  * At 0%, a color is fully transparent. At 100%, fully opaque.
  *
- * As of v0.2.0, alpha adjustment is done in the CIELCH space instead of HSL.
+ * As of v0.2.0, alpha adjustment is done in the Oklab color space instead of HSL.
  *
  * @param {number} amount - the amount to adjust transparency (as a percentage)
  * @param {string} color - the color to adjust
  * @returns {string} The adjusted color
  */
 export function alpha(amount, color) {
-  const [L, C, H, alpha] = pipe(color, lch, extract);
+  const [L, C, H, a] = pipe(color, oklab, extract);
 
-  const A = calcFractionFromPercent(
-    normalize(0, calcPercentFromFraction(alpha ?? 1) + amount, 100),
-  );
+  const alpha = parseFloat(a ?? 1) + calcFractionFromPercent(amount);
+
+  let A;
+  if (Math.sign(alpha) === -1) {
+    A = 0;
+  } else if (alpha > 1) {
+    A = 1;
+  } else {
+    A = alpha;
+  }
+
   return preserve(
-    A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`,
     color,
   );
 }

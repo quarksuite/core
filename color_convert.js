@@ -90,6 +90,7 @@ export function hex(color) {
     convertColor(color, "hwb", "rgb", "hex"),
     convertColor(color, "lab", "rgb", "hex"),
     convertColor(color, "lch", "lab", "rgb", "hex"),
+    convertColor(color, "oklab", "rgb", "hex"),
   ]);
 }
 // hex:1 ends here
@@ -116,6 +117,7 @@ export function rgb(color) {
     convertColor(color, "hwb", "rgb"),
     convertColor(color, "lab", "rgb"),
     convertColor(color, "lch", "lab", "rgb"),
+    convertColor(color, "oklab", "rgb"),
   ]);
 }
 // rgb:1 ends here
@@ -142,6 +144,7 @@ export function hsl(color) {
     convertColor(color, "hwb", "rgb", "hsl"),
     convertColor(color, "lab", "rgb", "hsl"),
     convertColor(color, "lch", "lab", "rgb", "hsl"),
+    convertColor(color, "oklab", "rgb", "hsl"),
   ]);
 }
 // hsl:1 ends here
@@ -168,6 +171,7 @@ export function cmyk(color) {
     convertColor(color, "hwb", "rgb", "cmyk"),
     convertColor(color, "lab", "rgb", "cmyk"),
     convertColor(color, "lch", "lab", "rgb", "cmyk"),
+    convertColor(color, "oklab", "rgb", "cmyk"),
   ]);
 }
 // cmyk:1 ends here
@@ -194,6 +198,7 @@ export function hwb(color) {
     convertColor(color, "cmyk", "rgb", "hwb"),
     convertColor(color, "lab", "rgb", "hwb"),
     convertColor(color, "lch", "lab", "rgb", "hwb"),
+    convertColor(color, "oklab", "rgb", "hwb"),
   ]);
 }
 // hwb:1 ends here
@@ -220,6 +225,7 @@ export function lab(color) {
     convertColor(color, "cmyk", "rgb", "lab"),
     convertColor(color, "hwb", "rgb", "lab"),
     convertColor(color, "lch", "lab"),
+    convertColor(color, "oklab", "rgb", "lab"),
   ]);
 }
 // lab:1 ends here
@@ -228,7 +234,7 @@ export function lab(color) {
 /**
  * A function that converts any valid CSS color to CIELCh(ab).
  *
- * @example Convert CIELCH to RGB Hex
+ * @example Convert CIELCh(ab) to RGB Hex
  *
  * ```ts
  * lch("#face");
@@ -246,6 +252,34 @@ export function lch(color) {
     convertColor(color, "cmyk", "rgb", "lab", "lch"),
     convertColor(color, "hwb", "rgb", "lab", "lch"),
     convertColor(color, "lab", "lch"),
+    convertColor(color, "oklab", "rgb", "lab", "lch"),
   ]);
 }
 // lch:1 ends here
+
+// [[file:README.org::*oklab][oklab:1]]
+/**
+ * A function that converts any valid CSS color to _non-standard_ Oklab (LCh).
+ *
+ * @example Convert Oklab (LCh) to RGB Hex
+ *
+ * ```ts
+ * oklab("#face");
+ * ```
+ *
+ * @param {string} color - the input color to convert
+ * @returns {string} the input color converted to Oklab (LCh)
+ */
+export function oklab(color) {
+  return format.oklab.validate(color) ? color : checkConversion(color, [
+    convertColor(color, "hex", "rgb", "oklab"),
+    convertColor(color, "named", "hex", "rgb", "oklab"),
+    convertColor(color, "rgb", "oklab"),
+    convertColor(color, "hsl", "rgb", "oklab"),
+    convertColor(color, "cmyk", "rgb", "oklab"),
+    convertColor(color, "hwb", "rgb", "oklab"),
+    convertColor(color, "lab", "rgb", "oklab"),
+    convertColor(color, "lch", "lab", "rgb", "oklab"),
+  ]);
+}
+// oklab:1 ends here
