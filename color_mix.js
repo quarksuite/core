@@ -1,34 +1,32 @@
 // [[file:README.org::*mix][mix:1]]
 import {
-  calcChannelFromFraction,
-  calcFractionFromChannel,
   calcFractionFromPercent,
   calcPercentFromFraction,
-  normalize,
   significant,
 } from "./internals/color/convert/setup.js";
-import { extract } from "./internals/color/format/rgb.js";
-import { rgb } from "./color_convert.js";
+import { extract } from "./internals/color/format/oklab.js";
+import { parseOklab } from "./internals/color/convert/oklab.js";
+import { oklab } from "./color_convert.js";
 import { preserve } from "./color_adjust.js";
 import { pipe } from "./utilities.js";
 
 const precision = significant.bind(null, 5);
-
-/** Calculate the difference between original and target */
-const calcChannelDifference = (original, target, p) =>
-  precision(((1 - p) * original ** 2 + p * target ** 2) ** 0.5);
 // mix:1 ends here
 
 // [[file:README.org::*mix][mix:2]]
 function calcMixture(original, target, amount) {
-  const [OR, OG, OB] = original;
-  const [TR, TG, TB] = target;
+  const [OL, Oa, Ob, Oalpha] = original;
+  const [TL, Ta, Tb, Talpha] = target;
+
+  const OA = parseFloat(Oalpha ?? 1);
+  const TA = parseFloat(Talpha ?? 1);
 
   return [
-    [OR, TR],
-    [OG, TG],
-    [OB, TB],
-  ].map(([X, Y]) => calcChannelDifference(X, Y, amount));
+    [OL, TL],
+    [Oa, Ta],
+    [Ob, Tb],
+    [OA, TA],
+  ].map(([X, Y]) => X + (Y - X) * amount);
 }
 // mix:2 ends here
 
@@ -65,26 +63,27 @@ function calcMixture(original, target, amount) {
  * @returns {string} The mixture result
  */
 export function mix(amount, target, color) {
-  const [OR, OG, OB, OA] = pipe(color, rgb, extract);
-  const [TR, TG, TB, TA] = pipe(target, rgb, extract);
-  const p = calcFractionFromPercent(normalize(0, amount, 100));
+  // Convert both colors to raw Oklab
+  const c1 = pipe(color, oklab, extract, parseOklab);
+  const c2 = pipe(target, oklab, extract, parseOklab);
 
-  // Mix the channels
-  const [R, G, B] = calcMixture([OR, OG, OB], [TR, TG, TB], p).map((V) =>
-    Math.round(V)
-  );
+  // calculate the mixture
+  const [l, a, b, alpha] = calcMixture(c1, c2, calcFractionFromPercent(amount));
 
-  // If one or both colors have an alpha value, calculate difference
-  const [A1, A2] = [OA, TA].map((V) =>
-    V != null ? calcChannelFromFraction(V) : 255
-  );
+  // Convert result back to Oklab (LCh)
+  const [L, C, h] = [
+    calcPercentFromFraction(l),
+    Math.sqrt(a ** 2 + b ** 2),
+    Math.atan2(b, a) * (180 / Math.PI),
+  ];
 
-  const A = calcFractionFromChannel(
-    normalize(0, calcChannelDifference(A1, A2, p), 255),
-  );
+  // Hue correction
+  let H = Math.sign(h) === -1 ? h + 360 : h;
 
   return preserve(
-    A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`,
+    alpha === 1
+      ? `oklab(${L}% ${C} ${H})`
+      : `oklab(${L}% ${C} ${H} / ${alpha})`,
     color,
   );
 }

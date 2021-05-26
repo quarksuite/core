@@ -6,7 +6,7 @@ import {
   normalize,
 } from "./setup.js";
 
-function parseOklab(oklab) {
+export function parseOklab(oklab) {
   const [l, c, h, alpha] = oklab;
 
   // Convert values back to their raw Oklab form
@@ -47,8 +47,8 @@ export function rgb(oklab) {
   const [r, g, b, alpha] = calcLinearRGB(oklab);
 
   const [R, G, B] = [r, g, b]
-        .map((V) => (V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055))
-        .map((V) => normalize(0, calcChannelFromFraction(V), 255));
+    .map((V) => (V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055))
+    .map((V) => normalize(0, calcChannelFromFraction(V), 255));
 
   const A = (alpha && (alpha ?? 1)) || 1;
 
