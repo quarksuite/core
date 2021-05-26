@@ -47,16 +47,6 @@ export const analogous = (color) => [
 // analogous:1 ends here
 
 // [[file:README.org::*splitComplementary][splitComplementary:1]]
-function tri(arc, color) {
-  const complement = hue.bind(null, 180);
-
-  return [
-    hue(0, color),
-    hue(arc, complement(color)),
-    hue(-arc, complement(color)),
-  ];
-}
-
 /**
  * Creates a split complementary color scheme from any valid CSS color.
  *
@@ -73,7 +63,11 @@ function tri(arc, color) {
  * @param {string} color - the base color to generate from
  * @returns {[string, string, string]} The base hues for a split complementary color scheme
  */
-export const splitComplementary = (color) => tri(30, color);
+export const splitComplementary = (color) => [
+  hue(0, color),
+  hue(30, hue(180, color)),
+  hue(-30, hue(180, color)),
+];
 // splitComplementary:1 ends here
 
 // [[file:README.org::*triadic][triadic:1]]
@@ -88,22 +82,19 @@ export const splitComplementary = (color) => tri(30, color);
  *
  * @remarks
  * A triadic color scheme is composed of three colors evenly spaced around
- * the color wheel; the origin and two hues 60° apart from the complement.
+ * the color wheel; 120° apart.
  *
  * @param {string} color - the base color to generate from
  * @returns {[string, string, string]} The base hues for a triadic color scheme
  */
-export const triadic = (color) => tri(60, color);
+export const triadic = (color) => [
+  hue(0, color),
+  hue(120, color),
+  hue(240, color),
+];
 // triadic:1 ends here
 
 // [[file:README.org::*tetradic][tetradic:1]]
-function quad(offset, color) {
-  const origin = hue(0, color);
-  const complement = hue(180, color);
-
-  return [origin, hue(-offset, origin), complement, hue(-offset, complement)];
-}
-
 /**
  * Creates a tetradic color scheme from any valid CSS color.
  *
@@ -121,7 +112,12 @@ function quad(offset, color) {
  * @param {string} color - the base color to generate from
  * @returns {[string, string, string, string]} The base hues for a tetradic color scheme
  */
-export const tetradic = (color) => quad(60, color);
+export const tetradic = (color) => [
+  hue(0, color),
+  hue(60, color),
+  hue(180, color),
+  hue(60, hue(180, color)),
+];
 
 /** An alias for `tetradic()` */
 export const dualComplementary = tetradic;
@@ -139,12 +135,17 @@ export const dualComplementary = tetradic;
  *
  * @remarks
  * A square color scheme consists of four colors positioned equally
- * around the color wheel; hues 90° apart from the origin.
+ * around the color wheel; 90° apart.
  *
  * @param {string} color - the base color to generate from
  * @returns {[string, string, string, string]} The base hues for a square color scheme
  */
-export const square = (color) => quad(90, color);
+export const square = (color) => [
+  hue(0, color),
+  hue(90, color),
+  hue(180, color),
+  hue(270, color),
+];
 // square:1 ends here
 
 // [[file:README.org::*custom][custom:1]]
@@ -157,18 +158,18 @@ function generate({ hues, arc, offset = 0 }, color) {
   ];
   return offset
     ? [
-        ...new Set([
-          hue(0, color),
-          ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
-          ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
-        ]),
-      ] // Must preserve the origin with offset
+      ...new Set([
+        hue(0, color),
+        ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
+        ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
+      ]),
+    ] // Must preserve the origin with offset
     : [
-        ...new Set([
-          ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
-          ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
-        ]),
-      ]; // Must add an extra hue to generate from origin
+      ...new Set([
+        ...leftOfOrigin.map((v, i) => hue(-(v * i) - offset, color)),
+        ...rightOfOrigin.map((v, i) => hue(v * i + offset, color)),
+      ]),
+    ]; // Must add an extra hue to generate from origin
 }
 
 /**

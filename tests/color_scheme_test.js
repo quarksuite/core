@@ -18,102 +18,113 @@ import {
 Deno.test(
   "SPEC complementary: generate base hues for complementary scheme",
   function () {
-    assertEquals(complementary("red"), ["#ff0000", "#00ffff"]);
-    assertEquals(complementary("lime"), ["#00ff00", "#ff00ff"]);
-    assertEquals(complementary("blue"), ["#0000ff", "#ffff00"]);
+    assertEquals(complementary("red"), ["#ff0000", "#00a9db"]);
+    assertEquals(complementary("lime"), ["#00ff00", "#ff7dff"]);
+    assertEquals(complementary("blue"), ["#0000ff", "#a02000"]);
   },
 );
 
 Deno.test(
   "SPEC analogous: generate base hues for analogous scheme",
   function () {
-    assertEquals(analogous("red"), ["#ff0000", "#ff0080", "#ff8000"]);
-    assertEquals(analogous("lime"), ["#00ff00", "#80ff00", "#00ff80"]);
-    assertEquals(analogous("blue"), ["#0000ff", "#0080ff", "#8000ff"]);
+    assertEquals(analogous("red"), ["#ff0000", "#f50084", "#ef4600"]);
+    assertEquals(analogous("lime"), ["#00ff00", "#dbe100", "#00ffbe"]);
+    assertEquals(analogous("blue"), ["#0000ff", "#0053e4", "#6e00ec"]);
   },
 );
 
 Deno.test(
   "SPEC splitComplementary: generate base hues for split complementary scheme",
   function () {
-    assertEquals(splitComplementary("red"), ["#ff0000", "#0080ff", "#00ff80"]);
-    assertEquals(splitComplementary("lime"), ["#00ff00", "#ff0080", "#8000ff"]);
-    assertEquals(splitComplementary("blue"), ["#0000ff", "#80ff00", "#ff8000"]);
+    assertEquals(splitComplementary("red"), ["#ff0000", "#649bec", "#00b2b8"]);
+    assertEquals(splitComplementary("lime"), ["#00ff00", "#ff70b9", "#ca93ff"]);
+    assertEquals(splitComplementary("blue"), ["#0000ff", "#943800", "#9c194e"]);
   },
 );
 
 Deno.test("SPEC triadic: generate base hues for triadic scheme", function () {
-  assertEquals(triadic("red"), ["#ff0000", "#0000ff", "#00ff00"]);
-  assertEquals(triadic("cyan"), ["#00ffff", "#ffff00", "#ff00ff"]);
+  assertEquals(triadic("red"), ["#ff0000", "#00ae00", "#4f6fff"]);
+  assertEquals(triadic("cyan"), ["#00ffff", "#ffbfff", "#ffd05c"]);
 });
 
 Deno.test("SPEC tetradic: generate base hues for tetradic scheme", function () {
-  assertEquals(tetradic("red"), ["#ff0000", "#ff00ff", "#00ffff", "#00ff00"]);
-  assertEquals(tetradic("lime"), ["#00ff00", "#ffff00", "#ff00ff", "#0000ff"]);
-  assertEquals(tetradic("blue"), ["#0000ff", "#00ffff", "#ffff00", "#ff0000"]);
+  assertEquals(tetradic("red"), ["#ff0000", "#c57500", "#00a9db", "#978be8"]);
+  assertEquals(tetradic("lime"), ["#00ff00", "#00ffff", "#ff7dff", "#ff7366"]);
+  assertEquals(tetradic("blue"), ["#0000ff", "#9e00b2", "#a02000", "#775100"]);
 });
 
 Deno.test("ALIAS dualComplementary of tetradic", function () {
   assertEquals(dualComplementary("cyan"), [
     "#00ffff",
-    "#00ff00",
-    "#ff0000",
-    "#ff00ff",
+    "#96e3ff",
+    "#ffb3bf",
+    "#f2c18b",
   ]);
 });
 
 Deno.test("SPEC square: generate base hues for square scheme", function () {
-  assertEquals(square("red"), ["#ff0000", "#8000ff", "#00ffff", "#80ff00"]);
-  assertEquals(square("lime"), ["#00ff00", "#ff8000", "#ff00ff", "#0080ff"]);
-  assertEquals(square("blue"), ["#0000ff", "#00ff80", "#ffff00", "#ff0080"]);
+  assertEquals(square("red"), ["#ff0000", "#7b9900", "#00a9db", "#a34fff"]);
+  assertEquals(square("lime"), ["#00ff00", "#00e9ff", "#ff7dff", "#ff8300"]);
+  assertEquals(square("blue"), ["#0000ff", "#c00061", "#a02000", "#008048"]);
 });
 
 Deno.test("SPEC custom: simulate complementary", function () {
-  assertEquals(custom({ hues: 2, arc: 180 }, "red"), ["#ff0000", "#00ffff"]);
+  assertEquals(custom({ hues: 2, arc: 180 }, "red"), ["#ff0000", "#00a9db"]);
+});
+
+Deno.test("SPEC custom: simulate analogous", function () {
+  assertEquals(custom({ hues: 3, arc: 30 }, "red"), [
+    "#ff0000",
+    "#f50084",
+    "#ef4600",
+  ]);
 });
 
 Deno.test("SPEC custom: simulate triadic", function () {
   assertEquals(custom({ hues: 3, arc: 120 }, "red"), [
     "#ff0000",
-    "#0000ff",
-    "#00ff00",
+    "#4f6fff",
+    "#00ae00",
   ]);
 });
 
 Deno.test("SPEC custom: simulate square", function () {
   assertEquals(custom({ hues: 4, arc: 90 }, "red"), [
     "#ff0000",
-    "#8000ff",
-    "#00ffff",
-    "#80ff00",
+    "#a34fff",
+    "#00a9db",
+    "#7b9900",
   ]);
 });
 
-Deno.test("SPEC custom: 4 color analogous", function () {
+Deno.test("SPEC custom: dyad", function () {
+  assertEquals(custom({ hues: 2, arc: 60 }, "red"), ["#ff0000", "#d62fd2"]);
+});
+
+Deno.test("SPEC custom: extended analogous", function () {
   assertEquals(custom({ hues: 4, arc: 30 }, "red"), [
     "#ff0000",
-    "#ff0080",
-    "#ff00ff",
-    "#ff8000",
+    "#f50084",
+    "#d62fd2",
+    "#ef4600",
   ]);
 });
 
 Deno.test("SPEC custom: accented triad", function () {
-  assertEquals(custom({ hues: 5, arc: 30, offset: 120 }, "red"), [
+  assertEquals(custom({ hues: 5, arc: 60, offset: 120 }, "red"), [
     "#ff0000",
-    "#0000ff",
-    "#0080ff",
-    "#00ff00",
-    "#00ff80",
+    "#4f6fff",
+    "#00a9db",
+    "#00ae00",
   ]);
 });
 
 Deno.test("SPEC custom: accented split complementary", function () {
   assertEquals(custom({ hues: 4, arc: 30, offset: 150 }, "red"), [
     "#ff0000",
-    "#0080ff",
-    "#00ffff",
-    "#00ff80",
+    "#0090ff",
+    "#00a9db",
+    "#00b48c",
   ]);
 });
 
