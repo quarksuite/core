@@ -109,13 +109,8 @@ export function contrast(opts, background, palette) {
     const ratio = calcRatio(background, foreground);
     const max = ratio <= 21;
 
-    if (rating === "AA") {
-      return (enhanced ? ratio >= 4.5 : ratio >= 3.1) && max;
-    }
-
-    if (rating === "AAA") {
-      return (enhanced ? ratio >= 7 : ratio >= 4.5) && max;
-    }
+    if (rating === "AA") return (enhanced ? ratio >= 4.5 : ratio >= 3.1) && max;
+    if (rating === "AAA") return (enhanced ? ratio >= 7 : ratio >= 4.5) && max;
   });
 }
 // contrast:1 ends here

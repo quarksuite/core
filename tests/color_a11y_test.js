@@ -29,7 +29,7 @@ const Colors = [
 ];
 
 Colors.forEach(([name, value]) =>
-  Deno.test(`SPEC clrs: ${value} matches ${name}`, function () {
+  Deno.test(`SPEC clrs: "${name}" = ${value}`, function () {
     assertEquals(clrs(name), value);
   })
 );
@@ -52,11 +52,11 @@ Deno.test(
     const dark = shades(5, 99, color);
 
     assertEquals(contrast({ rating: "AA" }, bg, dark), [
-      "#e43930",
-      "#c6322a",
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#be2e26",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
   },
 );
@@ -69,10 +69,11 @@ Deno.test(
     const dark = shades(5, 99, color);
 
     assertEquals(contrast({ rating: "AAA" }, bg, dark), [
-      "#c6322a",
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#be2e26",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
   },
 );
@@ -85,16 +86,18 @@ Deno.test(
     const dark = shades(5, 99, color);
 
     assertEquals(contrast({ rating: "AA", enhanced: true }, bg, dark), [
-      "#c6322a",
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#be2e26",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
 
     assertEquals(contrast({ rating: "AAA", enhanced: true }, bg, dark), [
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
   },
 );

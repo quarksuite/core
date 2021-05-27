@@ -3905,13 +3905,8 @@ export function contrast(opts, background, palette) {
     const ratio = calcRatio(background, foreground);
     const max = ratio <= 21;
 
-    if (rating === "AA") {
-      return (enhanced ? ratio >= 4.5 : ratio >= 3.1) && max;
-    }
-
-    if (rating === "AAA") {
-      return (enhanced ? ratio >= 7 : ratio >= 4.5) && max;
-    }
+    if (rating === "AA") return (enhanced ? ratio >= 4.5 : ratio >= 3.1) && max;
+    if (rating === "AAA") return (enhanced ? ratio >= 7 : ratio >= 4.5) && max;
   });
 }
 #+END_SRC
@@ -3954,7 +3949,7 @@ const Colors = [
 ];
 
 Colors.forEach(([name, value]) =>
-  Deno.test(`SPEC clrs: ${value} matches ${name}`, function () {
+  Deno.test(`SPEC clrs: "${name}" = ${value}`, function () {
     assertEquals(clrs(name), value);
   })
 );
@@ -3977,11 +3972,11 @@ Deno.test(
     const dark = shades(5, 99, color);
 
     assertEquals(contrast({ rating: "AA" }, bg, dark), [
-      "#e43930",
-      "#c6322a",
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#be2e26",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
   },
 );
@@ -3994,10 +3989,11 @@ Deno.test(
     const dark = shades(5, 99, color);
 
     assertEquals(contrast({ rating: "AAA" }, bg, dark), [
-      "#c6322a",
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#be2e26",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
   },
 );
@@ -4010,16 +4006,18 @@ Deno.test(
     const dark = shades(5, 99, color);
 
     assertEquals(contrast({ rating: "AA", enhanced: true }, bg, dark), [
-      "#c6322a",
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#be2e26",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
 
     assertEquals(contrast({ rating: "AAA", enhanced: true }, bg, dark), [
-      "#a32a23",
-      "#751e19",
-      "#1a0705",
+      "#811b16",
+      "#490c08",
+      "#180201",
+      "#000000",
     ]);
   },
 );
@@ -4034,30 +4032,30 @@ printf '%s\n' (NO_COLOR=true deno test ./tests/color_a11y_test.js)
 #+NAME: a11y-test
 #+begin_src shell
 running 22 tests
-test SPEC clrs: #001f3f matches navy ... ok (7ms)
-test SPEC clrs: #0074d9 matches blue ... ok (2ms)
-test SPEC clrs: #7fdbff matches aqua ... ok (3ms)
-test SPEC clrs: #39cccc matches teal ... ok (7ms)
-test SPEC clrs: #3d9970 matches olive ... ok (2ms)
-test SPEC clrs: #2ecc40 matches green ... ok (1ms)
-test SPEC clrs: #01ff70 matches lime ... ok (10ms)
-test SPEC clrs: #ffdc00 matches yellow ... ok (7ms)
-test SPEC clrs: #ff851b matches orange ... ok (4ms)
-test SPEC clrs: #ff4136 matches red ... ok (2ms)
-test SPEC clrs: #85144b matches maroon ... ok (4ms)
-test SPEC clrs: #f012be matches fuchsia ... ok (3ms)
-test SPEC clrs: #b10dc9 matches purple ... ok (3ms)
-test SPEC clrs: #111111 matches black ... ok (3ms)
-test SPEC clrs: #aaaaaa matches gray ... ok (11ms)
-test SPEC clrs: #aaaaaa matches grey ... ok (3ms)
-test SPEC clrs: #dddddd matches silver ... ok (6ms)
-test SPEC clrs: #ffffff matches white ... ok (6ms)
-test EDGE clrs: rejects undefined color ... ok (6ms)
-test SPEC contrast: returns the colors from a palette that can be used with a background and satisfy AA usability ... ok (77ms)
-test SPEC contrast: returns the colors that satisfy AAA usability ... ok (31ms)
-test SPEC contrast: respects the enhanced rating boolean property ... ok (37ms)
+test SPEC clrs: "navy" = #001f3f ... ok (2ms)
+test SPEC clrs: "blue" = #0074d9 ... ok (2ms)
+test SPEC clrs: "aqua" = #7fdbff ... ok (2ms)
+test SPEC clrs: "teal" = #39cccc ... ok (1ms)
+test SPEC clrs: "olive" = #3d9970 ... ok (2ms)
+test SPEC clrs: "green" = #2ecc40 ... ok (2ms)
+test SPEC clrs: "lime" = #01ff70 ... ok (2ms)
+test SPEC clrs: "yellow" = #ffdc00 ... ok (1ms)
+test SPEC clrs: "orange" = #ff851b ... ok (1ms)
+test SPEC clrs: "red" = #ff4136 ... ok (2ms)
+test SPEC clrs: "maroon" = #85144b ... ok (2ms)
+test SPEC clrs: "fuchsia" = #f012be ... ok (1ms)
+test SPEC clrs: "purple" = #b10dc9 ... ok (1ms)
+test SPEC clrs: "black" = #111111 ... ok (2ms)
+test SPEC clrs: "gray" = #aaaaaa ... ok (2ms)
+test SPEC clrs: "grey" = #aaaaaa ... ok (1ms)
+test SPEC clrs: "silver" = #dddddd ... ok (2ms)
+test SPEC clrs: "white" = #ffffff ... ok (2ms)
+test EDGE clrs: rejects undefined color ... ok (3ms)
+test SPEC contrast: returns the colors from a palette that can be used with a background and satisfy AA usability ... ok (29ms)
+test SPEC contrast: returns the colors that satisfy AAA usability ... ok (13ms)
+test SPEC contrast: respects the enhanced rating boolean property ... ok (15ms)
 
-test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (239ms)
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (93ms)
 
 #+end_src
 
