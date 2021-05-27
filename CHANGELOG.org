@@ -5,20 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
-- [[#v011---2020-04-29][v0.1.1 - 2020-04-29]]
-  - [[#changed][Changed]]
-    - [[#color-conversion][color conversion]]
-- [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
+- [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
   - [[#added][Added]]
-    - [[#functional-utilities][functional utilities]]
+    - [[#color-conversion][color conversion]]
+  - [[#changed][Changed]]
+    - [[#color-adjustment][color adjustment]]
+    - [[#color-mixture][color mixture]]
+    - [[#color-schemes][color schemes]]
+    - [[#color-palette-color-scale][+color palette+ color scale]]
+- [[#v011---2020-04-29][v0.1.1 - 2020-04-29]]
+  - [[#changed-1][Changed]]
     - [[#color-conversion-1][color conversion]]
+- [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
+  - [[#added-1][Added]]
+    - [[#functional-utilities][functional utilities]]
+    - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
     - [[#color-accessibility][color accessibility]]
-  - [[#changed-1][Changed]]
+  - [[#changed-2][Changed]]
     - [[#scheme-functions-1][scheme functions]]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v0.2.0 - 2020-05-27
+
+** Added
+
+*** color conversion
+
++ Added /non-standard/ Oklab (LCh) color format support
+
+** Changed
+
+*** color adjustment
+
++ All color adjustment functions are now implemented through the Oklab color space for better hue
+  linearity and lightness/chroma predictions
++ Adjustments are perceptually uniform and blue hues no longer shift toward purple
+
+*** color mixture
+
++ Color mixing now uses simpler interpolation formula through the Oklab color space
+
+*** color schemes
+
++ All basic color schemes have their output explicitly slotted into a fixed scale. This means
+  =custom()= is the only true dyanamic color scheme generator. Use it carefully
+
+*** +color palette+ color scale
+
++ =color_palette.js= module renamed to =color_scale.js= (which is a better description of its purpose)
++ New interpolation formula makes =contrast= parameter slightly more sensitive (particularly with shades)
 
 * v0.1.1 - 2020-04-29
 

@@ -387,7 +387,7 @@ Access API]].
         systemfonts,
         tints,
         units,
-      } from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
+      } from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
 
       // Palette
       const main = hex("gainsboro");
@@ -462,7 +462,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -553,7 +553,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -596,12 +596,12 @@ following:
 :root {
   --color-main: #dcdcdc;
   --color-main-tint-0: #e5e5e5;
-  --color-main-tint-1: #eeeeee;
-  --color-main-tint-2: #f7f7f7;
+  --color-main-tint-1: #ededed;
+  --color-main-tint-2: #f6f6f6;
   --color-main-tint-3: #ffffff;
-  --color-main-shade-0: #bfbfbf;
-  --color-main-shade-1: #9c9c9c;
-  --color-main-shade-2: #6e6e6e;
+  --color-main-shade-0: #959595;
+  --color-main-shade-1: #545454;
+  --color-main-shade-2: #1b1b1b;
   --color-main-shade-3: #000000;
   --text-family-sans: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   --text-family-mono: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
@@ -656,7 +656,7 @@ import {
   // Tokens
   css,
   raw
-} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
 #+END_SRC
 
 *** Color
@@ -1005,21 +1005,21 @@ This should leave us with the following files:
 #+BEGIN_SRC css
 
 :root {
-  --quarks-color-main: rgb(52, 141, 201);
-  --quarks-color-main-light-0: rgb(153, 187, 220);
-  --quarks-color-main-light-1: rgb(209, 223, 238);
-  --quarks-color-main-light-2: rgb(254, 254, 255);
-  --quarks-color-main-dark-0: rgb(37, 100, 142);
-  --quarks-color-main-dark-1: rgb(5, 14, 20);
-  --quarks-color-accent: rgb(141, 201, 52);
-  --quarks-color-accent-dark-0: rgb(100, 142, 37);
-  --quarks-color-accent-dark-1: rgb(14, 20, 5);
-  --quarks-color-highlight: rgb(201, 52, 141);
-  --quarks-color-highlight-dark-0: rgb(142, 37, 100);
-  --quarks-color-highlight-dark-1: rgb(20, 5, 14);
+  --quarks-color-main: rgb(52, 142, 201);
+  --quarks-color-main-light-0: rgb(125, 179, 220);
+  --quarks-color-main-light-1: rgb(189, 217, 238);
+  --quarks-color-main-light-2: rgb(253, 254, 255);
+  --quarks-color-main-dark-0: rgb(14, 52, 78);
+  --quarks-color-main-dark-1: rgb(0, 0, 0);
+  --quarks-color-accent: rgb(193, 100, 129);
+  --quarks-color-accent-dark-0: rgb(74, 35, 47);
+  --quarks-color-accent-dark-1: rgb(0, 0, 0);
+  --quarks-color-highlight: rgb(123, 145, 52);
+  --quarks-color-highlight-dark-0: rgb(44, 54, 14);
+  --quarks-color-highlight-dark-1: rgb(0, 0, 0);
   --quarks-text-body: Zilla Slab, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
   --quarks-text-headings: Rubik, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-  --quarks-text-code-0: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  --quarks-text-code: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
   --quarks-text-leading: 1.5;
   --quarks-text-leading-tight: 1.25;
   --quarks-text-leading-loose: 1.75;
@@ -1042,28 +1042,28 @@ This should leave us with the following files:
   --quarks-text-size-d-4: 0.1317em;
   --quarks-text-size-d-5: 0.08779em;
   --quarks-text-size-d-6: 0.05853em;
-  --quarks-content-measure-min: 48ch;
-  --quarks-content-measure-fragment-0: 49ch;
-  --quarks-content-measure-fragment-1: 51ch;
-  --quarks-content-measure-fragment-2: 54ch;
-  --quarks-content-measure-fragment-3: 57ch;
-  --quarks-content-measure-fragment-4: 63ch;
-  --quarks-content-measure-max: 72ch;
-  --quarks-content-spacing: 1ex;
-  --quarks-content-spacing-x-0: 1.5ex;
-  --quarks-content-spacing-x-1: 2.25ex;
-  --quarks-content-spacing-x-2: 3.375ex;
-  --quarks-content-spacing-x-3: 5.063ex;
-  --quarks-content-spacing-x-4: 7.594ex;
-  --quarks-content-spacing-x-5: 11.39ex;
-  --quarks-content-spacing-x-6: 17.09ex;
-  --quarks-content-spacing-d-0: 0.6667ex;
-  --quarks-content-spacing-d-1: 0.4444ex;
-  --quarks-content-spacing-d-2: 0.2963ex;
-  --quarks-content-spacing-d-3: 0.1975ex;
-  --quarks-content-spacing-d-4: 0.1317ex;
-  --quarks-content-spacing-d-5: 0.08779ex;
-  --quarks-content-spacing-d-6: 0.05853ex;
+  --quarks-content-line: 72ch;
+  --quarks-content-line-fragment-0: 63ch;
+  --quarks-content-line-fragment-1: 57ch;
+  --quarks-content-line-fragment-2: 54ch;
+  --quarks-content-line-fragment-3: 51ch;
+  --quarks-content-line-fragment-4: 49ch;
+  --quarks-content-line-min: 48ch;
+  --quarks-content-spacing: 17.09ex;
+  --quarks-content-spacing-x-0: 11.39ex;
+  --quarks-content-spacing-x-1: 7.594ex;
+  --quarks-content-spacing-x-2: 5.063ex;
+  --quarks-content-spacing-x-3: 3.375ex;
+  --quarks-content-spacing-x-4: 2.25ex;
+  --quarks-content-spacing-x-5: 1.5ex;
+  --quarks-content-spacing-x-6: 1ex;
+  --quarks-content-spacing-d-0: 1.5ex;
+  --quarks-content-spacing-d-1: 2.25ex;
+  --quarks-content-spacing-d-2: 3.375ex;
+  --quarks-content-spacing-d-3: 5.063ex;
+  --quarks-content-spacing-d-4: 7.594ex;
+  --quarks-content-spacing-d-5: 11.39ex;
+  --quarks-content-spacing-d-6: 17.09ex;
 }
 #+END_SRC
 
@@ -1193,7 +1193,7 @@ import {
   units,
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
 
 // Color
 
@@ -1334,7 +1334,7 @@ import {
   systemfonts,
   update,
   units,
-} from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
 #+END_SRC
 
 **** Color
@@ -1450,7 +1450,7 @@ export const Spacing = Content.bind(null, ex, ex);
 **** 1. import the formulas and define settings
 
 #+BEGIN_SRC js
-import { create } from "https://x.nest.land/quarksuite:core@0.1.1/modular_scale.js";
+import { create } from "https://x.nest.land/quarksuite:core@0.2.0/modular_scale.js";
 import { Palette, Stack, Size, Measure, Spacing } from "./config.js";
 
 // Settings
@@ -1486,7 +1486,7 @@ import { exists } from "https://deno.land/std@0.92.0/fs/exists.ts";
 import {
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.1.1/design_tokens.js";
+} from "https://x.nest.land/quarksuite:core@0.2.0/design_tokens.js";
 import { default as dict } from "./dict.js";
 #+END_SRC
 
