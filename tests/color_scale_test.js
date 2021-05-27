@@ -1,5 +1,5 @@
-// [[file:../README.org::*Color Palette Assertions][Color Palette Assertions:1]]
-import { shades, tints, tones } from "../color_palette.js";
+// [[file:../README.org::*Color Scale Assertions][Color Scale Assertions:1]]
+import { shades, tints, tones } from "../color_scale.js";
 
 import {
   assertEquals,
@@ -38,4 +38,4 @@ Deno.test("SPEC shades: can generate shades", function () {
     "#000000",
   ]);
 });
-// Color Palette Assertions:1 ends here
+// Color Scale Assertions:1 ends here

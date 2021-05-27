@@ -1,11 +1,11 @@
-// [[file:README.org::*Palette Creation (=color_palette.js=)][Palette Creation (=color_palette.js=):1]]
+// [[file:README.org::*Color Scales (=color_scale.js=)][Color Scales (=color_scale.js=):1]]
 import { mix } from "./color_mix.js";
 
 const generate = (color, target, contrast, count) =>
   Array.from(Array(count).fill(color)).map((base, index) =>
     mix(contrast - (contrast / count) * index, target, base)
   );
-// Palette Creation (=color_palette.js=):1 ends here
+// Color Scales (=color_scale.js=):1 ends here
 
 // [[file:README.org::*tints][tints:1]]
 import { pipe } from "./utilities.js";

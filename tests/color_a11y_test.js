@@ -1,6 +1,6 @@
 // [[file:../README.org::*Color Accessibility Assertions][Color Accessibility Assertions:1]]
 import { clrs, contrast } from "../color_a11y.js";
-import { shades, tints } from "../color_palette.js";
+import { shades, tints } from "../color_scale.js";
 
 import {
   assertEquals,

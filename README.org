@@ -18,7 +18,8 @@ Other appendages of QuarkSuite include:
 + Quarks System Development Environment (QSDE): A complete development environment for design system
   authoring and management (TBD)
 
-If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for Quarksuite 1]].
+If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for Quarksuite
+1]].
 
 * Table of Contents                                                   :TOC@6:
 - [[#summary][Summary]]
@@ -138,13 +139,13 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#tests-4][Tests]]
           - [[#color-scheme-generation-assertions][Color Scheme Generation Assertions]]
           - [[#color-scheme-generation-results][Color Scheme Generation Results]]
-      - [[#palette-creation-color_palettejs][Palette Creation (=color_palette.js=)]]
+      - [[#color-scales-color_scalejs][Color Scales (=color_scale.js=)]]
         - [[#tints][tints]]
         - [[#tones][tones]]
         - [[#shades][shades]]
         - [[#tests-5][Tests]]
-          - [[#color-palette-assertions][Color Palette Assertions]]
-          - [[#color-palette-results][Color Palette Results]]
+          - [[#color-scale-assertions][Color Scale Assertions]]
+          - [[#color-scale-results][Color Scale Results]]
       - [[#accessibility-color_a11yjs][Accessibility (=color_a11y.js=)]]
         - [[#clrs][clrs]]
         - [[#contrast][contrast]]
@@ -671,7 +672,7 @@ includes the following modules:
   - =color_adjust.js=: color property adjustment functions
   - =color_mix.js=: color mixing function
   - =color_scheme.js=: color scheme creation functions
-  - =color_palette.js=: color palette variant functions
+  - =color_scale.js=: color palette variant functions
   - =color_a11y.js=: color accessibility functions
 
 Let's set up our palette.
@@ -1547,8 +1548,8 @@ export * from "./design_tokens.js";
 
 *** Utilities (=utilities.js=)
 
-The Quarks System Core rests on a functional foundation. It uses a data-last architecture and the following
-utilities are designed to take full advantage of this decision.
+The Quarks System Core rests on a functional base. It uses a data-last architecture and the
+following utilities are designed to take full advantage of this decision.
 
 **** compose
 
@@ -1747,7 +1748,7 @@ export * from "./color_convert.js";
 export * from "./color_adjust.js";
 export * from "./color_mix.js";
 export * from "./color_scheme.js";
-export * from "./color_palette.js";
+export * from "./color_scale.js";
 export * from "./color_a11y.js";
 #+END_SRC
 
@@ -3548,9 +3549,9 @@ test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (86m
 
 #+end_src
 
-**** Palette Creation (=color_palette.js=)
+**** Color Scales (=color_scale.js=)
 
-A color palette isn't complete without contrast, so we'll finish with tints, tones, and shades.
+Color scales are useful for extending a base palette with variants.
 
 + Tints: any color mixed with pure white
 + Tones: any color mixed with pure gray
@@ -3558,7 +3559,7 @@ A color palette isn't complete without contrast, so we'll finish with tints, ton
 
 First, I'm setting up a helper for generating my variants.
 
-#+BEGIN_SRC js :tangle "./color_palette.js" :comments link
+#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
 import { mix } from "./color_mix.js";
 
 const generate = (color, target, contrast, count) =>
@@ -3574,7 +3575,7 @@ const generate = (color, target, contrast, count) =>
 + =contrast: number=: contrast between generated values (as a percentage)
 + =color: string=: the base color to generate tints from
 
-#+BEGIN_SRC js :tangle "./color_palette.js" :comments link
+#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
 import { pipe } from "./utilities.js";
 import { extract } from "./internals/color/format/hwb.js";
 import { hwb } from "./color_convert.js";
@@ -3621,7 +3622,7 @@ export const tints = (
 + =contrast: number=: contrast between generated values (as a percentage)
 + =color: string=: the base color to generate tones from
 
-#+BEGIN_SRC js :tangle "./color_palette.js" :comments link
+#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
 /**
  * Generates tones from any valid CSS color.
  *
@@ -3670,7 +3671,7 @@ export const tones = (
 + =contrast: number=: contrast between generated values (as a percentage)
 + =color: string=: the base color to generate shades from
 
-#+BEGIN_SRC js :tangle "./color_palette.js" :comments link
+#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
 /**
  * Generates shades from any valid CSS color.
  *
@@ -3707,10 +3708,10 @@ export const shades = (
 
 ***** Tests
 
-****** Color Palette Assertions
+****** Color Scale Assertions
 
-#+BEGIN_SRC js :tangle "./tests/color_palette_test.js" :comments link
-import { shades, tints, tones } from "../color_palette.js";
+#+BEGIN_SRC js :tangle "./tests/color_scale_test.js" :comments link
+import { shades, tints, tones } from "../color_scale.js";
 
 import {
   assertEquals,
@@ -3751,7 +3752,7 @@ Deno.test("SPEC shades: can generate shades", function () {
 });
 #+END_SRC
 
-****** Color Palette Results
+****** Color Scale Results
 
 #+BEGIN_SRC shell
 printf '%s\n' (NO_COLOR=true deno test ./tests/color_palette_test.js)
@@ -3924,7 +3925,7 @@ ensure the usability of your palette against the actual context of how it'll be 
 
 #+BEGIN_SRC js :tangle "./tests/color_a11y_test.js" :comments link
 import { clrs, contrast } from "../color_a11y.js";
-import { shades, tints } from "../color_palette.js";
+import { shades, tints } from "../color_scale.js";
 
 import {
   assertEquals,
@@ -4806,7 +4807,7 @@ export const styl = (dict) =>
 import { css, less, sass, styl } from "../output_css.js";
 import { clrs } from "../color_a11y.js";
 import { triadic } from "../color_scheme.js";
-import { shades, tints } from "../color_palette.js";
+import { shades, tints } from "../color_scale.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -5053,7 +5054,7 @@ export const yaml = (dict) =>
 import { raw, yaml } from "../export_data.js";
 import { clrs } from "../color_a11y.js";
 import { triadic } from "../color_scheme.js";
-import { shades, tints } from "../color_palette.js";
+import { shades, tints } from "../color_scale.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -5237,7 +5238,7 @@ export const styledict = (dict) =>
 import { styledict, tailwind } from "../transform_data.js";
 import { clrs } from "../color_a11y.js";
 import { triadic } from "../color_scheme.js";
-import { shades, tints } from "../color_palette.js";
+import { shades, tints } from "../color_scale.js";
 
 import { assertEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -7947,7 +7948,7 @@ import {
   normalize,
 } from "./setup.js";
 
-function parseOklab(oklab) {
+export function parseOklab(oklab) {
   const [l, c, h, alpha] = oklab;
 
   // Convert values back to their raw Oklab form
@@ -7992,8 +7993,8 @@ export function rgb(oklab) {
   const [r, g, b, alpha] = calcLinearRGB(oklab);
 
   const [R, G, B] = [r, g, b]
-        .map((V) => (V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055))
-        .map((V) => normalize(0, calcChannelFromFraction(V), 255));
+    .map((V) => (V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055))
+    .map((V) => normalize(0, calcChannelFromFraction(V), 255));
 
   const A = (alpha && (alpha ?? 1)) || 1;
 

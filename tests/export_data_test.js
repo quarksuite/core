@@ -2,7 +2,7 @@
 import { raw, yaml } from "../export_data.js";
 import { clrs } from "../color_a11y.js";
 import { triadic } from "../color_scheme.js";
-import { shades, tints } from "../color_palette.js";
+import { shades, tints } from "../color_scale.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
