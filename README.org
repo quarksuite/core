@@ -299,7 +299,7 @@ Keep in mind that the core is /not/ bundled or minified. I leave that to your ow
 If you only want to try things out, paste the following line in the console of your preferred development browser.
 
 #+BEGIN_SRC js
-const quarks = await import("https://x.nest.land/quarksuite:core@0.1.1/mod.js");
+const quarks = await import("https://x.nest.land/quarksuite:core@0.2.0/mod.js");
 #+END_SRC
 
 Execute it, and now you have access to every bit of the core to play with once it loads.
@@ -313,7 +313,7 @@ For modern v8 environments, there's nothing to install. All you need is the pack
 You can import the whole library under a namespace or pick out the functions you need.
 
 #+BEGIN_SRC js
-import * as quarks from "https://x.nest.land/quarksuite:core@0.1.1/mod.js";
+import * as quarks from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
 #+END_SRC
 
 ** Modular
@@ -326,7 +326,7 @@ import {
   triadic
   tints,
   shades
-} from "https://x.nest.land/quarksuite:core@0.1.1/color.js";
+} from "https://x.nest.land/quarksuite:core@0.2.0/color.js";
 #+END_SRC
 
 ** Webpack/Rollup
@@ -1049,21 +1049,21 @@ This should leave us with the following files:
   --quarks-content-line-fragment-3: 51ch;
   --quarks-content-line-fragment-4: 49ch;
   --quarks-content-line-min: 48ch;
-  --quarks-content-spacing: 17.09ex;
-  --quarks-content-spacing-x-0: 11.39ex;
-  --quarks-content-spacing-x-1: 7.594ex;
-  --quarks-content-spacing-x-2: 5.063ex;
-  --quarks-content-spacing-x-3: 3.375ex;
-  --quarks-content-spacing-x-4: 2.25ex;
-  --quarks-content-spacing-x-5: 1.5ex;
-  --quarks-content-spacing-x-6: 1ex;
-  --quarks-content-spacing-d-0: 1.5ex;
-  --quarks-content-spacing-d-1: 2.25ex;
-  --quarks-content-spacing-d-2: 3.375ex;
-  --quarks-content-spacing-d-3: 5.063ex;
-  --quarks-content-spacing-d-4: 7.594ex;
-  --quarks-content-spacing-d-5: 11.39ex;
-  --quarks-content-spacing-d-6: 17.09ex;
+  --quarks-content-spacing: 1ex;
+  --quarks-content-spacing-x-0: 1.5ex;
+  --quarks-content-spacing-x-1: 2.25ex;
+  --quarks-content-spacing-x-2: 3.375ex;
+  --quarks-content-spacing-x-3: 5.063ex;
+  --quarks-content-spacing-x-4: 7.594ex;
+  --quarks-content-spacing-x-5: 11.39ex;
+  --quarks-content-spacing-x-6: 17.09ex;
+  --quarks-content-spacing-d-0: 0.6667ex;
+  --quarks-content-spacing-d-1: 0.4444ex;
+  --quarks-content-spacing-d-2: 0.2963ex;
+  --quarks-content-spacing-d-3: 0.1975ex;
+  --quarks-content-spacing-d-4: 0.1317ex;
+  --quarks-content-spacing-d-5: 0.08779ex;
+  --quarks-content-spacing-d-6: 0.05853ex;
 }
 #+END_SRC
 
@@ -1074,38 +1074,36 @@ This should leave us with the following files:
   "quarks": {
     "color": {
       "main": {
-        "base": "rgb(52, 141, 201)",
+        "base": "rgb(52, 142, 201)",
         "light": [
-          "rgb(153, 187, 220)",
-          "rgb(209, 223, 238)",
-          "rgb(254, 254, 255)"
+          "rgb(125, 179, 220)",
+          "rgb(189, 217, 238)",
+          "rgb(253, 254, 255)"
         ],
         "dark": [
-          "rgb(37, 100, 142)",
-          "rgb(5, 14, 20)"
+          "rgb(14, 52, 78)",
+          "rgb(0, 0, 0)"
         ]
       },
       "accent": {
-        "base": "rgb(141, 201, 52)",
+        "base": "rgb(193, 100, 129)",
         "dark": [
-          "rgb(100, 142, 37)",
-          "rgb(14, 20, 5)"
+          "rgb(74, 35, 47)",
+          "rgb(0, 0, 0)"
         ]
       },
       "highlight": {
-        "base": "rgb(201, 52, 141)",
+        "base": "rgb(123, 145, 52)",
         "dark": [
-          "rgb(142, 37, 100)",
-          "rgb(20, 5, 14)"
+          "rgb(44, 54, 14)",
+          "rgb(0, 0, 0)"
         ]
       }
     },
     "text": {
       "body": "Zilla Slab, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
       "headings": "Rubik, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-      "code": [
-        "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace"
-      ],
+      "code": "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
       "leading": {
         "base": 1.5,
         "tight": 1.25,
@@ -1140,16 +1138,16 @@ This should leave us with the following files:
       }
     },
     "content": {
-      "measure": {
-        "min": "48ch",
+      "line": {
+        "base": "72ch",
         "fragment": [
-          "49ch",
-          "51ch",
-          "54ch",
+          "63ch",
           "57ch",
-          "63ch"
+          "54ch",
+          "51ch",
+          "49ch"
         ],
-        "max": "72ch"
+        "min": "48ch"
       },
       "spacing": {
         "base": "1ex",
@@ -1472,7 +1470,10 @@ export default {
       style: { extralight: 100, regular: 400, bold: 700, black: 900 },
       size: Size(scale),
     },
-    content: { line: Measure(48, 72, scale), spacing: Spacing(scale) },
+    content: {
+      line: Measure(48, 72, scale),
+      spacing: Spacing(scale.reverse()),
+    },
   },
 };
 #+END_SRC
