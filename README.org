@@ -299,7 +299,7 @@ Keep in mind that the core is /not/ bundled or minified. I leave that to your ow
 If you only want to try things out, paste the following line in the console of your preferred development browser.
 
 #+BEGIN_SRC js
-const quarks = await import("https://x.nest.land/quarksuite:core@0.2.0/mod.js");
+const quarks = await import("https://x.nest.land/quarksuite:core@0.2.1/mod.js");
 #+END_SRC
 
 Execute it, and now you have access to every bit of the core to play with once it loads.
@@ -313,7 +313,7 @@ For modern v8 environments, there's nothing to install. All you need is the pack
 You can import the whole library under a namespace or pick out the functions you need.
 
 #+BEGIN_SRC js
-import * as quarks from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
+import * as quarks from "https://x.nest.land/quarksuite:core@0.2.1/mod.js";
 #+END_SRC
 
 ** Modular
@@ -326,7 +326,7 @@ import {
   triadic
   tints,
   shades
-} from "https://x.nest.land/quarksuite:core@0.2.0/color.js";
+} from "https://x.nest.land/quarksuite:core@0.2.1/color.js";
 #+END_SRC
 
 ** Webpack/Rollup
@@ -387,7 +387,7 @@ Access API]].
         systemfonts,
         tints,
         units,
-      } from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
+      } from "https://x.nest.land/quarksuite:core@0.2.1/mod.js";
 
       // Palette
       const main = hex("gainsboro");
@@ -462,7 +462,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.1/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -553,7 +553,7 @@ import {
   systemfonts,
   tints,
   units,
-} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.1/mod.js";
 
 // Palette
 const main = hex("gainsboro");
@@ -656,7 +656,7 @@ import {
   // Tokens
   css,
   raw
-} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.1/mod.js";
 #+END_SRC
 
 *** Color
@@ -1191,7 +1191,7 @@ import {
   units,
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.1/mod.js";
 
 // Color
 
@@ -1332,7 +1332,7 @@ import {
   systemfonts,
   update,
   units,
-} from "https://x.nest.land/quarksuite:core@0.2.0/mod.js";
+} from "https://x.nest.land/quarksuite:core@0.2.1/mod.js";
 #+END_SRC
 
 **** Color
@@ -1448,7 +1448,7 @@ export const Spacing = Content.bind(null, ex, ex);
 **** 1. import the formulas and define settings
 
 #+BEGIN_SRC js
-import { create } from "https://x.nest.land/quarksuite:core@0.2.0/modular_scale.js";
+import { create } from "https://x.nest.land/quarksuite:core@0.2.1/modular_scale.js";
 import { Palette, Stack, Size, Measure, Spacing } from "./config.js";
 
 // Settings
@@ -1487,7 +1487,7 @@ import { exists } from "https://deno.land/std@0.92.0/fs/exists.ts";
 import {
   css,
   raw,
-} from "https://x.nest.land/quarksuite:core@0.2.0/design_tokens.js";
+} from "https://x.nest.land/quarksuite:core@0.2.1/design_tokens.js";
 import { default as dict } from "./dict.js";
 #+END_SRC
 
@@ -2346,7 +2346,7 @@ export function hue(offset, color) {
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `oklab(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`,
     color,
   );
 }

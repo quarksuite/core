@@ -74,7 +74,7 @@ export function hue(offset, color) {
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return preserve(
-    A === 1 ? `oklab(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`,
+    A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`,
     color,
   );
 }

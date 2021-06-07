@@ -5,11 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v021---2020-06-07][v0.2.1 - 2020-06-07]]
+  - [[#fixed][Fixed]]
+    - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
   - [[#added][Added]]
     - [[#color-conversion][color conversion]]
   - [[#changed][Changed]]
-    - [[#color-adjustment][color adjustment]]
+    - [[#color-adjustment-1][color adjustment]]
     - [[#color-mixture][color mixture]]
     - [[#color-schemes][color schemes]]
     - [[#color-palette-color-scale][+color palette+ color scale]]
@@ -27,6 +30,15 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v0.2.1 - 2020-06-07
+
+** Fixed
+
+*** color adjustment
+
++ bug where the presence of alpha component was implemented in standard LCh(ab) instead of Oklab,
+  which rendered the color adjustment achromatic
 
 * v0.2.0 - 2020-05-27
 
