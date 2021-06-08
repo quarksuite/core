@@ -103,7 +103,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#utilities-assertions][Utilities Assertions]]
         - [[#utilities-results][Utilities Results]]
     - [[#color-colorjs][Color (=color.js=)]]
-      - [[#format-conversion-color_convertjs][Format Conversion (=color_convert.js=)]]
+      - [[#format-conversion][Format Conversion]]
         - [[#hex][hex]]
         - [[#rgb][rgb]]
         - [[#hsl][hsl]]
@@ -115,7 +115,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#tests-1][Tests]]
           - [[#color-format-conversion-assertions][Color Format Conversion Assertions]]
           - [[#color-format-conversion-results][Color Format Conversion Results]]
-      - [[#properties-adjustment-color_adjustjs][Properties Adjustment (=color_adjust.js=)]]
+      - [[#properties-adjustment][Properties Adjustment]]
         - [[#hue][hue]]
         - [[#saturation][saturation]]
         - [[#lightness][lightness]]
@@ -123,12 +123,12 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#tests-2][Tests]]
           - [[#color-adjustment-assertions][Color Adjustment Assertions]]
           - [[#color-adjustment-results][Color Adjustment Results]]
-      - [[#mixing-color_mixjs][Mixing (=color_mix.js=)]]
+      - [[#color-mixture][Color Mixture]]
         - [[#mix][mix]]
         - [[#tests-3][Tests]]
-          - [[#color-mixing-assertions][Color Mixing Assertions]]
-          - [[#color-mixing-results][Color Mixing Results]]
-      - [[#scheme-generation-color_schemejs][Scheme Generation (=color_scheme.js=)]]
+          - [[#color-mixture-assertions][Color Mixture Assertions]]
+          - [[#color-mixture-results][Color Mixture Results]]
+      - [[#scheme-generation][Scheme Generation]]
         - [[#complementary][complementary]]
         - [[#analogous][analogous]]
         - [[#splitcomplementary][splitComplementary]]
@@ -139,14 +139,14 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#tests-4][Tests]]
           - [[#color-scheme-generation-assertions][Color Scheme Generation Assertions]]
           - [[#color-scheme-generation-results][Color Scheme Generation Results]]
-      - [[#color-scales-color_scalejs][Color Scales (=color_scale.js=)]]
+      - [[#color-scales][Color Scales]]
         - [[#tints][tints]]
         - [[#tones][tones]]
         - [[#shades][shades]]
         - [[#tests-5][Tests]]
           - [[#color-scale-assertions][Color Scale Assertions]]
           - [[#color-scale-results][Color Scale Results]]
-      - [[#accessibility-color_a11yjs][Accessibility (=color_a11y.js=)]]
+      - [[#color-accessibility][Color Accessibility]]
         - [[#clrs][clrs]]
         - [[#contrast][contrast]]
         - [[#tests-6][Tests]]
@@ -167,7 +167,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#modular-scale-assertions][Modular Scale Assertions]]
         - [[#modular-scale-results][Modular Scale Results]]
     - [[#design-token-output-formats-design_tokensjs][Design Token Output Formats (=design_tokens.js=)]]
-      - [[#css-output_cssjs][CSS (=output_css.js=)]]
+      - [[#css-design_tokensjs][CSS (=design_tokens.js=)]]
         - [[#css][css]]
         - [[#sass][sass]]
         - [[#less][less]]
@@ -175,13 +175,13 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#tests-9][Tests]]
           - [[#css-format-assertions][CSS Format Assertions]]
           - [[#css-format-results][CSS Format Results]]
-      - [[#data-export-export_datajs][Data Export (=export_data.js=)]]
+      - [[#data-export-design_tokensjs][Data Export (=design_tokens.js=)]]
         - [[#raw][raw]]
         - [[#yaml][yaml]]
         - [[#tests-10][Tests]]
           - [[#data-export-assertions][Data Export Assertions]]
           - [[#data-export-results][Data Export Results]]
-      - [[#data-transforms-transform_datajs][Data Transforms (=transform_data.js=)]]
+      - [[#data-transforms-design_tokensjs][Data Transforms (=design_tokens.js=)]]
         - [[#tailwind][tailwind]]
         - [[#styledict][styledict]]
         - [[#tests-11][Tests]]
@@ -190,41 +190,38 @@ If you're interested in how this project evolved, feel free to [[https://github.
   - [[#internals][Internals]]
     - [[#error-handling-internalserrorjs][Error Handling (=internals/error.js=)]]
     - [[#color-2][Color]]
-      - [[#formats-internalscolorformatindexjs][Formats (=internals/color/format/index.js=)]]
-        - [[#rgb-hex-internalscolorformathexjs][RGB Hex (=internals/color/format/hex.js=)]]
+      - [[#formats-internalscolorformatsjs][Formats (=internals/color/formats.js=)]]
+        - [[#rgb-hex][RGB Hex]]
           - [[#hex-validator][Hex Validator]]
           - [[#hex-value-extractor][Hex Value Extractor]]
-        - [[#w3c-x11-internalscolorformatnamedjs][W3C-X11 (=internals/color/format/named.js=)]]
-        - [[#functional-rgb-internalscolorformatrgbjs][Functional RGB (=internals/color/format/rgb.js=)]]
+        - [[#w3c-x11][W3C-X11]]
+        - [[#functional-rgb][Functional RGB]]
           - [[#rgb-validator][RGB Validator]]
           - [[#rgb-extractor][RGB Extractor]]
-        - [[#functional-hsl-internalscolorformathsljs][Functional HSL (=internals/color/format/hsl.js=)]]
+        - [[#functional-hsl][Functional HSL]]
           - [[#hsl-validator][HSL Validator]]
           - [[#hsl-extractor][HSL Extractor]]
-        - [[#device-cmyk-internalscolorformatdevice-cmykjs][Device CMYK (=internals/color/format/device-cmyk.js=)]]
+        - [[#device-cmyk][Device CMYK]]
           - [[#cmyk-validator][CMYK Validator]]
           - [[#cmyk-extractor][CMYK Extractor]]
-        - [[#functional-hwb-internalscolorformathwbjs][Functional HWB (=internals/color/format/hwb.js=)]]
+        - [[#functional-hwb][Functional HWB]]
           - [[#hwb-validator][HWB Validator]]
           - [[#hwb-extractor][HWB Extractor]]
-        - [[#functional-cielab-internalscolorformatlabjs][Functional CIELAB (=internals/color/format/lab.js=)]]
+        - [[#functional-cielab][Functional CIELAB]]
           - [[#cielab-validator][CIELAB Validator]]
           - [[#cielab-extractor][CIELAB Extractor]]
-        - [[#functional-cielchab-internalscolorformatlchjs][Functional CIELCh(ab) (=internals/color/format/lch.js=)]]
+        - [[#functional-cielchab][Functional CIELCh(ab)]]
           - [[#cielchab-validator][CIELCh(ab) Validator]]
           - [[#cielchab-extractor][CIELCh(ab) Extractor]]
-        - [[#oklab-lch-internalscolorformatoklabjs][Oklab (LCh) (=internals/color/format/oklab.js=)]]
+        - [[#oklab-lch][Oklab (LCh)]]
           - [[#oklab-lch-validator][Oklab (LCh) Validator]]
           - [[#oklab-lch-extractor][Oklab (LCh) Extractor]]
-      - [[#conversion-internalscolorconvertindexjs][Conversion (=internals/color/convert/index.js=)]]
-        - [[#setup-internalscolorconvertsetupjs][Setup (=internals/color/convert/setup.js=)]]
-          - [[#hex-rgb-fragments][Hex RGB Fragments]]
-          - [[#math][Math]]
-        - [[#rgb-hex-conversion-internalscolorconverthexjs][RGB Hex Conversion (=internals/color/convert/hex.js=)]]
+      - [[#conversion-internalscolorconversionsjs][Conversion (=internals/color/conversions.js=)]]
+        - [[#rgb-hex-conversion][RGB Hex Conversion]]
           - [[#rgb-hex---functional-rgb-hexrgb][RGB Hex -> Functional RGB (=hex.rgb=)]]
-        - [[#w3c-x11-conversion-internalscolorconvertnamedjs][W3C-X11 Conversion (=internals/color/convert/named.js=)]]
+        - [[#w3c-x11-conversion][W3C-X11 Conversion]]
           - [[#rgb-hex---w3c-x11][RGB Hex <- W3C-X11]]
-        - [[#functional-rgb-conversion-internalscolorconvertrgbjs][Functional RGB Conversion (=internals/color/convert/rgb.js=)]]
+        - [[#functional-rgb-conversion][Functional RGB Conversion]]
           - [[#rgb-conversion-setup][RGB Conversion Setup]]
           - [[#rgb-hex---functional-rgb-rgbhex][RGB Hex <- Functional RGB (=rgb.hex=)]]
           - [[#functional-rgb---functional-hsl-rgbhsl][Functional RGB -> Functional HSL (=rgb.hsl=)]]
@@ -232,19 +229,20 @@ If you're interested in how this project evolved, feel free to [[https://github.
           - [[#functional-rgb---functional-hwb-rgbhwb][Functional RGB -> Functional HWB (=rgb.hwb=)]]
           - [[#functional-rgb---functional-cielab-rgblab][Functional RGB -> Functional CIELAB (=rgb.lab=)]]
           - [[#functional-rgb---oklab-lch-rgboklab][Functional RGB -> Oklab (LCh) (=rgb.oklab=)]]
-        - [[#functional-hsl-conversion-internalscolorconverthsljs][Functional HSL Conversion (=internals/color/convert/hsl.js=)]]
+        - [[#functional-hsl-conversion][Functional HSL Conversion]]
           - [[#functional-rgb---functional-hsl-hslrgb][Functional RGB <- Functional HSL (=hsl.rgb=)]]
-        - [[#device-cmyk-conversion-internalscolorconvertdevice-cmykjs][Device CMYK Conversion (=internals/color/convert/device-cmyk.js=)]]
+        - [[#device-cmyk-conversion][Device CMYK Conversion]]
           - [[#functional-rgb---device-cmyk-cmykrgb][Functional RGB <- Device CMYK (=cmyk.rgb=)]]
-        - [[#functional-hwb-conversion-internalscolorconverthwbjs][Functional HWB Conversion (=internals/color/convert/hwb.js=)]]
+        - [[#functional-hwb-conversion][Functional HWB Conversion]]
           - [[#functional-rgb---functional-hwb-hwbrgb][Functional RGB <- Functional HWB (=hwb.rgb=)]]
-        - [[#functional-cielab-conversion-internalscolorconvertlabjs][Functional CIELAB Conversion (=internals/color/convert/lab.js=)]]
+        - [[#functional-cielab-conversion][Functional CIELAB Conversion]]
           - [[#cielab-conversion-setup][CIELAB Conversion Setup]]
           - [[#functional-rgb---functional-cielab-labrgb][Functional RGB <- Functional CIELAB (=lab.rgb=)]]
           - [[#functional-cielab---functional-cielchab-lablch][Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=)]]
-        - [[#functional-cielch-conversion-internalscolorconvertlchjs][Functional CIELCh Conversion (=internals/color/convert/lch.js=)]]
+        - [[#functional-cielch-conversion][Functional CIELCh Conversion]]
           - [[#functional-cielab---functional-cielchab-lchlab][Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)]]
-        - [[#oklab-lch-conversion-internalscolorconvertoklabjs][Oklab (LCh) Conversion (=internals/color/convert/oklab.js=)]]
+        - [[#oklab-lch-conversion][Oklab (LCh) Conversion]]
+      - [[#math-internalscolormathjs][Math (=internals/color/math.js=)]]
   - [[#data][Data]]
     - [[#color-3][Color]]
       - [[#w3c-x11-color-definitions-datacolorw3c-x11js][W3C X11 Color Definitions (=data/color/w3c-x11.js=)]]
@@ -1744,16 +1742,7 @@ Quarks System Core is designed to work with all valid CSS color formats (current
 color module provides utilities for conversion, modification, mixing, generating schemes, and
 creating palettes.
 
-#+BEGIN_SRC js :tangle "./color.js" :comments link
-export * from "./color_convert.js";
-export * from "./color_adjust.js";
-export * from "./color_mix.js";
-export * from "./color_scheme.js";
-export * from "./color_scale.js";
-export * from "./color_a11y.js";
-#+END_SRC
-
-**** Format Conversion (=color_convert.js=)
+**** Format Conversion
 
 The public conversion API is designed to abstract the internal =inputFormat.outputFormat= conversion
 utilities into a simple =outputFormat:: inputColor -> outputColor= conversion.
@@ -1765,7 +1754,7 @@ helpful error message if something goes wrong.
 
 To streamline the conversion process, I pass each format in the chain through as a sequence of keys.
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import * as format from "./internals/color/format/index.js";
 import * as convert from "./internals/color/convert/index.js";
 import { ErrorTemplate } from "./internals/error.js";
@@ -1846,7 +1835,7 @@ at the end of the chain. If it exists. Otherwise, it throws an error.
 + =hex: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to RGB hex.
  *
@@ -1878,7 +1867,7 @@ export function hex(color) {
 + =rgb: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to RGB.
  *
@@ -1910,7 +1899,7 @@ export function rgb(color) {
 + =hsl: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to HSL.
  *
@@ -1942,7 +1931,7 @@ export function hsl(color) {
 + =cmyk: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to CMYK
  *
@@ -1974,7 +1963,7 @@ export function cmyk(color) {
 + =hwb: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to HWB.
  *
@@ -2006,7 +1995,7 @@ export function hwb(color) {
 + =lab: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to CIELAB.
  *
@@ -2038,7 +2027,7 @@ export function lab(color) {
 + =lch: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to CIELCh(ab).
  *
@@ -2070,7 +2059,7 @@ export function lch(color) {
 + =oklab: (color: string) => string=
 + =color: string=: the input color to convert
 
-#+BEGIN_SRC js :tangle "./color_convert.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that converts any valid CSS color to _non-standard_ Oklab (LCh).
  *
@@ -2107,8 +2096,8 @@ plugging some values to test the conversion chaining and error reporting.
 
 ****** Color Format Conversion Assertions
 
-#+BEGIN_SRC js :tangle "./tests/color_convert_test.js" :comments link
-import { cmyk, hex, hsl, hwb, lab, lch, oklab, rgb } from "../color_convert.js";
+#+BEGIN_SRC js :tangle "./tests/color_conversion_test.js" :comments link
+import { cmyk, hex, hsl, hwb, lab, lch, oklab, rgb } from "../color.js";
 
 import {
   assertEquals,
@@ -2173,7 +2162,7 @@ Deno.test(`EDGE: rejects invalid or unsupported color formats`, function () {
 ****** Color Format Conversion Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./tests/color_convert_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_conversion_test.js)
 #+END_SRC
 
 #+NAME: conversion-test
@@ -2234,7 +2223,7 @@ test result: ok. 50 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (115
 
 #+end_src
 
-**** Properties Adjustment (=color_adjust.js=)
+**** Properties Adjustment
 
 After ensuring that color conversion is rock solid, the possibilities for adjustment open up. The
 main ways to adjust a color include:
@@ -2256,9 +2245,9 @@ and lightness predictions which led me to implement Oklab as the color space for
 I also want to be able to preserve the input format of a color after adjustment so /you/ won't have to
 think about it when you use these functions.
 
-#+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import * as format from "./internals/color/format/index.js";
-import * as revert from "./color_convert.js";
+import * as revert from "./color.js";
 
 // Secondary format validation
 export const preserve = (target, color) =>
@@ -2291,13 +2280,13 @@ Each of the adjustment functions follow a similar pattern.
 First the input color is converted to Oklab (LCh) and its values are extracted. The relevant property is
 changed, and the color is reverted to its original format.
 
-#+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import { extract } from "./internals/color/format/lch.js";
 import {
   correctHueClockwise,
   correctHueCounterClockwise,
 } from "./internals/color/convert/setup.js";
-import { lch, oklab } from "./color_convert.js";
+import { lch, oklab } from "./color.js";
 import { pipe } from "./utilities.js";
 
 /**
@@ -2365,7 +2354,7 @@ I added a hue correction step so that any adjustment values are acceptable.
 
 Saturation, lightness, and alpha are bound by a linear range of  =0-100%=.
 
-#+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import {
   calcFractionFromPercent,
   calcPercentFromFraction,
@@ -2436,7 +2425,7 @@ export const s = saturation;
 + =amount: number=: the amount to adjust lightness (as a percentage)
 + =color: string=: the color to adjust
 
-#+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that allows lightness/luminance adjustment of any valid CSS color.
  *
@@ -2500,7 +2489,7 @@ export const l = lightness;
 + =amount: number=: the amount to adjust transparency (as a percentage)
 + =color: string=: the color to adjust
 
-#+BEGIN_SRC js :tangle "./color_adjust.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function that allows alpha/transparency adjustment of any valid CSS color.
  *
@@ -2573,7 +2562,7 @@ import {
   sat,
   saturation,
   transparency,
-} from "../color_adjust.js";
+} from "../color.js";
 
 import {
   assertEquals,
@@ -2828,7 +2817,7 @@ test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (94m
 
 #+end_src
 
-**** Mixing (=color_mix.js=)
+**** Color Mixture
 
 ***** mix
 
@@ -2843,7 +2832,7 @@ valid CSS format.
 
 First, I import some helpers from other modules.
 
-#+BEGIN_SRC js :tangle "./color_mix.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import {
   calcFractionFromPercent,
   calcPercentFromFraction,
@@ -2851,8 +2840,8 @@ import {
 } from "./internals/color/convert/setup.js";
 import { extract } from "./internals/color/format/oklab.js";
 import { parseOklab } from "./internals/color/convert/oklab.js";
-import { oklab } from "./color_convert.js";
-import { preserve } from "./color_adjust.js";
+import { oklab } from "./color.js";
+import { preserve } from "./color.js";
 import { pipe } from "./utilities.js";
 
 const precision = significant.bind(null, 5);
@@ -2862,7 +2851,7 @@ const precision = significant.bind(null, 5);
 values. Not only is the math less complex, the mixtures are more accurate and account for the
 presence of an alpha component without additional operations.
 
-#+BEGIN_SRC js :tangle "./color_mix.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 function calcMixture(original, target, amount) {
   const [OL, Oa, Ob, Oalpha] = original;
   const [TL, Ta, Tb, Talpha] = target;
@@ -2882,7 +2871,7 @@ function calcMixture(original, target, amount) {
 Finally, the public function executes the mix. You can see here that the Oklab (LCh) is converted
 back to rectangular coordinates to apply the mixture formula and then reverted to its string data form.
 
-#+BEGIN_SRC js :tangle "./color_mix.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * A function for mixing colors of any valid CSS format.
  *
@@ -2943,10 +2932,10 @@ export function mix(amount, target, color) {
 
 ***** Tests
 
-****** Color Mixing Assertions
+****** Color Mixture Assertions
 
-#+BEGIN_SRC js :tangle "./tests/color_mix_test.js" :comments link
-import { mix } from "../color_mix.js";
+#+BEGIN_SRC js :tangle "./tests/color_mixture_test.js" :comments link
+import { mix } from "../color.js";
 
 import {
   assertEquals,
@@ -3067,10 +3056,10 @@ Deno.test("EDGE mix: throws error when either color is invalid", function () {
 });
 #+END_SRC
 
-****** Color Mixing Results
+****** Color Mixture Results
 
 #+BEGIN_SRC shell
-printf '%s\n' (NO_COLOR=true deno test ./tests/color_mix_test.js)
+printf '%s\n' (NO_COLOR=true deno test ./tests/color_mixture_test.js)
 #+END_SRC
 
 #+NAME: mix-test
@@ -3085,7 +3074,7 @@ test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (108m
 
 #+end_src
 
-**** Scheme Generation (=color_scheme.js=)
+**** Scheme Generation
 
 Color schemes are a way of adding more visual interest and tension to a design. The primary scheme
 configurations used in digital design include:
@@ -3115,8 +3104,8 @@ adjustments for the custom function.
 + =complementary: (color: string) => [string, string]=
 + =color: string=: the base color to generate from
 
-#+BEGIN_SRC js :tangle "./color_scheme.js" :comments link
-import { hue } from "./color_adjust.js";
+#+BEGIN_SRC js :tangle "./color.js" :comments link
+import { hue } from "./color.js";
 
 /**
  * Creates a complementary color scheme from any valid CSS color.
@@ -3143,7 +3132,7 @@ export const complementary = (color) => [hue(0, color), hue(180, color)];
 + =analogous: (color: string) => [string, string, string]=
 + =color: string=: the base color to generate from
 
-#+BEGIN_SRC js :tangle "./color_scheme.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * Creates an analogous color scheme from any valid CSS color.
  *
@@ -3173,7 +3162,7 @@ export const analogous = (color) => [
 + =splitComplementary: (color: string) => [string, string, string]=
 + =color: string=: the base color to generate from
 
-#+BEGIN_SRC js :tangle "./color_scheme.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * Creates a split complementary color scheme from any valid CSS color.
  *
@@ -3202,7 +3191,7 @@ export const splitComplementary = (color) => [
 + =triadic: (color: string) => [string, string, string]=
 + =color: string=: the base color to generate from
 
-#+BEGIN_SRC js :tangle "./color_scheme.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * Creates a triadic color scheme from any valid CSS color.
  *
@@ -3231,7 +3220,7 @@ export const triadic = (color) => [
 + =tetradic/dualComplementary: (color: string) => [string, string, string, string]=
 + =color: string=: the base color to generate from
 
-#+BEGIN_SRC js :tangle "./color_scheme.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * Creates a tetradic color scheme from any valid CSS color.
  *
@@ -3265,7 +3254,7 @@ export const dualComplementary = tetradic;
 + =square: (color: string) => [string, string, string, string]=
 + =color: string=: the base color to generate from
 
-#+BEGIN_SRC js :tangle "./color_scheme.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * Creates a square color scheme from any valid CSS color.
  *
@@ -3299,7 +3288,7 @@ export const square = (color) => [
   - =offset?: number=: an optional rotation offset for generated hues (does not change origin)
 + =color: string=: the base color to generate custom scheme
 
-#+BEGIN_SRC js :tangle "./color_scheme.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 function generate({ hues, arc, offset = 0 }, color) {
   const values = Array(offset ? hues - 1 : hues + 1).fill(arc);
   const half = Math.ceil(values.length / 2);
@@ -3371,7 +3360,7 @@ import {
   square,
   tetradic,
   triadic,
-} from "../color_scheme.js";
+} from "../color.js";
 
 import {
   assertEquals,
@@ -3550,7 +3539,7 @@ test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (86m
 
 #+end_src
 
-**** Color Scales (=color_scale.js=)
+**** Color Scales
 
 Color scales are useful for extending a base palette with variants. These include:
 
@@ -3560,8 +3549,8 @@ Color scales are useful for extending a base palette with variants. These includ
 
 First, I'm setting up a helper for generating scales.
 
-#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
-import { mix } from "./color_mix.js";
+#+BEGIN_SRC js :tangle "./color.js" :comments link
+import { mix } from "./color.js";
 
 const generate = (color, target, contrast, count) =>
   Array.from(Array(count).fill(color)).map((base, index) =>
@@ -3576,11 +3565,11 @@ const generate = (color, target, contrast, count) =>
 + =contrast: number=: contrast between generated values (as a percentage)
 + =color: string=: the base color to generate tints from
 
-#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import { pipe } from "./utilities.js";
 import { extract } from "./internals/color/format/hwb.js";
-import { hwb } from "./color_convert.js";
-import { preserve } from "./color_adjust.js";
+import { hwb } from "./color.js";
+import { preserve } from "./color.js";
 
 /**
  * Generates tints from any valid CSS color.
@@ -3623,7 +3612,7 @@ export const tints = (
 + =contrast: number=: contrast between generated values (as a percentage)
 + =color: string=: the base color to generate tones from
 
-#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * Generates tones from any valid CSS color.
  *
@@ -3672,7 +3661,7 @@ export const tones = (
 + =contrast: number=: contrast between generated values (as a percentage)
 + =color: string=: the base color to generate shades from
 
-#+BEGIN_SRC js :tangle "./color_scale.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 /**
  * Generates shades from any valid CSS color.
  *
@@ -3712,7 +3701,7 @@ export const shades = (
 ****** Color Scale Assertions
 
 #+BEGIN_SRC js :tangle "./tests/color_scale_test.js" :comments link
-import { shades, tints, tones } from "../color_scale.js";
+import { shades, tints, tones } from "../color.js";
 
 import {
   assertEquals,
@@ -3770,7 +3759,7 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (47ms
 
 #+end_src
 
-**** Accessibility (=color_a11y.js=)
+**** Color Accessibility
 
 Accessibility is a first-class concern for every modern web project. Quarks System Core
 addresses this vital aspect of digital design with the following tools.
@@ -3780,7 +3769,7 @@ addresses this vital aspect of digital design with the following tools.
 + =clrs: (color: string) => string=
 + =color: string=: a valid name for a swatch in the Colors project
 
-#+BEGIN_SRC js :tangle "./color_a11y.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import { ErrorTemplate } from "./internals/error.js";
 import { A11yColors } from "./data/color/a11y.js";
 
@@ -3841,14 +3830,14 @@ better default colors]] optimized for high contrast interfaces.
 QSC allows a hefty degree of flexibility in defining and generating your palettes. It also provides
 a necessary guardrail to keep color choices from running afoul of usability.
 
-#+BEGIN_SRC js :tangle "./color_a11y.js" :comments link
+#+BEGIN_SRC js :tangle "./color.js" :comments link
 import {
   calcFractionFromChannel,
   significant,
 } from "./internals/color/convert/setup.js";
 import { extract } from "./internals/color/format/rgb.js";
 import { pipe } from "./utilities.js";
-import { rgb } from "./color_convert.js";
+import { rgb } from "./color.js";
 
 const precision = significant.bind(null, 3);
 
@@ -3920,8 +3909,8 @@ ensure the usability of your palette against the actual context of how it'll be 
 ****** Color Accessibility Assertions
 
 #+BEGIN_SRC js :tangle "./tests/color_a11y_test.js" :comments link
-import { clrs, contrast } from "../color_a11y.js";
-import { shades, tints } from "../color_scale.js";
+import { clrs, contrast } from "../color.js";
+import { shades, tints } from "../color.js";
 
 import {
   assertEquals,
@@ -4634,13 +4623,7 @@ If you want to /write/ the tokens to your filesystem, use the native filesystem 
 JavaScript environment or a filesystem library of your choice.
 #+END_QUOTE
 
-#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
-export * from "./output_css.js";
-export * from "./export_data.js";
-export * from "./transform_data.js";
-#+END_SRC
-
-**** CSS (=output_css.js=)
+**** CSS (=design_tokens.js=)
 
 QuarkSuite is made from web technologies for the web platform, so CSS format support is
 essential. Whether you like it vanilla or swear by preprocessors, it's covered.
@@ -4648,7 +4631,7 @@ essential. Whether you like it vanilla or swear by preprocessors, it's covered.
 The output has mostly cosmetic differences between the formats, so I'll set up a general
 design token construction helper.
 
-#+BEGIN_SRC js :tangle "./output_css.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 const formatter = ({
   padding = "",
   prefix = "--",
@@ -4690,7 +4673,7 @@ object passed in, only returning when the value is found at the end of the chain
 + =css: (dict: object) => string=
 + =dict: object=: the dictionary to process
 
-#+BEGIN_SRC js :tangle "./output_css.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 /**
  * Transforms Quark System Dictionaries into CSS custom properties.
  *
@@ -4718,7 +4701,7 @@ export const css = (dict) => `\n:root {${construct({ padding: "  " }, dict)}}`;
 + =sass: (dict: object) => string=
 + =dict: object=: the dictionary to process
 
-#+BEGIN_SRC js :tangle "./output_css.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 /**
  * Transforms Quark System Dictionaries into Sass variables.
  *
@@ -4746,7 +4729,7 @@ export const sass = (dict) => construct({ prefix: "$" }, dict);
 + =less: (dict: object) => string=
 + =dict: object=: the dictionary to process
 
-#+BEGIN_SRC js :tangle "./output_css.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 /**
  * Transforms Quark System Dictionaries into Less variables.
  *
@@ -4774,7 +4757,7 @@ export const less = (dict) => construct({ prefix: "@" }, dict);
 + =styl: (dict: object) => string=
 + =dict: object=: the dictionary to process
 
-#+BEGIN_SRC js :tangle "./output_css.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 /**
  * Transforms Quark System Dictionaries into Stylus variables.
  *
@@ -4803,10 +4786,10 @@ export const styl = (dict) =>
 ****** CSS Format Assertions
 
 #+BEGIN_SRC js :tangle "./tests/output_css_test.js" :comments link
-import { css, less, sass, styl } from "../output_css.js";
-import { clrs } from "../color_a11y.js";
-import { triadic } from "../color_scheme.js";
-import { shades, tints } from "../color_scale.js";
+import { css, less, sass, styl } from "../design_tokens.js";
+import { clrs } from "../color.js";
+import { triadic } from "../color.js";
+import { shades, tints } from "../color.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -4934,7 +4917,7 @@ test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (12ms
 
 #+end_src
 
-**** Data Export (=export_data.js=)
+**** Data Export (=design_tokens.js=)
 
 Quarks System Core also supports exporting tokens in general data formats (raw JSON and YAML
 supported as of this writing). This allows complete detachment from the core and the portability to
@@ -4945,7 +4928,7 @@ use system data outside of JavaScript environments.
 + =raw: (dict: object) => object=
 + =dict: object=: the dictionary to process
 
-#+BEGIN_SRC js :tangle "./export_data.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 /**
  * Transforms Quark System Dictionaries into raw JSON data.
  *
@@ -4979,7 +4962,7 @@ of data.
 
 And then the main function recursively walks through the dictionary to completion.
 
-#+BEGIN_SRC js :tangle "./export_data.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 const whitespace = 2;
 
 const value = (level, str, key, value) =>
@@ -5050,10 +5033,10 @@ export const yaml = (dict) =>
 ****** Data Export Assertions
 
 #+BEGIN_SRC js :tangle "./tests/export_data_test.js" :comments link
-import { raw, yaml } from "../export_data.js";
-import { clrs } from "../color_a11y.js";
-import { triadic } from "../color_scheme.js";
-import { shades, tints } from "../color_scale.js";
+import { raw, yaml } from "../design_tokens.js";
+import { clrs } from "../color.js";
+import { triadic } from "../color.js";
+import { shades, tints } from "../color.js";
 
 import { assertStrictEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -5153,7 +5136,7 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (6ms)
 
 #+end_src
 
-**** Data Transforms (=transform_data.js=)
+**** Data Transforms (=design_tokens.js=)
 
 The final set of token formats are reserved for integrating with other tools that use and transform
 design data. Currently, it supports tools that I use regularly in my own projects (TailwindCSS and
@@ -5164,7 +5147,7 @@ Style Dictionary), but more will be added as the project grows.
 + =tailwind: (dict: object) => string=
 + =dict: object=: the dictionary to process
 
-#+BEGIN_SRC js :tangle "./transform_data.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 /**
  * Reformats Quark System Dictionaries as TailwindCSS theme data.
  *
@@ -5200,7 +5183,7 @@ export const tailwind = (dict) =>
 + =styledict: (dict: object) => string=
 + =dict: object=: the dictionary to process
 
-#+BEGIN_SRC js :tangle "./transform_data.js" :comments link
+#+BEGIN_SRC js :tangle "./design_tokens.js" :comments link
 /**
  * Reformats Quark System Dictionaries as Style Dictionary properties.
  *
@@ -5234,10 +5217,10 @@ export const styledict = (dict) =>
 ****** Data Transform Assertions
 
 #+BEGIN_SRC js :tangle "./tests/transform_data_test.js" :comments link
-import { styledict, tailwind } from "../transform_data.js";
-import { clrs } from "../color_a11y.js";
-import { triadic } from "../color_scheme.js";
-import { shades, tints } from "../color_scale.js";
+import { styledict, tailwind } from "../design_tokens.js";
+import { clrs } from "../color.js";
+import { triadic } from "../color.js";
+import { shades, tints } from "../color.js";
 
 import { assertEquals } from "https://deno.land/std@0.86.0/testing/asserts.ts";
 
@@ -5389,35 +5372,17 @@ OUTPUT: "and what actually happened";
 #+END_SRC
 
 *** Color
-**** Formats (=internals/color/format/index.js=)
+**** Formats (=internals/color/formats.js=)
 
 QuarkSuite is designed primarily for web technologies and handles all current (and upcoming) CSS color
 formats. This section documents how the QSC validates colors and extracts color values.
 
 It also includes a pseudo-implementation of a non-standard format for special purposes: Oklab.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/index.js" :comments link
-/** Internal format validation/extraction utilities */
+I've decided to consolidate the validators and extractors because there's no real gain from keeping
+them separate and many of the regular expression patterns for functional CSS formats repeat.
 
-// Currently supported CSS formats
-export * as hex from "./hex.js";
-export * as named from "./named.js";
-export * as rgb from "./rgb.js";
-export * as hsl from "./hsl.js";
-
-// Proposed future formats
-export * as cmyk from "./device-cmyk.js";
-export * as hwb from "./hwb.js";
-export * as lab from "./lab.js";
-export * as lch from "./lch.js";
-
-// Non-standard
-export * as oklab from "./oklab.js";
-#+END_SRC
-
-From the format index, you can see at a glance which color formats are currently supported.
-
-***** RGB Hex (=internals/color/format/hex.js=)
+***** RGB Hex
 
 Hexadecimal colors are the most common format on the web. Below is a table showing the acceptable
 formats in CSS and some examples. I also think of them as color primitives, because hex /begins/ the
@@ -5449,7 +5414,7 @@ conversion chain to other formats.
 
 The regular expression to validate a hex color is short.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/hex.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: hex color */
 export const validate = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
 #+END_SRC
@@ -5457,7 +5422,7 @@ export const validate = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
 Let's see if all the colors defined in the format table pass:
 
 #+BEGIN_SRC js :results output code replace :allow read :var hexTable=hex-samples
-const hex = await import(`${Deno.cwd()}/internals/color/format/hex.js`);
+const hex = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = hexTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => hex.validate(color)))
@@ -5485,7 +5450,7 @@ Now, that I know I have valid hex colors, I need to be able to extract their RGB
 The first step is enforcing uniformity. To prevent any surprises, I'm going to simply expand hex
 color shorthand =#RGB(A)= to a full hex color =#RRGGBB(AA)=.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/hex.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Expand hex shorthand into full hex color */
 function expander(color) {
   const [, ...values] = color;
@@ -5502,7 +5467,7 @@ Having secured uniform input, I'm ready to extract the channel values for proces
 
 The only thing to do here is remove the =#= and match the channel values with a regular expression.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/hex.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: hex channel values */
 export const extract = (hex) => expander(hex).match(/[\da-f]{2}/g);
 #+END_SRC
@@ -5510,7 +5475,7 @@ export const extract = (hex) => expander(hex).match(/[\da-f]{2}/g);
 Then, I'm going to test that the channel values are plucked as =[R, G, B, A]=:
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hex = await import (`${Deno.cwd()}/internals/color/format/hex.js`);
+const hex = await import (`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-hex>>
 
@@ -5541,19 +5506,19 @@ const colors = [
 ]
 #+end_src
 
-***** W3C-X11 (=internals/color/format/named.js=)
+***** W3C-X11
 
 Named colors are simple to validate. It's a matter of matching the name with its hex value in the
 =X11Colors= lookup table as a boolean.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/named.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 import { X11Colors } from "../../../data/color/w3c-x11.js";
 
 /** Validate: W3C X11 named colors */
 export const validate = (color) => !!X11Colors[color];
 #+END_SRC
 
-***** Functional RGB (=internals/color/format/rgb.js=)
+***** Functional RGB
 
 The functional RGB syntax is more complex and allows for more variation in the format. Quarks System
 Core supports the legacy format as well as the newer space-separated ones.
@@ -5584,7 +5549,7 @@ Validating the functional RGB is similarly complex, but the regular expression c
 its unique and repeating parts and then assembled with the =RegExp.source= property as a new =RegExp=
 object.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional RGB format */
 export function validate(color) {
   // RGB regexp
@@ -5621,7 +5586,7 @@ export function validate(color) {
 Next up is seeing if the format tests pass.
 
 #+BEGIN_SRC js :results output code replace :allow read :var rgbTable=rgb-samples
-const rgb = await import(`${Deno.cwd()}/internals/color/format/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = rgbTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => rgb.validate(color)))
@@ -5655,7 +5620,7 @@ All clear!
 
 The next step is ensuring the channel/alpha values can be extracted.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: RGB channel/alpha values */
 export const extract = (rgb) => rgb.match(/([\d.]%?)+/g);
 #+END_SRC
@@ -5667,7 +5632,7 @@ need to be intensive.
 Now, I'll test that the values are properly pulled.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/format/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-rgb>>
 
@@ -5696,7 +5661,7 @@ const colors = [
 ]
 #+end_src
 
-***** Functional HSL (=internals/color/format/hsl.js=)
+***** Functional HSL
 
 HSL is well-loved by designers for being a lot more intuitive than RGB. It explicitly allows
 setting:
@@ -5736,7 +5701,7 @@ From here, you'll start seeing a lot of repetition in the validation expressions
 Validating HSL has a similar pattern to validating RGB. In fact, many of the regular expression
 fragments are the same.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/hsl.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional HSL format */
 export function validate(color) {
   // HSL regexp
@@ -5774,7 +5739,7 @@ export function validate(color) {
 Now, I'll perform the tests:
 
 #+BEGIN_SRC js :results output code replace :allow read :var hslTable=hsl-samples
-const hsl = await import(`${Deno.cwd()}/internals/color/format/hsl.js`);
+const hsl = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = hslTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => hsl.validate(color)))
@@ -5805,7 +5770,7 @@ const colors = [
 
 Next, I need to be able extract HSL values.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/hsl.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: HSL values */
 export const extract = (hsl) => hsl.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 #+END_SRC
@@ -5816,7 +5781,7 @@ extracting the hue units along with percentages.
 Finally, I'll test that the values are extracted.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hsl = await import(`${Deno.cwd()}/internals/color/format/hsl.js`);
+const hsl = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-hsl>>
 
@@ -5850,7 +5815,7 @@ const colors = [
 The formats documented beyond this point are brand new territory for the core module and unsupported
 in QuarkSuite 1.
 
-***** Device CMYK (=internals/color/format/device-cmyk.js=)
+***** Device CMYK
 
 =device-cmyk()= is a prospective format documented in the [[https://www.w3.org/TR/css-color-4/#device-cmyk][current CSS Color Module 4 draft]]. CMYK in
 general is a color space typically calibrated for printed media.
@@ -5886,7 +5851,7 @@ color formats beyond this point.
 
 The validation for CMYK in CSS is thankfully simple.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/device-cmyk.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: CMYK format */
 export function validate(color) {
   // CMYK regexp
@@ -5922,7 +5887,7 @@ export function validate(color) {
 Now, on to the format tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :var cmykTable=cmyk-samples
-const cmyk = await import(`${Deno.cwd()}/internals/color/format/device-cmyk.js`);
+const cmyk = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = cmykTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => cmyk.validate(color)));
@@ -5952,7 +5917,7 @@ const colors = [
 
 From here, the extractor is another one-liner.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/device-cmyk.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: CMYK values */
 export const extract = (cmyk) => cmyk.match(/([\d.]+)%?/g);
 #+END_SRC
@@ -5960,7 +5925,7 @@ export const extract = (cmyk) => cmyk.match(/([\d.]+)%?/g);
 Finally, the extraction tests:
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const cmyk = await import(`${Deno.cwd()}/internals/color/format/device-cmyk.js`);
+const cmyk = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-cmyk>>
 
@@ -5995,7 +5960,7 @@ const colors = [
 
 And now it's on to the next one.
 
-***** Functional HWB (=internals/color/format/hwb.js=)
+***** Functional HWB
 
 HWB is short for Hue-Whiteness-Blackness. It's an [[https://www.w3.org/TR/css-color-4/#the-hwb-notation][upcoming color format similar to HSL]] but even
 easier to use. It's the format of choice for a variety of browser color picker implementations.
@@ -6027,7 +5992,7 @@ When W and B are mixed equal amounts, they yield gray. When both are =100%=, the
 
 The HWB validator expressions are nearly identical to the HSL validator.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/hwb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional HWB format */
 export function validate(color) {
   // HWB regexp
@@ -6065,7 +6030,7 @@ export function validate(color) {
 Alright, now the format tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :var hwbTable=hwb-samples
-const hwb = await import(`${Deno.cwd()}/internals/color/format/hwb.js`);
+const hwb = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = hwbTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => hwb.validate(color)))
@@ -6094,7 +6059,7 @@ const colors = [
 
 The value extractor for HWB is identical to the one for HSL.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/hwb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: HWB values */
 export const extract = (hwb) => hwb.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 #+END_SRC
@@ -6102,7 +6067,7 @@ export const extract = (hwb) => hwb.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 Finally, the tests for value extraction.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hwb = await import(`${Deno.cwd()}/internals/color/format/hwb.js`);
+const hwb = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-hwb>>
 
@@ -6128,7 +6093,7 @@ const colors = [
 ]
 #+end_src
 
-***** Functional CIELAB (=internals/color/format/lab.js=)
+***** Functional CIELAB
 
 The CSS Color Module Level 4 is currently drafting [[https://www.w3.org/TR/css-color-4/#lab-colors][support for device-independent color
 formats]]. Quarks System Core supports both.
@@ -6164,7 +6129,7 @@ The hue axes are unbound, but for use with the RGB space /must/ cap at =±128=.
 The Lab validator is not complex. It reuses the alpha validation expression and modifies the RGB
 channel validation expression slightly.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/lab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional CIELAB format */
 export function validate(color) {
   // CIELAB regexp
@@ -6202,7 +6167,7 @@ export function validate(color) {
 Now, it's validator testing time.
 
 #+BEGIN_SRC js :results output code replace :allow read :var labTable=lab-samples
-const lab = await import(`${Deno.cwd()}/internals/color/format/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = labTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => lab.validate(color)))
@@ -6234,7 +6199,7 @@ Good to go.
 The CIELAB value extractor is a slight modification from the HSL extractor. The CIELAB extractor
 needs to be able to capture negative and positive values as well as percentages.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/lab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: CIELAB values */
 export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
 #+END_SRC
@@ -6242,7 +6207,7 @@ export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
 Time to test it.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Deno.cwd()}/internals/color/format/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-lab>>
 
@@ -6271,7 +6236,7 @@ const colors = [
 ]
 #+end_src
 
-***** Functional CIELCh(ab) (=internals/color/format/lch.js=)
+***** Functional CIELCh(ab)
 
 The CIELCh(ab) color space is another device-independent color format with added support in the CSS
 Color Module Level 4 spec. It's CIELAB converted directly to polar coordinates. It consists of:
@@ -6307,7 +6272,7 @@ As a polar conversion of CIELAB, the CIELCh(ab) validator is a slightly modified
 CIELAB lightness expression but also pulls in the HSL hue expression. They accept the same input
 even if they don't function the same way.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/lch.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional CIELCh(ab) format */
 export function validate(color) {
   // CIELCh(ab) regexp
@@ -6346,7 +6311,7 @@ export function validate(color) {
 And it's format validation test time.
 
 #+BEGIN_SRC js :results output code replace :allow read :var lchTable=lch-samples
-const lch = await import(`${Deno.cwd()}/internals/color/format/lch.js`);
+const lch = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = lchTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => lch.validate(color)))
@@ -6375,7 +6340,7 @@ const colors = [
 
 The CIELCh(ab) extractor is identical to the HSL extractor.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/lch.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: CIELCh(ab) values */
 export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 #+END_SRC
@@ -6383,7 +6348,7 @@ export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 Now, I'll set up some extraction tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lch = await import(`${Deno.cwd()}/internals/color/format/lch.js`);
+const lch = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-lch>>
 
@@ -6418,7 +6383,7 @@ const colors = [
 And that's it. Full support for validating and extracting the values of all current (and future) CSS
 color formats. Not very useful  by itself, so I'm going to write functionality to convert between them.
 
-***** Oklab (LCh) (=internals/color/format/oklab.js=)
+***** Oklab (LCh)
 
 Oklab is a non-standard perceptual color space created by Björn Ottosson. It's a derivative of
 CIELAB that fixes some of its shortcomings in predicting hue and especially sudden hue shifting of
@@ -6455,7 +6420,7 @@ It behaves similarly to CIELCh(ab).
 
 The Oklab validator has a similar pattern to CIELCh(ab) but chroma is a range of =0-0.5=.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/oklab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: Oklab (LCh) format */
 export function validate(color) {
   // OKlab (LCh) regexp
@@ -6494,7 +6459,7 @@ export function validate(color) {
 Now for some tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :var oklabTable=oklab-samples
-const oklab = await import(`${Deno.cwd()}/internals/color/format/oklab.js`);
+const oklab = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = oklabTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => oklab.validate(color)))
@@ -6524,7 +6489,7 @@ const colors = [
 
 The Oklab extractor is a purely numeric extractor.
 
-#+BEGIN_SRC js :tangle "./internals/color/format/oklab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Extract: Oklab (LCh) values */
 export const extract = (oklab) => oklab.match(/([\d.]%?)+/g);
 #+END_SRC
@@ -6532,7 +6497,7 @@ export const extract = (oklab) => oklab.match(/([\d.]%?)+/g);
 Now, I'll make sure the values are properly extracted.
 
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const oklab = await import(`${Deno.cwd()}/internals/color/format/oklab.js`);
+const oklab = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-oklab>>
 
@@ -6577,7 +6542,7 @@ const colors = [
 ]
 #+end_src
 
-**** Conversion (=internals/color/convert/index.js=)
+**** Conversion (=internals/color/conversions.js=)
 
 The internal color conversion functions are organized by format. They follow a convention of
 =inputFormat.outputFormat(color)= this allows them to easily be composed in a logical order to create
@@ -6586,120 +6551,7 @@ the higher level color conversion utilities exposed in the public API.
 Each implementation assumes extracted color values instead of a full color. This is to ensure color
 formatting functions remain separate from conversion functions for the reasons demonstrated in the API.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/index.js" :comments link
-/** Internal color conversion utilities */
-
-// Currently supported CSS formats
-export * as hex from "./hex.js";
-export * as named from "./named.js";
-export * as rgb from "./rgb.js";
-export * as hsl from "./hsl.js";
-
-// Proposed future formats
-export * as cmyk from "./device-cmyk.js";
-export * as hwb from "./hwb.js";
-export * as lab from "./lab.js";
-export * as lch from "./lch.js";
-
-// Non-standard
-export * as oklab from "./oklab.js";
-#+END_SRC
-
-***** Setup (=internals/color/convert/setup.js=)
-
-Before I write color conversion functions, I need some helpers to streamline the process.
-
-****** Hex RGB Fragments
-
-As I wrote earlier, I consider hex colors on the web color primitives. They're the starting point
-of all conversions because hex colors can only be directly converted to functional RGB which begins
-the conversion chain for other formats.
-
-#+BEGIN_SRC js :tangle "./internals/color/convert/setup.js" :comments link
-/** Helper for converting hex->int */
-export const hexFragmentToChannel = (fragment) => parseInt(fragment, 16);
-
-/** Helper for converting int->hex */
-export const channelToHexFragment = (channel) =>
-channel.toString(16).padStart(2, "0");
-#+END_SRC
-
-****** Math
-
-Before I write the functions for actual conversion, I need to write some basic arithmetic helpers.
-
-#+BEGIN_SRC js :tangle "./internals/color/convert/setup.js" :comments link
-/** Helper to limit precision */
-export const significant = (digits, value) => +value.toPrecision(digits);
-
-/** x + y */
-const sum = (y, x) => significant(6, x + y);
-
-/** x ✕ y */
-const product = (y, x) => significant(6, x * y);
-
-/** x ÷ y */
-const quotient = (y, x) => significant(6, x / y);
-
-/** x % y */
-const remainder = (y, x) => significant(6, x % y);
-
-// Hrad, Hgrad, Hturn -> hue
-
-/** Formula: n° = n㎭ ✕ 180∕π */
-export const calcHueFromRad = (radians) =>
-Math.round(product(quotient(Math.PI, 180), radians));
-
-/** Formula: n° = nᵍ✕ 180∕200 */
-export const calcHueFromGrad = (gradians) =>
-Math.round(product(quotient(200, 180), gradians));
-
-/** Formula: n° = n% ✕ 360 */
-export const calcHueFromTurn = (turn) => Math.round(product(360, turn));
-
-// Hue correction
-
-/** Formula: n° = -n + 360 */
-export const correctHueCounterClockwise = (hue) => sum(360, hue);
-
-/** Formula: n° = n % 360 */
-export const correctHueClockwise = (hue) => remainder(360, hue);
-
-// Saturation, lightness
-
-/** Formula: n = n%∕100 */
-export const calcFractionFromPercent = (percentage) =>
-quotient(100, percentage);
-
-/** Formula: n = n ✕ 100 */
-export const calcPercentFromFraction = (fraction) => product(100, fraction);
-
-// RGB calculations
-
-/** Formula: n = n ✕ 255 */
-export const calcChannelFromFraction = (fraction) => product(255, fraction);
-
-/** Formula: n = n∕255 */
-export const calcFractionFromChannel = (channel) => quotient(255, channel);
-
-/** Formula: n = n%∕100 ✕ 255 */
-export const calcChannelFromPercent = (percentage) =>
-Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
-
-/** Normalization to define boundaries */
-export const normalize = (a, x, b) => Math.round(Math.min(Math.max(x, a), b));
-
-// Alpha
-
-/** Helper to convert alpha value to hex fragment */
-export const calcHexFragmentFromAlpha = (alpha) =>
-channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
-
-#+END_SRC
-
-Now, I'm ready to write the conversion algorithms.
-
-***** RGB Hex Conversion (=internals/color/convert/hex.js=)
+***** RGB Hex Conversion
 
 To reiterate, a hex color is the primitive color value. They may convert up to another format,
 but cannot convert down to anything but machine code.
@@ -6709,7 +6561,7 @@ but cannot convert down to anything but machine code.
 Converting RGB Hex to functional RGB is a matter of extracting each channel hex fragment and
 converting them to their equivalent integers. And then converting the alpha channel /if/ it exists.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/hex.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcFractionFromChannel,
   hexFragmentToChannel,
@@ -6732,7 +6584,7 @@ export function rgb(hex) {
 For testing my implementation, I'll reuse the extracted hex results above.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hex = await import(`${Deno.cwd()}/internals/color/convert/hex.js`);
+const hex = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<hex-values>>
 
@@ -6765,20 +6617,20 @@ console.log(colors.map(({color, values}) => ({hex: color, rgb: hex.rgb(values)})
 
 Success!
 
-***** W3C-X11 Conversion (=internals/color/convert/named.js=)
+***** W3C-X11 Conversion
 
 ****** RGB Hex <- W3C-X11
 
 After validation, the only possible conversion for a CSS named color is a query for its hex value.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/named.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import { X11Colors } from "../../../data/color/w3c-x11.js";
 
 /** RGB HEX <- W3C-X11 */
 export const hex = (keyword) => X11Colors[keyword];
 #+END_SRC
 
-***** Functional RGB Conversion (=internals/color/convert/rgb.js=)
+***** Functional RGB Conversion
 
 Functional RGB leads to the first progressive conversion fork and regression option.
 
@@ -6794,7 +6646,7 @@ Functional RGB leads to the first progressive conversion fork and regression opt
 Functional RGB conversions are slightly more complex than RGB Hex conversions, so they require a bit
 of extra math. Luckily, I defined those arithmetic helpers, so I'll pull in the necessary ones.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcChannelFromPercent,
   calcFractionFromChannel,
@@ -6833,7 +6685,7 @@ function parseRGB(rgb) {
 A regressive conversion is one that breaks a color down. Since an RGB color begins the chain to
 higher conversions, that leaves RGB Hex as the only possible regression.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** RGB Hex <- Functional RGB */
 export function hex(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
@@ -6849,7 +6701,7 @@ export function hex(rgb) {
 Now, I'll use the extracted RGB defined earlier to test my conversions for accuracy.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<rgb-values>>
 
@@ -6883,7 +6735,7 @@ console.log(colors.map(({color, values}) => ({rgb: color, hex: rgb.hex(values)})
 Functional RGB to Functional HSL conversion was supported in QuarkSuite 1, so the algorithm hasn't
 changed its implementation. First, it requires a little prep.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 // https://www.rapidtables.com/convert/color/rgb-to-hsl.html
 const calcHue = (R, G, B, cmax, delta) =>
   new Map([
@@ -6921,7 +6773,7 @@ function calcHSL(r, g, b) {
 
 And now the actual conversion algorithm:
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB -> Functional HSL */
 export function hsl(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
@@ -6941,7 +6793,7 @@ export function hsl(rgb) {
 Time for some color conversion tests!
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<rgb-values>>
 
@@ -6976,7 +6828,7 @@ Booyah!
 
 And now I drift again into unfamiliar terrain, but RapidTables is there again to provide a map.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB -> Device CMYK */
 export function cmyk(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
@@ -7004,7 +6856,7 @@ export function cmyk(rgb) {
 Now, I'm checking the math.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<rgb-values>>
 
@@ -7047,7 +6899,7 @@ The conversion of RGB to HWB is a little unorthodox. It's technically a /composi
 hue is first calculated via partial HSL conversion, and then the amount of white and black is
 calculated via a [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][modified formula from the spec itself]].
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB -> Functional HWB */
 export function hwb(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
@@ -7069,7 +6921,7 @@ export function hwb(rgb) {
 I'm suspicious of the math here, so let's see the proof.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<rgb-values>>
 
@@ -7127,7 +6979,7 @@ CIEXYZ.
 
 You can [[https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz][read more about the actual formula]] if you're curious.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB >-< Linear RGB */
 const removeGamma = (rgb) =>
   rgb.map((v) => {
@@ -7141,7 +6993,7 @@ const removeGamma = (rgb) =>
 Now, to convert the ungamma-ed RGB to XYZ data, we have to pass it through a transformation matrix
 of values representing the D65 reference white point defined in sRGB, which CSS uses.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Linear RGB -> CIE XYZ */
 function calcXYZ(rgb) {
   const [R, G, B] = removeGamma(rgb);
@@ -7160,7 +7012,7 @@ CIELAB uses.
 
 And then I need to apply the actual [[http://www.brucelindbloom.com/index.html?Equations.html][conversion formula]].
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 function calcD50XYZ(rgb) {
   const [X, Y, Z] = calcXYZ(rgb);
   /*
@@ -7212,7 +7064,7 @@ export function lab(rgb) {
 That was a lot, so I'm going to run my tests now.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<rgb-values>>
 
@@ -7253,7 +7105,7 @@ This makes it excellent for adjusting color properties and blending colors.
 I specifically use the formulas for converting Linear RGB to/from Oklab to convert to Oklab (LCh)
 and ensure the output stays within the sRGB gamut.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/rgb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 function calcOklab(rgb) {
   const [r, g, b, alpha] = parseRGB(rgb);
   const [R, G, B] = removeGamma([r, g, b]);
@@ -7294,7 +7146,7 @@ export function oklab(rgb) {
 Now, I'll do some quick tests.
 
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/convert/rgb.js`);
+const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<rgb-values>>
 
@@ -7325,7 +7177,7 @@ console.log(colors.map(({color, values}) => ({rgb: color, oklab: rgb.oklab(value
 
 The back conversion will confirm the correctness of this code.
 
-***** Functional HSL Conversion (=internals/color/convert/hsl.js=)
+***** Functional HSL Conversion
 
 HSL conversion sits like an island in the conversion algorithms, because even though it's easier for
 humans to work with, RGB conversions are easier to /calculate/. And so, all conversions from this
@@ -7338,7 +7190,7 @@ point for converting to all remaining formats.
 
 First, the extracted values require some prepping before calculations are predictable.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/hsl.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcChannelFromFraction,
   calcFractionFromPercent,
@@ -7422,7 +7274,7 @@ export const calcRGB = (h, s, l) => {
 Phew. Now for the actual conversion algorithm, it's a similar pattern to the RGB progressive
 conversion to HSL.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/hsl.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB <- Functional HSL */
 export function rgb(hsl) {
   const [h, s, l, alpha] = parseHSL(hsl);
@@ -7437,7 +7289,7 @@ export function rgb(hsl) {
 Now, the tests with my extracted HSL to verify that the math checks out.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hsl = await import(`${Deno.cwd()}/internals/color/convert/hsl.js`);
+const hsl = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<hsl-values>>
 
@@ -7465,7 +7317,7 @@ console.log(colors.map(({color, values}) => ({hsl: color, rgb: hsl.rgb(values)})
 ]
 #+end_src
 
-***** Device CMYK Conversion (=internals/color/convert/device-cmyk.js=)
+***** Device CMYK Conversion
 
 CMYK  conversion is like HSL in that it's more of an endpoint and needs to be regressively converted
 to functional RGB before it can be included in a conversion chain.
@@ -7474,7 +7326,7 @@ to functional RGB before it can be included in a conversion chain.
 
 First, some minimal setup.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/device-cmyk.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import { calcChannelFromFraction, calcFractionFromPercent } from "./setup.js";
 
 function parseCMYK(cmyk) {
@@ -7495,7 +7347,7 @@ function parseCMYK(cmyk) {
 
 For the conversion algorithm, it's RapidTables coming again with the assist.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/device-cmyk.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB <- Device CMYK */
 export function rgb(cmyk) {
   const [C, M, Y, K, alpha] = parseCMYK(cmyk);
@@ -7512,7 +7364,7 @@ export function rgb(cmyk) {
 Time to see if the math stacks up.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const cmyk = await import(`${Deno.cwd()}/internals/color/convert/device-cmyk.js`);
+const cmyk = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<cmyk-values>>
 
@@ -7539,7 +7391,7 @@ console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)
 ]
 #+end_src
 
-***** Functional HWB Conversion (=internals/color/convert/hwb.js=)
+***** Functional HWB Conversion
 
 The only possible conversion from HWB is a regressive conversion to RGB. This provides the necessary
 bridge to other format conversions.
@@ -7554,7 +7406,7 @@ Again, the implementation uses [[https://www.w3.org/TR/css-color-4/#hwb-to-rgb][
 
 First, setting up some helpers:
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/hwb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcChannelFromFraction,
   calcFractionFromChannel,
@@ -7578,7 +7430,7 @@ function parseHWB(hwb) {
 
 And now for the conversion algorithm.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/hwb.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB <- Functional HWB */
 export function rgb(hwb) {
   const [h, w, blk, alpha] = parseHWB(hwb);
@@ -7609,7 +7461,7 @@ export function rgb(hwb) {
 Now the fun part: seeing if anything breaks.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hwb = await import(`${Deno.cwd()}/internals/color/convert/hwb.js`);
+const hwb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<hwb-values>>
 
@@ -7637,7 +7489,7 @@ console.log(colors.map(({color, values}) => ({hwb: color, rgb: hwb.rgb(values)})
 
 Looks like we're golden.
 
-***** Functional CIELAB Conversion (=internals/color/convert/lab.js=)
+***** Functional CIELAB Conversion
 
 CIELAB requires a regressive conversion to Functional RGB. With this, the link is complete and CIE
 Lab colors now have a bridge to other conversions.
@@ -7646,7 +7498,7 @@ Lab colors now have a bridge to other conversions.
 
 I'll have to grab the RGB channel conversion function from my math kit.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/lab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcChannelFromFraction,
   calcFractionFromPercent,
@@ -7669,7 +7521,7 @@ Now, I follow an inversion of the progressive conversion algorithm.
 
 The [[http://www.brucelindbloom.com/index.html?Equations.html][formula for regressing CIELAB to CIE XYZ]] is cleanly outlined. So, I'll follow that.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/lab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 function calcXYZ(lab) {
   const [L, a, b] = lab.map((v) => parseFloat(v));
 
@@ -7700,7 +7552,7 @@ The next step is converting the D50 XYZ to sRGB native D65 XYZ via chromatic ada
 
 And /then/ passing it through the inverse transformation matrix to get linear RGB.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/lab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 function calcLinearRGB(lab) {
   const [x, y, z] = calcXYZ(lab);
   /**
@@ -7738,7 +7590,7 @@ function calcLinearRGB(lab) {
 Gamma application is the finishing touch before converting the channel values to the expected =0-255=
 range.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/lab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 const calcRGB = (lrgb) =>
   lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
 
@@ -7762,7 +7614,7 @@ export function rgb(lab) {
 That was a lot to parse. Time to see if the calculations check out.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Deno.cwd()}/internals/color/convert/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<lab-values>>
 
@@ -7797,7 +7649,7 @@ CSS color formats are supported by the Quarks System Core.
 
 And thankfully, [[http://www.brucelindbloom.com/Eqn_Lab_to_LCH.html][the formula]] is a dead simple conversion of rectangle coordinates to polar coordinates.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/lab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 const precision = significant.bind(null, 5);
 
 /** Functional CIELAB -> Functional CIELCh(ab) */
@@ -7823,7 +7675,7 @@ export function lch(lab) {
 Now to make sure it returns what I expect.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Deno.cwd()}/internals/color/convert/lab.js`);
+const lab = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<lab-values>>
 
@@ -7854,7 +7706,7 @@ console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})
 
 That'll do it.
 
-***** Functional CIELCh Conversion (=internals/color/convert/lch.js=)
+***** Functional CIELCh Conversion
 
 Now, I need to calculate the regressive conversion of LCH back to Lab. This final algorithm closes
 the conversion chain and allows any supported format to convert to and from any other supported
@@ -7867,7 +7719,7 @@ First, a little setup.
 It's necessary for the hue component of LCH to use the same possible hue inputs as HSL, because
 that's what's allowed in the spec.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/lch.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import { calcFractionFromPercent, normalize, significant } from "./setup.js";
 import { parseHSL } from "./hsl.js";
 
@@ -7876,7 +7728,7 @@ const precision = significant.bind(null, 5);
 
 The [[http://www.brucelindbloom.com/Eqn_LCH_to_Lab.html][conversion algorithm itself]] is short and sweet.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/lch.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional CIELAB <- Functional CIELCh(ab) */
 export function lab(lch) {
   const [L, c, h, alpha] = lch;
@@ -7901,7 +7753,7 @@ export function lab(lch) {
 Alright, time to test the LCH color table.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lch = await import(`${Deno.cwd()}/internals/color/convert/lch.js`);
+const lch = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<lch-values>>
 
@@ -7932,14 +7784,14 @@ console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})
 
 And that's it for color conversion.
 
-***** Oklab (LCh) Conversion (=internals/color/convert/oklab.js=)
+***** Oklab (LCh) Conversion
 
 Now I need to allow for a regressive conversion of Oklab (LCh) back to sRGB. This creates a bridge
 back to standard supported formats and closes the loop.
 
 First, I'll need to convert Oklab (LCh) values back to raw Oklab values.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/oklab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcChannelFromFraction,
   calcFractionFromChannel,
@@ -7964,7 +7816,7 @@ export function parseOklab(oklab) {
 
 Having done that, I can now use the conversion formula to convert to linear sRGB.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/oklab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 function calcLinearRGB(oklab) {
   const [l, a, b, alpha] = parseOklab(oklab);
 
@@ -7987,7 +7839,7 @@ function calcLinearRGB(oklab) {
 
 Next, I apply the gamma, normalize the channels, and return the color.
 
-#+BEGIN_SRC js :tangle "./internals/color/convert/oklab.js" :comments link
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 export function rgb(oklab) {
   const [r, g, b, alpha] = calcLinearRGB(oklab);
 
@@ -8004,7 +7856,7 @@ export function rgb(oklab) {
 That was a straightforward process, but I'm going to check that it works.
 
 #+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const oklab = await import(`${Deno.cwd()}/internals/color/convert/oklab.js`);
+const oklab = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
 <<oklab-values>>
 
@@ -8032,6 +7884,95 @@ console.log(colors.map(({color, values}) => ({oklab: color, rgb: oklab.rgb(value
 #+end_src
 
 And that completes the implementation.
+
+**** Math (=internals/color/math.js=)
+
+As I wrote earlier, I consider hex colors on the web color primitives. They're the starting point
+of all conversions because hex colors can only be directly converted to functional RGB which begins
+the conversion chain for other formats.
+
+#+BEGIN_SRC js :tangle "./internals/color/math.js" :comments link
+/** Helper for converting hex->int */
+export const hexFragmentToChannel = (fragment) => parseInt(fragment, 16);
+
+/** Helper for converting int->hex */
+export const channelToHexFragment = (channel) =>
+  channel.toString(16).padStart(2, "0");
+#+END_SRC
+
+Before I write the functions for actual conversion, I need to write some basic arithmetic helpers.
+
+#+BEGIN_SRC js :tangle "./internals/color/math.js" :comments link
+
+const significant = (digits, value) => +value.toPrecision(digits);
+/** Helper to limit precision */
+export const enforcePrecision = significant.bind(null, 5);
+
+/** x + y */
+const sum = (y, x) => enforcePrecision(x + y);
+
+/** x ✕ y */
+const product = (y, x) => enforcePrecision(x * y);
+
+/** x ÷ y */
+const quotient = (y, x) => enforcePrecision(x / y);
+
+/** x % y */
+const remainder = (y, x) => enforcePrecision(x % y);
+
+// Hrad, Hgrad, Hturn -> hue
+
+/** Formula: n° = n㎭ ✕ 180∕π */
+export const calcHueFromRad = (radians) =>
+  product(quotient(Math.PI, 180), radians);
+
+/** Formula: n° = nᵍ✕ 180∕200 */
+export const calcHueFromGrad = (gradians) =>
+  product(quotient(200, 180), gradians);
+
+/** Formula: n° = n% ✕ 360 */
+export const calcHueFromTurn = (turn) => product(360, turn);
+
+// Hue correction
+
+/** Formula: n° = -n + 360 */
+export const correctHueCounterClockwise = (hue) => sum(360, hue);
+
+/** Formula: n° = n % 360 */
+export const correctHueClockwise = (hue) => remainder(360, hue);
+
+// Saturation, lightness
+
+/** Formula: n = n%∕100 */
+export const calcFractionFromPercent = (percentage) =>
+  quotient(100, percentage);
+
+/** Formula: n = n ✕ 100 */
+export const calcPercentFromFraction = (fraction) => product(100, fraction);
+
+// RGB calculations
+
+/** Formula: n = n ✕ 255 */
+export const calcChannelFromFraction = (fraction) => product(255, fraction);
+
+/** Formula: n = n∕255 */
+export const calcFractionFromChannel = (channel) => quotient(255, channel);
+
+/** Formula: n = n%∕100 ✕ 255 */
+export const calcChannelFromPercent = (percentage) =>
+  calcChannelFromFraction(calcFractionFromPercent(percentage));
+
+/** Normalization to define boundaries */
+export const normalize = (a, x, b) => Math.min(Math.max(x, a), b);
+
+// Alpha
+
+/** Helper to convert alpha value to hex fragment */
+export const calcHexFragmentFromAlpha = (alpha) =>
+  channelToHexFragment(calcChannelFromFraction(alpha));
+#+END_SRC
+
+Now, I'm ready to write the conversion algorithms.
 
 ** Data
 
