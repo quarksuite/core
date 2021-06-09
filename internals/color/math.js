@@ -8,7 +8,6 @@ export const channelToHexFragment = (channel) =>
 // Math (=internals/color/math.js=):1 ends here
 
 // [[file:../../README.org::*Math (=internals/color/math.js=)][Math (=internals/color/math.js=):2]]
-
 const significant = (digits, value) => +value.toPrecision(digits);
 /** Helper to limit precision */
 export const enforcePrecision = significant.bind(null, 5);

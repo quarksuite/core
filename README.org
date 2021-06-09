@@ -191,28 +191,30 @@ If you're interested in how this project evolved, feel free to [[https://github.
     - [[#error-handling-internalserrorjs][Error Handling (=internals/error.js=)]]
     - [[#color-2][Color]]
       - [[#formats-internalscolorformatsjs][Formats (=internals/color/formats.js=)]]
+        - [[#syntax-tokens][Syntax Tokens]]
+        - [[#value-extractors][Value Extractors]]
         - [[#rgb-hex][RGB Hex]]
           - [[#hex-validator][Hex Validator]]
-          - [[#hex-value-extractor][Hex Value Extractor]]
+          - [[#hex-value-extraction][Hex Value Extraction]]
         - [[#w3c-x11][W3C-X11]]
         - [[#functional-rgb][Functional RGB]]
           - [[#rgb-validator][RGB Validator]]
-          - [[#rgb-extractor][RGB Extractor]]
+          - [[#rgb-value-extraction][RGB Value Extraction]]
         - [[#functional-hsl][Functional HSL]]
           - [[#hsl-validator][HSL Validator]]
-          - [[#hsl-extractor][HSL Extractor]]
+          - [[#hsl-value-extraction][HSL Value Extraction]]
         - [[#device-cmyk][Device CMYK]]
           - [[#cmyk-validator][CMYK Validator]]
-          - [[#cmyk-extractor][CMYK Extractor]]
+          - [[#cmyk-value-extraction][CMYK Value Extraction]]
         - [[#functional-hwb][Functional HWB]]
           - [[#hwb-validator][HWB Validator]]
-          - [[#hwb-extractor][HWB Extractor]]
+          - [[#hwb-value-extraction][HWB Value Extraction]]
         - [[#functional-cielab][Functional CIELAB]]
           - [[#cielab-validator][CIELAB Validator]]
-          - [[#cielab-extractor][CIELAB Extractor]]
+          - [[#cielab-value-extraction][CIELAB Value Extraction]]
         - [[#functional-cielchab][Functional CIELCh(ab)]]
           - [[#cielchab-validator][CIELCh(ab) Validator]]
-          - [[#cielchab-extractor][CIELCh(ab) Extractor]]
+          - [[#cielchab-value-extraction][CIELCh(ab) Value Extraction]]
         - [[#oklab-lch][Oklab (LCh)]]
           - [[#oklab-lch-validator][Oklab (LCh) Validator]]
           - [[#oklab-lch-extractor][Oklab (LCh) Extractor]]
@@ -5379,14 +5381,84 @@ formats. This section documents how the QSC validates colors and extracts color 
 
 It also includes a pseudo-implementation of a non-standard format for special purposes: Oklab.
 
-I've decided to consolidate the validators and extractors because there's no real gain from keeping
-them separate and many of the regular expression patterns for functional CSS formats repeat.
+***** Syntax Tokens
+
+I recently refactored the validation logic through identifying the common tokens across CSS color
+formats. So, I captured these repeating patterns as constants.
+
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
+// channel: float<0-100>% || int<0-255>
+const CHANNEL_TOK = /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
+
+// hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
+const HUE_TOK = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
+
+// percentage: float<0-100>%
+const PERCENT_TOK = /(?:(?:100%|(?:\d\.?\d?){1,}%))/;
+
+// percentage: float<0->%
+const CIE_LUM_TOK = /(?:(?:\d\.?\d?){1,}%)/;
+
+// hue: -?<0-128>
+const HUE_TOK_CIELAB = /(?:-?(?:128|(?:1[0-2][0-8]|(?:\d.?\d?){1,})))/;
+
+// chroma: int<0-230>
+const CHROMA_TOK = /(?:(?:230|(?:2[0-2][0-9]|1[0-9][0-9])|(?:\d.?\d?){1,}))/;
+
+// transparency: float<0-1> || float<0-100>%
+const PERCENT_TOK_DECIMAL = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
+
+// chroma: -?float<0-0.5>
+const CHROMA_TOK_OKLAB = /(?:-?(?:0|0\.\d+|0.5))/;
+
+// separators: ", " || " " || " /"
+const DELIM = /(?:[\s,]+)/;
+const ALPHA_DELIM = /(?:[\s,/]+)/;
+const DELIM_CSS4 = /(?:[\s]+)/;
+const ALPHA_DELIM_CSS4 = /(?:[\s/]+)/;
+#+END_SRC
+
+After that, I wrote a function to assemble these tokens into their valid color formats. The =RegExp=
+object includes a property of =source= that allows regular expressions to be concatenated and
+assigned to constants. This results in much more readable and configurable pattern matching
+possibilities.
+
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
+function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
+  const tokenValues = tokens.map((tok) => tok.source);
+  const ALPHA_TOK = PERCENT_TOK_DECIMAL;
+
+  const DELIMITER = legacy ? DELIM : DELIM_CSS4;
+  const ALPHA_DELIMITER = legacy ? ALPHA_DELIM : ALPHA_DELIM_CSS4;
+  return new RegExp(
+    `(?:^${prefix}\\(`.concat(
+      tokenValues.join(DELIMITER.source),
+      `(?:${[ALPHA_DELIMITER.source, ALPHA_TOK.source].join("")})?\\))`
+    )
+  );
+}
+#+END_SRC
+
+***** Value Extractors
+
+During the recent refactor, I also realized that having extractors for every single functional color
+format was overkill as they expect many of the same tokens. =hexExtractor= stands alone for its
+special purpose while =valueExtractor= handles every other format.
+
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
+/** Extract RGB Hex values */
+export const hexExtractor = (color) => expandHex(color).match(/[\da-f]{2}/g);
+
+/** Extract functional color format components */
+export const valueExtractor = (color) =>
+  color.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
+#+END_SRC
 
 ***** RGB Hex
 
-Hexadecimal colors are the most common format on the web. Below is a table showing the acceptable
-formats in CSS and some examples. I also think of them as color primitives, because hex /begins/ the
-conversion chain to other formats.
+In Quarks System Core, hex colors are treated as a universal color format. In all likelihood, if
+software operates with color, it renders this format. So RGB Hex can be a reliable fallback when
+nothing else works.
 
 #+NAME: hex-samples
 | Color   | Value     |
@@ -5416,16 +5488,16 @@ The regular expression to validate a hex color is short.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: hex color */
-export const validate = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
+export const hexValidator = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
 #+END_SRC
 
-Let's see if all the colors defined in the format table pass:
+Let's see if all the colors defined in the table pass.
 
 #+BEGIN_SRC js :results output code replace :allow read :var hexTable=hex-samples
-const hex = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { hexValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = hexTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.filter((color) => hex.validate(color)))
+console.log("const colors =", colors.filter((color) => hexValidator(color)))
 #+END_SRC
 
 #+NAME: valid-hex
@@ -5443,7 +5515,7 @@ const colors = [
 ]
 #+end_src
 
-****** Hex Value Extractor
+****** Hex Value Extraction
 
 Now, that I know I have valid hex colors, I need to be able to extract their RGB(A) channels.
 
@@ -5452,7 +5524,7 @@ color shorthand =#RGB(A)= to a full hex color =#RRGGBB(AA)=.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Expand hex shorthand into full hex color */
-function expander(color) {
+function expandHex(color) {
   const [, ...values] = color;
 
   if (values.length === 3 || values.length === 4) {
@@ -5465,21 +5537,12 @@ function expander(color) {
 
 Having secured uniform input, I'm ready to extract the channel values for processing.
 
-The only thing to do here is remove the =#= and match the channel values with a regular expression.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: hex channel values */
-export const extract = (hex) => expander(hex).match(/[\da-f]{2}/g);
-#+END_SRC
-
-Then, I'm going to test that the channel values are plucked as =[R, G, B, A]=:
-
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hex = await import (`${Deno.cwd()}/internals/color/formats.js`);
+const { hexExtractor } = await import (`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-hex>>
 
-console.log("const colors =", colors.map((color) => ({color, values: hex.extract(color)})));
+console.log("const colors =", colors.map((color) => ({color, values: hexExtractor(color)})));
 #+END_SRC
 
 #+NAME: hex-values
@@ -5512,16 +5575,16 @@ Named colors are simple to validate. It's a matter of matching the name with its
 =X11Colors= lookup table as a boolean.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-import { X11Colors } from "../../../data/color/w3c-x11.js";
+import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** Validate: W3C X11 named colors */
-export const validate = (color) => !!X11Colors[color];
+export const namedValidator = (color) => !!X11Colors[color];
 #+END_SRC
 
 ***** Functional RGB
 
-The functional RGB syntax is more complex and allows for more variation in the format. Quarks System
-Core supports the legacy format as well as the newer space-separated ones.
+Functional RGB is the second most common color format used on the web. It's a great option for if
+you need a more human readable format with solid browser support.
 
 #+NAME: rgb-samples
 | Color   | Value                    |
@@ -5545,51 +5608,25 @@ Core supports the legacy format as well as the newer space-separated ones.
 
 ****** RGB Validator
 
-Validating the functional RGB is similarly complex, but the regular expression can be broken down to
-its unique and repeating parts and then assembled with the =RegExp.source= property as a new =RegExp=
-object.
+Since all supported color formats beyond RGB Hex are functional, I'm gonna used that
+=matchFunctionalFormat= helper I whipped up to fill an array with three =CHANNEL_TOK= and then test
+it against the input color. If it matches, it returns the color for further processing.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional RGB format */
-export function validate(color) {
-  // RGB regexp
-
-  // prefix: "rgb(" || "rgba("
-  // R && G && B: float<0-100>% || int<0-255>
-  let R, G, B;
-  R = G = B =
-    /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
-  // transparency: float<0-1> || float<0-100>%
-  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
-  // separators: ", " || " " || " /"
-  const channelSep = /(?:[\s,]+)/;
-  const alphaSep = /(?:[,\s/]+)/;
-  // suffix: ")"
-
-  return new RegExp(
-    [
-      "(?:^rgba?\\(",
-      R.source,
-      channelSep.source,
-      G.source,
-      channelSep.source,
-      B.source,
-      "(?:",
-      alphaSep.source,
-      alpha.source,
-      ")?\\))$",
-    ].join(""),
-  ).test(color);
-}
+export const rgbValidator = (color) =>
+  matchFunctionalFormat({ prefix: "rgba?" }, Array(3).fill(CHANNEL_TOK)).test(
+    color
+  );
 #+END_SRC
 
-Next up is seeing if the format tests pass.
+For now I'll check my table of colors.
 
 #+BEGIN_SRC js :results output code replace :allow read :var rgbTable=rgb-samples
-const rgb = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { rgbValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = rgbTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.filter((color) => rgb.validate(color)))
+console.log("const colors =", colors.filter((color) => rgbValidator(color)))
 #+END_SRC
 
 #+NAME: valid-rgb
@@ -5616,27 +5653,17 @@ const colors = [
 
 All clear!
 
-****** RGB Extractor
+****** RGB Value Extraction
 
-The next step is ensuring the channel/alpha values can be extracted.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: RGB channel/alpha values */
-export const extract = (rgb) => rgb.match(/([\d.]%?)+/g);
-#+END_SRC
-
-The extractor preserves the =%= because it will be properly converted to a fraction for later
-calculations. Since the extractor is only used with valid RGB colors, the match pattern does not
-need to be intensive.
-
-Now, I'll test that the values are properly pulled.
+Since, I've now implemented a universal functional format value extractor the only thing to do here
+is test that it really does extract my values.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-rgb>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: rgb.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: rgbExtractor(color) })));
 #+END_SRC
 
 #+NAME: rgb-values
@@ -5673,8 +5700,6 @@ setting:
 + Lightness/Luminance (L): A percentage value corresponding to a color's brightness. At =50%= a color
   is normalized. =0%= yields pure black and =100%= yields pure white
 
-CSS also defines several angle units for the hue. All of which QuarkSuite supports.
-
 #+NAME: hsl-samples
 | Color   | Value                         |
 |---------+-------------------------------|
@@ -5696,53 +5721,24 @@ CSS also defines several angle units for the hue. All of which QuarkSuite suppor
 
 ****** HSL Validator
 
-From here, you'll start seeing a lot of repetition in the validation expressions.
-
-Validating HSL has a similar pattern to validating RGB. In fact, many of the regular expression
-fragments are the same.
+This time the value tokens the validator checks for are =HUE_TOK= and two matching =PERCENT_TOK=.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional HSL format */
-export function validate(color) {
-  // HSL regexp
-
-  // prefix: "hsl(" || "hsla("
-  // hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
-  const hue = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
-  // saturation && lightness: float<0-100>%
-  const saturation = /(?:(?:100%|(?:\d\.?\d?){1,}%))/;
-  const lightness = saturation;
-  // transparency: float<0-1> || float<0-100>%
-  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
-  // separators: ", " || " " || " /"
-  const valueSep = /(?:[\s,]+)/;
-  const alphaSep = /(?:[,\s/]+)/;
-  // suffix: ")"
-
-  return new RegExp(
-    [
-      "(?:^hsla?\\(",
-      hue.source,
-      valueSep.source,
-      saturation.source,
-      valueSep.source,
-      lightness.source,
-      "(?:",
-      alphaSep.source,
-      alpha.source,
-      ")?\\))$",
-    ].join(""),
-  ).test(color);
-}
+export const hslValidator = (color) =>
+  matchFunctionalFormat({ prefix: "hsla?" }, [
+    HUE_TOK,
+    ...Array(2).fill(PERCENT_TOK),
+  ]).test(color);
 #+END_SRC
 
-Now, I'll perform the tests:
+Then I check the implementation against my color samples.
 
 #+BEGIN_SRC js :results output code replace :allow read :var hslTable=hsl-samples
-const hsl = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { hslValidator} = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = hslTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.filter((color) => hsl.validate(color)))
+console.log("const colors =", colors.filter((color) => hslValidator(color)))
 #+END_SRC
 
 #+NAME: valid-hsl
@@ -5766,26 +5762,16 @@ const colors = [
 ]
 #+end_src
 
-****** HSL Extractor
+****** HSL Value Extraction
 
-Next, I need to be able extract HSL values.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: HSL values */
-export const extract = (hsl) => hsl.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
-#+END_SRC
-
-Again, the HSL extractor is very similar to the RGB extractor. The only difference being that I'm
-extracting the hue units along with percentages.
-
-Finally, I'll test that the values are extracted.
+Finally, I'll test that the universal extractor works with HSL.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hsl = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-hsl>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: hsl.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: valueExtractor(color) })));
 #+END_SRC
 
 #+NAME: hsl-values
@@ -5812,8 +5798,8 @@ const colors = [
 ]
 #+end_src
 
-The formats documented beyond this point are brand new territory for the core module and unsupported
-in QuarkSuite 1.
+We're all set for validation and extraction of CSS color formats that are available in the browser,
+so I'm moving on to the future formats being drafted in CSS Color Module 4.
 
 ***** Device CMYK
 
@@ -5827,7 +5813,7 @@ general is a color space typically calibrated for printed media.
 
 It's important to note: as a newer CSS color functional format, =device-cmyk()= doesn't bother with
 the older comma-separated syntax, so neither does the Quarks System Core. The same carries for all
-color formats beyond this point.
+formats beyond this point.
 
 #+NAME: cmyk-samples
 | Color   | Value                             |
@@ -5849,39 +5835,15 @@ color formats beyond this point.
 
 ****** CMYK Validator
 
-The validation for CMYK in CSS is thankfully simple.
+The validator for CMYK is similar to RGB in that  =PERCENT_TOK_DECIMAL= simply fills out an array.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: CMYK format */
-export function validate(color) {
-  // CMYK regexp
-
-  // prefix: "device-cymk("
-  // c & m & y & k & a: float<0-1> || float<0-100>%
-  let c, m, y, k, alpha;
-  c = m = y = k = alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
-  // separators: " " || " /"
-  const valueSep = /(?:[\s]+)/;
-  const alphaSep = /(?:[\s/]+)/;
-  // suffix: ")"
-
-  return new RegExp(
-    [
-      "(?:^device-cmyk\\(",
-      c.source,
-      valueSep.source,
-      m.source,
-      valueSep.source,
-      y.source,
-      valueSep.source,
-      k.source,
-      "(?:",
-      alphaSep.source,
-      alpha.source,
-      ")?\\))$",
-    ].join(""),
+export const cmykValidator = (color) =>
+  matchFunctionalFormat(
+    { prefix: "device-cmyk", legacy: false },
+    Array(4).fill(PERCENT_TOK_DECIMAL)
   ).test(color);
-}
 #+END_SRC
 
 Now, on to the format tests.
@@ -5913,23 +5875,16 @@ const colors = [
 ]
 #+end_src
 
-****** CMYK Extractor
+****** CMYK Value Extraction
 
-From here, the extractor is another one-liner.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: CMYK values */
-export const extract = (cmyk) => cmyk.match(/([\d.]+)%?/g);
-#+END_SRC
-
-Finally, the extraction tests:
+Time to test that the universal extractor behaves with CMYK.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const cmyk = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-cmyk>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: cmyk.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: valueExtractor(color) })));
 #+END_SRC
 
 #+NAME: cmyk-values
@@ -5990,50 +5945,25 @@ When W and B are mixed equal amounts, they yield gray. When both are =100%=, the
 
 ****** HWB Validator
 
-The HWB validator expressions are nearly identical to the HSL validator.
+The HWB validator expression is essentially the HSL validator with a different prefix.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional HWB format */
-export function validate(color) {
-  // HWB regexp
-
-  // prefix: "hwb("
-  // hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
-  const hue = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
-  // whitness && blackness: float<0-100>%
-  const whiteness = /(?:(?:100%|(?:\d\.?\d?){1,}%))/;
-  const blackness = whiteness;
-  // transparency: float<0-1> || float<0-100>%
-  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
-  // separators: " " || " /"
-  const valueSep = /(?:[\s,]+)/;
-  const alphaSep = /(?:[,\s/]+)/;
-  // suffix: ")"
-
-  return new RegExp(
-    [
-      "(?:^hwb\\(",
-      hue.source,
-      valueSep.source,
-      whiteness.source,
-      valueSep.source,
-      blackness.source,
-      "(?:",
-      alphaSep.source,
-      alpha.source,
-      ")?\\))$",
-    ].join(""),
-  ).test(color);
+export function hwbValidator(color) {
+  return matchFunctionalFormat({ prefix: "hwb", legacy: false }, [
+    HUE_TOK,
+    ...Array(2).fill(PERCENT_TOK),
+  ]).test(color);
 }
 #+END_SRC
 
 Alright, now the format tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :var hwbTable=hwb-samples
-const hwb = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { hwbValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = hwbTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.filter((color) => hwb.validate(color)))
+console.log("const colors =", colors.filter((color) => hwbValidator(color)))
 #+END_SRC
 
 #+NAME: valid-hwb
@@ -6055,23 +5985,16 @@ const colors = [
 ]
 #+end_src
 
-****** HWB Extractor
+****** HWB Value Extraction
 
-The value extractor for HWB is identical to the one for HSL.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: HWB values */
-export const extract = (hwb) => hwb.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
-#+END_SRC
-
-Finally, the tests for value extraction.
+Now I'll see how the universal extractor feels about this one.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hwb = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-hwb>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: hwb.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: valueExtractor(color) })));
 #+END_SRC
 
 #+NAME: hwb-values
@@ -6126,51 +6049,25 @@ The hue axes are unbound, but for use with the RGB space /must/ cap at =±128=.
 
 ****** CIELAB Validator
 
-The Lab validator is not complex. It reuses the alpha validation expression and modifies the RGB
-channel validation expression slightly.
+The CIELAB validator consists of =CIE_LUM_TOK= and =HUE_TOK_CIELAB= filling out the rest of the components.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional CIELAB format */
-export function validate(color) {
-  // CIELAB regexp
-
-  // prefix: "lab("
-  // L: float<0->%
-  const L = /(?:(?:\d\.?\d?){1,}%)/;
-  // a && b: -?int<0-128>
-  let a, b;
-  a = b = /(?:-?(?:128|(?:1[0-2][0-8]|(?:\d.?\d?){1,})))/;
-  // transparency: float<0-1> || float<0-100>%
-  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
-  // separators: " " || " /"
-  const valueSep = /(?:[\s]+)/;
-  const alphaSep = /(?:[\s/]+)/;
-  // suffix: ")"
-
-  return new RegExp(
-    [
-      "(?:^lab\\(",
-      L.source,
-      valueSep.source,
-      a.source,
-      valueSep.source,
-      b.source,
-      "(?:",
-      alphaSep.source,
-      alpha.source,
-      ")?\\))$",
-    ].join(""),
-  ).test(color);
+export function cielabValidator(color) {
+  return matchFunctionalFormat({ prefix: "lab", legacy: false }, [
+    CIE_LUM_TOK,
+    ...Array(2).fill(HUE_TOK_CIELAB),
+  ]).test(color);
 }
 #+END_SRC
 
 Now, it's validator testing time.
 
 #+BEGIN_SRC js :results output code replace :allow read :var labTable=lab-samples
-const lab = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { cielabValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = labTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.filter((color) => lab.validate(color)))
+console.log("const colors =", colors.filter((color) => cielabValidator(color)))
 #+END_SRC
 
 #+NAME: valid-lab
@@ -6194,24 +6091,16 @@ const colors = [
 
 Good to go.
 
-****** CIELAB Extractor
+****** CIELAB Value Extraction
 
-The CIELAB value extractor is a slight modification from the HSL extractor. The CIELAB extractor
-needs to be able to capture negative and positive values as well as percentages.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: CIELAB values */
-export const extract = (lab) => lab.match(/(-?[\d.]%?)+/g);
-#+END_SRC
-
-Time to test it.
+Calling upon my trusty universal extractor once again.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-lab>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: lab.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: valueExtractor(color) })));
 #+END_SRC
 
 #+NAME: lab-values
@@ -6268,53 +6157,26 @@ yellow and sky blue, respectively.
 
 ****** CIELCh(ab) Validator
 
-As a polar conversion of CIELAB, the CIELCh(ab) validator is a slightly modified implementation. It reuses the
-CIELAB lightness expression but also pulls in the HSL hue expression. They accept the same input
-even if they don't function the same way.
+The CIELCh(ab) validator maps a =CIE_LUM_TOK=, a =CHROMA_TOK=, and a =HUE_TOK=.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional CIELCh(ab) format */
-export function validate(color) {
-  // CIELCh(ab) regexp
-
-  // prefix: "lch("
-  // lightness: float<0->%
-  const lightness = /(?:(?:\d\.?\d?){1,}%)/;
-  // chroma: int<0-230>
-  const chroma = /(?:(?:230|(?:2[0-2][0-9]|1[0-9][0-9])|(?:\d.?\d?){1,}))/;
-  // hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
-  const hue = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
-  // transparency: float<0-1> || float<0-100>%
-  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
-  // separators: " " || " /"
-  const valueSep = /(?:[\s]+)/;
-  const alphaSep = /(?:[\s/]+)/;
-  // suffix: ")"
-
-  return new RegExp(
-    [
-      "(?:^lch\\(",
-      lightness.source,
-      valueSep.source,
-      chroma.source,
-      valueSep.source,
-      hue.source,
-      "(?:",
-      alphaSep.source,
-      alpha.source,
-      ")?\\))$",
-    ].join(""),
-  ).test(color);
+export function cielchValidator(color) {
+  return matchFunctionalFormat({ prefix: "lch", legacy: false }, [
+    CIE_LUM_TOK,
+    CHROMA_TOK,
+    HUE_TOK,
+  ]).test(color);
 }
 #+END_SRC
 
-And it's format validation test time.
+And when I test the color table:
 
 #+BEGIN_SRC js :results output code replace :allow read :var lchTable=lch-samples
-const lch = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { cielchValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = lchTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.filter((color) => lch.validate(color)))
+console.log("const colors =", colors.filter((color) => cielchValidator(color)))
 #+END_SRC
 
 #+NAME: valid-lch
@@ -6336,23 +6198,16 @@ const colors = [
 ]
 #+end_src
 
-****** CIELCh(ab) Extractor
-
-The CIELCh(ab) extractor is identical to the HSL extractor.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: CIELCh(ab) values */
-export const extract = (lch) => lch.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
-#+END_SRC
+****** CIELCh(ab) Value Extraction
 
 Now, I'll set up some extraction tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lch = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-lch>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: lch.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: valueExtractor(color) })));
 #+END_SRC
 
 #+NAME: lch-values
@@ -6393,10 +6248,14 @@ I decided to support it after realizing that HSL is a terrible space to make col
 and standard CIELCh(ab) fell just short of my expectations for color scheme and variant generation.
 
 It was this [[https://observablehq.com/@joshdata/perceptually-valid-color-scales][demonstration of perceptually valid color scales]] that finally convinced me that Oklab
-had that special sauce. As a bonus, it's simple to implement. Quarks System Core processes Oklab
-colors in its polar coordinates form similar to CIELCh(ab) to ease value extraction and adjustment.
+had that special sauce.
 
-It behaves similarly to CIELCh(ab).
+As a bonus, it's simple to implement.
+
+Quarks System Core processes Oklab colors in its polar coordinates form similar to CIELCh(ab) to
+ease value extraction and adjustment.
+
+Though, I should note that the chroma component uses a different range (=0-0.5=).
 
 #+NAME: oklab-samples
 | Color   | Value                       |
@@ -6418,51 +6277,27 @@ It behaves similarly to CIELCh(ab).
 
 ****** Oklab (LCh) Validator
 
-The Oklab validator has a similar pattern to CIELCh(ab) but chroma is a range of =0-0.5=.
+The Oklab validator is similar to the standard CIELCh(ab) validator but the chroma token is replaced
+with =CHROMA_TOK_OKLAB=.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: Oklab (LCh) format */
-export function validate(color) {
-  // OKlab (LCh) regexp
-
-  // prefix: "oklab("
-  // lightness: float<0->%
-  const lightness = /(?:(?:\d\.?\d?){1,}%)/;
-  // chroma: -?float<0-0.5>
-  const chroma = /(?:-?(?:0|0\.\d+|0.5))/;
-  // hue: float<0->
-  const hue = /(?:(?:\d\.?\d?)+)/;
-  // transparency: float<0-1> || float<0-100>%
-  const alpha = /(?:(?:0|0\.\d+|1)|(?:100|(?:\d\.?\d?){1,}%))/;
-  // separators: " " || " /"
-  const valueSep = /(?:[\s]+)/;
-  const alphaSep = /(?:[\s/]+)/;
-  // suffix: ")"
-
-  return new RegExp(
-    [
-      "(?:^oklab\\(",
-      lightness.source,
-      valueSep.source,
-      chroma.source,
-      valueSep.source,
-      hue.source,
-      "(?:",
-      alphaSep.source,
-      alpha.source,
-      ")?\\))$",
-    ].join(""),
-  ).test(color);
+export function oklabValidator(color) {
+  return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
+    CIE_LUM_TOK,
+    CHROMA_TOK_OKLAB,
+    HUE_TOK,
+  ]).test(color);
 }
 #+END_SRC
 
 Now for some tests.
 
 #+BEGIN_SRC js :results output code replace :allow read :var oklabTable=oklab-samples
-const oklab = await import(`${Deno.cwd()}/internals/color/formats.js`);
+const { oklabValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 const colors = oklabTable.map(([a, b]) => b.replace(/=/g, ""));
 
-console.log("const colors =", colors.filter((color) => oklab.validate(color)))
+console.log("const colors =", colors.filter((color) => oklabValidator(color)))
 #+END_SRC
 
 #+NAME: valid-oklab
@@ -6487,21 +6322,14 @@ const colors = [
 
 ****** Oklab (LCh) Extractor
 
-The Oklab extractor is a purely numeric extractor.
-
-#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
-/** Extract: Oklab (LCh) values */
-export const extract = (oklab) => oklab.match(/([\d.]%?)+/g);
-#+END_SRC
-
 Now, I'll make sure the values are properly extracted.
 
-#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const oklab = await import(`${Deno.cwd()}/internals/color/formats.js`);
+#+BEGIN_SRC js :results output code replace :allow read :noweb yes
+const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.js`);
 
 <<valid-oklab>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: oklab.extract(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: valueExtractor(color) })));
 #+END_SRC
 
 #+NAME: oklab-values
