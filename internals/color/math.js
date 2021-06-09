@@ -1,16 +1,17 @@
 // [[file:../../README.org::*Math (=internals/color/math.js=)][Math (=internals/color/math.js=):1]]
-/** Helper for converting hex->int */
+/** Helper for converting hextoint */
 export const hexFragmentToChannel = (fragment) => parseInt(fragment, 16);
 
-/** Helper for converting int->hex */
+/** Helper for converting inttohex */
 export const channelToHexFragment = (channel) =>
   channel.toString(16).padStart(2, "0");
 // Math (=internals/color/math.js=):1 ends here
 
 // [[file:../../README.org::*Math (=internals/color/math.js=)][Math (=internals/color/math.js=):2]]
 const significant = (digits, value) => +value.toPrecision(digits);
-/** Helper to limit precision */
-export const enforcePrecision = significant.bind(null, 5);
+
+/** Helper to set a universal precision */
+export const enforcePrecision = significant.bind(null, 4);
 
 /** x + y */
 const sum = (y, x) => enforcePrecision(x + y);
@@ -24,7 +25,7 @@ const quotient = (y, x) => enforcePrecision(x / y);
 /** x % y */
 const remainder = (y, x) => enforcePrecision(x % y);
 
-// Hrad, Hgrad, Hturn -> hue
+// Hrad, Hgrad, Hturn to hue
 
 /** Formula: n° = n㎭ ✕ 180∕π */
 export const calcHueFromRad = (radians) =>
@@ -64,14 +65,15 @@ export const calcFractionFromChannel = (channel) => quotient(255, channel);
 
 /** Formula: n = n%∕100 ✕ 255 */
 export const calcChannelFromPercent = (percentage) =>
-  calcChannelFromFraction(calcFractionFromPercent(percentage));
+  Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
 
 /** Normalization to define boundaries */
-export const normalize = (a, x, b) => Math.min(Math.max(x, a), b);
+export const normalize = (a, x, b) =>
+  enforcePrecision(Math.min(Math.max(x, a), b));
 
 // Alpha
 
 /** Helper to convert alpha value to hex fragment */
 export const calcHexFragmentFromAlpha = (alpha) =>
-  channelToHexFragment(calcChannelFromFraction(alpha));
+  channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
 // Math (=internals/color/math.js=):2 ends here

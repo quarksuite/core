@@ -190,13 +190,13 @@ If you're interested in how this project evolved, feel free to [[https://github.
   - [[#internals][Internals]]
     - [[#error-handling-internalserrorjs][Error Handling (=internals/error.js=)]]
     - [[#color-2][Color]]
-      - [[#formats-internalscolorformatsjs][Formats (=internals/color/formats.js=)]]
+      - [[#supported-formats-internalscolorformatsjs][Supported Formats (=internals/color/formats.js=)]]
         - [[#syntax-tokens][Syntax Tokens]]
         - [[#value-extractors][Value Extractors]]
         - [[#rgb-hex][RGB Hex]]
           - [[#hex-validator][Hex Validator]]
           - [[#hex-value-extraction][Hex Value Extraction]]
-        - [[#w3c-x11][W3C-X11]]
+        - [[#named-colors][Named Colors]]
         - [[#functional-rgb][Functional RGB]]
           - [[#rgb-validator][RGB Validator]]
           - [[#rgb-value-extraction][RGB Value Extraction]]
@@ -218,31 +218,29 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#oklab-lch][Oklab (LCh)]]
           - [[#oklab-lch-validator][Oklab (LCh) Validator]]
           - [[#oklab-lch-extractor][Oklab (LCh) Extractor]]
-      - [[#conversion-internalscolorconversionsjs][Conversion (=internals/color/conversions.js=)]]
-        - [[#rgb-hex-conversion][RGB Hex Conversion]]
-          - [[#rgb-hex---functional-rgb-hexrgb][RGB Hex -> Functional RGB (=hex.rgb=)]]
-        - [[#w3c-x11-conversion][W3C-X11 Conversion]]
-          - [[#rgb-hex---w3c-x11][RGB Hex <- W3C-X11]]
+      - [[#format-conversions-internalscolorconversionsjs][Format Conversions (=internals/color/conversions.js=)]]
+        - [[#rgb-hex-conversions][RGB Hex Conversions]]
+          - [[#rgb-hex-to-functional-rgb][RGB Hex to Functional RGB]]
+        - [[#named-color-conversion][Named Color Conversion]]
+          - [[#rgb-hex-from-named-color][RGB Hex from Named Color]]
         - [[#functional-rgb-conversion][Functional RGB Conversion]]
-          - [[#rgb-conversion-setup][RGB Conversion Setup]]
-          - [[#rgb-hex---functional-rgb-rgbhex][RGB Hex <- Functional RGB (=rgb.hex=)]]
-          - [[#functional-rgb---functional-hsl-rgbhsl][Functional RGB -> Functional HSL (=rgb.hsl=)]]
-          - [[#functional-rgb---device-cmyk-rgbcmyk][Functional RGB -> Device CMYK (=rgb.cmyk=)]]
-          - [[#functional-rgb---functional-hwb-rgbhwb][Functional RGB -> Functional HWB (=rgb.hwb=)]]
-          - [[#functional-rgb---functional-cielab-rgblab][Functional RGB -> Functional CIELAB (=rgb.lab=)]]
-          - [[#functional-rgb---oklab-lch-rgboklab][Functional RGB -> Oklab (LCh) (=rgb.oklab=)]]
+          - [[#rgb-hex-from-functional-rgb][RGB Hex from Functional RGB]]
+          - [[#functional-rgb-to-functional-hsl][Functional RGB to Functional HSL]]
+          - [[#functional-rgb-to-device-cmyk][Functional RGB to Device CMYK]]
+          - [[#functional-rgb-to-functional-hwb][Functional RGB to Functional HWB]]
+          - [[#functional-rgb-to-functional-cielab][Functional RGB to Functional CIELAB]]
+          - [[#functional-rgb-to-oklab-lch][Functional RGB to Oklab (LCh)]]
         - [[#functional-hsl-conversion][Functional HSL Conversion]]
-          - [[#functional-rgb---functional-hsl-hslrgb][Functional RGB <- Functional HSL (=hsl.rgb=)]]
+          - [[#functional-rgb-from-functional-hsl][Functional RGB from Functional HSL]]
         - [[#device-cmyk-conversion][Device CMYK Conversion]]
-          - [[#functional-rgb---device-cmyk-cmykrgb][Functional RGB <- Device CMYK (=cmyk.rgb=)]]
+          - [[#functional-rgb-from-device-cmyk][Functional RGB from Device CMYK]]
         - [[#functional-hwb-conversion][Functional HWB Conversion]]
-          - [[#functional-rgb---functional-hwb-hwbrgb][Functional RGB <- Functional HWB (=hwb.rgb=)]]
+          - [[#functional-rgb-from-functional-hwb][Functional RGB from Functional HWB]]
         - [[#functional-cielab-conversion][Functional CIELAB Conversion]]
-          - [[#cielab-conversion-setup][CIELAB Conversion Setup]]
-          - [[#functional-rgb---functional-cielab-labrgb][Functional RGB <- Functional CIELAB (=lab.rgb=)]]
-          - [[#functional-cielab---functional-cielchab-lablch][Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=)]]
+          - [[#functional-rgb-from-functional-cielab][Functional RGB from Functional CIELAB]]
+          - [[#functional-cielab-to-functional-cielchab][Functional CIELAB to Functional CIELCh(ab)]]
         - [[#functional-cielch-conversion][Functional CIELCh Conversion]]
-          - [[#functional-cielab---functional-cielchab-lchlab][Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)]]
+          - [[#functional-cielab-from-functional-cielchab][Functional CIELAB from Functional CIELCh(ab)]]
         - [[#oklab-lch-conversion][Oklab (LCh) Conversion]]
       - [[#math-internalscolormathjs][Math (=internals/color/math.js=)]]
   - [[#data][Data]]
@@ -1535,9 +1533,10 @@ Each section is broken down into:
 + Tests: proving each function does its job and doesn't choke on the unexpected
 
 As a rule, any files in the project root are public modules while any files in directories are
-internal.
+internal utilities.
 
-Before anything, the package registry expects an entry point:
+Most who use this library will want to import the =mod.js= entry point, but if you only need parts
+of it, I recommend and encourage importing directly from the modules that fit your purpose.
 
 #+BEGIN_SRC js :tangle "./mod.js" :comments link
 export * from "./utilities.js";
@@ -5374,7 +5373,7 @@ OUTPUT: "and what actually happened";
 #+END_SRC
 
 *** Color
-**** Formats (=internals/color/formats.js=)
+**** Supported Formats (=internals/color/formats.js=)
 
 QuarkSuite is designed primarily for web technologies and handles all current (and upcoming) CSS color
 formats. This section documents how the QSC validates colors and extracts color values.
@@ -5569,7 +5568,7 @@ const colors = [
 ]
 #+end_src
 
-***** W3C-X11
+***** Named Colors
 
 Named colors are simple to validate. It's a matter of matching the name with its hex value in the
 =X11Colors= lookup table as a boolean.
@@ -5663,7 +5662,7 @@ const { valueExtractor } = await import(`${Deno.cwd()}/internals/color/formats.j
 
 <<valid-rgb>>
 
-console.log("const colors =", colors.map((color) => ({ color, values: rgbExtractor(color) })));
+console.log("const colors =", colors.map((color) => ({ color, values: valueExtractor(color) })));
 #+END_SRC
 
 #+NAME: rgb-values
@@ -6030,7 +6029,7 @@ explained on the linked W3C page above, but I'll summarize the components:
 
 The hue axes are unbound, but for use with the RGB space /must/ cap at =±128=.
 
-#+NAME: lab-samples
+#+NAME: cielab-samples
 | Color   | Value                           |
 |---------+---------------------------------|
 | Black   | =lab(0% 0 0)=                     |
@@ -6063,14 +6062,14 @@ export function cielabValidator(color) {
 
 Now, it's validator testing time.
 
-#+BEGIN_SRC js :results output code replace :allow read :var labTable=lab-samples
+#+BEGIN_SRC js :results output code replace :allow read :var cielabTable=cielab-samples
 const { cielabValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
-const colors = labTable.map(([a, b]) => b.replace(/=/g, ""));
+const colors = cielabTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => cielabValidator(color)))
 #+END_SRC
 
-#+NAME: valid-lab
+#+NAME: valid-cielab
 #+begin_src js
 const colors = [
   "lab(0% 0 0)",
@@ -6138,7 +6137,7 @@ The chroma is theoretically boundless, but in everyday use caps at =230=. The hu
 map to magenta-red and green-cyan, respectively. The hues at =90deg= and =270deg= map to a mustard
 yellow and sky blue, respectively.
 
-#+NAME: lch-samples
+#+NAME: cielch-samples
 | Color   | Value                              |
 |---------+------------------------------------|
 | Black   | =lch(0% 0 0)=                        |
@@ -6172,14 +6171,14 @@ export function cielchValidator(color) {
 
 And when I test the color table:
 
-#+BEGIN_SRC js :results output code replace :allow read :var lchTable=lch-samples
+#+BEGIN_SRC js :results output code replace :allow read :var cielchTable=cielch-samples
 const { cielchValidator } = await import(`${Deno.cwd()}/internals/color/formats.js`);
-const colors = lchTable.map(([a, b]) => b.replace(/=/g, ""));
+const colors = cielchTable.map(([a, b]) => b.replace(/=/g, ""));
 
 console.log("const colors =", colors.filter((color) => cielchValidator(color)))
 #+END_SRC
 
-#+NAME: valid-lch
+#+NAME: valid-cielch
 #+begin_src js
 const colors = [
   "lch(0% 0 0)",
@@ -6370,40 +6369,44 @@ const colors = [
 ]
 #+end_src
 
-**** Conversion (=internals/color/conversions.js=)
+**** Format Conversions (=internals/color/conversions.js=)
 
-The internal color conversion functions are organized by format. They follow a convention of
-=inputFormat.outputFormat(color)= this allows them to easily be composed in a logical order to create
-the higher level color conversion utilities exposed in the public API.
+I refactored the conversion functions to eliminate that isolated value extraction step so that I
+don't have to account for that explicitly in my conversion chains.
 
-Each implementation assumes extracted color values instead of a full color. This is to ensure color
-formatting functions remain separate from conversion functions for the reasons demonstrated in the API.
+Instead of extracted values, they now work with colors directly. It was a totally unnecessary
+"optimization" that I've since corrected.
 
-***** RGB Hex Conversion
+I also discarded the previous =inputFormat.outputFormat(color)= structure in favor of a more
+intentional naming convention.
 
-To reiterate, a hex color is the primitive color value. They may convert up to another format,
-but cannot convert down to anything but machine code.
++ =inputFormatToOutputFormat(color)=: indicates a forward conversion
++ =outputFormatFromInputFormat(color)=: indicates a back conversion
 
-****** RGB Hex -> Functional RGB (=hex.rgb=)
+Finally, I flattened the whole thing down to a single file to minimize HTTP requests when importing
+the library from its package URL.
+
+***** RGB Hex Conversions
+
+To reiterate, a hex color is the primitive color value. They may convert /to/ another format,
+but can only be converted /from/ named colors.
+
+****** RGB Hex to Functional RGB
 
 Converting RGB Hex to functional RGB is a matter of extracting each channel hex fragment and
 converting them to their equivalent integers. And then converting the alpha channel /if/ it exists.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-import {
-  calcFractionFromChannel,
-  hexFragmentToChannel,
-  significant,
-} from "./setup.js";
+import { calcFractionFromChannel, hexFragmentToChannel } from "./math.js";
+import { hexExtractor, valueExtractor } from "./formats.js";
 
-/** RGB Hex -> Functional RGB */
-export function rgb(hex) {
-  const [r, g, b, alpha] = hex;
-  const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
-  const A = significant(
-    4,
-    calcFractionFromChannel(hexFragmentToChannel(alpha ?? "ff")),
-  );
+/** RGB Hex to Functional RGB */
+export function hexToRGB(color) {
+  const [r, g, b, a] = hexExtractor(color);
+
+  const [R, G, B] = [r, g, b].map((hex) => hexFragmentToChannel(hex));
+  const A = (a && calcFractionFromChannel(hexFragmentToChannel(a ?? "ff"))) ||
+    1;
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
@@ -6412,64 +6415,56 @@ export function rgb(hex) {
 For testing my implementation, I'll reuse the extracted hex results above.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hex = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { hexToRGB } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<hex-values>>
+<<valid-hex>>
 
-console.log(colors.map(({color, values}) => ({hex: color, rgb: hex.rgb(values)})));
+console.log(colors.map((color) => ({input: color, output: hexToRGB(color) })));
 #+END_SRC
 
 #+NAME: hex-to-rgb
 #+begin_src js
 [
-  { hex: "#000000", rgb: "rgb(0, 0, 0)" },
-  { hex: "#808080", rgb: "rgb(128, 128, 128)" },
-  { hex: "#ffffff", rgb: "rgb(255, 255, 255)" },
-  { hex: "#ff0000", rgb: "rgb(255, 0, 0)" },
-  { hex: "#ffff00", rgb: "rgb(255, 255, 0)" },
-  { hex: "#00ff00", rgb: "rgb(0, 255, 0)" },
-  { hex: "#00ffff", rgb: "rgb(0, 255, 255)" },
-  { hex: "#0000ff", rgb: "rgb(0, 0, 255)" },
-  { hex: "#ff00ff", rgb: "rgb(255, 0, 255)" },
-  { hex: "#ace", rgb: "rgb(170, 204, 238)" },
-  { hex: "#bea", rgb: "rgb(187, 238, 170)" },
-  { hex: "#fed", rgb: "rgb(255, 238, 221)" },
-  { hex: "#face", rgb: "rgba(255, 170, 204, 0.9333)" },
-  { hex: "#cafe", rgb: "rgba(204, 170, 255, 0.9333)" },
-  { hex: "#deaded", rgb: "rgb(222, 173, 237)" },
-  { hex: "#c0ffee", rgb: "rgb(192, 255, 238)" },
-  { hex: "#4991ccaa", rgb: "rgba(73, 145, 204, 0.6667)" },
-  { hex: "#abcdef68", rgb: "rgba(171, 205, 239, 0.4078)" }
+  { input: "#000000", output: "rgb(0, 0, 0)" },
+  { input: "#808080", output: "rgb(128, 128, 128)" },
+  { input: "#ffffff", output: "rgb(255, 255, 255)" },
+  { input: "#ff0000", output: "rgb(255, 0, 0)" },
+  { input: "#ffff00", output: "rgb(255, 255, 0)" },
+  { input: "#00ff00", output: "rgb(0, 255, 0)" },
+  { input: "#00ffff", output: "rgb(0, 255, 255)" },
+  { input: "#0000ff", output: "rgb(0, 0, 255)" },
+  { input: "#ff00ff", output: "rgb(255, 0, 255)" },
+  { input: "#ace", output: "rgb(170, 204, 238)" },
+  { input: "#bea", output: "rgb(187, 238, 170)" },
+  { input: "#fed", output: "rgb(255, 238, 221)" },
+  { input: "#face", output: "rgba(255, 170, 204, 0.9333)" },
+  { input: "#cafe", output: "rgba(204, 170, 255, 0.9333)" },
+  { input: "#deaded", output: "rgb(222, 173, 237)" },
+  { input: "#c0ffee", output: "rgb(192, 255, 238)" },
+  { input: "#4991ccaa", output: "rgba(73, 145, 204, 0.6667)" },
+  { input: "#abcdef68", output: "rgba(171, 205, 239, 0.4078)" }
 ]
 #+end_src
 
 Success!
 
-***** W3C-X11 Conversion
+***** Named Color Conversion
 
-****** RGB Hex <- W3C-X11
+****** RGB Hex from Named Color
 
 After validation, the only possible conversion for a CSS named color is a query for its hex value.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-import { X11Colors } from "../../../data/color/w3c-x11.js";
+import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** RGB HEX <- W3C-X11 */
-export const hex = (keyword) => X11Colors[keyword];
+export const hexFromNamed = (color) => X11Colors[color];
 #+END_SRC
 
 ***** Functional RGB Conversion
 
-Functional RGB leads to the first progressive conversion fork and regression option.
-
-+ =RGB Hex <- Functional RGB=: a regressive conversion to RGB Hex
-+ =Functional RGB -> Functional HSL=: a progressive conversion to HSL
-+ =Functional RGB -> Device CMYK=: a progressive conversion to CMYK
-+ =Functional RGB -> Functional HWB=: a progressive conversion to HWB
-+ =Functional RGB -> Functional CIELAB=: a progressive conversion to CIELAB
-+ =Functional RGB  -> Oklab (LCh)=: a progressive conversion to [[https://bottosson.github.io/posts/oklab/][Oklab]]
-
-****** RGB Conversion Setup
+Functional RGB operates as a nexus bridging the many formats supported by Quarks System Core. This
+is because when designing for screens, every converted color must generally fall within the sRGB gamut.
 
 Functional RGB conversions are slightly more complex than RGB Hex conversions, so they require a bit
 of extra math. Luckily, I defined those arithmetic helpers, so I'll pull in the necessary ones.
@@ -6477,88 +6472,91 @@ of extra math. Luckily, I defined those arithmetic helpers, so I'll pull in the 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcChannelFromPercent,
-  calcFractionFromChannel,
   calcFractionFromPercent,
   calcHexFragmentFromAlpha,
   calcHueFromRad,
   calcPercentFromFraction,
   channelToHexFragment,
   correctHueCounterClockwise,
+  enforcePrecision,
   normalize,
-  significant,
-} from "./setup.js";
+} from "./math.js";
+#+END_SRC
 
-const precision = significant.bind(null, 5);
+After that, I need to write a function to ensure that the RGB(A) values I use for calculation are uniform.
 
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** A helper function to prep RGB values for calculations */
-function parseRGB(rgb) {
-  const [r, g, b, alpha] = rgb;
+function parseRGB(color) {
+  const [r, g, b, alpha] = valueExtractor(color);
   const value = (s) => parseFloat(s);
 
   const [R, G, B] = [r, g, b].map((channel) =>
     channel.endsWith("%")
-      ? precision(calcChannelFromPercent(value(channel)))
-      : precision(value(channel))
+      ? enforcePrecision(calcChannelFromPercent(value(channel)))
+      : enforcePrecision(value(channel))
   );
 
   const a = value(alpha);
-  const A = a != null ? (a > 1 ? precision(calcFractionFromPercent(a)) : a) : 1;
+  const A = a != null
+    ? (a > 1 ? enforcePrecision(calcFractionFromPercent(a)) : a)
+    : 1;
 
   return A === 1 ? [R, G, B] : [R, G, B, A];
 }
 #+END_SRC
 
-****** RGB Hex <- Functional RGB (=rgb.hex=)
+****** RGB Hex from Functional RGB
 
 A regressive conversion is one that breaks a color down. Since an RGB color begins the chain to
 higher conversions, that leaves RGB Hex as the only possible regression.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** RGB Hex <- Functional RGB */
-export function hex(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+/** RGB Hex from Functional RGB */
+export function hexFromRGB(color) {
+  const [r, g, b, alpha] = parseRGB(color);
 
   const [R, G, B] = [r, g, b].map((channel) => channelToHexFragment(channel));
   // Alpha is defined and not null
-  const A = (alpha && calcHexFragmentFromAlpha(alpha ?? 1)) || "ff";
+  const A = (alpha && calcHexFragmentFromAlpha(alpha)) || "ff";
 
   return A === "ff" ? `#${R}${G}${B}` : `#${R}${G}${B}${A}`;
 }
 #+END_SRC
 
-Now, I'll use the extracted RGB defined earlier to test my conversions for accuracy.
+Now, I'll use the RGB output defined earlier to test my conversions for accuracy.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { hexFromRGB } = await import(`${Js.cwd()}/internals/color/conversions.js`);
 
-<<rgb-values>>
+<<valid-rgb>>
 
-console.log(colors.map(({color, values}) => ({rgb: color, hex: rgb.hex(values)})));
+console.log(colors.map((color) => ({ input: color, output: hexFromRGB(color) })));
 #+END_SRC
 
-#+NAME: rgb-to-hex
+#+NAME: hex-from-rgb
 #+begin_src js
 [
-  { rgb: "rgb(0, 0, 0)", hex: "#000000" },
-  { rgb: "rgb(128, 128, 128)", hex: "#808080" },
-  { rgb: "rgb(255, 255, 255)", hex: "#ffffff" },
-  { rgb: "rgb(255, 0, 0)", hex: "#ff0000" },
-  { rgb: "rgb(255, 255, 0)", hex: "#ffff00" },
-  { rgb: "rgb(0, 255, 0)", hex: "#00ff00" },
-  { rgb: "rgb(0, 255, 255)", hex: "#00ffff" },
-  { rgb: "rgb(0, 0, 255)", hex: "#0000ff" },
-  { rgb: "rgb(255, 0, 255)", hex: "#ff00ff" },
-  { rgb: "rgb(33, 199, 95)", hex: "#21c75f" },
-  { rgb: "rgb(19, 114, 220)", hex: "#1372dc" },
-  { rgb: "rgb(10%, 40.4%, 49.9%)", hex: "#1a677f" },
-  { rgb: "rgb(200 138 39)", hex: "#c88a27" },
-  { rgb: "rgb(31 88 49 / 0.8)", hex: "#1f5831cc" },
-  { rgb: "rgba(110, 33, 110, 0.75)", hex: "#6e216ebf" },
-  { rgb: "rgba(10, 119, 30, 30%)", hex: "#0a771e4d" }
+  { input: "rgb(0, 0, 0)", output: "#000000" },
+  { input: "rgb(128, 128, 128)", output: "#808080" },
+  { input: "rgb(255, 255, 255)", output: "#ffffff" },
+  { input: "rgb(255, 0, 0)", output: "#ff0000" },
+  { input: "rgb(255, 255, 0)", output: "#ffff00" },
+  { input: "rgb(0, 255, 0)", output: "#00ff00" },
+  { input: "rgb(0, 255, 255)", output: "#00ffff" },
+  { input: "rgb(0, 0, 255)", output: "#0000ff" },
+  { input: "rgb(255, 0, 255)", output: "#ff00ff" },
+  { input: "rgb(33, 199, 95)", output: "#21c75f" },
+  { input: "rgb(19, 114, 220)", output: "#1372dc" },
+  { input: "rgb(10%, 40.4%, 49.9%)", output: "#1a677f" },
+  { input: "rgb(200 138 39)", output: "#c88a27" },
+  { input: "rgb(31 88 49 / 0.8)", output: "#1f5831cc" },
+  { input: "rgba(110, 33, 110, 0.75)", output: "#6e216ebf" },
+  { input: "rgba(10, 119, 30, 30%)", output: "#0a771e4d" }
 ]
 #+end_src
 
-****** Functional RGB -> Functional HSL (=rgb.hsl=)
+****** Functional RGB to Functional HSL
 
 Functional RGB to Functional HSL conversion was supported in QuarkSuite 1, so the algorithm hasn't
 changed its implementation. First, it requires a little prep.
@@ -6602,15 +6600,15 @@ function calcHSL(r, g, b) {
 And now the actual conversion algorithm:
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Functional RGB -> Functional HSL */
-export function hsl(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+/** Functional RGB to Functional HSL */
+export function rgbToHSL(color) {
+  const [r, g, b, alpha] = parseRGB(color);
   const [h, s, l] = calcHSL(r, g, b);
 
   const [H, S, L] = [
     h,
-    precision(calcPercentFromFraction(s)),
-    precision(calcPercentFromFraction(l)),
+    enforcePrecision(calcPercentFromFraction(s)),
+    enforcePrecision(calcPercentFromFraction(l)),
   ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
@@ -6621,45 +6619,45 @@ export function hsl(rgb) {
 Time for some color conversion tests!
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbToHSL } = await import(`${Js.cwd()}/internals/color/conversions.js`);
 
-<<rgb-values>>
+<<valid-rgb>>
 
-console.log(colors.map(({color, values}) => ({rgb: color, hsl: rgb.hsl(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbToHSL(color)})));
 #+END_SRC
 
 #+NAME: rgb-to-hsl
 #+begin_src js
 [
-  { rgb: "rgb(0, 0, 0)", hsl: "hsl(0, 0%, 0%)" },
-  { rgb: "rgb(128, 128, 128)", hsl: "hsl(0, 0%, 50.196%)" },
-  { rgb: "rgb(255, 255, 255)", hsl: "hsl(0, 0%, 100%)" },
-  { rgb: "rgb(255, 0, 0)", hsl: "hsl(0, 100%, 50%)" },
-  { rgb: "rgb(255, 255, 0)", hsl: "hsl(60, 100%, 50%)" },
-  { rgb: "rgb(0, 255, 0)", hsl: "hsl(120, 100%, 50%)" },
-  { rgb: "rgb(0, 255, 255)", hsl: "hsl(180, 100%, 50%)" },
-  { rgb: "rgb(0, 0, 255)", hsl: "hsl(240, 100%, 50%)" },
-  { rgb: "rgb(255, 0, 255)", hsl: "hsl(300, 100%, 50%)" },
-  { rgb: "rgb(33, 199, 95)", hsl: "hsl(142, 71.552%, 45.49%)" },
-  { rgb: "rgb(19, 114, 220)", hsl: "hsl(212, 84.1%, 46.863%)" },
-  { rgb: "rgb(10%, 40.4%, 49.9%)", hsl: "hsl(194, 66.013%, 30%)" },
-  { rgb: "rgb(200 138 39)", hsl: "hsl(37, 67.364%, 46.863%)" },
-  { rgb: "rgb(31 88 49 / 0.8)", hsl: "hsla(139, 47.899%, 23.333%, 0.8)" },
-  { rgb: "rgba(110, 33, 110, 0.75)", hsl: "hsla(300, 53.846%, 28.039%, 0.75)" },
-  { rgb: "rgba(10, 119, 30, 30%)", hsl: "hsla(131, 84.496%, 25.294%, 0.3)" }
+  { input: "rgb(0, 0, 0)", output: "hsl(0, 0%, 0%)" },
+  { input: "rgb(128, 128, 128)", output: "hsl(0, 0%, 50.2%)" },
+  { input: "rgb(255, 255, 255)", output: "hsl(0, 0%, 100%)" },
+  { input: "rgb(255, 0, 0)", output: "hsl(0, 100%, 50%)" },
+  { input: "rgb(255, 255, 0)", output: "hsl(60, 100%, 50%)" },
+  { input: "rgb(0, 255, 0)", output: "hsl(120, 100%, 50%)" },
+  { input: "rgb(0, 255, 255)", output: "hsl(180, 100%, 50%)" },
+  { input: "rgb(0, 0, 255)", output: "hsl(240, 100%, 50%)" },
+  { input: "rgb(255, 0, 255)", output: "hsl(300, 100%, 50%)" },
+  { input: "rgb(33, 199, 95)", output: "hsl(142, 71.55%, 45.49%)" },
+  { input: "rgb(19, 114, 220)", output: "hsl(212, 84.1%, 46.86%)" },
+  { input: "rgb(10%, 40.4%, 49.9%)", output: "hsl(194, 66.6%, 29.94%)" },
+  { input: "rgb(200 138 39)", output: "hsl(37, 67.37%, 46.86%)" },
+  { input: "rgb(31 88 49 / 0.8)", output: "hsla(139, 47.89%, 23.34%, 0.8)" },
+  { input: "rgba(110, 33, 110, 0.75)", output: "hsla(300, 53.85%, 28.04%, 0.75)" },
+  { input: "rgba(10, 119, 30, 30%)", output: "hsla(131, 84.5%, 25.3%, 0.3)" }
 ]
 #+end_src
 
 Booyah!
 
-****** Functional RGB -> Device CMYK (=rgb.cmyk=)
+****** Functional RGB to Device CMYK
 
 And now I drift again into unfamiliar terrain, but RapidTables is there again to provide a map.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Functional RGB -> Device CMYK */
-export function cmyk(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+/** Functional RGB to Device CMYK */
+export function rgbToCMYK(color) {
+  const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
   );
@@ -6672,7 +6670,7 @@ export function cmyk(rgb) {
   // Many examples in the CSS Color Module Level 4 use the percentage format,
   // so I'm assuming that's the preferred format in conversions.
   const [C, M, Y, K] = [c, m, y, k].map((component) =>
-    isNaN(component) ? 0 : precision(calcPercentFromFraction(component))
+    isNaN(component) ? 0 : enforcePrecision(calcPercentFromFraction(component))
   );
 
   return A === 1
@@ -6684,61 +6682,64 @@ export function cmyk(rgb) {
 Now, I'm checking the math.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbToCMYK } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<rgb-values>>
+<<valid-rgb>>
 
-console.log(colors.map(({color, values}) => ({rgb: color, cmyk: rgb.cmyk(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbToCMYK(color)})));
 #+END_SRC
 
 #+NAME: rgb-to-cmyk
 #+begin_src js
 [
-  { rgb: "rgb(0, 0, 0)", cmyk: "device-cmyk(0% 0% 0% 100%)" },
-  { rgb: "rgb(128, 128, 128)", cmyk: "device-cmyk(0% 0% 0% 49.804%)" },
-  { rgb: "rgb(255, 255, 255)", cmyk: "device-cmyk(0% 0% 0% 0%)" },
-  { rgb: "rgb(255, 0, 0)", cmyk: "device-cmyk(0% 100% 100% 0%)" },
-  { rgb: "rgb(255, 255, 0)", cmyk: "device-cmyk(0% 0% 100% 0%)" },
-  { rgb: "rgb(0, 255, 0)", cmyk: "device-cmyk(100% 0% 100% 0%)" },
-  { rgb: "rgb(0, 255, 255)", cmyk: "device-cmyk(100% 0% 0% 0%)" },
-  { rgb: "rgb(0, 0, 255)", cmyk: "device-cmyk(100% 100% 0% 0%)" },
-  { rgb: "rgb(255, 0, 255)", cmyk: "device-cmyk(0% 100% 0% 0%)" },
-  { rgb: "rgb(33, 199, 95)", cmyk: "device-cmyk(83.417% 0% 52.261% 21.961%)" },
-  { rgb: "rgb(19, 114, 220)", cmyk: "device-cmyk(91.364% 48.182% 0% 13.726%)" },
-  { rgb: "rgb(10%, 40.4%, 49.9%)", cmyk: "device-cmyk(79.528% 18.898% 0% 50.196%)" },
-  { rgb: "rgb(200 138 39)", cmyk: "device-cmyk(0% 31% 80.5% 21.569%)" },
+  { input: "rgb(0, 0, 0)", output: "device-cmyk(0% 0% 0% 100%)" },
+  { input: "rgb(128, 128, 128)", output: "device-cmyk(0% 0% 0% 49.8%)" },
+  { input: "rgb(255, 255, 255)", output: "device-cmyk(0% 0% 0% 0%)" },
+  { input: "rgb(255, 0, 0)", output: "device-cmyk(0% 100% 100% 0%)" },
+  { input: "rgb(255, 255, 0)", output: "device-cmyk(0% 0% 100% 0%)" },
+  { input: "rgb(0, 255, 0)", output: "device-cmyk(100% 0% 100% 0%)" },
+  { input: "rgb(0, 255, 255)", output: "device-cmyk(100% 0% 0% 0%)" },
+  { input: "rgb(0, 0, 255)", output: "device-cmyk(100% 100% 0% 0%)" },
+  { input: "rgb(255, 0, 255)", output: "device-cmyk(0% 100% 0% 0%)" },
+  { input: "rgb(33, 199, 95)", output: "device-cmyk(83.42% 0% 52.27% 21.96%)" },
+  { input: "rgb(19, 114, 220)", output: "device-cmyk(91.36% 48.17% 0% 13.73%)" },
+  { input: "rgb(10%, 40.4%, 49.9%)", output: "device-cmyk(79.52% 18.9% 0% 50.2%)" },
+  { input: "rgb(200 138 39)", output: "device-cmyk(0% 31% 80.5% 21.57%)" },
   {
-    rgb: "rgb(31 88 49 / 0.8)",
-    cmyk: "device-cmyk(64.773% 0% 44.318% 65.49% / 0.8)"
+    input: "rgb(31 88 49 / 0.8)",
+    output: "device-cmyk(64.76% 0% 44.31% 65.49% / 0.8)"
   },
-  { rgb: "rgba(110, 33, 110, 0.75)", cmyk: "device-cmyk(0% 70% 0% 56.863% / 0.75)" },
   {
-    rgb: "rgba(10, 119, 30, 30%)",
-    cmyk: "device-cmyk(91.597% 0% 74.79% 53.333% / 0.3)"
+    input: "rgba(110, 33, 110, 0.75)",
+    output: "device-cmyk(0% 70% 0% 56.86% / 0.75)"
+  },
+  {
+    input: "rgba(10, 119, 30, 30%)",
+    output: "device-cmyk(91.6% 0% 74.8% 53.33% / 0.3)"
   }
 ]
 #+end_src
 
 Seems to check out, but I'm going to implement some visual tests soon.
 
-****** Functional RGB -> Functional HWB (=rgb.hwb=)
+****** Functional RGB to Functional HWB
 
 The conversion of RGB to HWB is a little unorthodox. It's technically a /composite/ conversion. The
 hue is first calculated via partial HSL conversion, and then the amount of white and black is
 calculated via a [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][modified formula from the spec itself]].
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Functional RGB -> Functional HWB */
-export function hwb(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+/** Functional RGB to Functional HWB */
+export function rgbToHWB(color) {
+  const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
   );
 
   const [H] = calcHSL(r, g, b);
   const [W, BLK] = [
-    precision(calcPercentFromFraction(Math.min(R, G, B))),
-    precision(calcPercentFromFraction(1 - Math.max(R, G, B))),
+    enforcePrecision(calcPercentFromFraction(Math.min(R, G, B))),
+    enforcePrecision(calcPercentFromFraction(1 - Math.max(R, G, B))),
   ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
@@ -6749,61 +6750,43 @@ export function hwb(rgb) {
 I'm suspicious of the math here, so let's see the proof.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbToHWB } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<rgb-values>>
+<<valid-rgb>>
 
-console.log(colors.map(({color, values}) => ({rgb: color, hwb: rgb.hwb(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbToHWB(color)})));
 #+END_SRC
 
 #+NAME: rgb-to-hwb
 #+begin_src js
 [
-  { rgb: "rgb(0, 0, 0)", hwb: "hwb(0 0% 100%)" },
-  { rgb: "rgb(128, 128, 128)", hwb: "hwb(0 50.196% 49.804%)" },
-  { rgb: "rgb(255, 255, 255)", hwb: "hwb(0 100% 0%)" },
-  { rgb: "rgb(255, 0, 0)", hwb: "hwb(0 0% 0%)" },
-  { rgb: "rgb(255, 255, 0)", hwb: "hwb(60 0% 0%)" },
-  { rgb: "rgb(0, 255, 0)", hwb: "hwb(120 0% 0%)" },
-  { rgb: "rgb(0, 255, 255)", hwb: "hwb(180 0% 0%)" },
-  { rgb: "rgb(0, 0, 255)", hwb: "hwb(240 0% 0%)" },
-  { rgb: "rgb(255, 0, 255)", hwb: "hwb(300 0% 0%)" },
-  { rgb: "rgb(33, 199, 95)", hwb: "hwb(142 12.941% 21.961%)" },
-  { rgb: "rgb(19, 114, 220)", hwb: "hwb(212 7.451% 13.726%)" },
-  { rgb: "rgb(10%, 40.4%, 49.9%)", hwb: "hwb(194 10.196% 50.196%)" },
-  { rgb: "rgb(200 138 39)", hwb: "hwb(37 15.294% 21.569%)" },
-  { rgb: "rgb(31 88 49 / 0.8)", hwb: "hwb(139 12.157% 65.49% / 0.8)" },
-  { rgb: "rgba(110, 33, 110, 0.75)", hwb: "hwb(300 12.941% 56.863% / 0.75)" },
-  { rgb: "rgba(10, 119, 30, 30%)", hwb: "hwb(131 3.9216% 53.333% / 0.3)" }
+  { input: "rgb(0, 0, 0)", output: "hwb(0 0% 100%)" },
+  { input: "rgb(128, 128, 128)", output: "hwb(0 50.2% 49.8%)" },
+  { input: "rgb(255, 255, 255)", output: "hwb(0 100% 0%)" },
+  { input: "rgb(255, 0, 0)", output: "hwb(0 0% 0%)" },
+  { input: "rgb(255, 255, 0)", output: "hwb(60 0% 0%)" },
+  { input: "rgb(0, 255, 0)", output: "hwb(120 0% 0%)" },
+  { input: "rgb(0, 255, 255)", output: "hwb(180 0% 0%)" },
+  { input: "rgb(0, 0, 255)", output: "hwb(240 0% 0%)" },
+  { input: "rgb(255, 0, 255)", output: "hwb(300 0% 0%)" },
+  { input: "rgb(33, 199, 95)", output: "hwb(142 12.94% 21.96%)" },
+  { input: "rgb(19, 114, 220)", output: "hwb(212 7.451% 13.73%)" },
+  { input: "rgb(10%, 40.4%, 49.9%)", output: "hwb(194 10.2% 50.2%)" },
+  { input: "rgb(200 138 39)", output: "hwb(37 15.29% 21.57%)" },
+  { input: "rgb(31 88 49 / 0.8)", output: "hwb(139 12.16% 65.49% / 0.8)" },
+  { input: "rgba(110, 33, 110, 0.75)", output: "hwb(300 12.94% 56.86% / 0.75)" },
+  { input: "rgba(10, 119, 30, 30%)", output: "hwb(131 3.922% 53.33% / 0.3)" }
 ]
 #+end_src
 
 I'll test this more , but the results are about what I'd expect.
 
-****** Functional RGB -> Functional CIELAB (=rgb.lab=)
-
-Converting RGB to CIELAB is another multistep process. The chain is as follows:
-
-1) =Functional RGB >-< Linear RGB=
-2) =Linear RGB -> CIE XYZ=
-3) =CIE XYZ -> Functional CIELAB=
-
-The =>-<= indicates a lateral conversion. One that isn't a completely different format, but a
-modification of the original format for some special purpose.
+****** Functional RGB to Functional CIELAB
 
 CIEXYZ is a necessary waypoint on the road to CIELAB conversion indicating a set of general
 coordinates based on the range of colors perceptible by the human eye.
 
-#+BEGIN_QUOTE
-In some color conversion implementations, it would also be a waypoint in CIELCh(ab) conversion, but I
-think it's easier to complete the =Functional RGB <-> Functional CIELAB= link and then allow
-=Functional CIELAB <-> Functional CIELCh(ab)= to form its own separate link.
-#+END_QUOTE
-
-******* Functional RGB >-< Linear RGB
-
-Linear RGB is RGB without the gamma function applied as that would throw off the calculation of
-CIEXYZ.
+Linear RGB is RGB with the gamma removed as that would throw off the calculation of CIEXYZ.
 
 You can [[https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz][read more about the actual formula]] if you're curious.
 
@@ -6816,33 +6799,22 @@ const removeGamma = (rgb) =>
   });
 #+END_SRC
 
-******* Linear RGB -> CIEXYZ
-
 Now, to convert the ungamma-ed RGB to XYZ data, we have to pass it through a transformation matrix
 of values representing the D65 reference white point defined in sRGB, which CSS uses.
 
+After, I need to apply the [[http://www.brucelindbloom.com/Eqn_ChromAdapt.html][Bradford method of chromatic adaptation]] to convert the illuminant from
+D65 to D50.
+
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Linear RGB -> CIE XYZ */
+/** Linear RGB to CIE XYZ */
 function calcXYZ(rgb) {
   const [R, G, B] = removeGamma(rgb);
-  return [
+  const [X, Y, Z] = [
     R * 0.4124564 + G * 0.3575761 + B * 0.1804375,
     R * 0.2126729 + G * 0.7151522 + B * 0.072175,
     R * 0.0193339 + G * 0.119192 + B * 0.9503041,
-  ]; // [X, Y, Z]
-}
-#+END_SRC
+  ];
 
-******* CIEXYZ -> Functional CIELAB
-
-First, I need to apply the [[http://www.brucelindbloom.com/Eqn_ChromAdapt.html][Bradford method of chromatic adaptation]] to convert from D65 to D50, which
-CIELAB uses.
-
-And then I need to apply the actual [[http://www.brucelindbloom.com/index.html?Equations.html][conversion formula]].
-
-#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-function calcD50XYZ(rgb) {
-  const [X, Y, Z] = calcXYZ(rgb);
   /*
    * D50 matrix
    * =============================
@@ -6857,11 +6829,15 @@ function calcD50XYZ(rgb) {
     X * -0.0092345 + Y * 0.0150436 + Z * 0.7521316,
   ];
 }
+#+END_SRC
 
-/** Functional RGB -> Functional CIELAB */
-export function lab(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
-  const [x, y, z] = calcD50XYZ([r, g, b]);
+And then I need to apply the actual [[http://www.brucelindbloom.com/index.html?Equations.html][conversion formula]].
+
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
+/** Functional RGB to Functional CIELAB */
+export function rgbToCielab(color) {
+  const [r, g, b, alpha] = parseRGB(color);
+  const [x, y, z] = calcXYZ([r, g, b]);
 
   // CIE standards
   const ε = 216 / 24389;
@@ -6877,9 +6853,9 @@ export function lab(rgb) {
 
   // Calculating Lab values and limiting the precision
   const [L, aHue, bHue] = [
-    precision(116 * FY - 16),
-    precision(500 * (FX - FY)),
-    precision(200 * (FY - FZ)),
+    enforcePrecision(116 * FY - 16),
+    enforcePrecision(500 * (FX - FY)),
+    enforcePrecision(200 * (FY - FZ)),
   ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : V));
   const A = (alpha && (alpha ?? 1)) || 1;
 
@@ -6892,38 +6868,38 @@ export function lab(rgb) {
 That was a lot, so I'm going to run my tests now.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbToCielab } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<rgb-values>>
+<<valid-rgb>>
 
-console.log(colors.map(({color, values}) => ({rgb: color, lab: rgb.lab(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbToCielab(color)})));
 #+END_SRC
 
-#+NAME: rgb-to-lab
+#+NAME: rgb-to-cielab
 #+begin_src js
 [
-  { rgb: "rgb(0, 0, 0)", lab: "lab(0% 0 0)" },
-  { rgb: "rgb(128, 128, 128)", lab: "lab(53.585% 0 0)" },
-  { rgb: "rgb(255, 255, 255)", lab: "lab(100% 0 0)" },
-  { rgb: "rgb(255, 0, 0)", lab: "lab(54.292% 80.812 69.885)" },
-  { rgb: "rgb(255, 255, 0)", lab: "lab(97.607% -15.753 93.388)" },
-  { rgb: "rgb(0, 255, 0)", lab: "lab(87.818% -79.287 80.99)" },
-  { rgb: "rgb(0, 255, 255)", lab: "lab(90.665% -50.665 -14.962)" },
-  { rgb: "rgb(0, 0, 255)", lab: "lab(29.568% 68.299 -112.03)" },
-  { rgb: "rgb(255, 0, 255)", lab: "lab(60.17% 93.55 -60.499)" },
-  { rgb: "rgb(33, 199, 95)", lab: "lab(70.854% -58.576 39.72)" },
-  { rgb: "rgb(19, 114, 220)", lab: "lab(47.683% 5.8918 -62.494)" },
-  { rgb: "rgb(10%, 40.4%, 49.9%)", lab: "lab(39.981% -16.954 -20.404)" },
-  { rgb: "rgb(200 138 39)", lab: "lab(62.671% 18.464 58.572)" },
-  { rgb: "rgb(31 88 49 / 0.8)", lab: "lab(32.891% -26.87 16.881 / 0.8)" },
-  { rgb: "rgba(110, 33, 110, 0.75)", lab: "lab(28.127% 41.667 -27.612 / 0.75)" },
-  { rgb: "rgba(10, 119, 30, 30%)", lab: "lab(43.317% -42.987 38.123 / 0.3)" }
+  { input: "rgb(0, 0, 0)", output: "lab(0% 0 0)" },
+  { input: "rgb(128, 128, 128)", output: "lab(53.59% 0 0)" },
+  { input: "rgb(255, 255, 255)", output: "lab(100% 0 0)" },
+  { input: "rgb(255, 0, 0)", output: "lab(54.29% 80.81 69.89)" },
+  { input: "rgb(255, 255, 0)", output: "lab(97.61% -15.75 93.39)" },
+  { input: "rgb(0, 255, 0)", output: "lab(87.82% -79.29 80.99)" },
+  { input: "rgb(0, 255, 255)", output: "lab(90.67% -50.67 -14.96)" },
+  { input: "rgb(0, 0, 255)", output: "lab(29.57% 68.3 -112)" },
+  { input: "rgb(255, 0, 255)", output: "lab(60.17% 93.55 -60.5)" },
+  { input: "rgb(33, 199, 95)", output: "lab(70.85% -58.58 39.73)" },
+  { input: "rgb(19, 114, 220)", output: "lab(47.69% 5.882 -62.48)" },
+  { input: "rgb(10%, 40.4%, 49.9%)", output: "lab(39.98% -16.95 -20.4)" },
+  { input: "rgb(200 138 39)", output: "lab(62.67% 18.46 58.58)" },
+  { input: "rgb(31 88 49 / 0.8)", output: "lab(32.89% -26.87 16.88 / 0.8)" },
+  { input: "rgba(110, 33, 110, 0.75)", output: "lab(28.13% 41.67 -27.61 / 0.75)" },
+  { input: "rgba(10, 119, 30, 30%)", output: "lab(43.32% -42.99 38.13 / 0.3)" }
 ]
 #+end_src
 
 Awesome.
 
-****** Functional RGB -> Oklab (LCh) (=rgb.oklab=)
+****** Functional RGB to Oklab (LCh)
 
 [[https://bottoson.github.io/posts/oklab][Oklab]] is a perceptual color space for image processing created by Björn Ottosson. It has all the
 advantages of CIELAB but fewer of its drawbacks in hue shifting (especially with blues).
@@ -6934,8 +6910,7 @@ I specifically use the formulas for converting Linear RGB to/from Oklab to conve
 and ensure the output stays within the sRGB gamut.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-function calcOklab(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+function calcOklab(r, g, b) {
   const [R, G, B] = removeGamma([r, g, b]);
 
   // Convert to LMS cone activations and apply non-linearity
@@ -6950,19 +6925,18 @@ function calcOklab(rgb) {
     L * 0.2104542553 + M * 0.793617785 - S * 0.0040720468,
     L * 1.9779984951 - M * 2.428592205 + S * 0.4505937099,
     L * 0.0259040371 + M * 0.7827717662 - S * 0.808675766,
-    (alpha && (alpha ?? 1)) || 1, // slot in alpha
   ];
 }
 
-export function oklab(rgb) {
-  const [l, a, b, alpha] = calcOklab(rgb);
-  const truncate = significant.bind(null, 3);
+export function rgbToOklab(color) {
+  const [r, g, b, alpha] = parseRGB(color);
+  const [l, aHue, bHue] = calcOklab(r, g, b);
 
-  const L = `${precision(calcPercentFromFraction(l))}%`;
-  const c = precision(Math.sqrt(a ** 2 + b ** 2));
-  const h = precision(Math.atan2(b, a) * (180 / Math.PI));
+  const L = `${enforcePrecision(calcPercentFromFraction(l))}%`;
+  const c = enforcePrecision(Math.sqrt(aHue ** 2 + bHue ** 2));
+  const h = enforcePrecision(Math.atan2(bHue, aHue) * (180 / Math.PI));
 
-  const C = +c.toFixed(5); // Ensure negative exponent is rendered as 0
+  const C = Math.sign(Math.round(c)) === 0 ? 0 : c; // Ensure negative values lock at 0
   const H = Math.sign(h) === -1 ? correctHueCounterClockwise(h) : h;
 
   const A = (alpha && (alpha ?? 1)) || 1;
@@ -6973,61 +6947,51 @@ export function oklab(rgb) {
 
 Now, I'll do some quick tests.
 
-#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const rgb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+#+BEGIN_SRC js :results output code replace :allow read :noweb yes
+const { rgbToOklab } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<rgb-values>>
+<<valid-rgb>>
 
-console.log(colors.map(({color, values}) => ({rgb: color, oklab: rgb.oklab(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbToOklab(color)})));
 #+END_SRC
 
-#+RESULTS:
-#+begin_src deno
+#+NAME: rgb-to-oklab
+#+begin_src js
 [
-  { rgb: "rgb(0, 0, 0)", oklab: "oklab(0% 0 0)" },
-  { rgb: "rgb(128, 128, 128)", oklab: "oklab(59.987% 0 89.876)" },
-  { rgb: "rgb(255, 255, 255)", oklab: "oklab(100% 0 89.876)" },
-  { rgb: "rgb(255, 0, 0)", oklab: "oklab(62.795% 0.25768 29.234)" },
-  { rgb: "rgb(255, 255, 0)", oklab: "oklab(96.798% 0.21101 109.77)" },
-  { rgb: "rgb(0, 255, 0)", oklab: "oklab(86.644% 0.29483 142.5)" },
-  { rgb: "rgb(0, 255, 255)", oklab: "oklab(90.54% 0.15455 194.77)" },
-  { rgb: "rgb(0, 0, 255)", oklab: "oklab(45.201% 0.31321 264.052)" },
-  { rgb: "rgb(255, 0, 255)", oklab: "oklab(70.167% 0.32249 328.363)" },
-  { rgb: "rgb(33, 199, 95)", oklab: "oklab(72.803% 0.19376 149.64)" },
-  { rgb: "rgb(19, 114, 220)", oklab: "oklab(56.178% 0.18151 255.9)" },
-  { rgb: "rgb(10%, 40.4%, 49.9%)", oklab: "oklab(47.981% 0.08068 223.7)" },
-  { rgb: "rgb(200 138 39)", oklab: "oklab(67.957% 0.13135 73.667)" },
-  { rgb: "rgb(31 88 49 / 0.8)", oklab: "oklab(41.183% 0.08802 150.97 / 0.8)" },
-  { rgb: "rgba(110, 33, 110, 0.75)", oklab: "oklab(39.98% 0.14447 327.865 / 0.75)" },
-  { rgb: "rgba(10, 119, 30, 30%)", oklab: "oklab(49.592% 0.15347 144.63 / 0.3)" }
+  { input: "rgb(0, 0, 0)", output: "oklab(0% 0 0)" },
+  { input: "rgb(128, 128, 128)", output: "oklab(59.99% 0 89.88)" },
+  { input: "rgb(255, 255, 255)", output: "oklab(100% 0 89.88)" },
+  { input: "rgb(255, 0, 0)", output: "oklab(62.8% 0 29.23)" },
+  { input: "rgb(255, 255, 0)", output: "oklab(96.8% 0 109.8)" },
+  { input: "rgb(0, 255, 0)", output: "oklab(86.64% 0 142.5)" },
+  { input: "rgb(0, 255, 255)", output: "oklab(90.54% 0 194.8)" },
+  { input: "rgb(0, 0, 255)", output: "oklab(45.2% 0 264.1)" },
+  { input: "rgb(255, 0, 255)", output: "oklab(70.17% 0 328.4)" },
+  { input: "rgb(33, 199, 95)", output: "oklab(72.8% 0 149.6)" },
+  { input: "rgb(19, 114, 220)", output: "oklab(56.18% 0 255.9)" },
+  { input: "rgb(10%, 40.4%, 49.9%)", output: "oklab(47.98% 0 223.7)" },
+  { input: "rgb(200 138 39)", output: "oklab(67.96% 0 73.68)" },
+  { input: "rgb(31 88 49 / 0.8)", output: "oklab(41.18% 0 151 / 0.8)" },
+  { input: "rgba(110, 33, 110, 0.75)", output: "oklab(39.98% 0 327.9 / 0.75)" },
+  { input: "rgba(10, 119, 30, 30%)", output: "oklab(49.59% 0 144.6 / 0.3)" }
 ]
 #+end_src
 
-The back conversion will confirm the correctness of this code.
-
 ***** Functional HSL Conversion
 
-HSL conversion sits like an island in the conversion algorithms, because even though it's easier for
-humans to work with, RGB conversions are easier to /calculate/. And so, all conversions from this
-point on convert to and from the RGB space.
+HSL is a polar coordinate translation of RGB so you can only derive an RGB color from it.
 
-****** Functional RGB <- Functional HSL (=hsl.rgb=)
-
-The only unique HSL conversion is a regressive conversion to RGB which can be used as a jumping off
-point for converting to all remaining formats.
+****** Functional RGB from Functional HSL
 
 First, the extracted values require some prepping before calculations are predictable.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 import {
   calcChannelFromFraction,
-  calcFractionFromPercent,
   calcHueFromGrad,
-  calcHueFromRad,
   calcHueFromTurn,
   correctHueClockwise,
-  correctHueCounterClockwise,
-} from "./setup.js";
+} from "./math.js";
 
 // https://www.rapidtables.com/convert/color/hsl-to-rgb.html
 const calcChannels = (C, X, H) =>
@@ -7040,8 +7004,8 @@ const calcChannels = (C, X, H) =>
     [[C, 0, X], 300 <= H && H < 360],
   ]);
 
-export const parseHSL = (hsl) => {
-  const [h, s, l, alpha] = hsl;
+function parseHSL(color) {
+  const [h, s, l, alpha] = valueExtractor(color);
 
   const [H] = [h].map((value) => {
     const n = parseFloat(value);
@@ -7081,9 +7045,9 @@ export const parseHSL = (hsl) => {
   const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
 
   return A === 1 ? [H, S, L] : [H, S, L, A];
-};
+}
 
-export const calcRGB = (h, s, l) => {
+function calcRGB(h, s, l) {
   // Calculate chroma
   const C = (1 - Math.abs(2 * l - 1)) * s;
   const X = C * (1 - Math.abs(((h / 60) % 2) - 1));
@@ -7096,16 +7060,15 @@ export const calcRGB = (h, s, l) => {
     .map((channel) => Math.round(calcChannelFromFraction(channel + m)));
 
   return [R, G, B];
-};
+}
 #+END_SRC
 
-Phew. Now for the actual conversion algorithm, it's a similar pattern to the RGB progressive
-conversion to HSL.
+Phew. Now for the actual conversion function, it's an inversion.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Functional RGB <- Functional HSL */
-export function rgb(hsl) {
-  const [h, s, l, alpha] = parseHSL(hsl);
+/** Functional RGB from Functional HSL */
+export function rgbFromHSL(color) {
+  const [h, s, l, alpha] = parseHSL(color);
   const [R, G, B] = calcRGB(h, s, l);
 
   const A = (alpha && (alpha ?? 1)) || 1;
@@ -7117,48 +7080,46 @@ export function rgb(hsl) {
 Now, the tests with my extracted HSL to verify that the math checks out.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hsl = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbFromHSL } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<hsl-values>>
+<<valid-hsl>>
 
-console.log(colors.map(({color, values}) => ({hsl: color, rgb: hsl.rgb(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbFromHSL(color)})));
 #+END_SRC
 
-#+NAME: hsl-to-rgb
+#+NAME: rgb-from-hsl
 #+begin_src js
 [
-  { hsl: "hsl(0, 0%, 0%)", rgb: "rgb(0, 0, 0)" },
-  { hsl: "hsl(0, 0%, 50%)", rgb: "rgb(128, 128, 128)" },
-  { hsl: "hsl(0, 0%, 100%)", rgb: "rgb(255, 255, 255)" },
-  { hsl: "hsl(0, 100%, 50%)", rgb: "rgb(255, 0, 0)" },
-  { hsl: "hsl(60, 100%, 50%)", rgb: "rgb(255, 255, 0)" },
-  { hsl: "hsl(120, 100%, 50%)", rgb: "rgb(0, 255, 0)" },
-  { hsl: "hsl(180, 100%, 50%)", rgb: "rgb(0, 255, 255)" },
-  { hsl: "hsl(240, 100%, 50%)", rgb: "rgb(0, 0, 255)" },
-  { hsl: "hsl(300, 100%, 50%)", rgb: "rgb(255, 0, 255)" },
-  { hsl: "hsl(38, 78%, 40%)", rgb: "rgb(182, 123, 22)" },
-  { hsl: "hsl(3 88% 70%)", rgb: "rgb(246, 118, 111)" },
-  { hsl: "hsl(189 63% 85% / 0.71)", rgb: "rgba(193, 234, 241, 0.71)" },
-  { hsl: "hsla(1.5rad, 73%, 10%, 0.831)", rgb: "rgba(28, 44, 7, 0.831)" },
-  { hsl: "hsl(320grad 89% 36% / 79%)", rgb: "rgba(141, 10, 174, 0.79)" },
-  { hsl: "hsl(0.36turn 83% 90%)", rgb: "rgb(208, 251, 215)" }
+  { input: "hsl(0, 0%, 0%)", output: "rgb(0, 0, 0)" },
+  { input: "hsl(0, 0%, 50%)", output: "rgb(128, 128, 128)" },
+  { input: "hsl(0, 0%, 100%)", output: "rgb(255, 255, 255)" },
+  { input: "hsl(0, 100%, 50%)", output: "rgb(255, 0, 0)" },
+  { input: "hsl(60, 100%, 50%)", output: "rgb(255, 255, 0)" },
+  { input: "hsl(120, 100%, 50%)", output: "rgb(0, 255, 0)" },
+  { input: "hsl(180, 100%, 50%)", output: "rgb(0, 255, 255)" },
+  { input: "hsl(240, 100%, 50%)", output: "rgb(0, 0, 255)" },
+  { input: "hsl(300, 100%, 50%)", output: "rgb(255, 0, 255)" },
+  { input: "hsl(38, 78%, 40%)", output: "rgb(182, 123, 22)" },
+  { input: "hsl(3 88% 70%)", output: "rgb(246, 118, 111)" },
+  { input: "hsl(189 63% 85% / 0.71)", output: "rgba(193, 234, 241, 0.71)" },
+  { input: "hsla(1.5rad, 73%, 10%, 0.831)", output: "rgba(28, 44, 7, 0.831)" },
+  { input: "hsl(320grad 89% 36% / 79%)", output: "rgba(141, 10, 174, 0.79)" },
+  { input: "hsl(0.36turn 83% 90%)", output: "rgb(208, 251, 215)" }
 ]
 #+end_src
 
 ***** Device CMYK Conversion
 
-CMYK  conversion is like HSL in that it's more of an endpoint and needs to be regressively converted
-to functional RGB before it can be included in a conversion chain.
+CMYK is like HSL in that it's another endpoint where the only way to continue a conversion chain is
+to derive an RGB color from it.
 
-****** Functional RGB <- Device CMYK (=cmyk.rgb=)
+****** Functional RGB from Device CMYK
 
-First, some minimal setup.
+First, I'm gonna enforce some uniformity in my values.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-import { calcChannelFromFraction, calcFractionFromPercent } from "./setup.js";
-
-function parseCMYK(cmyk) {
-  const [c, m, y, k, alpha] = cmyk;
+function parseCMYK(color) {
+  const [c, m, y, k, alpha] = valueExtractor(color);
   const value = (s) => parseFloat(s);
   const [C, M, Y, K] = [c, m, y, k].map((component) =>
     component.endsWith("%")
@@ -7176,9 +7137,9 @@ function parseCMYK(cmyk) {
 For the conversion algorithm, it's RapidTables coming again with the assist.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Functional RGB <- Device CMYK */
-export function rgb(cmyk) {
-  const [C, M, Y, K, alpha] = parseCMYK(cmyk);
+/** Functional RGB from Device CMYK */
+export function rgbFromCMYK(color) {
+  const [C, M, Y, K, alpha] = parseCMYK(color);
 
   const [R, G, B] = [C, M, Y].map((component) =>
     Math.round(calcChannelFromFraction((1 - component) * (1 - K)))
@@ -7192,39 +7153,41 @@ export function rgb(cmyk) {
 Time to see if the math stacks up.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const cmyk = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbFromCMYK } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<cmyk-values>>
+<<valid-cmyk>>
 
-console.log(colors.map(({color, values}) => ({cmyk: color, rgb: cmyk.rgb(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbFromCMYK(color)})));
 #+END_SRC
 
-#+NAME: cmyk-to-rgb
+#+NAME: rgb-from-cmyk
 #+begin_src js
 [
-  { cmyk: "device-cmyk(0% 0% 0% 100%)", rgb: "rgb(0, 0, 0)" },
-  { cmyk: "device-cmyk(0% 0% 0% 50%)", rgb: "rgb(128, 128, 128)" },
-  { cmyk: "device-cmyk(0% 0% 0% 0%)", rgb: "rgb(255, 255, 255)" },
-  { cmyk: "device-cmyk(0% 100% 100% 0%)", rgb: "rgb(255, 0, 0)" },
-  { cmyk: "device-cmyk(0% 0% 100% 0%)", rgb: "rgb(255, 255, 0)" },
-  { cmyk: "device-cmyk(100% 0% 100% 0%)", rgb: "rgb(0, 255, 0)" },
-  { cmyk: "device-cmyk(100% 0% 0% 0%)", rgb: "rgb(0, 255, 255)" },
-  { cmyk: "device-cmyk(100% 100% 0% 0%)", rgb: "rgb(0, 0, 255)" },
-  { cmyk: "device-cmyk(0% 100% 0% 0%)", rgb: "rgb(255, 0, 255)" },
-  { cmyk: "device-cmyk(37% 63% 0 0)", rgb: "rgb(161, 94, 255)" },
-  { cmyk: "device-cmyk(50% 25% 10% 0)", rgb: "rgb(128, 191, 230)" },
-  { cmyk: "device-cmyk(0.77 0.33 0 0)", rgb: "rgb(59, 171, 255)" },
-  { cmyk: "device-cmyk(0.8 0 0.4 0.13 / 0.8)", rgb: "rgba(44, 222, 133, 0.8)" },
-  { cmyk: "device-cmyk(25% 75% 8% 3% / 81.3%)", rgb: "rgba(186, 62, 228, 0.813)" }
+  { input: "device-cmyk(0% 0% 0% 100%)", output: "rgb(0, 0, 0)" },
+  { input: "device-cmyk(0% 0% 0% 50%)", output: "rgb(128, 128, 128)" },
+  { input: "device-cmyk(0% 0% 0% 0%)", output: "rgb(255, 255, 255)" },
+  { input: "device-cmyk(0% 100% 100% 0%)", output: "rgb(255, 0, 0)" },
+  { input: "device-cmyk(0% 0% 100% 0%)", output: "rgb(255, 255, 0)" },
+  { input: "device-cmyk(100% 0% 100% 0%)", output: "rgb(0, 255, 0)" },
+  { input: "device-cmyk(100% 0% 0% 0%)", output: "rgb(0, 255, 255)" },
+  { input: "device-cmyk(100% 100% 0% 0%)", output: "rgb(0, 0, 255)" },
+  { input: "device-cmyk(0% 100% 0% 0%)", output: "rgb(255, 0, 255)" },
+  { input: "device-cmyk(37% 63% 0 0)", output: "rgb(161, 94, 255)" },
+  { input: "device-cmyk(50% 25% 10% 0)", output: "rgb(128, 191, 230)" },
+  { input: "device-cmyk(0.77 0.33 0 0)", output: "rgb(59, 171, 255)" },
+  { input: "device-cmyk(0.8 0 0.4 0.13 / 0.8)", output: "rgba(44, 222, 133, 0.8)" },
+  {
+    input: "device-cmyk(25% 75% 8% 3% / 81.3%)",
+    output: "rgba(186, 62, 228, 0.813)"
+  }
 ]
 #+end_src
 
 ***** Functional HWB Conversion
 
-The only possible conversion from HWB is a regressive conversion to RGB. This provides the necessary
-bridge to other format conversions.
+HWB is another polar coordinate translation in the RGB space meaning that the only way forward is back.
 
-****** Functional RGB <- Functional HWB (=hwb.rgb=)
+****** Functional RGB from Functional HWB
 
 As with the progressive conversion, the regressive conversion is a composite. It first splits the
 hue with a call to =calcRGB()= from the HSL conversion module, setting the saturation and lightness to
@@ -7232,19 +7195,12 @@ return a pure hue, then modifies the result with the given amount of white and b
 
 Again, the implementation uses [[https://www.w3.org/TR/css-color-4/#hwb-to-rgb][a formula ripped straight from the spec]] with some modifications.
 
-First, setting up some helpers:
+First, ensuring uniform output:
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-import {
-  calcChannelFromFraction,
-  calcFractionFromChannel,
-  calcFractionFromPercent,
-} from "./setup.js";
-import { calcRGB, parseHSL } from "./hsl.js";
-
-function parseHWB(hwb) {
-  const [h, w, blk, alpha] = hwb;
-  const [H] = parseHSL([h, "100%", "50%", "1"]);
+function parseHWB(color) {
+  const [h, w, blk, alpha] = valueExtractor(color);
+  const [H] = parseHSL(`hsl(${h}, 50%, 50%)`); // free hue correction
   const [W, BLK] = [w, blk].map((component) =>
     calcFractionFromPercent(parseFloat(component))
   );
@@ -7259,9 +7215,9 @@ function parseHWB(hwb) {
 And now for the conversion algorithm.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Functional RGB <- Functional HWB */
-export function rgb(hwb) {
-  const [h, w, blk, alpha] = parseHWB(hwb);
+/** Functional RGB from Functional HWB */
+export function rgbFromHWB(color) {
+  const [h, w, blk, alpha] = parseHWB(color);
   const [r, g, b] = calcRGB(h, 1, 0.5);
 
   const A = (alpha && (alpha ?? 1)) || 1;
@@ -7289,29 +7245,29 @@ export function rgb(hwb) {
 Now the fun part: seeing if anything breaks.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const hwb = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbFromHWB } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<hwb-values>>
+<<valid-hwb>>
 
-console.log(colors.map(({color, values}) => ({hwb: color, rgb: hwb.rgb(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbFromHWB(color)})));
 #+END_SRC
 
-#+NAME: hwb-to-rgb
+#+NAME: rgb-from-hwb
 #+begin_src js
 [
-  { hwb: "hwb(0 0% 100%)", rgb: "rgb(0, 0, 0)" },
-  { hwb: "hwb(0 100% 100%)", rgb: "rgb(128, 128, 128)" },
-  { hwb: "hwb(0 100% 0%)", rgb: "rgb(255, 255, 255)" },
-  { hwb: "hwb(0 0% 0%)", rgb: "rgb(255, 0, 0)" },
-  { hwb: "hwb(60 0% 0%)", rgb: "rgb(255, 255, 0)" },
-  { hwb: "hwb(120 0% 0%)", rgb: "rgb(0, 255, 0)" },
-  { hwb: "hwb(180 0% 0%)", rgb: "rgb(0, 255, 255)" },
-  { hwb: "hwb(240 0% 0%)", rgb: "rgb(0, 0, 255)" },
-  { hwb: "hwb(300 0% 0%)", rgb: "rgb(255, 0, 255)" },
-  { hwb: "hwb(188 20% 3%)", rgb: "rgb(51, 221, 247)" },
-  { hwb: "hwb(3.1rad 50% 0%)", rgb: "rgb(128, 255, 251)" },
-  { hwb: "hwb(183grad 5% 15% / 0.5)", rgb: "rgba(13, 217, 166, 0.5)" },
-  { hwb: "hwb(0.8turn 38% 99%)", rgb: "rgb(71, 71, 71)" }
+  { input: "hwb(0 0% 100%)", output: "rgb(0, 0, 0)" },
+  { input: "hwb(0 100% 100%)", output: "rgb(128, 128, 128)" },
+  { input: "hwb(0 100% 0%)", output: "rgb(255, 255, 255)" },
+  { input: "hwb(0 0% 0%)", output: "rgb(255, 0, 0)" },
+  { input: "hwb(60 0% 0%)", output: "rgb(255, 255, 0)" },
+  { input: "hwb(120 0% 0%)", output: "rgb(0, 255, 0)" },
+  { input: "hwb(180 0% 0%)", output: "rgb(0, 255, 255)" },
+  { input: "hwb(240 0% 0%)", output: "rgb(0, 0, 255)" },
+  { input: "hwb(300 0% 0%)", output: "rgb(255, 0, 255)" },
+  { input: "hwb(188 20% 3%)", output: "rgb(51, 221, 247)" },
+  { input: "hwb(3.1rad 50% 0%)", output: "rgb(128, 255, 250)" },
+  { input: "hwb(183grad 5% 15% / 0.5)", output: "rgba(13, 217, 165, 0.5)" },
+  { input: "hwb(0.8turn 38% 99%)", output: "rgb(71, 71, 71)" }
 ]
 #+end_src
 
@@ -7319,39 +7275,16 @@ Looks like we're golden.
 
 ***** Functional CIELAB Conversion
 
-CIELAB requires a regressive conversion to Functional RGB. With this, the link is complete and CIE
-Lab colors now have a bridge to other conversions.
+CIELAB is a fork in the road: you can convert to its polar coordinate CIELCh(ab) or derive an RGB
+color from it.
 
-****** CIELAB Conversion Setup
-
-I'll have to grab the RGB channel conversion function from my math kit.
-
-#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-import {
-  calcChannelFromFraction,
-  calcFractionFromPercent,
-  calcHueFromRad,
-  correctHueCounterClockwise,
-  normalize,
-  significant,
-} from "./setup.js";
-#+END_SRC
-
-****** Functional RGB <- Functional CIELAB (=lab.rgb=)
-
-Now, I follow an inversion of the progressive conversion algorithm.
-
-1) =CIE XYZ <- Functional CIELAB=
-2) =Linear RGB <- CIE XYZ=
-3) =Linear RGB >-< Functional RGB=
-
-******* CIE XYZ <- Functonal CIELAB
+****** Functional RGB from Functional CIELAB
 
 The [[http://www.brucelindbloom.com/index.html?Equations.html][formula for regressing CIELAB to CIE XYZ]] is cleanly outlined. So, I'll follow that.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-function calcXYZ(lab) {
-  const [L, a, b] = lab.map((v) => parseFloat(v));
+function calcXYZLab(l, a, b) {
+  const [L, A, B] = [l, a, b].map((v) => parseFloat(v));
 
   // CIE standards
   const ε = 216 / 24389;
@@ -7360,8 +7293,8 @@ function calcXYZ(lab) {
 
   // Compute the values of F
   const Fy = (L + 16) / 116;
-  const Fx = a / 500 + Fy;
-  const Fz = Fy - b / 200;
+  const Fx = A / 500 + Fy;
+  const Fz = Fy - B / 200;
 
   // Calculate xyz
   const [x, y, z] = [
@@ -7374,15 +7307,14 @@ function calcXYZ(lab) {
 }
 #+END_SRC
 
-******* CIE XYZ -> Linear RGB
-
 The next step is converting the D50 XYZ to sRGB native D65 XYZ via chromatic adaptation.
 
 And /then/ passing it through the inverse transformation matrix to get linear RGB.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-function calcLinearRGB(lab) {
-  const [x, y, z] = calcXYZ(lab);
+function calcLinearRGB(l, a, b) {
+  const [x, y, z] = calcXYZLab(l, a, b);
+
   /**
    * D65 transformation matrix
    * =============================
@@ -7413,21 +7345,20 @@ function calcLinearRGB(lab) {
 }
 #+END_SRC
 
-******* Linear RGB >-< Functional RGB
-
 Gamma application is the finishing touch before converting the channel values to the expected =0-255=
 range.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-const calcRGB = (lrgb) =>
+const applyGamma = (lrgb) =>
   lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
 
-/** Functional CIELAB <- Functional RGB */
-export function rgb(lab) {
-  const [l, a, b, alpha] = lab;
+/** Functional CIELAB from Functional RGB */
+export function rgbFromCielab(color) {
+  const [l, aHue, bHue, alpha] = valueExtractor(color);
+  const [r, g, b] = calcLinearRGB(l, aHue, bHue);
 
-  const [R, G, B] = calcRGB(calcLinearRGB([l, a, b])).map((channel) =>
-    normalize(0, calcChannelFromFraction(channel), 255)
+  const [R, G, B] = applyGamma([r, g, b]).map((channel) =>
+    Math.round(normalize(0, calcChannelFromFraction(channel), 255))
   );
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -7442,35 +7373,35 @@ export function rgb(lab) {
 That was a lot to parse. Time to see if the calculations check out.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { rgbFromCielab } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<lab-values>>
+<<valid-cielab>>
 
-console.log(colors.map(({color, values}) => ({lab: color, rgb: lab.rgb(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbFromCielab(color)})));
 #+END_SRC
 
-#+NAME: lab-to-rgb
+#+RESULTS:
 #+begin_src js
 [
-  { lab: "lab(0% 0 0)", rgb: "rgb(0, 0, 0)" },
-  { lab: "lab(53.59% 0 0)", rgb: "rgb(128, 128, 128)" },
-  { lab: "lab(100% 0 0)", rgb: "rgb(255, 255, 255)" },
-  { lab: "lab(54.29% 80.81 69.89)", rgb: "rgb(255, 0, 0)" },
-  { lab: "lab(97.6% -15.75 93.39)", rgb: "rgb(255, 255, 0)" },
-  { lab: "lab(87.82% -79.29 80.99)", rgb: "rgb(0, 255, 0)" },
-  { lab: "lab(90.67% -50.67 -14.96)", rgb: "rgb(0, 255, 255)" },
-  { lab: "lab(29.57% 68.3 -112.03)", rgb: "rgb(0, 0, 255)" },
-  { lab: "lab(60.17% 93.55 -60.5)", rgb: "rgb(255, 0, 255)" },
-  { lab: "lab(49.18% 38.1 -110.33)", rgb: "rgb(0, 102, 255)" },
-  { lab: "lab(91.3% -93 14)", rgb: "rgb(0, 255, 199)" },
-  { lab: "lab(83.119% 49.34 -3.99 / 0.75)", rgb: "rgba(255, 169, 217, 0.75)" },
-  { lab: "lab(199% 38 13 / 78%)", rgb: "rgba(255, 255, 255, 0.78)" }
+  { input: "lab(0% 0 0)", output: "rgb(0, 0, 0)" },
+  { input: "lab(53.59% 0 0)", output: "rgb(128, 128, 128)" },
+  { input: "lab(100% 0 0)", output: "rgb(255, 255, 255)" },
+  { input: "lab(54.29% 80.81 69.89)", output: "rgb(255, 0, 0)" },
+  { input: "lab(97.6% -15.75 93.39)", output: "rgb(255, 255, 0)" },
+  { input: "lab(87.82% -79.29 80.99)", output: "rgb(0, 255, 0)" },
+  { input: "lab(90.67% -50.67 -14.96)", output: "rgb(0, 255, 255)" },
+  { input: "lab(29.57% 68.3 -112.03)", output: "rgb(0, 0, 255)" },
+  { input: "lab(60.17% 93.55 -60.5)", output: "rgb(255, 0, 255)" },
+  { input: "lab(49.18% 38.1 -110.33)", output: "rgb(0, 102, 255)" },
+  { input: "lab(91.3% -93 14)", output: "rgb(0, 255, 199)" },
+  { input: "lab(83.119% 49.34 -3.99 / 0.75)", output: "rgba(255, 169, 217, 0.75)" },
+  { input: "lab(199% 38 13 / 78%)", output: "rgba(255, 255, 255, 0.78)" }
 ]
 #+end_src
 
 I'll stamp this as Good Enough™.
 
-****** Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=)
+****** Functional CIELAB to Functional CIELCh(ab)
 
 The final bridge is a progressive conversion of CIELAB to CIELCh(ab). With this, all known and proposed
 CSS color formats are supported by the Quarks System Core.
@@ -7478,14 +7409,14 @@ CSS color formats are supported by the Quarks System Core.
 And thankfully, [[http://www.brucelindbloom.com/Eqn_Lab_to_LCH.html][the formula]] is a dead simple conversion of rectangle coordinates to polar coordinates.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-const precision = significant.bind(null, 5);
-
-/** Functional CIELAB -> Functional CIELCh(ab) */
-export function lch(lab) {
-  const [L, a, b, alpha] = lab;
+/** Functional CIELAB to Functional CIELCh(ab) */
+export function cielabToCielch(color) {
+  const [L, a, b, alpha] = valueExtractor(color);
   const [C, h] = [
-    precision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
-    precision(Math.atan2(parseFloat(b), parseFloat(a)) * (180 / Math.PI)),
+    enforcePrecision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
+    enforcePrecision(
+      Math.atan2(parseFloat(b), parseFloat(a)) * (180 / Math.PI),
+    ),
   ];
 
   const H = Math.sign(h) === -1 ? h + 360 : h;
@@ -7503,32 +7434,32 @@ export function lch(lab) {
 Now to make sure it returns what I expect.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lab = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { cielabToCielch } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<lab-values>>
+<<valid-cielab>>
 
-console.log(colors.map(({color, values}) => ({lab: color, lch: lab.lch(values)})));
+console.log(colors.map((color) => ({input: color, output: cielabToCielch(color)})));
 #+END_SRC
 
-#+NAME: lab-to-lch
+#+NAME: cielab-to-cielch
 #+begin_src js
 [
-  { lab: "lab(0% 0 0)", lch: "lch(0% 0 0)" },
-  { lab: "lab(53.59% 0 0)", lch: "lch(53.59% 0 0)" },
-  { lab: "lab(100% 0 0)", lch: "lch(100% 0 0)" },
-  { lab: "lab(54.29% 80.81 69.89)", lch: "lch(54.29% 106.84 40.855)" },
-  { lab: "lab(97.6% -15.75 93.39)", lch: "lch(97.6% 94.709 99.573)" },
-  { lab: "lab(87.82% -79.29 80.99)", lch: "lch(87.82% 113.34 134.39)" },
-  { lab: "lab(90.67% -50.67 -14.96)", lch: "lch(90.67% 52.832 196.45)" },
-  { lab: "lab(29.57% 68.3 -112.03)", lch: "lch(29.57% 131.21 301.369)" },
-  { lab: "lab(60.17% 93.55 -60.5)", lch: "lch(60.17% 111.41 327.109)" },
-  { lab: "lab(49.18% 38.1 -110.33)", lch: "lch(49.18% 116.72 289.051)" },
-  { lab: "lab(91.3% -93 14)", lch: "lch(91.3% 94.048 171.44)" },
+  { input: "lab(0% 0 0)", output: "lch(0% 0 0)" },
+  { input: "lab(53.59% 0 0)", output: "lch(53.59% 0 0)" },
+  { input: "lab(100% 0 0)", output: "lch(100% 0 0)" },
+  { input: "lab(54.29% 80.81 69.89)", output: "lch(54.29% 106.8 40.86)" },
+  { input: "lab(97.6% -15.75 93.39)", output: "lch(97.6% 94.71 99.57)" },
+  { input: "lab(87.82% -79.29 80.99)", output: "lch(87.82% 113.3 134.4)" },
+  { input: "lab(90.67% -50.67 -14.96)", output: "lch(90.67% 52.83 196.4)" },
+  { input: "lab(29.57% 68.3 -112.03)", output: "lch(29.57% 131.2 301.37)" },
+  { input: "lab(60.17% 93.55 -60.5)", output: "lch(60.17% 111.4 327.11)" },
+  { input: "lab(49.18% 38.1 -110.33)", output: "lch(49.18% 116.7 289.05)" },
+  { input: "lab(91.3% -93 14)", output: "lch(91.3% 94.05 171.4)" },
   {
-    lab: "lab(83.119% 49.34 -3.99 / 0.75)",
-    lch: "lch(83.119% 49.501 355.3767 / 0.75)"
+    input: "lab(83.119% 49.34 -3.99 / 0.75)",
+    output: "lch(83.119% 49.5 355.377 / 0.75)"
   },
-  { lab: "lab(199% 38 13 / 78%)", lch: "lch(199% 40.162 18.886 / 0.78)" }
+  { input: "lab(199% 38 13 / 78%)", output: "lch(199% 40.16 18.89 / 0.78)" }
 ]
 #+end_src
 
@@ -7536,36 +7467,26 @@ That'll do it.
 
 ***** Functional CIELCh Conversion
 
-Now, I need to calculate the regressive conversion of LCH back to Lab. This final algorithm closes
-the conversion chain and allows any supported format to convert to and from any other supported
-format.
+This final conversion ends the chain and allows any supported format to convert to and from any
+other supported format.
 
-****** Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)
+****** Functional CIELAB from Functional CIELCh(ab)
 
-First, a little setup.
-
-It's necessary for the hue component of LCH to use the same possible hue inputs as HSL, because
+It's necessary for the hue component of CIELCh(ab) to use the same possible hue inputs as HSL, because
 that's what's allowed in the spec.
-
-#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-import { calcFractionFromPercent, normalize, significant } from "./setup.js";
-import { parseHSL } from "./hsl.js";
-
-const precision = significant.bind(null, 5);
-#+END_SRC
 
 The [[http://www.brucelindbloom.com/Eqn_LCH_to_Lab.html][conversion algorithm itself]] is short and sweet.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-/** Functional CIELAB <- Functional CIELCh(ab) */
-export function lab(lch) {
-  const [L, c, h, alpha] = lch;
+/** Functional CIELAB from Functional CIELCh(ab) */
+export function cielabFromCielch(color) {
+  const [L, c, h, alpha] = valueExtractor(color);
   const C = parseFloat(c);
-  const [H] = parseHSL([h, "100%", "50%", "1"]);
+  const [H] = parseHSL(`hsl(${h}, 50%, 50%)`);
 
   const [a, b] = [
-    precision(C * Math.cos(H * (Math.PI / 180))),
-    precision(C * Math.sin(H * (Math.PI / 180))),
+    enforcePrecision(C * Math.cos(H * (Math.PI / 180))),
+    enforcePrecision(C * Math.sin(H * (Math.PI / 180))),
   ];
 
   const A = (alpha &&
@@ -7578,39 +7499,42 @@ export function lab(lch) {
 }
 #+END_SRC
 
-Alright, time to test the LCH color table.
+Alright, time to test the CIELCh(ab) color table.
 
 #+BEGIN_SRC js :results output code replace :allow read :noweb yes
-const lch = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+const { cielabFromCielch } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<lch-values>>
+<<valid-cielch>>
 
-console.log(colors.map(({color, values}) => ({lch: color, lab: lch.lab(values)})));
+console.log(colors.map((color) => ({input: color, output: cielabFromCielch(color)})));
 #+END_SRC
 
-#+NAME: lch-to-lab
+#+NAME: cielab-from-cielch
 #+begin_src js
 [
-  { lch: "lch(0% 0 0)", lab: "lab(0% 0 0)" },
-  { lch: "lch(53.59% 0 0)", lab: "lab(53.59% 0 0)" },
-  { lch: "lch(100% 0 0)", lab: "lab(100% 0 0)" },
-  { lch: "lch(54.29% 106.84 40.855)", lab: "lab(54.29% 80.81 69.889)" },
-  { lch: "lch(97.6% 94.709 99.573)", lab: "lab(97.6% -15.75 93.39)" },
-  { lch: "lch(87.82% 113.34 134.39)", lab: "lab(87.82% -79.286 80.992)" },
-  { lch: "lch(90.67% 52.832 196.45)", lab: "lab(90.67% -50.669 -14.961)" },
-  { lch: "lch(29.57% 131.21 301.369)", lab: "lab(29.57% 68.301 -112.03)" },
-  { lch: "lch(60.17% 111.41 327.109)", lab: "lab(60.17% 93.552 -60.5)" },
-  { lch: "lch(53.31% 89.31 200)", lab: "lab(53.31% -83.924 -30.546)" },
-  { lch: "lch(89.1% 167.34 3.6rad / 0.99)", lab: "lab(89.1% -150.4 -73.357 / 0.99)" },
-  { lch: "lch(24.494% 74.9 193grad)", lab: "lab(24.494% -74.49 7.8292)" },
+  { input: "lch(0% 0 0)", output: "lab(0% 0 0)" },
+  { input: "lch(53.59% 0 0)", output: "lab(53.59% 0 0)" },
+  { input: "lch(100% 0 0)", output: "lab(100% 0 0)" },
+  { input: "lch(54.29% 106.84 40.855)", output: "lab(54.29% 80.81 69.89)" },
+  { input: "lch(97.6% 94.709 99.573)", output: "lab(97.6% -15.75 93.39)" },
+  { input: "lch(87.82% 113.34 134.39)", output: "lab(87.82% -79.29 80.99)" },
+  { input: "lch(90.67% 52.832 196.45)", output: "lab(90.67% -50.67 -14.96)" },
+  { input: "lch(29.57% 131.21 301.369)", output: "lab(29.57% 68.3 -112)" },
+  { input: "lch(60.17% 111.41 327.109)", output: "lab(60.17% 93.55 -60.5)" },
+  { input: "lch(53.31% 89.31 200)", output: "lab(53.31% -83.92 -30.55)" },
   {
-    lch: "lch(47.39% 111.193 0.62turn / 75%)",
-    lab: "lab(47.39% -81.321 -75.833 / 0.75)"
+    input: "lch(89.1% 167.34 3.6rad / 0.99)",
+    output: "lab(89.1% -150 -74.14 / 0.99)"
+  },
+  { input: "lch(24.494% 74.9 193grad)", output: "lab(24.494% -74.45 8.219)" },
+  {
+    input: "lch(47.39% 111.193 0.62turn / 75%)",
+    output: "lab(47.39% -81.06 -76.12 / 0.75)"
   }
 ]
 #+end_src
 
-And that's it for color conversion.
+And that's it for color conversion with standard formats.
 
 ***** Oklab (LCh) Conversion
 
@@ -7620,20 +7544,14 @@ back to standard supported formats and closes the loop.
 First, I'll need to convert Oklab (LCh) values back to raw Oklab values.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-import {
-  calcChannelFromFraction,
-  calcFractionFromChannel,
-  calcFractionFromPercent,
-  normalize,
-} from "./setup.js";
-
-export function parseOklab(oklab) {
-  const [l, c, h, alpha] = oklab;
+export function parseOklab(color) {
+  const [l, c, h, alpha] = valueExtractor(color);
 
   // Convert values back to their raw Oklab form
   const L = calcFractionFromPercent(parseFloat(l));
   const C = c;
-  const H = 2 * Math.PI * (h / 360);
+  const [hue] = parseHSL(`hsl(${h}, 50%, 50%)`);
+  const H = 2 * Math.PI * (hue / 360); // degrees to radians
 
   // Calculate a, b
   const [a, b] = [C * Math.cos(H), C * Math.sin(H)];
@@ -7645,9 +7563,7 @@ export function parseOklab(oklab) {
 Having done that, I can now use the conversion formula to convert to linear sRGB.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-function calcLinearRGB(oklab) {
-  const [l, a, b, alpha] = parseOklab(oklab);
-
+function calcLinearRGBOklab(l, a, b) {
   // Calculate LMS cone activations
   const [L, M, S] = [
     l + a * 0.3963377774 + b * 0.2158037573,
@@ -7660,7 +7576,6 @@ function calcLinearRGB(oklab) {
     L * 4.076416621 - M * 3.3077115913 + S * 0.2309699292,
     L * -1.2684380046 + M * 2.6097574011 - S * 0.3413193965,
     L * -0.0041960863 - M * 0.7034186147 + S * 1.707614701,
-    alpha, // slot in alpha
   ];
 }
 #+END_SRC
@@ -7668,12 +7583,13 @@ function calcLinearRGB(oklab) {
 Next, I apply the gamma, normalize the channels, and return the color.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-export function rgb(oklab) {
-  const [r, g, b, alpha] = calcLinearRGB(oklab);
+export function rgbFromOklab(color) {
+  const [l, aHue, bHue, alpha] = parseOklab(color);
+  const [r, g, b] = calcLinearRGBOklab(l, aHue, bHue);
 
   const [R, G, B] = [r, g, b]
     .map((V) => (V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055))
-    .map((V) => normalize(0, calcChannelFromFraction(V), 255));
+    .map((V) => Math.round(normalize(0, calcChannelFromFraction(V), 255)));
 
   const A = (alpha && (alpha ?? 1)) || 1;
 
@@ -7683,31 +7599,31 @@ export function rgb(oklab) {
 
 That was a straightforward process, but I'm going to check that it works.
 
-#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const oklab = await import(`${Deno.cwd()}/internals/color/conversions.js`);
+#+BEGIN_SRC js :results output code replace :allow read :noweb yes
+const { rgbFromOklab } = await import(`${Deno.cwd()}/internals/color/conversions.js`);
 
-<<oklab-values>>
+<<valid-oklab>>
 
-console.log(colors.map(({color, values}) => ({oklab: color, rgb: oklab.rgb(values)})));
+console.log(colors.map((color) => ({input: color, output: rgbFromOklab(color)})));
 #+END_SRC
 
-#+RESULTS:
-#+begin_src deno
+#+NAME: rgb-from-oklab
+#+begin_src js
 [
-  { oklab: "oklab(0% 0 0)", rgb: "rgb(0, 0, 0)" },
-  { oklab: "oklab(59.987% 0 0)", rgb: "rgb(128, 128, 128)" },
-  { oklab: "oklab(100% 0 0)", rgb: "rgb(255, 255, 255)" },
-  { oklab: "oklab(62.795% 0.25768 29.234)", rgb: "rgb(255, 0, 0)" },
-  { oklab: "oklab(96.768% 0.21101 109.77)", rgb: "rgb(255, 255, 0)" },
-  { oklab: "oklab(86.644% 0.29483 142.5)", rgb: "rgb(0, 255, 0)" },
-  { oklab: "oklab(90.54% 0.15455 194.77)", rgb: "rgb(0, 255, 255)" },
-  { oklab: "oklab(45.201% 0.31321 264.052)", rgb: "rgb(0, 0, 255)" },
-  { oklab: "oklab(70.167% 0.32249 328.363)", rgb: "rgb(255, 0, 255)" },
-  { oklab: "oklab(37.119% 0.482 90)", rgb: "rgb(150, 0, 0)" },
-  { oklab: "oklab(29.11% 0.25 180)", rgb: "rgb(0, 72, 48)" },
-  { oklab: "oklab(53.33% 0.5 270)", rgb: "rgb(87, 0, 255)" },
-  { oklab: "oklab(84% 0.1043 350.31)", rgb: "rgb(255, 175, 212)" },
-  { oklab: "oklab(25.14% 0.44 60 / 0.8)", rgb: "rgba(142, 0, 0, 0.8)" }
+  { input: "oklab(0% 0 0)", output: "rgb(0, 0, 0)" },
+  { input: "oklab(59.987% 0 0)", output: "rgb(128, 128, 128)" },
+  { input: "oklab(100% 0 0)", output: "rgb(255, 255, 255)" },
+  { input: "oklab(62.795% 0.25768 29.234)", output: "rgb(255, 0, 0)" },
+  { input: "oklab(96.768% 0.21101 109.77)", output: "rgb(255, 255, 0)" },
+  { input: "oklab(86.644% 0.29483 142.5)", output: "rgb(0, 255, 0)" },
+  { input: "oklab(90.54% 0.15455 194.77)", output: "rgb(0, 255, 255)" },
+  { input: "oklab(45.201% 0.31321 264.052)", output: "rgb(0, 0, 255)" },
+  { input: "oklab(70.167% 0.32249 328.363)", output: "rgb(255, 0, 255)" },
+  { input: "oklab(37.119% 0.482 90)", output: "rgb(150, 0, 0)" },
+  { input: "oklab(29.11% 0.25 180)", output: "rgb(0, 72, 48)" },
+  { input: "oklab(53.33% 0.5 270)", output: "rgb(87, 0, 255)" },
+  { input: "oklab(84% 0.1043 350.31)", output: "rgb(255, 175, 212)" },
+  { input: "oklab(25.14% 0.44 60 / 0.8)", output: "rgba(142, 0, 0, 0.8)" }
 ]
 #+end_src
 
@@ -7717,13 +7633,13 @@ And that completes the implementation.
 
 As I wrote earlier, I consider hex colors on the web color primitives. They're the starting point
 of all conversions because hex colors can only be directly converted to functional RGB which begins
-the conversion chain for other formats.
+the conversion chain to other formats.
 
 #+BEGIN_SRC js :tangle "./internals/color/math.js" :comments link
-/** Helper for converting hex->int */
+/** Helper for converting hextoint */
 export const hexFragmentToChannel = (fragment) => parseInt(fragment, 16);
 
-/** Helper for converting int->hex */
+/** Helper for converting inttohex */
 export const channelToHexFragment = (channel) =>
   channel.toString(16).padStart(2, "0");
 #+END_SRC
@@ -7731,10 +7647,10 @@ export const channelToHexFragment = (channel) =>
 Before I write the functions for actual conversion, I need to write some basic arithmetic helpers.
 
 #+BEGIN_SRC js :tangle "./internals/color/math.js" :comments link
-
 const significant = (digits, value) => +value.toPrecision(digits);
-/** Helper to limit precision */
-export const enforcePrecision = significant.bind(null, 5);
+
+/** Helper to set a universal precision */
+export const enforcePrecision = significant.bind(null, 4);
 
 /** x + y */
 const sum = (y, x) => enforcePrecision(x + y);
@@ -7748,7 +7664,7 @@ const quotient = (y, x) => enforcePrecision(x / y);
 /** x % y */
 const remainder = (y, x) => enforcePrecision(x % y);
 
-// Hrad, Hgrad, Hturn -> hue
+// Hrad, Hgrad, Hturn to hue
 
 /** Formula: n° = n㎭ ✕ 180∕π */
 export const calcHueFromRad = (radians) =>
@@ -7788,19 +7704,18 @@ export const calcFractionFromChannel = (channel) => quotient(255, channel);
 
 /** Formula: n = n%∕100 ✕ 255 */
 export const calcChannelFromPercent = (percentage) =>
-  calcChannelFromFraction(calcFractionFromPercent(percentage));
+  Math.round(calcChannelFromFraction(calcFractionFromPercent(percentage)));
 
 /** Normalization to define boundaries */
-export const normalize = (a, x, b) => Math.min(Math.max(x, a), b);
+export const normalize = (a, x, b) =>
+  enforcePrecision(Math.min(Math.max(x, a), b));
 
 // Alpha
 
 /** Helper to convert alpha value to hex fragment */
 export const calcHexFragmentFromAlpha = (alpha) =>
-  channelToHexFragment(calcChannelFromFraction(alpha));
+  channelToHexFragment(Math.round(calcChannelFromFraction(alpha)));
 #+END_SRC
-
-Now, I'm ready to write the conversion algorithms.
 
 ** Data
 

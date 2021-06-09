@@ -1,78 +1,75 @@
-// [[file:../../README.org::*RGB Hex -> Functional RGB (=hex.rgb=)][RGB Hex -> Functional RGB (=hex.rgb=):1]]
-import {
-  calcFractionFromChannel,
-  hexFragmentToChannel,
-  significant,
-} from "./setup.js";
+// [[file:../../README.org::*RGB Hex to Functional RGB][RGB Hex to Functional RGB:1]]
+import { calcFractionFromChannel, hexFragmentToChannel } from "./math.js";
+import { hexExtractor, valueExtractor } from "./formats.js";
 
-/** RGB Hex -> Functional RGB */
-export function rgb(hex) {
-  const [r, g, b, alpha] = hex;
-  const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
-  const A = significant(
-    4,
-    calcFractionFromChannel(hexFragmentToChannel(alpha ?? "ff")),
-  );
+/** RGB Hex to Functional RGB */
+export function hexToRGB(color) {
+  const [r, g, b, a] = hexExtractor(color);
+
+  const [R, G, B] = [r, g, b].map((hex) => hexFragmentToChannel(hex));
+  const A = (a && calcFractionFromChannel(hexFragmentToChannel(a ?? "ff"))) ||
+    1;
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
-// RGB Hex -> Functional RGB (=hex.rgb=):1 ends here
+// RGB Hex to Functional RGB:1 ends here
 
-// [[file:../../README.org::*RGB Hex <- W3C-X11][RGB Hex <- W3C-X11:1]]
-import { X11Colors } from "../../../data/color/w3c-x11.js";
+// [[file:../../README.org::*RGB Hex from Named Color][RGB Hex from Named Color:1]]
+import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** RGB HEX <- W3C-X11 */
-export const hex = (keyword) => X11Colors[keyword];
-// RGB Hex <- W3C-X11:1 ends here
+export const hexFromNamed = (color) => X11Colors[color];
+// RGB Hex from Named Color:1 ends here
 
-// [[file:../../README.org::*RGB Conversion Setup][RGB Conversion Setup:1]]
+// [[file:../../README.org::*Functional RGB Conversion][Functional RGB Conversion:1]]
 import {
   calcChannelFromPercent,
-  calcFractionFromChannel,
   calcFractionFromPercent,
   calcHexFragmentFromAlpha,
   calcHueFromRad,
   calcPercentFromFraction,
   channelToHexFragment,
   correctHueCounterClockwise,
+  enforcePrecision,
   normalize,
-  significant,
-} from "./setup.js";
+} from "./math.js";
+// Functional RGB Conversion:1 ends here
 
-const precision = significant.bind(null, 5);
-
+// [[file:../../README.org::*Functional RGB Conversion][Functional RGB Conversion:2]]
 /** A helper function to prep RGB values for calculations */
-function parseRGB(rgb) {
-  const [r, g, b, alpha] = rgb;
+function parseRGB(color) {
+  const [r, g, b, alpha] = valueExtractor(color);
   const value = (s) => parseFloat(s);
 
   const [R, G, B] = [r, g, b].map((channel) =>
     channel.endsWith("%")
-      ? precision(calcChannelFromPercent(value(channel)))
-      : precision(value(channel))
+      ? enforcePrecision(calcChannelFromPercent(value(channel)))
+      : enforcePrecision(value(channel))
   );
 
   const a = value(alpha);
-  const A = a != null ? (a > 1 ? precision(calcFractionFromPercent(a)) : a) : 1;
+  const A = a != null
+    ? (a > 1 ? enforcePrecision(calcFractionFromPercent(a)) : a)
+    : 1;
 
   return A === 1 ? [R, G, B] : [R, G, B, A];
 }
-// RGB Conversion Setup:1 ends here
+// Functional RGB Conversion:2 ends here
 
-// [[file:../../README.org::*RGB Hex <- Functional RGB (=rgb.hex=)][RGB Hex <- Functional RGB (=rgb.hex=):1]]
-/** RGB Hex <- Functional RGB */
-export function hex(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+// [[file:../../README.org::*RGB Hex from Functional RGB][RGB Hex from Functional RGB:1]]
+/** RGB Hex from Functional RGB */
+export function hexFromRGB(color) {
+  const [r, g, b, alpha] = parseRGB(color);
 
   const [R, G, B] = [r, g, b].map((channel) => channelToHexFragment(channel));
   // Alpha is defined and not null
-  const A = (alpha && calcHexFragmentFromAlpha(alpha ?? 1)) || "ff";
+  const A = (alpha && calcHexFragmentFromAlpha(alpha)) || "ff";
 
   return A === "ff" ? `#${R}${G}${B}` : `#${R}${G}${B}${A}`;
 }
-// RGB Hex <- Functional RGB (=rgb.hex=):1 ends here
+// RGB Hex from Functional RGB:1 ends here
 
-// [[file:../../README.org::*Functional RGB -> Functional HSL (=rgb.hsl=)][Functional RGB -> Functional HSL (=rgb.hsl=):1]]
+// [[file:../../README.org::*Functional RGB to Functional HSL][Functional RGB to Functional HSL:1]]
 // https://www.rapidtables.com/convert/color/rgb-to-hsl.html
 const calcHue = (R, G, B, cmax, delta) =>
   new Map([
@@ -106,29 +103,29 @@ function calcHSL(r, g, b) {
 
   return [Math.sign(H) === -1 ? correctHueCounterClockwise(H) : H, S, L];
 }
-// Functional RGB -> Functional HSL (=rgb.hsl=):1 ends here
+// Functional RGB to Functional HSL:1 ends here
 
-// [[file:../../README.org::*Functional RGB -> Functional HSL (=rgb.hsl=)][Functional RGB -> Functional HSL (=rgb.hsl=):2]]
-/** Functional RGB -> Functional HSL */
-export function hsl(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+// [[file:../../README.org::*Functional RGB to Functional HSL][Functional RGB to Functional HSL:2]]
+/** Functional RGB to Functional HSL */
+export function rgbToHSL(color) {
+  const [r, g, b, alpha] = parseRGB(color);
   const [h, s, l] = calcHSL(r, g, b);
 
   const [H, S, L] = [
     h,
-    precision(calcPercentFromFraction(s)),
-    precision(calcPercentFromFraction(l)),
+    enforcePrecision(calcPercentFromFraction(s)),
+    enforcePrecision(calcPercentFromFraction(l)),
   ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1 ? `hsl(${H}, ${S}%, ${L}%)` : `hsla(${H}, ${S}%, ${L}%, ${A})`;
 }
-// Functional RGB -> Functional HSL (=rgb.hsl=):2 ends here
+// Functional RGB to Functional HSL:2 ends here
 
-// [[file:../../README.org::*Functional RGB -> Device CMYK (=rgb.cmyk=)][Functional RGB -> Device CMYK (=rgb.cmyk=):1]]
-/** Functional RGB -> Device CMYK */
-export function cmyk(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+// [[file:../../README.org::*Functional RGB to Device CMYK][Functional RGB to Device CMYK:1]]
+/** Functional RGB to Device CMYK */
+export function rgbToCMYK(color) {
+  const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
   );
@@ -141,58 +138,53 @@ export function cmyk(rgb) {
   // Many examples in the CSS Color Module Level 4 use the percentage format,
   // so I'm assuming that's the preferred format in conversions.
   const [C, M, Y, K] = [c, m, y, k].map((component) =>
-    isNaN(component) ? 0 : precision(calcPercentFromFraction(component))
+    isNaN(component) ? 0 : enforcePrecision(calcPercentFromFraction(component))
   );
 
   return A === 1
     ? `device-cmyk(${C}% ${M}% ${Y}% ${K}%)`
     : `device-cmyk(${C}% ${M}% ${Y}% ${K}% / ${A})`;
 }
-// Functional RGB -> Device CMYK (=rgb.cmyk=):1 ends here
+// Functional RGB to Device CMYK:1 ends here
 
-// [[file:../../README.org::*Functional RGB -> Functional HWB (=rgb.hwb=)][Functional RGB -> Functional HWB (=rgb.hwb=):1]]
-/** Functional RGB -> Functional HWB */
-export function hwb(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+// [[file:../../README.org::*Functional RGB to Functional HWB][Functional RGB to Functional HWB:1]]
+/** Functional RGB to Functional HWB */
+export function rgbToHWB(color) {
+  const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
   );
 
   const [H] = calcHSL(r, g, b);
   const [W, BLK] = [
-    precision(calcPercentFromFraction(Math.min(R, G, B))),
-    precision(calcPercentFromFraction(1 - Math.max(R, G, B))),
+    enforcePrecision(calcPercentFromFraction(Math.min(R, G, B))),
+    enforcePrecision(calcPercentFromFraction(1 - Math.max(R, G, B))),
   ];
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1 ? `hwb(${H} ${W}% ${BLK}%)` : `hwb(${H} ${W}% ${BLK}% / ${A})`;
 }
-// Functional RGB -> Functional HWB (=rgb.hwb=):1 ends here
+// Functional RGB to Functional HWB:1 ends here
 
-// [[file:../../README.org::*Functional RGB >-< Linear RGB][Functional RGB >-< Linear RGB:1]]
+// [[file:../../README.org::*Functional RGB to Functional CIELAB][Functional RGB to Functional CIELAB:1]]
 /** Functional RGB >-< Linear RGB */
 const removeGamma = (rgb) =>
   rgb.map((v) => {
     const V = calcFractionFromChannel(v);
     return V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4;
   });
-// Functional RGB >-< Linear RGB:1 ends here
+// Functional RGB to Functional CIELAB:1 ends here
 
-// [[file:../../README.org::*Linear RGB -> CIEXYZ][Linear RGB -> CIEXYZ:1]]
-/** Linear RGB -> CIE XYZ */
+// [[file:../../README.org::*Functional RGB to Functional CIELAB][Functional RGB to Functional CIELAB:2]]
+/** Linear RGB to CIE XYZ */
 function calcXYZ(rgb) {
   const [R, G, B] = removeGamma(rgb);
-  return [
+  const [X, Y, Z] = [
     R * 0.4124564 + G * 0.3575761 + B * 0.1804375,
     R * 0.2126729 + G * 0.7151522 + B * 0.072175,
     R * 0.0193339 + G * 0.119192 + B * 0.9503041,
-  ]; // [X, Y, Z]
-}
-// Linear RGB -> CIEXYZ:1 ends here
+  ];
 
-// [[file:../../README.org::*CIEXYZ -> Functional CIELAB][CIEXYZ -> Functional CIELAB:1]]
-function calcD50XYZ(rgb) {
-  const [X, Y, Z] = calcXYZ(rgb);
   /*
    * D50 matrix
    * =============================
@@ -207,11 +199,13 @@ function calcD50XYZ(rgb) {
     X * -0.0092345 + Y * 0.0150436 + Z * 0.7521316,
   ];
 }
+// Functional RGB to Functional CIELAB:2 ends here
 
-/** Functional RGB -> Functional CIELAB */
-export function lab(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
-  const [x, y, z] = calcD50XYZ([r, g, b]);
+// [[file:../../README.org::*Functional RGB to Functional CIELAB][Functional RGB to Functional CIELAB:3]]
+/** Functional RGB to Functional CIELAB */
+export function rgbToCielab(color) {
+  const [r, g, b, alpha] = parseRGB(color);
+  const [x, y, z] = calcXYZ([r, g, b]);
 
   // CIE standards
   const ε = 216 / 24389;
@@ -227,9 +221,9 @@ export function lab(rgb) {
 
   // Calculating Lab values and limiting the precision
   const [L, aHue, bHue] = [
-    precision(116 * FY - 16),
-    precision(500 * (FX - FY)),
-    precision(200 * (FY - FZ)),
+    enforcePrecision(116 * FY - 16),
+    enforcePrecision(500 * (FX - FY)),
+    enforcePrecision(200 * (FY - FZ)),
   ].map((V) => (Math.sign(Math.round(V)) === 0 ? 0 : V));
   const A = (alpha && (alpha ?? 1)) || 1;
 
@@ -237,11 +231,10 @@ export function lab(rgb) {
     ? `lab(${L}% ${aHue} ${bHue})`
     : `lab(${L}% ${aHue} ${bHue} / ${A})`;
 }
-// CIEXYZ -> Functional CIELAB:1 ends here
+// Functional RGB to Functional CIELAB:3 ends here
 
-// [[file:../../README.org::*Functional RGB -> Oklab (LCh) (=rgb.oklab=)][Functional RGB -> Oklab (LCh) (=rgb.oklab=):1]]
-function calcOklab(rgb) {
-  const [r, g, b, alpha] = parseRGB(rgb);
+// [[file:../../README.org::*Functional RGB to Oklab (LCh)][Functional RGB to Oklab (LCh):1]]
+function calcOklab(r, g, b) {
   const [R, G, B] = removeGamma([r, g, b]);
 
   // Convert to LMS cone activations and apply non-linearity
@@ -256,37 +249,33 @@ function calcOklab(rgb) {
     L * 0.2104542553 + M * 0.793617785 - S * 0.0040720468,
     L * 1.9779984951 - M * 2.428592205 + S * 0.4505937099,
     L * 0.0259040371 + M * 0.7827717662 - S * 0.808675766,
-    (alpha && (alpha ?? 1)) || 1, // slot in alpha
   ];
 }
 
-export function oklab(rgb) {
-  const [l, a, b, alpha] = calcOklab(rgb);
-  const truncate = significant.bind(null, 3);
+export function rgbToOklab(color) {
+  const [r, g, b, alpha] = parseRGB(color);
+  const [l, aHue, bHue] = calcOklab(r, g, b);
 
-  const L = `${precision(calcPercentFromFraction(l))}%`;
-  const c = precision(Math.sqrt(a ** 2 + b ** 2));
-  const h = precision(Math.atan2(b, a) * (180 / Math.PI));
+  const L = `${enforcePrecision(calcPercentFromFraction(l))}%`;
+  const c = enforcePrecision(Math.sqrt(aHue ** 2 + bHue ** 2));
+  const h = enforcePrecision(Math.atan2(bHue, aHue) * (180 / Math.PI));
 
-  const C = +c.toFixed(5); // Ensure negative exponent is rendered as 0
+  const C = Math.sign(Math.round(c)) === 0 ? 0 : c; // Ensure negative values lock at 0
   const H = Math.sign(h) === -1 ? correctHueCounterClockwise(h) : h;
 
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1 ? `oklab(${L} ${C} ${H})` : `oklab(${L} ${C} ${H} / ${A})`;
 }
-// Functional RGB -> Oklab (LCh) (=rgb.oklab=):1 ends here
+// Functional RGB to Oklab (LCh):1 ends here
 
-// [[file:../../README.org::*Functional RGB <- Functional HSL (=hsl.rgb=)][Functional RGB <- Functional HSL (=hsl.rgb=):1]]
+// [[file:../../README.org::*Functional RGB from Functional HSL][Functional RGB from Functional HSL:1]]
 import {
   calcChannelFromFraction,
-  calcFractionFromPercent,
   calcHueFromGrad,
-  calcHueFromRad,
   calcHueFromTurn,
   correctHueClockwise,
-  correctHueCounterClockwise,
-} from "./setup.js";
+} from "./math.js";
 
 // https://www.rapidtables.com/convert/color/hsl-to-rgb.html
 const calcChannels = (C, X, H) =>
@@ -299,8 +288,8 @@ const calcChannels = (C, X, H) =>
     [[C, 0, X], 300 <= H && H < 360],
   ]);
 
-export const parseHSL = (hsl) => {
-  const [h, s, l, alpha] = hsl;
+function parseHSL(color) {
+  const [h, s, l, alpha] = valueExtractor(color);
 
   const [H] = [h].map((value) => {
     const n = parseFloat(value);
@@ -340,9 +329,9 @@ export const parseHSL = (hsl) => {
   const A = a != null ? (a > 1 ? calcFractionFromPercent(a) : a) : 1;
 
   return A === 1 ? [H, S, L] : [H, S, L, A];
-};
+}
 
-export const calcRGB = (h, s, l) => {
+function calcRGB(h, s, l) {
   // Calculate chroma
   const C = (1 - Math.abs(2 * l - 1)) * s;
   const X = C * (1 - Math.abs(((h / 60) % 2) - 1));
@@ -355,26 +344,24 @@ export const calcRGB = (h, s, l) => {
     .map((channel) => Math.round(calcChannelFromFraction(channel + m)));
 
   return [R, G, B];
-};
-// Functional RGB <- Functional HSL (=hsl.rgb=):1 ends here
+}
+// Functional RGB from Functional HSL:1 ends here
 
-// [[file:../../README.org::*Functional RGB <- Functional HSL (=hsl.rgb=)][Functional RGB <- Functional HSL (=hsl.rgb=):2]]
-/** Functional RGB <- Functional HSL */
-export function rgb(hsl) {
-  const [h, s, l, alpha] = parseHSL(hsl);
+// [[file:../../README.org::*Functional RGB from Functional HSL][Functional RGB from Functional HSL:2]]
+/** Functional RGB from Functional HSL */
+export function rgbFromHSL(color) {
+  const [h, s, l, alpha] = parseHSL(color);
   const [R, G, B] = calcRGB(h, s, l);
 
   const A = (alpha && (alpha ?? 1)) || 1;
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
-// Functional RGB <- Functional HSL (=hsl.rgb=):2 ends here
+// Functional RGB from Functional HSL:2 ends here
 
-// [[file:../../README.org::*Functional RGB <- Device CMYK (=cmyk.rgb=)][Functional RGB <- Device CMYK (=cmyk.rgb=):1]]
-import { calcChannelFromFraction, calcFractionFromPercent } from "./setup.js";
-
-function parseCMYK(cmyk) {
-  const [c, m, y, k, alpha] = cmyk;
+// [[file:../../README.org::*Functional RGB from Device CMYK][Functional RGB from Device CMYK:1]]
+function parseCMYK(color) {
+  const [c, m, y, k, alpha] = valueExtractor(color);
   const value = (s) => parseFloat(s);
   const [C, M, Y, K] = [c, m, y, k].map((component) =>
     component.endsWith("%")
@@ -387,12 +374,12 @@ function parseCMYK(cmyk) {
 
   return A === 1 ? [C, M, Y, K] : [C, M, Y, K, A];
 }
-// Functional RGB <- Device CMYK (=cmyk.rgb=):1 ends here
+// Functional RGB from Device CMYK:1 ends here
 
-// [[file:../../README.org::*Functional RGB <- Device CMYK (=cmyk.rgb=)][Functional RGB <- Device CMYK (=cmyk.rgb=):2]]
-/** Functional RGB <- Device CMYK */
-export function rgb(cmyk) {
-  const [C, M, Y, K, alpha] = parseCMYK(cmyk);
+// [[file:../../README.org::*Functional RGB from Device CMYK][Functional RGB from Device CMYK:2]]
+/** Functional RGB from Device CMYK */
+export function rgbFromCMYK(color) {
+  const [C, M, Y, K, alpha] = parseCMYK(color);
 
   const [R, G, B] = [C, M, Y].map((component) =>
     Math.round(calcChannelFromFraction((1 - component) * (1 - K)))
@@ -401,19 +388,12 @@ export function rgb(cmyk) {
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
-// Functional RGB <- Device CMYK (=cmyk.rgb=):2 ends here
+// Functional RGB from Device CMYK:2 ends here
 
-// [[file:../../README.org::*Functional RGB <- Functional HWB (=hwb.rgb=)][Functional RGB <- Functional HWB (=hwb.rgb=):1]]
-import {
-  calcChannelFromFraction,
-  calcFractionFromChannel,
-  calcFractionFromPercent,
-} from "./setup.js";
-import { calcRGB, parseHSL } from "./hsl.js";
-
-function parseHWB(hwb) {
-  const [h, w, blk, alpha] = hwb;
-  const [H] = parseHSL([h, "100%", "50%", "1"]);
+// [[file:../../README.org::*Functional RGB from Functional HWB][Functional RGB from Functional HWB:1]]
+function parseHWB(color) {
+  const [h, w, blk, alpha] = valueExtractor(color);
+  const [H] = parseHSL(`hsl(${h}, 50%, 50%)`); // free hue correction
   const [W, BLK] = [w, blk].map((component) =>
     calcFractionFromPercent(parseFloat(component))
   );
@@ -423,12 +403,12 @@ function parseHWB(hwb) {
 
   return A === 1 ? [H, W, BLK] : [H, W, BLK, A];
 }
-// Functional RGB <- Functional HWB (=hwb.rgb=):1 ends here
+// Functional RGB from Functional HWB:1 ends here
 
-// [[file:../../README.org::*Functional RGB <- Functional HWB (=hwb.rgb=)][Functional RGB <- Functional HWB (=hwb.rgb=):2]]
-/** Functional RGB <- Functional HWB */
-export function rgb(hwb) {
-  const [h, w, blk, alpha] = parseHWB(hwb);
+// [[file:../../README.org::*Functional RGB from Functional HWB][Functional RGB from Functional HWB:2]]
+/** Functional RGB from Functional HWB */
+export function rgbFromHWB(color) {
+  const [h, w, blk, alpha] = parseHWB(color);
   const [r, g, b] = calcRGB(h, 1, 0.5);
 
   const A = (alpha && (alpha ?? 1)) || 1;
@@ -451,22 +431,11 @@ export function rgb(hwb) {
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
-// Functional RGB <- Functional HWB (=hwb.rgb=):2 ends here
+// Functional RGB from Functional HWB:2 ends here
 
-// [[file:../../README.org::*CIELAB Conversion Setup][CIELAB Conversion Setup:1]]
-import {
-  calcChannelFromFraction,
-  calcFractionFromPercent,
-  calcHueFromRad,
-  correctHueCounterClockwise,
-  normalize,
-  significant,
-} from "./setup.js";
-// CIELAB Conversion Setup:1 ends here
-
-// [[file:../../README.org::*CIE XYZ <- Functonal CIELAB][CIE XYZ <- Functonal CIELAB:1]]
-function calcXYZ(lab) {
-  const [L, a, b] = lab.map((v) => parseFloat(v));
+// [[file:../../README.org::*Functional RGB from Functional CIELAB][Functional RGB from Functional CIELAB:1]]
+function calcXYZLab(l, a, b) {
+  const [L, A, B] = [l, a, b].map((v) => parseFloat(v));
 
   // CIE standards
   const ε = 216 / 24389;
@@ -475,8 +444,8 @@ function calcXYZ(lab) {
 
   // Compute the values of F
   const Fy = (L + 16) / 116;
-  const Fx = a / 500 + Fy;
-  const Fz = Fy - b / 200;
+  const Fx = A / 500 + Fy;
+  const Fz = Fy - B / 200;
 
   // Calculate xyz
   const [x, y, z] = [
@@ -487,11 +456,12 @@ function calcXYZ(lab) {
 
   return [x, y, z].map((V, i) => V * white[i]);
 }
-// CIE XYZ <- Functonal CIELAB:1 ends here
+// Functional RGB from Functional CIELAB:1 ends here
 
-// [[file:../../README.org::*CIE XYZ -> Linear RGB][CIE XYZ -> Linear RGB:1]]
-function calcLinearRGB(lab) {
-  const [x, y, z] = calcXYZ(lab);
+// [[file:../../README.org::*Functional RGB from Functional CIELAB][Functional RGB from Functional CIELAB:2]]
+function calcLinearRGB(l, a, b) {
+  const [x, y, z] = calcXYZLab(l, a, b);
+
   /**
    * D65 transformation matrix
    * =============================
@@ -520,18 +490,19 @@ function calcLinearRGB(lab) {
     X * 0.0556434 + Y * -0.2040259 + Z * 1.0572252,
   ];
 }
-// CIE XYZ -> Linear RGB:1 ends here
+// Functional RGB from Functional CIELAB:2 ends here
 
-// [[file:../../README.org::*Linear RGB >-< Functional RGB][Linear RGB >-< Functional RGB:1]]
-const calcRGB = (lrgb) =>
+// [[file:../../README.org::*Functional RGB from Functional CIELAB][Functional RGB from Functional CIELAB:3]]
+const applyGamma = (lrgb) =>
   lrgb.map((V) => V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055);
 
-/** Functional CIELAB <- Functional RGB */
-export function rgb(lab) {
-  const [l, a, b, alpha] = lab;
+/** Functional CIELAB from Functional RGB */
+export function rgbFromCielab(color) {
+  const [l, aHue, bHue, alpha] = valueExtractor(color);
+  const [r, g, b] = calcLinearRGB(l, aHue, bHue);
 
-  const [R, G, B] = calcRGB(calcLinearRGB([l, a, b])).map((channel) =>
-    normalize(0, calcChannelFromFraction(channel), 255)
+  const [R, G, B] = applyGamma([r, g, b]).map((channel) =>
+    Math.round(normalize(0, calcChannelFromFraction(channel), 255))
   );
   const A = (alpha &&
     (alpha.endsWith("%")
@@ -541,17 +512,17 @@ export function rgb(lab) {
 
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
-// Linear RGB >-< Functional RGB:1 ends here
+// Functional RGB from Functional CIELAB:3 ends here
 
-// [[file:../../README.org::*Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=)][Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=):1]]
-const precision = significant.bind(null, 5);
-
-/** Functional CIELAB -> Functional CIELCh(ab) */
-export function lch(lab) {
-  const [L, a, b, alpha] = lab;
+// [[file:../../README.org::*Functional CIELAB to Functional CIELCh(ab)][Functional CIELAB to Functional CIELCh(ab):1]]
+/** Functional CIELAB to Functional CIELCh(ab) */
+export function cielabToCielch(color) {
+  const [L, a, b, alpha] = valueExtractor(color);
   const [C, h] = [
-    precision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
-    precision(Math.atan2(parseFloat(b), parseFloat(a)) * (180 / Math.PI)),
+    enforcePrecision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
+    enforcePrecision(
+      Math.atan2(parseFloat(b), parseFloat(a)) * (180 / Math.PI),
+    ),
   ];
 
   const H = Math.sign(h) === -1 ? h + 360 : h;
@@ -564,25 +535,18 @@ export function lch(lab) {
 
   return A === 1 ? `lch(${L} ${C} ${H})` : `lch(${L} ${C} ${H} / ${A})`;
 }
-// Functional CIELAB -> Functional CIELCh(ab) (=lab.lch=):1 ends here
+// Functional CIELAB to Functional CIELCh(ab):1 ends here
 
-// [[file:../../README.org::*Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)][Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):1]]
-import { calcFractionFromPercent, normalize, significant } from "./setup.js";
-import { parseHSL } from "./hsl.js";
-
-const precision = significant.bind(null, 5);
-// Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):1 ends here
-
-// [[file:../../README.org::*Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=)][Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):2]]
-/** Functional CIELAB <- Functional CIELCh(ab) */
-export function lab(lch) {
-  const [L, c, h, alpha] = lch;
+// [[file:../../README.org::*Functional CIELAB from Functional CIELCh(ab)][Functional CIELAB from Functional CIELCh(ab):1]]
+/** Functional CIELAB from Functional CIELCh(ab) */
+export function cielabFromCielch(color) {
+  const [L, c, h, alpha] = valueExtractor(color);
   const C = parseFloat(c);
-  const [H] = parseHSL([h, "100%", "50%", "1"]);
+  const [H] = parseHSL(`hsl(${h}, 50%, 50%)`);
 
   const [a, b] = [
-    precision(C * Math.cos(H * (Math.PI / 180))),
-    precision(C * Math.sin(H * (Math.PI / 180))),
+    enforcePrecision(C * Math.cos(H * (Math.PI / 180))),
+    enforcePrecision(C * Math.sin(H * (Math.PI / 180))),
   ];
 
   const A = (alpha &&
@@ -593,23 +557,17 @@ export function lab(lch) {
 
   return A === 1 ? `lab(${L} ${a} ${b})` : `lab(${L} ${a} ${b} / ${A})`;
 }
-// Functional CIELAB <- Functional CIELCh(ab) (=lch.lab=):2 ends here
+// Functional CIELAB from Functional CIELCh(ab):1 ends here
 
 // [[file:../../README.org::*Oklab (LCh) Conversion][Oklab (LCh) Conversion:1]]
-import {
-  calcChannelFromFraction,
-  calcFractionFromChannel,
-  calcFractionFromPercent,
-  normalize,
-} from "./setup.js";
-
-export function parseOklab(oklab) {
-  const [l, c, h, alpha] = oklab;
+export function parseOklab(color) {
+  const [l, c, h, alpha] = valueExtractor(color);
 
   // Convert values back to their raw Oklab form
   const L = calcFractionFromPercent(parseFloat(l));
   const C = c;
-  const H = 2 * Math.PI * (h / 360);
+  const [hue] = parseHSL(`hsl(${h}, 50%, 50%)`);
+  const H = 2 * Math.PI * (hue / 360); // degrees to radians
 
   // Calculate a, b
   const [a, b] = [C * Math.cos(H), C * Math.sin(H)];
@@ -619,9 +577,7 @@ export function parseOklab(oklab) {
 // Oklab (LCh) Conversion:1 ends here
 
 // [[file:../../README.org::*Oklab (LCh) Conversion][Oklab (LCh) Conversion:2]]
-function calcLinearRGB(oklab) {
-  const [l, a, b, alpha] = parseOklab(oklab);
-
+function calcLinearRGBOklab(l, a, b) {
   // Calculate LMS cone activations
   const [L, M, S] = [
     l + a * 0.3963377774 + b * 0.2158037573,
@@ -634,18 +590,18 @@ function calcLinearRGB(oklab) {
     L * 4.076416621 - M * 3.3077115913 + S * 0.2309699292,
     L * -1.2684380046 + M * 2.6097574011 - S * 0.3413193965,
     L * -0.0041960863 - M * 0.7034186147 + S * 1.707614701,
-    alpha, // slot in alpha
   ];
 }
 // Oklab (LCh) Conversion:2 ends here
 
 // [[file:../../README.org::*Oklab (LCh) Conversion][Oklab (LCh) Conversion:3]]
-export function rgb(oklab) {
-  const [r, g, b, alpha] = calcLinearRGB(oklab);
+export function rgbFromOklab(color) {
+  const [l, aHue, bHue, alpha] = parseOklab(color);
+  const [r, g, b] = calcLinearRGBOklab(l, aHue, bHue);
 
   const [R, G, B] = [r, g, b]
     .map((V) => (V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055))
-    .map((V) => normalize(0, calcChannelFromFraction(V), 255));
+    .map((V) => Math.round(normalize(0, calcChannelFromFraction(V), 255)));
 
   const A = (alpha && (alpha ?? 1)) || 1;
 

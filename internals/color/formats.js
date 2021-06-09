@@ -73,12 +73,12 @@ function expandHex(color) {
 }
 // Hex Value Extraction:1 ends here
 
-// [[file:../../README.org::*W3C-X11][W3C-X11:1]]
+// [[file:../../README.org::*Named Colors][Named Colors:1]]
 import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** Validate: W3C X11 named colors */
 export const namedValidator = (color) => !!X11Colors[color];
-// W3C-X11:1 ends here
+// Named Colors:1 ends here
 
 // [[file:../../README.org::*RGB Validator][RGB Validator:1]]
 /** Validate: functional RGB format */
