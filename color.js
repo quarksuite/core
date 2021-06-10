@@ -235,6 +235,25 @@ export function oklab(color) {
 }
 // oklab:1 ends here
 
+// [[file:README.org::*compare][compare:1]]
+/**
+ * A function that batch converts a valid CSS color as a dictionary of formats.
+ *
+ * @example Comparing the hex, rgb, and hsl values of chartreuse
+ *
+ * ```ts
+ * compare(["hex", "rgb", "hsl"], "chartreuse");
+ *
+ *
+ * @param {("hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab")[]} formats - an array of formats to compare
+ * @param {string} color - the input color to convert
+ * @returns {{original: string, hex?: string, rgb?: string, hsl?: string, cmyk?: string, hwb?: string, cielab?: string, cielch?: string, oklab?: string }} dictionary containing the original input color as well as the requested formats
+ */
+export function compare(formats, color) {
+  return queryFormats(formats, color);
+}
+// compare:1 ends here
+
 // [[file:README.org::*Properties Adjustment][Properties Adjustment:1]]
 import { valueExtractor } from "./internals/color/formats.js";
 import {

@@ -112,6 +112,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#cielab][cielab]]
         - [[#cielch][cielch]]
         - [[#oklab][oklab]]
+        - [[#compare][compare]]
         - [[#tests-1][Tests]]
           - [[#color-format-conversion-assertions][Color Format Conversion Assertions]]
           - [[#color-format-conversion-results][Color Format Conversion Results]]
@@ -2041,6 +2042,35 @@ export function cielch(color) {
  */
 export function oklab(color) {
   return queryFormats("oklab", color);
+}
+#+END_SRC
+
+***** compare
+
++ =compare: (formats: string[], color: string) => object=
++ =formats: string[]=: an array of formats to compare
++ =color: string=: the input color to convert
+
+  New in v0.3.0 is the =compare()= function. Its main purpose is to generate a dictionary from your
+  color in formats you may want to use. It's also a handy way of exploring some of the lesser known
+  formats.
+
+#+BEGIN_SRC js :tangle "./color.js" :comments link
+/**
+ * A function that batch converts a valid CSS color as a dictionary of formats.
+ *
+ * @example Comparing the hex, rgb, and hsl values of chartreuse
+ *
+ * ```ts
+ * compare(["hex", "rgb", "hsl"], "chartreuse");
+ *
+ *
+ * @param {("hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab")[]} formats - an array of formats to compare
+ * @param {string} color - the input color to convert
+ * @returns {{original: string, hex?: string, rgb?: string, hsl?: string, cmyk?: string, hwb?: string, cielab?: string, cielch?: string, oklab?: string }} dictionary containing the original input color as well as the requested formats
+ */
+export function compare(formats, color) {
+  return queryFormats(formats, color);
 }
 #+END_SRC
 
