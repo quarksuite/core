@@ -1,6 +1,7 @@
 // [[file:../../README.org::*Syntax Tokens][Syntax Tokens:1]]
 // channel: float<0-100>% || int<0-255>
-const CHANNEL_TOK = /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
+const CHANNEL_TOK =
+  /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
 
 // hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
 const HUE_TOK = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
@@ -40,8 +41,8 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       tokenValues.join(DELIMITER.source),
-      `(?:${[ALPHA_DELIMITER.source, ALPHA_TOK.source].join("")})?\\))`
-    )
+      `(?:${[ALPHA_DELIMITER.source, ALPHA_TOK.source].join("")})?\\))`,
+    ),
   );
 }
 // Syntax Tokens:2 ends here
@@ -57,7 +58,7 @@ export const valueExtractor = (color) =>
 
 // [[file:../../README.org::*Hex Validator][Hex Validator:1]]
 /** Validate: hex color */
-export const hexValidator = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
+const hexValidator = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
 // Hex Validator:1 ends here
 
 // [[file:../../README.org::*Hex Value Extraction][Hex Value Extraction:1]]
@@ -77,20 +78,20 @@ function expandHex(color) {
 import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** Validate: W3C X11 named colors */
-export const namedValidator = (color) => !!X11Colors[color];
+const namedValidator = (color) => !!X11Colors[color];
 // Named Colors:1 ends here
 
 // [[file:../../README.org::*RGB Validator][RGB Validator:1]]
 /** Validate: functional RGB format */
-export const rgbValidator = (color) =>
+const rgbValidator = (color) =>
   matchFunctionalFormat({ prefix: "rgba?" }, Array(3).fill(CHANNEL_TOK)).test(
-    color
+    color,
   );
 // RGB Validator:1 ends here
 
 // [[file:../../README.org::*HSL Validator][HSL Validator:1]]
 /** Validate: functional HSL format */
-export const hslValidator = (color) =>
+const hslValidator = (color) =>
   matchFunctionalFormat({ prefix: "hsla?" }, [
     HUE_TOK,
     ...Array(2).fill(PERCENT_TOK),
@@ -99,16 +100,16 @@ export const hslValidator = (color) =>
 
 // [[file:../../README.org::*CMYK Validator][CMYK Validator:1]]
 /** Validate: CMYK format */
-export const cmykValidator = (color) =>
+const cmykValidator = (color) =>
   matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(PERCENT_TOK_DECIMAL)
+    Array(4).fill(PERCENT_TOK_DECIMAL),
   ).test(color);
 // CMYK Validator:1 ends here
 
 // [[file:../../README.org::*HWB Validator][HWB Validator:1]]
 /** Validate: functional HWB format */
-export function hwbValidator(color) {
+function hwbValidator(color) {
   return matchFunctionalFormat({ prefix: "hwb", legacy: false }, [
     HUE_TOK,
     ...Array(2).fill(PERCENT_TOK),
@@ -128,7 +129,7 @@ export function cielabValidator(color) {
 
 // [[file:../../README.org::*CIELCh(ab) Validator][CIELCh(ab) Validator:1]]
 /** Validate: functional CIELCh(ab) format */
-export function cielchValidator(color) {
+function cielchValidator(color) {
   return matchFunctionalFormat({ prefix: "lch", legacy: false }, [
     CIE_LUM_TOK,
     CHROMA_TOK,
@@ -139,7 +140,7 @@ export function cielchValidator(color) {
 
 // [[file:../../README.org::*Oklab (LCh) Validator][Oklab (LCh) Validator:1]]
 /** Validate: Oklab (LCh) format */
-export function oklabValidator(color) {
+function oklabValidator(color) {
   return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
     CIE_LUM_TOK,
     CHROMA_TOK_OKLAB,
@@ -147,3 +148,17 @@ export function oklabValidator(color) {
   ]).test(color);
 }
 // Oklab (LCh) Validator:1 ends here
+
+// [[file:../../README.org::*Batch Validation][Batch Validation:1]]
+export default new Map([
+  ["named", namedValidator],
+  ["hex", hexValidator],
+  ["rgb", rgbValidator],
+  ["hsl", hslValidator],
+  ["cmyk", cmykValidator],
+  ["hwb", hwbValidator],
+  ["cielab", cielabValidator],
+  ["cielch", cielchValidator],
+  ["oklab", oklabValidator],
+]);
+// Batch Validation:1 ends here

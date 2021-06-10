@@ -109,8 +109,8 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#hsl][hsl]]
         - [[#cmyk][cmyk]]
         - [[#hwb][hwb]]
-        - [[#lab][lab]]
-        - [[#lch][lch]]
+        - [[#cielab][cielab]]
+        - [[#cielch][cielch]]
         - [[#oklab][oklab]]
         - [[#tests-1][Tests]]
           - [[#color-format-conversion-assertions][Color Format Conversion Assertions]]
@@ -217,7 +217,8 @@ If you're interested in how this project evolved, feel free to [[https://github.
           - [[#cielchab-value-extraction][CIELCh(ab) Value Extraction]]
         - [[#oklab-lch][Oklab (LCh)]]
           - [[#oklab-lch-validator][Oklab (LCh) Validator]]
-          - [[#oklab-lch-extractor][Oklab (LCh) Extractor]]
+          - [[#oklab-lch-value-extraction][Oklab (LCh) Value Extraction]]
+        - [[#batch-validation][Batch Validation]]
       - [[#format-conversions-internalscolorconversionsjs][Format Conversions (=internals/color/conversions.js=)]]
         - [[#rgb-hex-conversions][RGB Hex Conversions]]
           - [[#rgb-hex-to-functional-rgb][RGB Hex to Functional RGB]]
@@ -242,6 +243,7 @@ If you're interested in how this project evolved, feel free to [[https://github.
         - [[#functional-cielch-conversion][Functional CIELCh Conversion]]
           - [[#functional-cielab-from-functional-cielchab][Functional CIELAB from Functional CIELCh(ab)]]
         - [[#oklab-lch-conversion][Oklab (LCh) Conversion]]
+        - [[#batch-conversion][Batch Conversion]]
       - [[#math-internalscolormathjs][Math (=internals/color/math.js=)]]
   - [[#data][Data]]
     - [[#color-3][Color]]
@@ -1745,27 +1747,37 @@ creating palettes.
 
 **** Format Conversion
 
-The public conversion API is designed to abstract the internal =inputFormat.outputFormat= conversion
-utilities into a simple =outputFormat:: inputColor -> outputColor= conversion.
+The implementation for format conversion is simplified even further as of v0.3.0.
 
-For example: =hex("rgb(255, 0, 0)")= will yield =#ff0000=.
+I realized that the common trait all of the formats shared is that to be usable on the web, they
+/must/ stay within the sRGB gamut.
 
-Each utility checks the validity of the input color before doing anything with it, and will throw a
-helpful error message if something goes wrong.
+So the logical chain is:
 
-To streamline the conversion process, I pass each format in the chain through as a sequence of keys.
+1. Convert a valid color to RGB implicitly
+2. Convert to the desired =output= /explicitly/
+
+All the conversion interface needs to know is =from[input] -> to[output]=.
+
+The input format is gleaned from an identification key attached to the supported format's
+validator. And it will only work with valid colors, throwing a =ColorError= otherwise.
+
+In addition: =output= can also be a list of formats =["hex", "rgb", "hsl"]= for example. So Quarks
+System Core can now provide *batch conversion* functionality.
+
+That part comes later, though.
 
 #+BEGIN_SRC js :tangle "./color.js" :comments link
-import * as format from "./internals/color/format/index.js";
-import * as convert from "./internals/color/convert/index.js";
+import formats from "./internals/color/formats.js";
+import conversions from "./internals/color/conversions.js";
 import { ErrorTemplate } from "./internals/error.js";
-import { pipe } from "./utilities.js";
+import { compose, pipe } from "./utilities.js";
 
 const ColorError = (output) =>
   ErrorTemplate({
     message: "not a valid CSS color format",
     reason: `
-This error indicates that the input for conversion is not actually a color.
+This error indicates that the color format is invalid or unsupported.
 `,
     suggestion: `
 Ensure that the input is a valid CSS color.
@@ -1798,38 +1810,55 @@ lch(38% 78 147)
     output,
   });
 
-const parseColor = (color, input, ...chain) =>
-  input.validate(color) && pipe(color, ...chain);
+const validate = (color) =>
+  Array.from(formats)
+    .map(([supported, validator]) => [supported, validator(color) && color])
+    .filter(([, found]) => found)
+    .flat();
 
-// Conversion
-function convertColor(color, ...chain) {
-  return parseColor(
-    color,
-    format[chain[0]],
-    ...chain.reduce((acc, _, index, array) => {
-      if (index === array.length - 1) return acc; // end of sequence
-      if (array[index] === "named" && array[index + 1] === "hex") {
-        // implicit named color conversion
-        return [convert.named.hex];
-      }
-      return [
-        ...acc,
-        format[array[index]].extract,
-        convert[array[index]][array[index + 1]],
-      ];
-    }, []),
+function queryFormats(output, color) {
+  const [input, value] = validate(color);
+  const $ = compose;
+  const C = pipe;
+  const _ = conversions;
+
+  const from = {
+    named: $(_.hexFromNamed, _.hexToRGB),
+    hex: $(_.hexToRGB),
+    rgb: (value) => value, // identity,
+    hsl: $(_.rgbFromHSL),
+    cmyk: $(_.rgbFromCMYK),
+    hwb: $(_.rgbFromHWB),
+    cielab: $(_.rgbFromCielab),
+    cielch: $(_.cielabFromCielch, _.rgbFromCielab),
+    oklab: $(_.rgbFromOklab),
+  };
+
+  const to = {
+    hex: $(_.hexFromRGB),
+    rgb: $(_.hexFromRGB, _.hexToRGB), // identity
+    hsl: $(_.rgbToHSL),
+    cmyk: $(_.rgbToCMYK),
+    hwb: $(_.rgbToHWB),
+    cielab: $(_.rgbToCielab),
+    cielch: $(_.rgbToCielab, _.cielabToCielch),
+    oklab: $(_.rgbToOklab),
+  };
+
+  return (
+    (value && Array.isArray(output)
+      ? output.reduce(
+        (acc, format) => ({
+          ...acc,
+          original: value,
+          [format]: C(value, from[input], to[format]),
+        }),
+        {},
+      )
+      : value && C(value, from[input], to[output])) || ColorError(color)
   );
 }
-
-const checkConversion = (color, formats) =>
-  formats.filter((found) => !!found).toString() || ColorError(color);
 #+END_SRC
-
-Conversion is a two step process: first =convertColor= reads the keys and executes the chain based
-on what it finds. It allows both progressive and regressive conversions.
-
-Finally, to return the color, =checkConversion= filters the formats and returns the color it finds
-at the end of the chain. If it exists. Otherwise, it throws an error.
 
 ***** hex
 
@@ -1850,16 +1879,7 @@ at the end of the chain. If it exists. Otherwise, it throws an error.
  * @returns {string} the input color converted to RGB hex
  */
 export function hex(color) {
-  return format.hex.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "named", "hex"),
-    convertColor(color, "rgb", "hex"),
-    convertColor(color, "hsl", "rgb", "hex"),
-    convertColor(color, "cmyk", "rgb", "hex"),
-    convertColor(color, "hwb", "rgb", "hex"),
-    convertColor(color, "lab", "rgb", "hex"),
-    convertColor(color, "lch", "lab", "rgb", "hex"),
-    convertColor(color, "oklab", "rgb", "hex"),
-  ]);
+  return queryFormats("hex", color);
 }
 #+END_SRC
 
@@ -1882,16 +1902,7 @@ export function hex(color) {
  * @returns {string} the input color converted to RGB
  */
 export function rgb(color) {
-  return format.rgb.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb"),
-    convertColor(color, "named", "hex", "rgb"),
-    convertColor(color, "hsl", "rgb"),
-    convertColor(color, "cmyk", "rgb"),
-    convertColor(color, "hwb", "rgb"),
-    convertColor(color, "lab", "rgb"),
-    convertColor(color, "lch", "lab", "rgb"),
-    convertColor(color, "oklab", "rgb"),
-  ]);
+  return queryFormats("rgb", color);
 }
 #+END_SRC
 
@@ -1914,16 +1925,7 @@ export function rgb(color) {
  * @returns {string} the input color converted to HSL
  */
 export function hsl(color) {
-  return format.hsl.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "hsl"),
-    convertColor(color, "named", "hex", "rgb", "hsl"),
-    convertColor(color, "rgb", "hsl"),
-    convertColor(color, "cmyk", "rgb", "hsl"),
-    convertColor(color, "hwb", "rgb", "hsl"),
-    convertColor(color, "lab", "rgb", "hsl"),
-    convertColor(color, "lch", "lab", "rgb", "hsl"),
-    convertColor(color, "oklab", "rgb", "hsl"),
-  ]);
+  return queryFormats("hsl", color);
 }
 #+END_SRC
 
@@ -1946,16 +1948,7 @@ export function hsl(color) {
  * @returns {string} the input color converted to CMYK
  */
 export function cmyk(color) {
-  return format.cmyk.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "cmyk"),
-    convertColor(color, "named", "hex", "rgb", "cmyk"),
-    convertColor(color, "rgb", "cmyk"),
-    convertColor(color, "hsl", "rgb", "cmyk"),
-    convertColor(color, "hwb", "rgb", "cmyk"),
-    convertColor(color, "lab", "rgb", "cmyk"),
-    convertColor(color, "lch", "lab", "rgb", "cmyk"),
-    convertColor(color, "oklab", "rgb", "cmyk"),
-  ]);
+  return queryFormats("cmyk", color);
 }
 #+END_SRC
 
@@ -1978,22 +1971,13 @@ export function cmyk(color) {
  * @returns {string} the input color converted to HWB
  */
 export function hwb(color) {
-  return format.hwb.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "hwb"),
-    convertColor(color, "named", "hex", "rgb", "hwb"),
-    convertColor(color, "rgb", "hwb"),
-    convertColor(color, "hsl", "rgb", "hwb"),
-    convertColor(color, "cmyk", "rgb", "hwb"),
-    convertColor(color, "lab", "rgb", "hwb"),
-    convertColor(color, "lch", "lab", "rgb", "hwb"),
-    convertColor(color, "oklab", "rgb", "hwb"),
-  ]);
+  return queryFormats("hwb", color);
 }
 #+END_SRC
 
-***** lab
+***** cielab
 
-+ =lab: (color: string) => string=
++ =cielab: (color: string) => string=
 + =color: string=: the input color to convert
 
 #+BEGIN_SRC js :tangle "./color.js" :comments link
@@ -2003,29 +1987,20 @@ export function hwb(color) {
  * @example Convert HWB to CIELAB
  *
  * ```ts
- * lab("hwb(90 25% 10%)");
+ * cielab("hwb(90 25% 10%)");
  * ```
  *
  * @param {string} color - the input color to convert
  * @returns {string} the input color converted to CIELAB
  */
-export function lab(color) {
-  return format.lab.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "lab"),
-    convertColor(color, "named", "hex", "rgb", "lab"),
-    convertColor(color, "rgb", "lab"),
-    convertColor(color, "hsl", "rgb", "lab"),
-    convertColor(color, "cmyk", "rgb", "lab"),
-    convertColor(color, "hwb", "rgb", "lab"),
-    convertColor(color, "lch", "lab"),
-    convertColor(color, "oklab", "rgb", "lab"),
-  ]);
+export function cielab(color) {
+  return queryFormats("cielab", color);
 }
 #+END_SRC
 
-***** lch
+***** cielch
 
-+ =lch: (color: string) => string=
++ =cielch: (color: string) => string=
 + =color: string=: the input color to convert
 
 #+BEGIN_SRC js :tangle "./color.js" :comments link
@@ -2035,23 +2010,14 @@ export function lab(color) {
  * @example Convert CIELCh(ab) to RGB Hex
  *
  * ```ts
- * lch("#face");
+ * cielch("#face");
  * ```
  *
  * @param {string} color - the input color to convert
  * @returns {string} the input color converted to CIELCh(ab)
  */
-export function lch(color) {
-  return format.lch.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "lab", "lch"),
-    convertColor(color, "named", "hex", "rgb", "lab", "lch"),
-    convertColor(color, "rgb", "lab", "lch"),
-    convertColor(color, "hsl", "rgb", "lab", "lch"),
-    convertColor(color, "cmyk", "rgb", "lab", "lch"),
-    convertColor(color, "hwb", "rgb", "lab", "lch"),
-    convertColor(color, "lab", "lch"),
-    convertColor(color, "oklab", "rgb", "lab", "lch"),
-  ]);
+export function cielch(color) {
+  return queryFormats("cielch", color);
 }
 #+END_SRC
 
@@ -2074,16 +2040,7 @@ export function lch(color) {
  * @returns {string} the input color converted to Oklab (LCh)
  */
 export function oklab(color) {
-  return format.oklab.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "oklab"),
-    convertColor(color, "named", "hex", "rgb", "oklab"),
-    convertColor(color, "rgb", "oklab"),
-    convertColor(color, "hsl", "rgb", "oklab"),
-    convertColor(color, "cmyk", "rgb", "oklab"),
-    convertColor(color, "hwb", "rgb", "oklab"),
-    convertColor(color, "lab", "rgb", "oklab"),
-    convertColor(color, "lch", "lab", "rgb", "oklab"),
-  ]);
+  return queryFormats("oklab", color);
 }
 #+END_SRC
 
@@ -2247,24 +2204,32 @@ I also want to be able to preserve the input format of a color after adjustment 
 think about it when you use these functions.
 
 #+BEGIN_SRC js :tangle "./color.js" :comments link
-import * as format from "./internals/color/format/index.js";
-import * as revert from "./color.js";
+import { valueExtractor } from "./internals/color/formats.js";
+import {
+  calcFractionFromPercent,
+  correctHueClockwise,
+  correctHueCounterClockwise,
+  enforcePrecision,
+} from "./internals/color/math.js";
 
 // Secondary format validation
-export const preserve = (target, color) =>
-  Object.values({
-    hex: format.hex.validate(color) && revert.hex(target),
-    named: format.named.validate(color) && revert.hex(target),
-    rgb: format.rgb.validate(color) && revert.rgb(target),
-    hsl: format.hsl.validate(color) && revert.hsl(target),
-    cmyk: format.cmyk.validate(color) && revert.cmyk(target),
-    hwb: format.hwb.validate(color) && revert.hwb(target),
-    lab: format.lab.validate(color) && revert.lab(target),
-    lch: format.lch.validate(color) && revert.lch(target),
-    oklab: format.oklab.validate(color) && revert.oklab(target),
-  })
-    .filter((matched) => !!matched)
-    .toString();
+function preserve(target, color) {
+  const [format] = validate(color);
+
+  const revert = {
+    named: hex(target),
+    hex: hex(target),
+    rgb: rgb(target),
+    hsl: hsl(target),
+    cmyk: cmyk(target),
+    hwb: hwb(target),
+    cielab: cielab(target),
+    cielch: cielch(target),
+    oklab: oklab(target),
+  };
+
+  return revert[format] || ColorError(color);
+}
 #+END_SRC
 
 The simple method performs a /secondary/ color validation for the input and passes the resulting
@@ -2282,14 +2247,6 @@ First the input color is converted to Oklab (LCh) and its values are extracted. 
 changed, and the color is reverted to its original format.
 
 #+BEGIN_SRC js :tangle "./color.js" :comments link
-import { extract } from "./internals/color/format/lch.js";
-import {
-  correctHueClockwise,
-  correctHueCounterClockwise,
-} from "./internals/color/convert/setup.js";
-import { lch, oklab } from "./color.js";
-import { pipe } from "./utilities.js";
-
 /**
  * A function that allows hue adjustment of any valid CSS color.
  *
@@ -3589,11 +3546,7 @@ import { preserve } from "./color.js";
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of tints
  */
-export const tints = (
-  count,
-  contrast,
-  color,
-) => [
+export const tints = (count, contrast, color) => [
   ...new Set([
     ...generate(color, "white", contrast, count)
       .map((color) => pipe(color, hwb, extract))
@@ -3633,11 +3586,7 @@ export const tints = (
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of tones
  */
-export const tones = (
-  count,
-  contrast,
-  color,
-) => [
+export const tones = (count, contrast, color) => [
   ...new Set([
     ...generate(color, "gray", contrast, count)
       .map((color) => pipe(color, hwb, extract))
@@ -3680,11 +3629,7 @@ export const tones = (
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of shades
  */
-export const shades = (
-  count,
-  contrast,
-  color,
-) => [
+export const shades = (count, contrast, color) => [
   ...new Set([
     ...generate(color, "black", contrast, count)
       .map((color) => pipe(color, hwb, extract))
@@ -5387,7 +5332,8 @@ formats. So, I captured these repeating patterns as constants.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 // channel: float<0-100>% || int<0-255>
-const CHANNEL_TOK = /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
+const CHANNEL_TOK =
+  /(?:(?:100%|(?:\d\.?\d?){1,}%)|(?:25[0-5]|24[0-4][0-9]|1[0-9]{2}|\d{1,}|0))/;
 
 // hue: -?float<0->deg? || -?float<0->rad || -?float<0->grad || -?float<0->turn
 const HUE_TOK = /(?:-?(?:(?:\d\.?\d?)(?:deg|g?rad|turn)?)+)/;
@@ -5432,8 +5378,8 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       tokenValues.join(DELIMITER.source),
-      `(?:${[ALPHA_DELIMITER.source, ALPHA_TOK.source].join("")})?\\))`
-    )
+      `(?:${[ALPHA_DELIMITER.source, ALPHA_TOK.source].join("")})?\\))`,
+    ),
   );
 }
 #+END_SRC
@@ -5487,7 +5433,7 @@ The regular expression to validate a hex color is short.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: hex color */
-export const hexValidator = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
+const hexValidator = (color) => /^#([\da-f]{3,4}){1,2}$/i.test(color);
 #+END_SRC
 
 Let's see if all the colors defined in the table pass.
@@ -5577,7 +5523,7 @@ Named colors are simple to validate. It's a matter of matching the name with its
 import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** Validate: W3C X11 named colors */
-export const namedValidator = (color) => !!X11Colors[color];
+const namedValidator = (color) => !!X11Colors[color];
 #+END_SRC
 
 ***** Functional RGB
@@ -5613,9 +5559,9 @@ it against the input color. If it matches, it returns the color for further proc
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional RGB format */
-export const rgbValidator = (color) =>
+const rgbValidator = (color) =>
   matchFunctionalFormat({ prefix: "rgba?" }, Array(3).fill(CHANNEL_TOK)).test(
-    color
+    color,
   );
 #+END_SRC
 
@@ -5724,7 +5670,7 @@ This time the value tokens the validator checks for are =HUE_TOK= and two matchi
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional HSL format */
-export const hslValidator = (color) =>
+const hslValidator = (color) =>
   matchFunctionalFormat({ prefix: "hsla?" }, [
     HUE_TOK,
     ...Array(2).fill(PERCENT_TOK),
@@ -5838,10 +5784,10 @@ The validator for CMYK is similar to RGB in that  =PERCENT_TOK_DECIMAL= simply f
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: CMYK format */
-export const cmykValidator = (color) =>
+const cmykValidator = (color) =>
   matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(PERCENT_TOK_DECIMAL)
+    Array(4).fill(PERCENT_TOK_DECIMAL),
   ).test(color);
 #+END_SRC
 
@@ -5948,7 +5894,7 @@ The HWB validator expression is essentially the HSL validator with a different p
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional HWB format */
-export function hwbValidator(color) {
+function hwbValidator(color) {
   return matchFunctionalFormat({ prefix: "hwb", legacy: false }, [
     HUE_TOK,
     ...Array(2).fill(PERCENT_TOK),
@@ -6160,7 +6106,7 @@ The CIELCh(ab) validator maps a =CIE_LUM_TOK=, a =CHROMA_TOK=, and a =HUE_TOK=.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: functional CIELCh(ab) format */
-export function cielchValidator(color) {
+function cielchValidator(color) {
   return matchFunctionalFormat({ prefix: "lch", legacy: false }, [
     CIE_LUM_TOK,
     CHROMA_TOK,
@@ -6281,7 +6227,7 @@ with =CHROMA_TOK_OKLAB=.
 
 #+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
 /** Validate: Oklab (LCh) format */
-export function oklabValidator(color) {
+function oklabValidator(color) {
   return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
     CIE_LUM_TOK,
     CHROMA_TOK_OKLAB,
@@ -6319,7 +6265,7 @@ const colors = [
 ]
 #+end_src
 
-****** Oklab (LCh) Extractor
+****** Oklab (LCh) Value Extraction
 
 Now, I'll make sure the values are properly extracted.
 
@@ -6369,6 +6315,26 @@ const colors = [
 ]
 #+end_src
 
+***** Batch Validation
+
+Now I wrap the validators as a default export. This allows me to cherry pick the extractors as
+they're needed in =conversions.js= but /iterate/ over the validators to break the process down to a
+boolean condition: is this a color or not?
+
+#+BEGIN_SRC js :tangle "./internals/color/formats.js" :comments link
+export default new Map([
+  ["named", namedValidator],
+  ["hex", hexValidator],
+  ["rgb", rgbValidator],
+  ["hsl", hslValidator],
+  ["cmyk", cmykValidator],
+  ["hwb", hwbValidator],
+  ["cielab", cielabValidator],
+  ["cielch", cielchValidator],
+  ["oklab", oklabValidator],
+]);
+#+END_SRC
+
 **** Format Conversions (=internals/color/conversions.js=)
 
 I refactored the conversion functions to eliminate that isolated value extraction step so that I
@@ -6401,7 +6367,7 @@ import { calcFractionFromChannel, hexFragmentToChannel } from "./math.js";
 import { hexExtractor, valueExtractor } from "./formats.js";
 
 /** RGB Hex to Functional RGB */
-export function hexToRGB(color) {
+function hexToRGB(color) {
   const [r, g, b, a] = hexExtractor(color);
 
   const [R, G, B] = [r, g, b].map((hex) => hexFragmentToChannel(hex));
@@ -6458,7 +6424,7 @@ After validation, the only possible conversion for a CSS named color is a query 
 import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** RGB HEX <- W3C-X11 */
-export const hexFromNamed = (color) => X11Colors[color];
+const hexFromNamed = (color) => X11Colors[color];
 #+END_SRC
 
 ***** Functional RGB Conversion
@@ -6513,7 +6479,7 @@ higher conversions, that leaves RGB Hex as the only possible regression.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** RGB Hex from Functional RGB */
-export function hexFromRGB(color) {
+function hexFromRGB(color) {
   const [r, g, b, alpha] = parseRGB(color);
 
   const [R, G, B] = [r, g, b].map((channel) => channelToHexFragment(channel));
@@ -6601,7 +6567,7 @@ And now the actual conversion algorithm:
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB to Functional HSL */
-export function rgbToHSL(color) {
+function rgbToHSL(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [h, s, l] = calcHSL(r, g, b);
 
@@ -6656,7 +6622,7 @@ And now I drift again into unfamiliar terrain, but RapidTables is there again to
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB to Device CMYK */
-export function rgbToCMYK(color) {
+function rgbToCMYK(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
@@ -6730,7 +6696,7 @@ calculated via a [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][modified formu
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB to Functional HWB */
-export function rgbToHWB(color) {
+function rgbToHWB(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
@@ -6835,7 +6801,7 @@ And then I need to apply the actual [[http://www.brucelindbloom.com/index.html?E
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB to Functional CIELAB */
-export function rgbToCielab(color) {
+function rgbToCielab(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [x, y, z] = calcXYZ([r, g, b]);
 
@@ -6928,7 +6894,7 @@ function calcOklab(r, g, b) {
   ];
 }
 
-export function rgbToOklab(color) {
+function rgbToOklab(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [l, aHue, bHue] = calcOklab(r, g, b);
 
@@ -7067,7 +7033,7 @@ Phew. Now for the actual conversion function, it's an inversion.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB from Functional HSL */
-export function rgbFromHSL(color) {
+function rgbFromHSL(color) {
   const [h, s, l, alpha] = parseHSL(color);
   const [R, G, B] = calcRGB(h, s, l);
 
@@ -7138,7 +7104,7 @@ For the conversion algorithm, it's RapidTables coming again with the assist.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB from Device CMYK */
-export function rgbFromCMYK(color) {
+function rgbFromCMYK(color) {
   const [C, M, Y, K, alpha] = parseCMYK(color);
 
   const [R, G, B] = [C, M, Y].map((component) =>
@@ -7216,7 +7182,7 @@ And now for the conversion algorithm.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional RGB from Functional HWB */
-export function rgbFromHWB(color) {
+function rgbFromHWB(color) {
   const [h, w, blk, alpha] = parseHWB(color);
   const [r, g, b] = calcRGB(h, 1, 0.5);
 
@@ -7410,7 +7376,7 @@ And thankfully, [[http://www.brucelindbloom.com/Eqn_Lab_to_LCH.html][the formula
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional CIELAB to Functional CIELCh(ab) */
-export function cielabToCielch(color) {
+function cielabToCielch(color) {
   const [L, a, b, alpha] = valueExtractor(color);
   const [C, h] = [
     enforcePrecision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
@@ -7479,7 +7445,7 @@ The [[http://www.brucelindbloom.com/Eqn_LCH_to_Lab.html][conversion algorithm it
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
 /** Functional CIELAB from Functional CIELCh(ab) */
-export function cielabFromCielch(color) {
+function cielabFromCielch(color) {
   const [L, c, h, alpha] = valueExtractor(color);
   const C = parseFloat(c);
   const [H] = parseHSL(`hsl(${h}, 50%, 50%)`);
@@ -7544,7 +7510,7 @@ back to standard supported formats and closes the loop.
 First, I'll need to convert Oklab (LCh) values back to raw Oklab values.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-export function parseOklab(color) {
+function parseOklab(color) {
   const [l, c, h, alpha] = valueExtractor(color);
 
   // Convert values back to their raw Oklab form
@@ -7583,7 +7549,7 @@ function calcLinearRGBOklab(l, a, b) {
 Next, I apply the gamma, normalize the channels, and return the color.
 
 #+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
-export function rgbFromOklab(color) {
+function rgbFromOklab(color) {
   const [l, aHue, bHue, alpha] = parseOklab(color);
   const [r, g, b] = calcLinearRGBOklab(l, aHue, bHue);
 
@@ -7627,7 +7593,31 @@ console.log(colors.map((color) => ({input: color, output: rgbFromOklab(color)}))
 ]
 #+end_src
 
-And that completes the implementation.
+And that completes the implementation for each format.
+
+***** Batch Conversion
+
+Same as with validation, I'll wrap these in a default export for use in the improved public API.
+
+#+BEGIN_SRC js :tangle "./internals/color/conversions.js" :comments link
+export default {
+  hexToRGB,
+  hexFromRGB,
+  hexFromNamed,
+  rgbToHSL,
+  rgbFromHSL,
+  rgbToCMYK,
+  rgbFromCMYK,
+  rgbToHWB,
+  rgbFromHWB,
+  rgbToCielab,
+  rgbFromCielab,
+  rgbToOklab,
+  rgbFromOklab,
+  cielabToCielch,
+  cielabFromCielch,
+};
+#+END_SRC
 
 **** Math (=internals/color/math.js=)
 

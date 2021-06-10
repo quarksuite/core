@@ -3,7 +3,7 @@ import { calcFractionFromChannel, hexFragmentToChannel } from "./math.js";
 import { hexExtractor, valueExtractor } from "./formats.js";
 
 /** RGB Hex to Functional RGB */
-export function hexToRGB(color) {
+function hexToRGB(color) {
   const [r, g, b, a] = hexExtractor(color);
 
   const [R, G, B] = [r, g, b].map((hex) => hexFragmentToChannel(hex));
@@ -18,7 +18,7 @@ export function hexToRGB(color) {
 import { X11Colors } from "../../data/color/w3c-x11.js";
 
 /** RGB HEX <- W3C-X11 */
-export const hexFromNamed = (color) => X11Colors[color];
+const hexFromNamed = (color) => X11Colors[color];
 // RGB Hex from Named Color:1 ends here
 
 // [[file:../../README.org::*Functional RGB Conversion][Functional RGB Conversion:1]]
@@ -58,7 +58,7 @@ function parseRGB(color) {
 
 // [[file:../../README.org::*RGB Hex from Functional RGB][RGB Hex from Functional RGB:1]]
 /** RGB Hex from Functional RGB */
-export function hexFromRGB(color) {
+function hexFromRGB(color) {
   const [r, g, b, alpha] = parseRGB(color);
 
   const [R, G, B] = [r, g, b].map((channel) => channelToHexFragment(channel));
@@ -107,7 +107,7 @@ function calcHSL(r, g, b) {
 
 // [[file:../../README.org::*Functional RGB to Functional HSL][Functional RGB to Functional HSL:2]]
 /** Functional RGB to Functional HSL */
-export function rgbToHSL(color) {
+function rgbToHSL(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [h, s, l] = calcHSL(r, g, b);
 
@@ -124,7 +124,7 @@ export function rgbToHSL(color) {
 
 // [[file:../../README.org::*Functional RGB to Device CMYK][Functional RGB to Device CMYK:1]]
 /** Functional RGB to Device CMYK */
-export function rgbToCMYK(color) {
+function rgbToCMYK(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
@@ -149,7 +149,7 @@ export function rgbToCMYK(color) {
 
 // [[file:../../README.org::*Functional RGB to Functional HWB][Functional RGB to Functional HWB:1]]
 /** Functional RGB to Functional HWB */
-export function rgbToHWB(color) {
+function rgbToHWB(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [R, G, B] = [r, g, b].map((channel) =>
     calcFractionFromChannel(channel)
@@ -203,7 +203,7 @@ function calcXYZ(rgb) {
 
 // [[file:../../README.org::*Functional RGB to Functional CIELAB][Functional RGB to Functional CIELAB:3]]
 /** Functional RGB to Functional CIELAB */
-export function rgbToCielab(color) {
+function rgbToCielab(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [x, y, z] = calcXYZ([r, g, b]);
 
@@ -252,7 +252,7 @@ function calcOklab(r, g, b) {
   ];
 }
 
-export function rgbToOklab(color) {
+function rgbToOklab(color) {
   const [r, g, b, alpha] = parseRGB(color);
   const [l, aHue, bHue] = calcOklab(r, g, b);
 
@@ -349,7 +349,7 @@ function calcRGB(h, s, l) {
 
 // [[file:../../README.org::*Functional RGB from Functional HSL][Functional RGB from Functional HSL:2]]
 /** Functional RGB from Functional HSL */
-export function rgbFromHSL(color) {
+function rgbFromHSL(color) {
   const [h, s, l, alpha] = parseHSL(color);
   const [R, G, B] = calcRGB(h, s, l);
 
@@ -378,7 +378,7 @@ function parseCMYK(color) {
 
 // [[file:../../README.org::*Functional RGB from Device CMYK][Functional RGB from Device CMYK:2]]
 /** Functional RGB from Device CMYK */
-export function rgbFromCMYK(color) {
+function rgbFromCMYK(color) {
   const [C, M, Y, K, alpha] = parseCMYK(color);
 
   const [R, G, B] = [C, M, Y].map((component) =>
@@ -407,7 +407,7 @@ function parseHWB(color) {
 
 // [[file:../../README.org::*Functional RGB from Functional HWB][Functional RGB from Functional HWB:2]]
 /** Functional RGB from Functional HWB */
-export function rgbFromHWB(color) {
+function rgbFromHWB(color) {
   const [h, w, blk, alpha] = parseHWB(color);
   const [r, g, b] = calcRGB(h, 1, 0.5);
 
@@ -516,7 +516,7 @@ export function rgbFromCielab(color) {
 
 // [[file:../../README.org::*Functional CIELAB to Functional CIELCh(ab)][Functional CIELAB to Functional CIELCh(ab):1]]
 /** Functional CIELAB to Functional CIELCh(ab) */
-export function cielabToCielch(color) {
+function cielabToCielch(color) {
   const [L, a, b, alpha] = valueExtractor(color);
   const [C, h] = [
     enforcePrecision(Math.sqrt(parseFloat(a) ** 2 + parseFloat(b) ** 2)),
@@ -539,7 +539,7 @@ export function cielabToCielch(color) {
 
 // [[file:../../README.org::*Functional CIELAB from Functional CIELCh(ab)][Functional CIELAB from Functional CIELCh(ab):1]]
 /** Functional CIELAB from Functional CIELCh(ab) */
-export function cielabFromCielch(color) {
+function cielabFromCielch(color) {
   const [L, c, h, alpha] = valueExtractor(color);
   const C = parseFloat(c);
   const [H] = parseHSL(`hsl(${h}, 50%, 50%)`);
@@ -560,7 +560,7 @@ export function cielabFromCielch(color) {
 // Functional CIELAB from Functional CIELCh(ab):1 ends here
 
 // [[file:../../README.org::*Oklab (LCh) Conversion][Oklab (LCh) Conversion:1]]
-export function parseOklab(color) {
+function parseOklab(color) {
   const [l, c, h, alpha] = valueExtractor(color);
 
   // Convert values back to their raw Oklab form
@@ -595,7 +595,7 @@ function calcLinearRGBOklab(l, a, b) {
 // Oklab (LCh) Conversion:2 ends here
 
 // [[file:../../README.org::*Oklab (LCh) Conversion][Oklab (LCh) Conversion:3]]
-export function rgbFromOklab(color) {
+function rgbFromOklab(color) {
   const [l, aHue, bHue, alpha] = parseOklab(color);
   const [r, g, b] = calcLinearRGBOklab(l, aHue, bHue);
 
@@ -608,3 +608,23 @@ export function rgbFromOklab(color) {
   return A === 1 ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${A})`;
 }
 // Oklab (LCh) Conversion:3 ends here
+
+// [[file:../../README.org::*Batch Conversion][Batch Conversion:1]]
+export default {
+  hexToRGB,
+  hexFromRGB,
+  hexFromNamed,
+  rgbToHSL,
+  rgbFromHSL,
+  rgbToCMYK,
+  rgbFromCMYK,
+  rgbToHWB,
+  rgbFromHWB,
+  rgbToCielab,
+  rgbFromCielab,
+  rgbToOklab,
+  rgbFromOklab,
+  cielabToCielch,
+  cielabFromCielch,
+};
+// Batch Conversion:1 ends here

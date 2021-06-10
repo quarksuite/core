@@ -1,14 +1,14 @@
 // [[file:README.org::*Format Conversion][Format Conversion:1]]
-import * as format from "./internals/color/format/index.js";
-import * as convert from "./internals/color/convert/index.js";
+import formats from "./internals/color/formats.js";
+import conversions from "./internals/color/conversions.js";
 import { ErrorTemplate } from "./internals/error.js";
-import { pipe } from "./utilities.js";
+import { compose, pipe } from "./utilities.js";
 
 const ColorError = (output) =>
   ErrorTemplate({
     message: "not a valid CSS color format",
     reason: `
-This error indicates that the input for conversion is not actually a color.
+This error indicates that the color format is invalid or unsupported.
 `,
     suggestion: `
 Ensure that the input is a valid CSS color.
@@ -41,31 +41,54 @@ lch(38% 78 147)
     output,
   });
 
-const parseColor = (color, input, ...chain) =>
-  input.validate(color) && pipe(color, ...chain);
+const validate = (color) =>
+  Array.from(formats)
+    .map(([supported, validator]) => [supported, validator(color) && color])
+    .filter(([, found]) => found)
+    .flat();
 
-// Conversion
-function convertColor(color, ...chain) {
-  return parseColor(
-    color,
-    format[chain[0]],
-    ...chain.reduce((acc, _, index, array) => {
-      if (index === array.length - 1) return acc; // end of sequence
-      if (array[index] === "named" && array[index + 1] === "hex") {
-        // implicit named color conversion
-        return [convert.named.hex];
-      }
-      return [
-        ...acc,
-        format[array[index]].extract,
-        convert[array[index]][array[index + 1]],
-      ];
-    }, []),
+function queryFormats(output, color) {
+  const [input, value] = validate(color);
+  const $ = compose;
+  const C = pipe;
+  const _ = conversions;
+
+  const from = {
+    named: $(_.hexFromNamed, _.hexToRGB),
+    hex: $(_.hexToRGB),
+    rgb: (value) => value, // identity,
+    hsl: $(_.rgbFromHSL),
+    cmyk: $(_.rgbFromCMYK),
+    hwb: $(_.rgbFromHWB),
+    cielab: $(_.rgbFromCielab),
+    cielch: $(_.cielabFromCielch, _.rgbFromCielab),
+    oklab: $(_.rgbFromOklab),
+  };
+
+  const to = {
+    hex: $(_.hexFromRGB),
+    rgb: $(_.hexFromRGB, _.hexToRGB), // identity
+    hsl: $(_.rgbToHSL),
+    cmyk: $(_.rgbToCMYK),
+    hwb: $(_.rgbToHWB),
+    cielab: $(_.rgbToCielab),
+    cielch: $(_.rgbToCielab, _.cielabToCielch),
+    oklab: $(_.rgbToOklab),
+  };
+
+  return (
+    (value && Array.isArray(output)
+      ? output.reduce(
+        (acc, format) => ({
+          ...acc,
+          original: value,
+          [format]: C(value, from[input], to[format]),
+        }),
+        {},
+      )
+      : value && C(value, from[input], to[output])) || ColorError(color)
   );
 }
-
-const checkConversion = (color, formats) =>
-  formats.filter((found) => !!found).toString() || ColorError(color);
 // Format Conversion:1 ends here
 
 // [[file:README.org::*hex][hex:1]]
@@ -82,16 +105,7 @@ const checkConversion = (color, formats) =>
  * @returns {string} the input color converted to RGB hex
  */
 export function hex(color) {
-  return format.hex.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "named", "hex"),
-    convertColor(color, "rgb", "hex"),
-    convertColor(color, "hsl", "rgb", "hex"),
-    convertColor(color, "cmyk", "rgb", "hex"),
-    convertColor(color, "hwb", "rgb", "hex"),
-    convertColor(color, "lab", "rgb", "hex"),
-    convertColor(color, "lch", "lab", "rgb", "hex"),
-    convertColor(color, "oklab", "rgb", "hex"),
-  ]);
+  return queryFormats("hex", color);
 }
 // hex:1 ends here
 
@@ -109,16 +123,7 @@ export function hex(color) {
  * @returns {string} the input color converted to RGB
  */
 export function rgb(color) {
-  return format.rgb.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb"),
-    convertColor(color, "named", "hex", "rgb"),
-    convertColor(color, "hsl", "rgb"),
-    convertColor(color, "cmyk", "rgb"),
-    convertColor(color, "hwb", "rgb"),
-    convertColor(color, "lab", "rgb"),
-    convertColor(color, "lch", "lab", "rgb"),
-    convertColor(color, "oklab", "rgb"),
-  ]);
+  return queryFormats("rgb", color);
 }
 // rgb:1 ends here
 
@@ -136,16 +141,7 @@ export function rgb(color) {
  * @returns {string} the input color converted to HSL
  */
 export function hsl(color) {
-  return format.hsl.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "hsl"),
-    convertColor(color, "named", "hex", "rgb", "hsl"),
-    convertColor(color, "rgb", "hsl"),
-    convertColor(color, "cmyk", "rgb", "hsl"),
-    convertColor(color, "hwb", "rgb", "hsl"),
-    convertColor(color, "lab", "rgb", "hsl"),
-    convertColor(color, "lch", "lab", "rgb", "hsl"),
-    convertColor(color, "oklab", "rgb", "hsl"),
-  ]);
+  return queryFormats("hsl", color);
 }
 // hsl:1 ends here
 
@@ -163,16 +159,7 @@ export function hsl(color) {
  * @returns {string} the input color converted to CMYK
  */
 export function cmyk(color) {
-  return format.cmyk.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "cmyk"),
-    convertColor(color, "named", "hex", "rgb", "cmyk"),
-    convertColor(color, "rgb", "cmyk"),
-    convertColor(color, "hsl", "rgb", "cmyk"),
-    convertColor(color, "hwb", "rgb", "cmyk"),
-    convertColor(color, "lab", "rgb", "cmyk"),
-    convertColor(color, "lch", "lab", "rgb", "cmyk"),
-    convertColor(color, "oklab", "rgb", "cmyk"),
-  ]);
+  return queryFormats("cmyk", color);
 }
 // cmyk:1 ends here
 
@@ -190,72 +177,45 @@ export function cmyk(color) {
  * @returns {string} the input color converted to HWB
  */
 export function hwb(color) {
-  return format.hwb.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "hwb"),
-    convertColor(color, "named", "hex", "rgb", "hwb"),
-    convertColor(color, "rgb", "hwb"),
-    convertColor(color, "hsl", "rgb", "hwb"),
-    convertColor(color, "cmyk", "rgb", "hwb"),
-    convertColor(color, "lab", "rgb", "hwb"),
-    convertColor(color, "lch", "lab", "rgb", "hwb"),
-    convertColor(color, "oklab", "rgb", "hwb"),
-  ]);
+  return queryFormats("hwb", color);
 }
 // hwb:1 ends here
 
-// [[file:README.org::*lab][lab:1]]
+// [[file:README.org::*cielab][cielab:1]]
 /**
  * A function that converts any valid CSS color to CIELAB.
  *
  * @example Convert HWB to CIELAB
  *
  * ```ts
- * lab("hwb(90 25% 10%)");
+ * cielab("hwb(90 25% 10%)");
  * ```
  *
  * @param {string} color - the input color to convert
  * @returns {string} the input color converted to CIELAB
  */
-export function lab(color) {
-  return format.lab.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "lab"),
-    convertColor(color, "named", "hex", "rgb", "lab"),
-    convertColor(color, "rgb", "lab"),
-    convertColor(color, "hsl", "rgb", "lab"),
-    convertColor(color, "cmyk", "rgb", "lab"),
-    convertColor(color, "hwb", "rgb", "lab"),
-    convertColor(color, "lch", "lab"),
-    convertColor(color, "oklab", "rgb", "lab"),
-  ]);
+export function cielab(color) {
+  return queryFormats("cielab", color);
 }
-// lab:1 ends here
+// cielab:1 ends here
 
-// [[file:README.org::*lch][lch:1]]
+// [[file:README.org::*cielch][cielch:1]]
 /**
  * A function that converts any valid CSS color to CIELCh(ab).
  *
  * @example Convert CIELCh(ab) to RGB Hex
  *
  * ```ts
- * lch("#face");
+ * cielch("#face");
  * ```
  *
  * @param {string} color - the input color to convert
  * @returns {string} the input color converted to CIELCh(ab)
  */
-export function lch(color) {
-  return format.lch.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "lab", "lch"),
-    convertColor(color, "named", "hex", "rgb", "lab", "lch"),
-    convertColor(color, "rgb", "lab", "lch"),
-    convertColor(color, "hsl", "rgb", "lab", "lch"),
-    convertColor(color, "cmyk", "rgb", "lab", "lch"),
-    convertColor(color, "hwb", "rgb", "lab", "lch"),
-    convertColor(color, "lab", "lch"),
-    convertColor(color, "oklab", "rgb", "lab", "lch"),
-  ]);
+export function cielch(color) {
+  return queryFormats("cielch", color);
 }
-// lch:1 ends here
+// cielch:1 ends here
 
 // [[file:README.org::*oklab][oklab:1]]
 /**
@@ -271,49 +231,40 @@ export function lch(color) {
  * @returns {string} the input color converted to Oklab (LCh)
  */
 export function oklab(color) {
-  return format.oklab.validate(color) ? color : checkConversion(color, [
-    convertColor(color, "hex", "rgb", "oklab"),
-    convertColor(color, "named", "hex", "rgb", "oklab"),
-    convertColor(color, "rgb", "oklab"),
-    convertColor(color, "hsl", "rgb", "oklab"),
-    convertColor(color, "cmyk", "rgb", "oklab"),
-    convertColor(color, "hwb", "rgb", "oklab"),
-    convertColor(color, "lab", "rgb", "oklab"),
-    convertColor(color, "lch", "lab", "rgb", "oklab"),
-  ]);
+  return queryFormats("oklab", color);
 }
 // oklab:1 ends here
 
 // [[file:README.org::*Properties Adjustment][Properties Adjustment:1]]
-import * as format from "./internals/color/format/index.js";
-import * as revert from "./color.js";
+import { valueExtractor } from "./internals/color/formats.js";
+import {
+  calcFractionFromPercent,
+  correctHueClockwise,
+  correctHueCounterClockwise,
+  enforcePrecision,
+} from "./internals/color/math.js";
 
 // Secondary format validation
-export const preserve = (target, color) =>
-  Object.values({
-    hex: format.hex.validate(color) && revert.hex(target),
-    named: format.named.validate(color) && revert.hex(target),
-    rgb: format.rgb.validate(color) && revert.rgb(target),
-    hsl: format.hsl.validate(color) && revert.hsl(target),
-    cmyk: format.cmyk.validate(color) && revert.cmyk(target),
-    hwb: format.hwb.validate(color) && revert.hwb(target),
-    lab: format.lab.validate(color) && revert.lab(target),
-    lch: format.lch.validate(color) && revert.lch(target),
-    oklab: format.oklab.validate(color) && revert.oklab(target),
-  })
-    .filter((matched) => !!matched)
-    .toString();
+function preserve(target, color) {
+  const [format] = validate(color);
+
+  const revert = {
+    named: hex(target),
+    hex: hex(target),
+    rgb: rgb(target),
+    hsl: hsl(target),
+    cmyk: cmyk(target),
+    hwb: hwb(target),
+    cielab: cielab(target),
+    cielch: cielch(target),
+    oklab: oklab(target),
+  };
+
+  return revert[format] || ColorError(color);
+}
 // Properties Adjustment:1 ends here
 
 // [[file:README.org::*hue][hue:1]]
-import { extract } from "./internals/color/format/lch.js";
-import {
-  correctHueClockwise,
-  correctHueCounterClockwise,
-} from "./internals/color/convert/setup.js";
-import { lch, oklab } from "./color.js";
-import { pipe } from "./utilities.js";
-
 /**
  * A function that allows hue adjustment of any valid CSS color.
  *
@@ -879,11 +830,7 @@ import { preserve } from "./color.js";
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of tints
  */
-export const tints = (
-  count,
-  contrast,
-  color,
-) => [
+export const tints = (count, contrast, color) => [
   ...new Set([
     ...generate(color, "white", contrast, count)
       .map((color) => pipe(color, hwb, extract))
@@ -916,11 +863,7 @@ export const tints = (
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of tones
  */
-export const tones = (
-  count,
-  contrast,
-  color,
-) => [
+export const tones = (count, contrast, color) => [
   ...new Set([
     ...generate(color, "gray", contrast, count)
       .map((color) => pipe(color, hwb, extract))
@@ -956,11 +899,7 @@ export const tones = (
  * @param {string} color - the base color to generate from
  * @returns {string[]} A generated scale of shades
  */
-export const shades = (
-  count,
-  contrast,
-  color,
-) => [
+export const shades = (count, contrast, color) => [
   ...new Set([
     ...generate(color, "black", contrast, count)
       .map((color) => pipe(color, hwb, extract))
