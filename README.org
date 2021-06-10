@@ -11,12 +11,8 @@ It's built for modern JavaScript environments and slots neatly into [[https://bu
 
 Other appendages of QuarkSuite include:
 
-+ Quarks System Language (QSL): A domain-specific language for codifying design language into design
-  tokens (TBD)
 + Quarks System User Interface (QSUI): A UI kit for design token documentation and visual
   development (WIP)
-+ Quarks System Development Environment (QSDE): A complete development environment for design system
-  authoring and management (TBD)
 
 If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for Quarksuite
 1]].
