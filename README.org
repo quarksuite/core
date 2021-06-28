@@ -293,58 +293,13 @@ repository and are generously annotated, so if the literal style isn't your jam,
 + Merge, modify, and chunk scales according to your needs
 + Attach units when you're ready to roll
 
-A string will be treated as a value and directly translated to a design token.
+* Just Looking Around
+
+If you just want to inspect what the library makes available and play around with it, load up your
+console in a modern browser or run a =deno repl= and paste:
 
 #+BEGIN_SRC js
-const color = { main: "red" };
-#+END_SRC
-
-**** Scale
-
-An array will be treated as a scale of values.
-
-#+BEGIN_SRC js
-const color = { main: ["red", "crimson", "firebrick"] };
-#+END_SRC
-
-**** Subcategory
-
-An object with an internal =base= property defines a subcategory. The base is treated as the
-default value of that subcategory with any additional properties as variants or states.
-
-#+BEGIN_SRC js
-const color = {
-  main: {
-    base: "red",
-    shade: ["crimson", "firebrick"]
-  }
-};
-#+END_SRC
-
-**** Hierarchy
-
-Every design token function recursively consumes a Quarks System dictionary. Transformations are
-performed based on the /kind/ of data found. This frees you to structure dictionaries any way you like.
-
-***** Context
-
-One way is to define a context. Such as having dark and light palettes.
-
-#+BEGIN_SRC js
-const color = {
-  light: {
-    main: {
-      base: "red",
-      shade: ["crimson", "firebrick"]
-    }
-  },
-  dark: {
-    main: {
-      base: "lime",
-      shade: ["forestgreen", "darkgreen"]
-    }
-  }
-};
+const QSC = await import("https://x.nest.land/quarksuite:core@1.0.0/main.js");
 #+END_SRC
 
 ***** Namespace
