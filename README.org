@@ -1,7 +1,8 @@
 #+TITLE: Quarks System Core (QSC)
 #+AUTHOR: Chatman R. Jr
 #+PROPERTY: header-args :mkdirp yes
-#+PROPERTY: header-args:deno :results output none
+#+PROPERTY: header-args:js :results output none :comments link
+#+PROPERTY: header-args:deno :allow net :results output code
 #+PROPERTY: header-args:shell :results output code
 
 This repository is part of a toolkit for creating, assembling, and distributing design systems. The
