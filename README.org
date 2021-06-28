@@ -250,13 +250,9 @@ Quarks System Core is written in web standard JavaScript (ES2015+).
 
 * Summary
 
-Quarks System Core is the oldest and most mature part of QuarkSuite. It's been refined from
-QuarkSuite 1 to serve as the engine of the kit.
-
-That said, it can still be used as a standalone library if your needs are simple, you require
-absolute control, or you want to develop a custom design system workflow from a QSC baseline.
-
-Keep in mind that the core is /not/ bundled or minified. I leave that to your own needs.
+This document is a literate program structured to introduce you to Quarks System Core from a
+top-down view. Sections representing source code are marked with their relative location in the
+repository and are generously annotated, so if the literal style isn't your jam, you can still read the source itself.
 
 * Features
 
