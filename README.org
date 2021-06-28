@@ -5,20 +5,21 @@
 #+PROPERTY: header-args:deno :allow net :results output code
 #+PROPERTY: header-args:shell :results output code
 
-This repository is part of a toolkit for creating, assembling, and distributing design systems. The
-whole kit lives under the umbrella of the QuarkSuite name.
+Quarks System Core is a workflow for creating, assembling, and distributing design tokens for and on
+the web.
 
-It's built for modern JavaScript environments and slots neatly into [[https://buildless.site/ ][buildless project workflows]].
+It's part of a growing toolkit called QuarkSuite which focuses on using modern web
+technologies to spin up portable, reproducible baselines for web projects.
 
-Other appendages of QuarkSuite include:
+Think of it like a UI boilerplate generator you can use right in your browser.
 
-+ Quarks System User Interface (QSUI): A UI kit for design token documentation and visual
-  development (WIP)
+Current enhancements to the workflow include Quarks System UI: a tiny collection of web components
+for visual development and documentation of Quarks System Dictionaries.
 
-If you're interested in how this project evolved, feel free to [[https://github.com/quarksuite/legacy][browse the repository for Quarksuite
-1]].
+Future enhancements may appear based on community feedback or my own needs.
 
-* Table of Contents                                                   :TOC@6:
+Quarks System Core is written in web standard JavaScript (ES2015+).
+
 - [[#summary][Summary]]
 - [[#features][Features]]
   - [[#color-palettes][Color Palettes]]
