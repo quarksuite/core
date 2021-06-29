@@ -1,0 +1,31 @@
+#+TITLE: Quarks System Core (v.1.0.0) Annotated Source
+#+PROPERTY: :header-args: mkdirp yes
+#+PROPERTY: :header-args:js: :results output none :comments org
+
+* Table of Contents :TOC@4:
+- [[#introduction][Introduction]]
+- [[#api-hierarchy][API Hierarchy]]
+
+* Introduction
+
+Quarks System Core is written as a literate program in a top-down structure.
+
+Following this document requires you understand the core concepts of the library.
+
+* API Hierarchy
+
+From output to the  lowest level math, the system design is as follows:
+
++ Emitters: format a custom or bootstrapped Quarks System Dictionary as a file-ready set of design
+  tokens for the web or other environmennts
++ Bootstrappers: the highest level, "set it and forget it" data builders
++ Transformers: convert entire Quarks System Dictionaries to other data formats (especially for interop)
++ Quarks System Dictionary: standard data schema consumed by transformers, returned by
+  bootstrappers, and formatted by emitters
++ Formulas: features that represent data boilerplatesfor a bootstrapped or custom Quarks System Dictionary
++ Configurations: generic abstractions intended to streamline the assembly of formulas
++ Utilities: the functional toolbox used to create the higher abstractions
++ Internals: lower level utilities and helpers inaccessible to the user
+
+  My hope is that this explicit outlining of the design will aid you in advanced use and extension
+  of Quarks System Core.
