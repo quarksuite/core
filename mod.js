@@ -56,10 +56,73 @@ export function styl(dict) {
 }
 // Sass (SCSS)/Less/Stylus:3 ends here
 
+// Data Exports
+
+// Quarks System Core also allows direct data export to JSON and YAML for maximum portability.
+
+// [[file:Mod.org::*Data Exports][Data Exports:1]]
+export function raw(dict) {
+  const { project, ...tokens } = dict;
+  const { bump = "manual" } = project || MissingProjectMetadataError();
+
+  // Check if bump matches an automation keyword
+  const autobump = ["major", "minor", "patch", "pre", "build"].some(
+    (keyword) => keyword === bump,
+  );
+
+  // Then bump the version
+  autobump && bumpVersion(project);
+
+  return JSON.stringify({ project, tokens }, null, 2);
+}
+// Data Exports:1 ends here
+
+// [[file:Mod.org::*Data Exports][Data Exports:2]]
+export function yaml(dict) {
+  const { project, ...tokens } = dict;
+  const { bump = "manual" } = project || MissingProjectMetadataError();
+
+  // Check if bump matches an automation keyword
+  const autobump = ["major", "minor", "patch", "pre", "build"].some(
+    (keyword) => keyword === bump,
+  );
+
+  // Then bump the version
+  autobump && bumpVersion(project);
+
+  const assemble = (level, tree) =>
+    Object.entries(tree).reduce((str, [key, data]) => {
+      if (typeof data === "string") return yamlDictValue(level, str, key, data);
+      if (Array.isArray(data)) return yamlDictScale(level, str, key, data);
+      if (key === "base") return yamlDictSubcategory(level, data);
+      return str.concat(
+        "".padStart(level),
+        key,
+        ":\n",
+        assemble(level + 2, data),
+      );
+    }, "");
+
+  return `
+# ${timestampEmitter()}
+${
+    Object.entries({ project, tokens })
+      .reduce((str, [key, data]) => {
+        if (typeof data === "string") return yamlDictValue(0, str, key, data);
+        if (Array.isArray(data)) return yamlDictScale(0, str, key, data);
+        if (key === "base") return yamlDictSubcategory(0, data);
+        return str.concat("\n", key, ":\n", assemble(2, data));
+      }, "")
+      .trimEnd()
+  }
+`;
+}
+// Data Exports:2 ends here
+
 // CSS Format Structure
 
 // The differences between the CSS formatters are trivial, so I abstracted the similarities into the
-// below helper function
+// below helper function.
 
 // [[file:Mod.org::*CSS Format Structure][CSS Format Structure:1]]
 function cssFormatStructure(
@@ -117,9 +180,9 @@ ${
 
 // Undefined Project Metadata Error
 
-// The very first thing is writing a handy error to throw when the Quarks System Dictionary passed in
-// to the formatters is /incomplete/. As I stated further up, the formatters will not process any
-// dictionary that's missing project metadata.
+// A handy error to throw when the Quarks System Dictionary passed in to the formatters is
+// /incomplete/. As I stated further up, the formatters will not process any dictionary that's missing
+// project metadata.
 
 // [[file:Mod.org::*Undefined Project Metadata Error][Undefined Project Metadata Error:1]]
 function MissingProjectMetadataError() {
@@ -297,8 +360,6 @@ function bumpVersion(project) {
     project.version.split(/[.-]/g),
   ).map((n) => parseFloat(n));
 
-  console.log(project.version.split(/[.-]/g));
-
   function next(keyword) {
     const bumped = new Map([
       ["major", [major + 1, 0, 0]],
@@ -329,11 +390,10 @@ function bumpVersion(project) {
       ]),
     )
       .filter(([condition]) => condition)
-      .flatMap(([, release]) => release);
+      .flatMap(([, release]) => release)
+      .toString();
 
   project["version"] = releaseConditions(next(project.bump));
-
-  console.log(project.version);
 
   return project.version;
 }
@@ -347,6 +407,43 @@ function timestampEmitter() {
   return `Updated on ${TIMESTAMP.toLocaleDateString()} at ${TIMESTAMP.toLocaleTimeString()}`;
 }
 // Timestamp Emitter:1 ends here
+
+// YAML Assemblers
+
+// The following helpers format YAML by the three main structures of the Quarks System Dictionary
+// schema: values, scales, and subcategories
+
+// [[file:Mod.org::*YAML Assemblers][YAML Assemblers:1]]
+function yamlDictSubcategory(level, data) {
+  return Object.entries(data).reduce((str, [key, v]) => {
+    if (Array.isArray(v)) return yamlDictScale(level, str, key, v);
+    return yamlDictValue(level, str, key, v);
+  }, "");
+}
+
+function yamlDictValue(level, str, key, value) {
+  const isMultiline = value.split("\n").length > 1;
+  if (isMultiline) {
+    return str.concat(
+      "".padStart(level),
+      `${key}: |\n`,
+      value
+        .split("\n")
+        .reduce((s, line) => s.concat("".padStart(level + 2), line, "\n"), ""),
+    );
+  }
+  return str.concat("".padStart(level), key, ": ", value, "\n");
+}
+
+function yamlDictScale(level, str, key, value) {
+  return str.concat(
+    "".padStart(level),
+    key,
+    ":\n",
+    value.reduce((s, v) => s.concat("".padStart(level + 2), "- ", v, "\n"), ""),
+  );
+}
+// YAML Assemblers:1 ends here
 
 // Currying
 

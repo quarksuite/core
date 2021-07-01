@@ -7,7 +7,7 @@ const FocusIt = QUnit.test.only;
 const It = QUnit.test;
 
 (async function () {
-  const { css, scss, less, styl } = await import("/mod.js");
+  const { css, scss, less, styl, raw, yaml } = await import("/mod.js");
 
   Spec("Formatters", () => {
     const invalidSchema = {
@@ -34,18 +34,17 @@ const It = QUnit.test;
     const completeQSDWithMeta = {
       ...completeQSD,
       color: {
-        ...completeQSD.color,
         metadata: {
           description: "Do I have meta? Yes I do!",
           comments: "Sweet, a comment!",
         },
+        ...completeQSD.color,
       },
     };
 
     const completeQSDWithMultilineMeta = {
       ...completeQSD,
       color: {
-        ...completeQSD.color,
         metadata: {
           description: `
 Metadata
@@ -61,6 +60,7 @@ See what
 I mean?
 `,
         },
+        ...completeQSD.color,
       },
     };
 
@@ -75,54 +75,28 @@ I mean?
     const removeTimestamp = (format) =>
       format.replace(
         /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
-        "Updated on [Timestamp replaced for testing]",
+        "Updated on [Timestamp replaced for testing]"
       );
 
-    It("can allow automatic versioning", (assert) => {
-      assert.equal(
-        removeTimestamp(css(goGoGadgetVersioning)),
-        `
-/**
- * Project: Unknown Project (v0.1.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- **/
+    const checkVersion = (dict) => dict.project.version;
 
-:root {
-  --color-main: red;
-  --color-main-shades-0: crimson;
-  --color-main-shades-1: firebrick;
-  --color-accent: lime;
-  --color-highlight: blue;
-
-}
-`,
-      );
-    });
+    const rawify = ({ project, ...tokens }) => ({ project, tokens });
 
     It(
       "will whine if project metadata is missing from dictionary",
       (assert) => {
-        [css].forEach((Formatter) =>
+        [css, scss, less, styl, raw, yaml].forEach((Formatter) =>
           assert.throws(() => Formatter(invalidSchema))
         );
-      },
+      }
     );
 
     Describe("CSS Formats", () => {
       Describe("css(dict)", () => {
-        It(
-          "correctly processes complete dictionaries",
-          (assert) =>
-            assert.equal(
-              removeTimestamp(css(completeQSD)),
-              `
+        It("correctly processes complete dictionaries", (assert) =>
+          assert.equal(
+            removeTimestamp(css(completeQSD)),
+            `
 /**
  * Project: Unknown Project (v0.0.0)
  * Owned by: Anonymous
@@ -143,8 +117,8 @@ I mean?
   --color-highlight: blue;
 
 }
-`,
-            ),
+`
+          )
         );
         It(
           "correctly processes complete dictionaries with metadata",
@@ -178,8 +152,8 @@ I mean?
   --color-highlight: blue;
 
 }
-`,
-            ),
+`
+            )
         );
         It(
           "correctly processes complete dictionaries with multiline metadata",
@@ -226,17 +200,15 @@ I mean?
   --color-highlight: blue;
 
 }
-`,
-            ),
+`
+            )
         );
       });
       Describe("scss(dict)", () => {
-        It(
-          "correctly processes complete dictionaries",
-          (assert) =>
-            assert.equal(
-              removeTimestamp(scss(completeQSD)),
-              `
+        It("correctly processes complete dictionaries", (assert) =>
+          assert.equal(
+            removeTimestamp(scss(completeQSD)),
+            `
 /*!
  * Project: Unknown Project (v0.0.0)
  * Owned by: Anonymous
@@ -255,8 +227,8 @@ $color-main-shades-1: firebrick;
 $color-accent: lime;
 $color-highlight: blue;
 
-`,
-            ),
+`
+          )
         );
         It(
           "correctly processes complete dictionaries with metadata",
@@ -286,8 +258,8 @@ $color-main-shades-1: firebrick;
 $color-accent: lime;
 $color-highlight: blue;
 
-`,
-            ),
+`
+            )
         );
         It(
           "correctly processes complete dictionaries with multiline metadata",
@@ -330,17 +302,15 @@ $color-main-shades-1: firebrick;
 $color-accent: lime;
 $color-highlight: blue;
 
-`,
-            ),
+`
+            )
         );
       });
       Describe("less(dict)", () => {
-        It(
-          "correctly processes complete dictionaries",
-          (assert) =>
-            assert.equal(
-              removeTimestamp(less(completeQSD)),
-              `
+        It("correctly processes complete dictionaries", (assert) =>
+          assert.equal(
+            removeTimestamp(less(completeQSD)),
+            `
 /*
  * Project: Unknown Project (v0.0.0)
  * Owned by: Anonymous
@@ -359,8 +329,8 @@ $color-highlight: blue;
 @color-accent: lime;
 @color-highlight: blue;
 
-`,
-            ),
+`
+          )
         );
         It(
           "correctly processes complete dictionaries with metadata",
@@ -390,8 +360,8 @@ $color-highlight: blue;
 @color-accent: lime;
 @color-highlight: blue;
 
-`,
-            ),
+`
+            )
         );
         It(
           "correctly processes complete dictionaries with multiline metadata",
@@ -434,17 +404,15 @@ $color-highlight: blue;
 @color-accent: lime;
 @color-highlight: blue;
 
-`,
-            ),
+`
+            )
         );
       });
       Describe("less(dict)", () => {
-        It(
-          "correctly processes complete dictionaries",
-          (assert) =>
-            assert.equal(
-              removeTimestamp(styl(completeQSD)),
-              `
+        It("correctly processes complete dictionaries", (assert) =>
+          assert.equal(
+            removeTimestamp(styl(completeQSD)),
+            `
 /*!
  * Project: Unknown Project (v0.0.0)
  * Owned by: Anonymous
@@ -463,8 +431,8 @@ color-main-shades-1 = firebrick
 color-accent = lime
 color-highlight = blue
 
-`,
-            ),
+`
+          )
         );
         It(
           "correctly processes complete dictionaries with metadata",
@@ -494,8 +462,8 @@ color-main-shades-1 = firebrick
 color-accent = lime
 color-highlight = blue
 
-`,
-            ),
+`
+            )
         );
         It(
           "correctly processes complete dictionaries with multiline metadata",
@@ -538,8 +506,147 @@ color-main-shades-1 = firebrick
 color-accent = lime
 color-highlight = blue
 
-`,
-            ),
+`
+            )
+        );
+      });
+    });
+    Describe("Data Exports", () => {
+      Describe("raw(dict)", () => {
+        It("correctly processes complete dictionaries", (assert) => {
+          assert.deepEqual(JSON.parse(raw(completeQSD)), rawify(completeQSD));
+        });
+        It(
+          "correctly processes complete dictionaries with metadata",
+          (assert) => {
+            assert.deepEqual(
+              JSON.parse(raw(completeQSDWithMeta)),
+              rawify(completeQSDWithMeta)
+            );
+          }
+        );
+        It(
+          "correctly processes complete dictionaries with multiline metadata",
+          (assert) => {
+            assert.deepEqual(
+              JSON.parse(raw(completeQSDWithMultilineMeta)),
+              rawify(completeQSDWithMultilineMeta)
+            );
+          }
+        );
+        It("successfully autobumps version on call", (assert) => {
+          assert.expect(3);
+          assert.deepEqual(
+            checkVersion(JSON.parse(raw(goGoGadgetVersioning))),
+            "0.1.0"
+          );
+          assert.deepEqual(
+            checkVersion(JSON.parse(raw(goGoGadgetVersioning))),
+            "0.2.0"
+          );
+          assert.deepEqual(
+            checkVersion(JSON.parse(raw(goGoGadgetVersioning))),
+            "0.3.0"
+          );
+        });
+      });
+      Describe("yaml(dict)", () => {
+        It("correctly processes complete dictionaries", (assert) => {
+          assert.equal(
+            removeTimestamp(yaml(completeQSD)),
+            `
+# Updated on [Timestamp replaced for testing]
+
+project:
+  name: Unknown Project
+  author: Anonymous
+  version: 0.0.0
+  license: Unlicense
+
+tokens:
+  color:
+    main:
+      base: red
+      shades:
+        - crimson
+        - firebrick
+    accent: lime
+    highlight: blue
+`
+          );
+        });
+        It(
+          "correctly processes complete dictionaries with metadata",
+          (assert) => {
+            assert.equal(
+              removeTimestamp(yaml(completeQSDWithMeta)),
+              `
+# Updated on [Timestamp replaced for testing]
+
+project:
+  name: Unknown Project
+  author: Anonymous
+  version: 0.0.0
+  license: Unlicense
+
+tokens:
+  color:
+    metadata:
+      description: Do I have meta? Yes I do!
+      comments: Sweet, a comment!
+    main:
+      base: red
+      shades:
+        - crimson
+        - firebrick
+    accent: lime
+    highlight: blue
+`
+            );
+          }
+        );
+        It(
+          "correctly processes complete dictionaries with metadata",
+          (assert) => {
+            assert.equal(
+              removeTimestamp(yaml(completeQSDWithMultilineMeta)),
+              `
+# Updated on [Timestamp replaced for testing]
+
+project:
+  name: Unknown Project
+  author: Anonymous
+  version: 0.0.0
+  license: Unlicense
+
+tokens:
+  color:
+    metadata:
+      description: |
+        
+        Metadata
+        is
+        totally
+        allowed
+        to
+        span
+        lines
+        
+      comments: |
+        
+        See what
+        I mean?
+        
+    main:
+      base: red
+      shades:
+        - crimson
+        - firebrick
+    accent: lime
+    highlight: blue
+`
+            );
+          }
         );
       });
     });
