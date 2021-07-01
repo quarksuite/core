@@ -7,7 +7,7 @@ const FocusIt = QUnit.test.only;
 const It = QUnit.test;
 
 (async function () {
-  const { css, scss, less, styl, raw, yaml } = await import("/mod.js");
+  const { css, scss, less, styl, raw, yaml } = await import("/formatters.js");
 
   Spec("Formatters", () => {
     const invalidSchema = {
