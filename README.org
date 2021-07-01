@@ -1,7 +1,8 @@
 #+TITLE: Quarks System Core (QSC)
 
+[[./assets/quarks-system-core-logo.png]]
+
 * Table of Contents :TOC@4:
-- [[#preface][Preface]]
 - [[#introduction][Introduction]]
 - [[#features][Features]]
   - [[#general-setup][General Setup]]
@@ -16,18 +17,6 @@
   - [[#setup][Setup]]
     - [[#offline][Offline]]
     - [[#what-about-node][What About Node?]]
-
-* Preface
-
-Now that Quarks System Core is out of its exploratory stage, I've moved the literate source to its
-own file and generate an annotated source file from it instead of cluttering the README.
-
-I've also condensed all points of entry in the library to a single =mod.js= file to minimize HTTP
-requests when using the library in its intended environment.
-
-As a bonus, you can now =curl= the source right from GitHub and work offline.
-
-The code remains unminified so you can view source from your browser like the good old days ;)
 
 * Introduction
 
