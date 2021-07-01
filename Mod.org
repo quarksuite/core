@@ -1,24 +1,39 @@
 #+TITLE: Quarks System Core (v.1.0.0) Annotated Source
-#+PROPERTY: :header-args: mkdirp yes
-#+PROPERTY: :header-args:js: :results output none :comments org
+#+AUTHOR: Chatman R. Jr
+#+PROPERTY: header-args :mkdirp yes :tangle "./mod.js"
+#+PROPERTY: header-args:js :results output none :comments both
 
 * Table of Contents :TOC@4:
 - [[#introduction][Introduction]]
-- [[#api-hierarchy][API Hierarchy]]
+- [[#overview-of-system-design][Overview of System Design]]
+- [[#formatters][Formatters]]
+  - [[#format-css-custom-properties][Format: CSS Custom Properties]]
+  - [[#helpers][Helpers]]
+    - [[#undefined-project-metadata-error][Undefined Project Metadata Error]]
+    - [[#token-string-constructor][Token String Constructor]]
+    - [[#css-token-emitter][CSS Token Emitter]]
+    - [[#css-token-assembler][CSS Token Assembler]]
+    - [[#metadata-emitter][Metadata Emitter]]
+    - [[#token-string-identifier][Token String Identifier]]
+    - [[#automatic-versioning][Automatic Versioning]]
+    - [[#timestamp-emitter][Timestamp Emitter]]
+- [[#internals][Internals]]
+  - [[#error-handling][Error Handling]]
 
 * Introduction
 
-Quarks System Core is written as a literate program in a top-down structure.
+Quarks System Core is written as a literate program in a top-down structure. Following this document
+requires you understand the core concepts of the library, so I'll introduce those first.
 
-Following this document requires you understand the core concepts of the library.
+You can access the test suite from =index.html=.
 
-* API Hierarchy
+* Overview of System Design
 
 From output to the  lowest level math, the system design is as follows:
 
-+ Emitters: format a custom or bootstrapped Quarks System Dictionary as a file-ready set of design
++ Formatters: format a custom or bootstrapped Quarks System Dictionary as a file-ready set of design
   tokens for the web or other environmennts
-+ Bootstrappers: the highest level, "set it and forget it" data builders
++ Bootstrappers: outputs a complete dictionary from a configuration object
 + Transformers: convert entire Quarks System Dictionaries to other data formats (especially for interop)
 + Quarks System Dictionary: standard data schema consumed by transformers, returned by
   bootstrappers, and formatted by emitters
@@ -27,5 +42,322 @@ From output to the  lowest level math, the system design is as follows:
 + Utilities: the functional toolbox used to create the higher abstractions
 + Internals: lower level utilities and helpers inaccessible to the user
 
-  My hope is that this explicit outlining of the design will aid you in advanced use and extension
-  of Quarks System Core.
+My hope is that this explicit outlining of the design will aid you in advanced use and extension of
+Quarks System Core. Now, let's dive in.
+
+* Formatters
+
+At the top layer sit the formatters. Their only purpose is to format Quarks System Dictionaries into
+file-ready design tokens. The available targets are named by their file extensions and include:
+
+=css=: CSS custom properties
+=scss/less/styl=: Variables for the respective preprocessor
+=raw/yaml=: exports the raw dictionary (as JSON or YAML)
+=gpl=: extracts the color dictionary for use in GIMP/Inkscape
+=sketchpalette=: extracts the color dictionary as a Sketch palette
+
+All of the formatters will /refuse/ to process a QSD that doesn't include =project= metadata. *This is by
+design* as formatters are endpoints. The project metadata indicates that a dictionary needs no
+additional processing and is ready for output.
+
+The console will helpfully yell an error at you if you forget.
+
+Crucial to note: Quarks System Core *assumes no read/write access* to your filesystem. The formatters
+merely prepare your tokens for passalong to the filesystem library of your choice or your
+environment's native filesystem API.
+
+** Format: CSS Custom Properties
+
+Quarks System Core provides the most complete support for its CSS formats by virtue of being a
+web-driven, web-focused kit. The first formatter preps your design tokens as CSS custom
+properties wrapped in a root selector.
+
+#+BEGIN_SRC js
+export function css({ project, ...tokens }) {
+  let {
+    name,
+    author,
+    version,
+    bump = "manual",
+    license,
+    description = "N/A",
+    comments = "N/A",
+  } = project || MissingProjectMetadataError(project);
+
+  // Attach a dynamic property initializing the autorelease version
+  const autobump = ["major", "minor", "patch", "pre", "build"].some(
+    (keyword) => keyword === bump,
+  );
+
+  return `
+/**
+ * Project: ${name} (v${autobump ? bumpVersion(project) : version})
+ * Owned by: ${author}
+ * License: ${license}
+ * ${"=".repeat(64)}
+ * Description: ${description}
+ * Comments: ${comments}
+ * ${"-".repeat(64)}
+ * ${timestampEmitter()}
+ **/
+
+:root {${tokenStringConstructor({ padding: "  " }, tokens)}
+}
+`;
+}
+#+END_SRC
+
+** Helpers
+
+*** Undefined Project Metadata Error
+
+The very first thing is writing a handy error to throw when the Quarks System Dictionary passed in
+to the formatters is /incomplete/. As I stated further up, the formatters will not process any
+dictionary that's missing project metadata.
+
+#+BEGIN_SRC js
+function MissingProjectMetadataError() {
+  throw new QSCError({
+    name: "Missing Project Metadata",
+    reason: `
+Formatters will not process a Quarks System Dictionary that's missing project
+metadata. Its absence indicates that the current dictionary is still open
+for modification.
+`,
+    suggestion: `
+Be sure to include project metadata when you're ready to export your tokens.
+Here's an example of the proper schema.
+
+const finishedDict = {
+  project: {
+    name: "My Project",
+    author: "Anonymous",
+    version: "0.0.0",
+    license: "Unlicense",
+    // can also be one of "major", "minor", "patch", "pre", "build" for automatic versioning
+    bump: "manual",
+    description: "N/A",
+    comments: "N/A"
+  },
+  ...tokens
+};
+
+The first four properties are all required. Up to you if you want to include
+a description or comments with your project.
+`,
+  });
+}
+#+END_SRC
+
+*** Token String Constructor
+
+The following construction helper is shared by all formatters in which the token identifier must be
+created by traversing the dictionary. It uses recursion to walk branch by branch, combining keys with
+a given delimiter until it reaches the end of the chain.
+
+If it finds internal metadata, it will use a special function to process it
+
+#+BEGIN_SRC js
+function tokenStringConstructor(opts, dict) {
+  return "".concat("\n", cssTokenEmitter(opts, "", dict));
+}
+#+END_SRC
+
+*** CSS Token Emitter
+
+This helper is responsible for actually walking the tree and emitting a complete collection of
+tokens; formatting metadata as it finds it.
+
+#+BEGIN_SRC js
+function cssTokenEmitter(opts, head, node) {
+  function assemble(head, node) {
+    const { metadata, ...tokens } = node;
+    return "".concat(
+      (metadata && metadataEmitter(opts, metadata)) || "", // prepend metadata if defined
+      Object.entries(tokens).reduce((str, [key, value]) => {
+        const format = cssTokenAssembler(opts);
+        if (typeof value === "object") {
+          return str.concat(
+            assemble(tokenStringIdentifier(head, key, "-"), value),
+          );
+        }
+
+        return format(str, tokenStringIdentifier(head, key, "-"), value, "\n");
+      }, ""),
+    );
+  }
+
+  return assemble(head, node);
+}
+#+END_SRC
+
+*** CSS Token Assembler
+
+This helper is responsible for creating a string that the target format will actually recognize as a
+variable or identifier.
+
+#+BEGIN_SRC js
+function cssTokenAssembler({
+  padding = "",
+  prefix = "--",
+  assignment = ": ",
+  suffix = ";",
+  terminator = "\n",
+}) {
+  return function (str, key, value) {
+    return str.concat(
+      padding,
+      prefix,
+      key,
+      assignment,
+      value,
+      suffix,
+      terminator,
+    );
+  };
+}
+#+END_SRC
+
+*** Metadata Emitter
+
+#+BEGIN_SRC js
+function metadataEmitter(
+  {
+    commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
+    str = "",
+  },
+  meta,
+) {
+  return str.concat(
+    [
+      OPEN,
+      Object.entries(meta).reduce((str, [key, value]) => {
+        const lines = value.split("\n");
+
+        if (lines.length > 1) {
+          return str
+            .concat(
+              "\n",
+              DELIM,
+              key.toUpperCase(),
+              ":",
+              "\n",
+              DELIM.trimEnd(),
+              lines.join(`\n${DELIM}`),
+            )
+            .trimEnd();
+        }
+
+        return str.concat("\n", DELIM, key.toUpperCase(), ": ", lines);
+      }, ""),
+      CLOSE,
+    ].join(""),
+  );
+}
+#+END_SRC
+
+*** Token String Identifier
+
+This helper is used when =*TokenEmitter= functions walk through the dictionary. It collects the
+keys and joins them with a delimiter. However, it also /ignores/ any keys named base. Simply passing
+through what it's already collected.
+
+So =color.main.base= becomes =--color-main= in CSS for example.
+
+#+BEGIN_SRC js
+function tokenStringIdentifier(collected, current, delimiter) {
+  return current === "base"
+    ? collected
+    : collected
+    ? [collected, current].join(delimiter)
+    : current;
+}
+#+END_SRC
+
+*** Automatic Versioning
+
+The following helper handles automatic versioning whenever project metadata defines =bump= as a
+keyword other than ="manual"=.
+
+#+BEGIN_SRC js
+function bumpVersion(project) {
+  let [major, minor, patch, pre] = Array.from(
+    project.version.split(/[.-]/g),
+  ).map((n) => parseFloat(n));
+
+  console.log(project.version.split(/[.-]/g));
+
+  function next(keyword) {
+    const bumped = new Map([
+      ["major", [major + 1, 0, 0]],
+      ["minor", [major, minor + 1, 0]],
+      ["patch", [major, minor, patch + 1]],
+      ["pre", [major, minor, patch, pre + 1 || 0]],
+      ["build", [major, minor, patch, pre, Date.now()]],
+    ]).get(keyword);
+
+    return bumped;
+  }
+
+  const releaseConditions = (release) =>
+    Array.from(
+      new Map([
+        [release.length === 3, release.join(".")],
+        [
+          release.length === 4,
+          [release.slice(0, 3).join("."), release[3]].join("-"),
+        ],
+        [
+          release.length === 5,
+          [
+            release.slice(0, 3).join("."),
+            [release[3] ?? 0, release[4]].join("+"),
+          ].join("-"),
+        ],
+      ]),
+    )
+      .filter(([condition]) => condition)
+      .flatMap(([, release]) => release);
+
+  project["version"] = releaseConditions(next(project.bump));
+
+  console.log(project.version);
+
+  return project.version;
+}
+#+END_SRC
+
+*** Timestamp Emitter
+
+#+BEGIN_SRC js
+function timestampEmitter() {
+  const TIMESTAMP = new Date(Date.now());
+  return `Updated on ${TIMESTAMP.toLocaleDateString()} at ${TIMESTAMP.toLocaleTimeString()}`;
+}
+#+END_SRC
+
+* Internals
+
+** Error Handling
+
+For v1, I wanted to create better custom errors. So I decided to directly extend the =Error= class
+with my own general =QSCError= class. This will allow me to throw any number of errors I need
+/within/ the context they're triggered and gives me a free stack trace back to what broke.
+
+#+BEGIN_SRC js
+class QSCError extends Error {
+  constructor({
+    name = "Unknown Error",
+    reason = "here's why",
+    suggestion = "try this",
+  } = {}) {
+    super();
+    this.name = name;
+    this.message = `
+${reason}
+${suggestion}
+${"=".repeat(80)}
+`;
+  }
+}
+#+END_SRC
