@@ -7,7 +7,7 @@ const FocusIt = QUnit.test.only;
 const It = QUnit.test;
 
 (async function () {
-  const { css } = await import("/mod.js");
+  const { css, scss, less, styl } = await import("/mod.js");
 
   Spec("Formatters", () => {
     const invalidSchema = {
@@ -74,7 +74,7 @@ I mean?
 
     const removeTimestamp = (format) =>
       format.replace(
-        /Updated on [\d/]+ at [\d:]+ (?: AM|PM)?/,
+        /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
         "Updated on [Timestamp replaced for testing]",
       );
 
@@ -87,8 +87,9 @@ I mean?
  * Owned by: Anonymous
  * License: Unlicense
  * ================================================================
- * Description: N/A
- * Comments: N/A
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
  * ----------------------------------------------------------------
  * Updated on [Timestamp replaced for testing]
  **/
@@ -114,18 +115,22 @@ I mean?
       },
     );
 
-    Spec("css({ project, ...tokens })", () => {
-      It("correctly processes complete dictionaries", (assert) =>
-        assert.equal(
-          removeTimestamp(css(completeQSD)),
-          `
+    Describe("CSS Formats", () => {
+      Describe("css(dict)", () => {
+        It(
+          "correctly processes complete dictionaries",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(css(completeQSD)),
+              `
 /**
  * Project: Unknown Project (v0.0.0)
  * Owned by: Anonymous
  * License: Unlicense
  * ================================================================
- * Description: N/A
- * Comments: N/A
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
  * ----------------------------------------------------------------
  * Updated on [Timestamp replaced for testing]
  **/
@@ -139,20 +144,22 @@ I mean?
 
 }
 `,
-        ));
-      It(
-        "correctly processes complete dictionaries with metadata",
-        (assert) =>
-          assert.equal(
-            removeTimestamp(css(completeQSDWithMeta)),
-            `
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(css(completeQSDWithMeta)),
+              `
 /**
  * Project: Unknown Project (v0.0.0)
  * Owned by: Anonymous
  * License: Unlicense
  * ================================================================
- * Description: N/A
- * Comments: N/A
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
  * ----------------------------------------------------------------
  * Updated on [Timestamp replaced for testing]
  **/
@@ -172,21 +179,22 @@ I mean?
 
 }
 `,
-          ),
-      );
-      It(
-        "correctly processes complete dictionaries with multiline metadata",
-        (assert) =>
-          assert.equal(
-            removeTimestamp(css(completeQSDWithMultilineMeta)),
-            `
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with multiline metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(css(completeQSDWithMultilineMeta)),
+              `
 /**
  * Project: Unknown Project (v0.0.0)
  * Owned by: Anonymous
  * License: Unlicense
  * ================================================================
- * Description: N/A
- * Comments: N/A
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
  * ----------------------------------------------------------------
  * Updated on [Timestamp replaced for testing]
  **/
@@ -219,8 +227,321 @@ I mean?
 
 }
 `,
-          ),
-      );
+            ),
+        );
+      });
+      Describe("scss(dict)", () => {
+        It(
+          "correctly processes complete dictionaries",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(scss(completeQSD)),
+              `
+/*!
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+$color-main: red;
+$color-main-shades-0: crimson;
+$color-main-shades-1: firebrick;
+$color-accent: lime;
+$color-highlight: blue;
+
+`,
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(scss(completeQSDWithMeta)),
+              `
+/*!
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION: Do I have meta? Yes I do!
+// COMMENTS: Sweet, a comment!
+
+$color-main: red;
+$color-main-shades-0: crimson;
+$color-main-shades-1: firebrick;
+$color-accent: lime;
+$color-highlight: blue;
+
+`,
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with multiline metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(scss(completeQSDWithMultilineMeta)),
+              `
+/*!
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION:
+//
+// Metadata
+// is
+// totally
+// allowed
+// to
+// span
+// lines
+//
+// COMMENTS:
+//
+// See what
+// I mean?
+//
+
+$color-main: red;
+$color-main-shades-0: crimson;
+$color-main-shades-1: firebrick;
+$color-accent: lime;
+$color-highlight: blue;
+
+`,
+            ),
+        );
+      });
+      Describe("less(dict)", () => {
+        It(
+          "correctly processes complete dictionaries",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(less(completeQSD)),
+              `
+/*
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+@color-main: red;
+@color-main-shades-0: crimson;
+@color-main-shades-1: firebrick;
+@color-accent: lime;
+@color-highlight: blue;
+
+`,
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(less(completeQSDWithMeta)),
+              `
+/*
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION: Do I have meta? Yes I do!
+// COMMENTS: Sweet, a comment!
+
+@color-main: red;
+@color-main-shades-0: crimson;
+@color-main-shades-1: firebrick;
+@color-accent: lime;
+@color-highlight: blue;
+
+`,
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with multiline metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(less(completeQSDWithMultilineMeta)),
+              `
+/*
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION:
+//
+// Metadata
+// is
+// totally
+// allowed
+// to
+// span
+// lines
+//
+// COMMENTS:
+//
+// See what
+// I mean?
+//
+
+@color-main: red;
+@color-main-shades-0: crimson;
+@color-main-shades-1: firebrick;
+@color-accent: lime;
+@color-highlight: blue;
+
+`,
+            ),
+        );
+      });
+      Describe("less(dict)", () => {
+        It(
+          "correctly processes complete dictionaries",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(styl(completeQSD)),
+              `
+/*!
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+color-main = red
+color-main-shades-0 = crimson
+color-main-shades-1 = firebrick
+color-accent = lime
+color-highlight = blue
+
+`,
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(styl(completeQSDWithMeta)),
+              `
+/*!
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION: Do I have meta? Yes I do!
+// COMMENTS: Sweet, a comment!
+
+color-main = red
+color-main-shades-0 = crimson
+color-main-shades-1 = firebrick
+color-accent = lime
+color-highlight = blue
+
+`,
+            ),
+        );
+        It(
+          "correctly processes complete dictionaries with multiline metadata",
+          (assert) =>
+            assert.equal(
+              removeTimestamp(styl(completeQSDWithMultilineMeta)),
+              `
+/*!
+ * Project: Unknown Project (v0.0.0)
+ * Owned by: Anonymous
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION:
+//
+// Metadata
+// is
+// totally
+// allowed
+// to
+// span
+// lines
+//
+// COMMENTS:
+//
+// See what
+// I mean?
+//
+
+color-main = red
+color-main-shades-0 = crimson
+color-main-shades-1 = firebrick
+color-accent = lime
+color-highlight = blue
+
+`,
+            ),
+        );
+      });
     });
   });
 })();

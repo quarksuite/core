@@ -7,16 +7,24 @@
 - [[#introduction][Introduction]]
 - [[#overview-of-system-design][Overview of System Design]]
 - [[#formatters][Formatters]]
-  - [[#format-css-custom-properties][Format: CSS Custom Properties]]
+  - [[#css-formats][CSS Formats]]
+    - [[#custom-properties][Custom Properties]]
+    - [[#sass-scsslessstylus][Sass (SCSS)/Less/Stylus]]
   - [[#helpers][Helpers]]
+    - [[#css-format-structure][CSS Format Structure]]
     - [[#undefined-project-metadata-error][Undefined Project Metadata Error]]
+    - [[#metadata-emitter][Metadata Emitter]]
     - [[#token-string-constructor][Token String Constructor]]
     - [[#css-token-emitter][CSS Token Emitter]]
     - [[#css-token-assembler][CSS Token Assembler]]
-    - [[#metadata-emitter][Metadata Emitter]]
     - [[#token-string-identifier][Token String Identifier]]
     - [[#automatic-versioning][Automatic Versioning]]
     - [[#timestamp-emitter][Timestamp Emitter]]
+- [[#utilities][Utilities]]
+  - [[#functional-programming][Functional Programming]]
+    - [[#currying][Currying]]
+    - [[#composition][Composition]]
+    - [[#pipelining][Pipelining]]
 - [[#internals][Internals]]
   - [[#error-handling][Error Handling]]
 
@@ -66,22 +74,90 @@ Crucial to note: Quarks System Core *assumes no read/write access* to your files
 merely prepare your tokens for passalong to the filesystem library of your choice or your
 environment's native filesystem API.
 
-** Format: CSS Custom Properties
+** CSS Formats
+
+*** Custom Properties
 
 Quarks System Core provides the most complete support for its CSS formats by virtue of being a
 web-driven, web-focused kit. The first formatter preps your design tokens as CSS custom
 properties wrapped in a root selector.
 
 #+BEGIN_SRC js
-export function css({ project, ...tokens }) {
+export function css(dict) {
+  return cssFormatStructure({}, dict);
+}
+#+END_SRC
+
+*** Sass (SCSS)/Less/Stylus
+
+The preprocessor formats require some minor adjustments.
+
+#+BEGIN_SRC js
+export function scss(dict) {
+  return cssFormatStructure(
+    {
+      doc: ["\n/*!", " */\n"],
+      metadata: ["", "// ", "\n\n"],
+      wrapper: ["", "\n"],
+      opts: { padding: "", prefix: "$" },
+    },
+    dict,
+  );
+}
+#+END_SRC
+
+#+BEGIN_SRC js
+export function less(dict) {
+  return cssFormatStructure(
+    {
+      doc: ["\n/*", " */\n"],
+      metadata: ["", "// ", "\n\n"],
+      wrapper: ["", "\n"],
+      opts: { padding: "", prefix: "@" },
+    },
+    dict,
+  );
+}
+#+END_SRC
+
+#+BEGIN_SRC js
+export function styl(dict) {
+  return cssFormatStructure(
+    {
+      doc: ["\n/*!", " */\n"],
+      metadata: ["", "// ", "\n\n"],
+      wrapper: ["", "\n"],
+      opts: { padding: "", prefix: "", assignment: " = ", suffix: "" },
+    },
+    dict,
+  );
+}
+#+END_SRC
+
+** Helpers
+
+*** CSS Format Structure
+
+The differences between the CSS formatters are trivial, so I abstracted the similarities into the
+below helper function
+
+#+BEGIN_SRC js
+function cssFormatStructure(
+  {
+    doc: [DOC_OPEN, DOC_CLOSE] = ["\n/**", " **/\n"],
+    metadata: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
+    wrapper: [TOKENS_OPEN, TOKENS_CLOSE] = ["\n:root {", "\n}\n"],
+    opts = { padding: "  " },
+  } = {},
+  { project, ...tokens },
+) {
   let {
     name,
     author,
     version,
-    bump = "manual",
     license,
-    description = "N/A",
-    comments = "N/A",
+    bump = "manual",
+    metadata: { description = "N/A", comments = "N/A" } = {},
   } = project || MissingProjectMetadataError(project);
 
   // Attach a dynamic property initializing the autorelease version
@@ -89,25 +165,35 @@ export function css({ project, ...tokens }) {
     (keyword) => keyword === bump,
   );
 
-  return `
-/**
+  return "".concat(
+    DOC_OPEN,
+    `
  * Project: ${name} (v${autobump ? bumpVersion(project) : version})
  * Owned by: ${author}
  * License: ${license}
  * ${"=".repeat(64)}
- * Description: ${description}
- * Comments: ${comments}
+${
+      metadataEmitter(
+        { commentDelim: [" *", " * ", ""] },
+        {
+          description,
+          comments,
+        },
+      )
+    }
  * ${"-".repeat(64)}
  * ${timestampEmitter()}
- **/
-
-:root {${tokenStringConstructor({ padding: "  " }, tokens)}
-}
-`;
+`,
+    DOC_CLOSE,
+    TOKENS_OPEN,
+    tokenStringConstructor(
+      { ...opts, commentDelim: [OPEN, DELIM, CLOSE] },
+      tokens,
+    ),
+    TOKENS_CLOSE,
+  );
 }
 #+END_SRC
-
-** Helpers
 
 *** Undefined Project Metadata Error
 
@@ -134,10 +220,13 @@ const finishedDict = {
     author: "Anonymous",
     version: "0.0.0",
     license: "Unlicense",
-    // can also be one of "major", "minor", "patch", "pre", "build" for automatic versioning
+    // OPTIONAL can also be one of "major", "minor", "patch", "pre", "build" for automatic versioning
     bump: "manual",
-    description: "N/A",
-    comments: "N/A"
+    // OPTIONAL
+    metadata: {
+      description: "N/A",
+      comments: "N/A"
+    }
   },
   ...tokens
 };
@@ -146,6 +235,47 @@ The first four properties are all required. Up to you if you want to include
 a description or comments with your project.
 `,
   });
+}
+#+END_SRC
+
+*** Metadata Emitter
+
+This helper provides a convenient way to assemble metadata as a comment block or line depending on
+the format. It's used for both dictionary metadata and project metadata.
+
+#+BEGIN_SRC js
+function metadataEmitter(
+  {
+    commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
+    str = "",
+  },
+  meta,
+) {
+  return str.concat(
+    [
+      OPEN,
+      Object.entries(meta).reduce((str, [key, value]) => {
+        const lines = value.split("\n");
+
+        if (lines.length > 1) {
+          return str
+            .concat(
+              "\n",
+              DELIM,
+              key.toUpperCase(),
+              ":",
+              "\n",
+              DELIM.trimEnd(),
+              lines.join(`\n${DELIM}`),
+            )
+            .trimEnd();
+        }
+
+        return str.concat("\n", DELIM, key.toUpperCase(), ": ", lines);
+      }, ""),
+      CLOSE,
+    ].join(""),
+  );
 }
 #+END_SRC
 
@@ -215,44 +345,6 @@ function cssTokenAssembler({
       terminator,
     );
   };
-}
-#+END_SRC
-
-*** Metadata Emitter
-
-#+BEGIN_SRC js
-function metadataEmitter(
-  {
-    commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
-    str = "",
-  },
-  meta,
-) {
-  return str.concat(
-    [
-      OPEN,
-      Object.entries(meta).reduce((str, [key, value]) => {
-        const lines = value.split("\n");
-
-        if (lines.length > 1) {
-          return str
-            .concat(
-              "\n",
-              DELIM,
-              key.toUpperCase(),
-              ":",
-              "\n",
-              DELIM.trimEnd(),
-              lines.join(`\n${DELIM}`),
-            )
-            .trimEnd();
-        }
-
-        return str.concat("\n", DELIM, key.toUpperCase(), ": ", lines);
-      }, ""),
-      CLOSE,
-    ].join(""),
-  );
 }
 #+END_SRC
 
@@ -333,6 +425,65 @@ function bumpVersion(project) {
 function timestampEmitter() {
   const TIMESTAMP = new Date(Date.now());
   return `Updated on ${TIMESTAMP.toLocaleDateString()} at ${TIMESTAMP.toLocaleTimeString()}`;
+}
+#+END_SRC
+
+* Utilities
+** Functional Programming
+
+My first set of utilities to implement are used throughout the codebase and contribute to its
+composable and expressive design.
+
+*** Currying
+
+Currying is a powerful higher-order transformation where a function of =n= arguments is morphed into
+a sequence of calls with one argument. So this: =fn(z, y, x)= becomes =fn(z)(y)(x)=.
+
+This utility really shines in a data-last architectures like this project. Since the final argument
+is /always/ data, currying allows you to preload its modifiers and leave the data operation =fn(x)=
+for composition and pipelining.
+
+The implementation is an advanced curry that allows partial application and uncurried functionality.
+
+#+BEGIN_SRC js
+export function curry(fn) {
+  return (...initial) =>
+    initial.length >= fn.length
+      ? fn.apply(this, initial)
+      : (...remaining) => fn.apply(this, initial.concat(remaining));
+}
+#+END_SRC
+
+*** Composition
+
+Functional composition is a higher-order operation that combines functions in sequence into a brand
+new function queued for data. It's an excellent way to reuse tiny utilities for more complex
+behavior.
+
+Currying and composition are the chocolate and caramel of Quarks System Core.
+
+#+BEGIN_SRC js
+export function compose(...fns) {
+  return (x) => fns.reduce((g, f) => f(g), x);
+}
+#+END_SRC
+
+*** Pipelining
+
+Pipelining is a powerful pattern that drives this project, because its main purpose is to generate
+and manipulate data. Excepting the error handlers and formatters, data is *both the input and output*
+of every function.
+
+As the name implies, pipelining is a higher-order function where data is transformed by being piped
+through a series of data operations. These operations can themselves include compositions and
+pipelines.
+
+Another way to think of it: composition combines data /operations/, pipelining applies data
+/transformations/.
+
+#+BEGIN_SRC js
+function pipe(x, ...fns) {
+  return compose(...fns)(x);
 }
 #+END_SRC
 
