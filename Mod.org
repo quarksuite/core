@@ -2,7 +2,7 @@
 #+AUTHOR: Chatman R. Jr
 #+PROPERTY: header-args :mkdirp yes
 
-* Table of Contents :TOC@4:
+* Table of Contents :TOC@3:
 - [[#introduction][Introduction]]
 - [[#overview-of-system-design][Overview of System Design]]
 - [[#formatters][Formatters]]
@@ -28,6 +28,11 @@
     - [[#currying][Currying]]
     - [[#composition][Composition]]
     - [[#pipelining][Pipelining]]
+  - [[#color][Color]]
+    - [[#converter][Converter]]
+    - [[#validator][Validator]]
+    - [[#extractor][Extractor]]
+    - [[#parser][Parser]]
   - [[#error-handling][Error Handling]]
 - [[#data][Data]]
     - [[#named-color-keywords][Named Color Keywords]]
@@ -46,12 +51,12 @@ You can access the test suite from =index.html=.
 From output to the  lowest level math, the system design is as follows:
 
 + Formatters: format a custom or bootstrapped Quarks System Dictionary as a file-ready set of design
-  tokens for the web or other environmennts
+  tokens for the web or other environments
 + Bootstrappers: outputs a complete dictionary from a configuration object
 + Transformers: convert entire Quarks System Dictionaries to other data formats (especially for interop)
 + Quarks System Dictionary: standard data schema consumed by transformers, returned by
   bootstrappers, and formatted by emitters
-+ Formulas: features that represent data boilerplatesfor a bootstrapped or custom Quarks System Dictionary
++ Formulas: features that represent data boilerplates for a bootstrapped or custom Quarks System Dictionary
 + Configurations: generic abstractions intended to streamline the assembly of formulas
 + Utilities: the functional toolbox used to create the higher abstractions
 + Internals: lower level utilities and helpers inaccessible to the user
@@ -549,11 +554,10 @@ function yamlDictScale(level, str, key, value) {
 :header-args:js: :tangle "./utilities.js" :comments link
 :END:
 * Internals
-:PROPERTIES:
-:header-args:js: :tangle "./internals.js" :comments link
-:END:
 ** Functional Programming
-
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/fp.js" :comments link
+:END:
 My first set of internals are used throughout the codebase and contribute to its
 composable and expressive design.
 
@@ -605,19 +609,1320 @@ Another way to think of it: composition combines data /operations/, pipelining a
 /transformations/.
 
 #+BEGIN_SRC js
-function pipe(x, ...fns) {
+export function pipe(x, ...fns) {
   return compose(...fns)(x);
 }
 #+END_SRC
 
+** Color
+
+The beefiest slab of code in Quarks System Core is by far the internal color library. This is
+because color science is hard, I'm a little obsessive, and I wanted to get it as correct as I
+possibly could.
+
+*** Converter
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/converter/index.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { compose, pipe } from "../../fp.js";
+import { validator } from "../validator/index.js";
+import {
+  cielabToRgb,
+  cmykToRgb,
+  hexToRgb,
+  hslToRgb,
+  hwbToRgb,
+  oklabToRgb,
+} from "./color_to_rgb.js";
+import {
+  cielabFromRgb,
+  cmykFromRgb,
+  hexFromRgb,
+  hslFromRgb,
+  hwbFromRgb,
+  oklabFromRgb,
+} from "./color_from_rgb.js";
+import {
+  cielabFromCielch,
+  cielabToCielch,
+  hexFromNamedColor,
+} from "./linkers.js";
+#+END_SRC
+
+#+BEGIN_SRC js
+const INPUT_TO_RGB = {
+  named: compose(hexFromNamedColor, passthrough, hexToRgb),
+  hex: hexToRgb,
+  rgb: compose(hexFromRgb, passthrough, hexToRgb), // identity
+  hsl: hslToRgb,
+  cmyk: cmykToRgb,
+  hwb: hwbToRgb,
+  cielab: cielabToRgb,
+  cielch: compose(cielabFromCielch, passthrough, cielabToRgb),
+  oklab: oklabToRgb,
+};
+
+const OUTPUT_FROM_RGB = {
+  hex: hexFromRgb,
+  rgb: compose(hexFromRgb, passthrough, hexToRgb),
+  hsl: hslFromRgb,
+  cmyk: cmykFromRgb,
+  hwb: hwbFromRgb,
+  cielab: cielabFromRgb,
+  cielch: compose(cielabFromRgb, passthrough, cielabToCielch),
+  oklab: oklabFromRgb,
+};
+
+function passthrough([, color]) {
+  return color;
+}
+
+export function convert(output, color) {
+  const [input, value] = validator(color);
+  return pipe(
+    validator(color),
+    ([input, color]) => INPUT_TO_RGB[input](color),
+    ([, color]) => OUTPUT_FROM_RGB[output](color),
+  );
+}
+#+END_SRC
+
+**** Color to RGB
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/converter/color_to_rgb.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { curry, pipe } from "../../fp.js";
+import { validator } from "../validator/index.js";
+import { output, parser } from "../parser/index.js";
+import { normalize, numberToRgb } from "./math.js";
+#+END_SRC
+
+***** Hex to RGB
+
+#+BEGIN_SRC js
+export function hexToRgb(color) {
+  const [, components] = parser(color);
+  return pipe(output(["rgb", components]), validator);
+}
+#+END_SRC
+
+***** HSL to RGB
+
+#+BEGIN_SRC js
+export function hslToRgb(color) {
+  const [, [H, S, L, A]] = parser(color);
+
+  // Calculate chroma
+  const C = (1 - Math.abs(2 * L - 1)) * S;
+  const X = C * (1 - Math.abs(((H / 60) % 2) - 1));
+  const m = L - C / 2;
+
+  const [R, G, B] = Array.from(calculateRGB(C, X, H))
+    .filter(([, condition]) => condition)
+    .flatMap(([evaluation]) => evaluation)
+    .map((V) => pipe(V + m, numberToRgb, Math.round, curry(normalize)(255, 0)));
+
+  return pipe(output(["rgb", [R, G, B, A]]), validator);
+}
+
+function calculateRGB(C, X, H) {
+  return new Map([
+    [[C, X, 0], 0 <= H && H < 60],
+    [[X, C, 0], 60 <= H && H < 120],
+    [[0, C, X], 120 <= H && H < 180],
+    [[0, X, C], 180 <= H && H < 240],
+    [[X, 0, C], 240 <= H && H < 300],
+    [[C, 0, X], 300 <= H && H < 360],
+  ]);
+}
+#+END_SRC
+
+***** CMYK to RGB
+
+#+BEGIN_SRC js
+export function cmykToRgb(color) {
+  const [, [C, M, Y, K, A]] = parser(color);
+
+  const [R, G, B] = [C, M, Y].map((V) =>
+    pipe((1 - V) * (1 - K), numberToRgb, Math.round, curry(normalize)(255, 0))
+  );
+
+  return pipe(output(["rgb", [R, G, B, A]]), validator);
+}
+#+END_SRC
+
+***** HWB to RGB
+
+#+BEGIN_SRC js
+export function hwbToRgb(color) {
+  const [, [H, W, BLK, A]] = parser(color);
+
+  // Achromacity
+  if (W + BLK >= 1) {
+    const GRAY = pipe(
+      W / (W + BLK),
+      numberToRgb,
+      Math.round,
+      curry(normalize)(255, 0),
+    );
+
+    return pipe(output(["rgb", [Array(3).fill(GRAY), A]]), validator);
+  }
+
+  const [R, G, B] = pipe(
+    `hsl(${H}, 100%, 50%)`,
+    hslToRgb,
+    ([, color]) => parser(color),
+    ([, color]) => color,
+  ).map((V) =>
+    pipe(
+      V * (1 - W - BLK) + W,
+      numberToRgb,
+      Math.round,
+      curry(normalize)(255, 0),
+    )
+  );
+
+  return pipe(output(["rgb", [R, G, B, A]]), validator);
+}
+#+END_SRC
+
+***** CIELAB to RGB
+
+#+BEGIN_SRC js
+export function cielabToRgb(color) {
+  const [, [L, a, b, A]] = parser(color);
+  const [X, Y, Z] = cielabToCiexyz([L, a, b]);
+  const [LR, LG, LB] = ciexyzToLrgb([X, Y, Z]);
+  const [R, G, B] = lrgbToRgb([LR, LG, LB]).map((V) =>
+    pipe(V, numberToRgb, Math.round, curry(normalize)(255, 0))
+  );
+
+  return pipe(output(["rgb", [R, G, B, A]]), validator);
+}
+
+function cielabToCiexyz([L, a, b]) {
+  // CIE standards
+  const ε = 216 / 24389;
+  const κ = 24389 / 27;
+  const WHITE = [0.96422, 1.0, 0.82521]; // D50 reference white
+
+  // Compute the values of F
+  const FY = (L + 16) / 116;
+  const FX = a / 500 + FY;
+  const FZ = FY - b / 200;
+
+  // Calculate xyz
+  const [X, Y, Z] = [
+    FX ** 3 > ε ? FX ** 3 : (116 * FX - 16) / κ,
+    L > κ * ε ? FY ** 3 : L / κ,
+    FZ ** 3 > ε ? FZ ** 3 : (116 * FZ - 16) / κ,
+  ].map((V, i) => V * WHITE[i]);
+
+  return [X, Y, Z];
+}
+
+const D65_CHROMATIC_ADAPTATION = [
+  [0.9555766, -0.0230393, 0.0631636],
+  [-0.0282895, 1.0099416, 0.0210077],
+  [0.0122982, -0.020483, 1.3299098],
+];
+
+const LINEAR_RGB_TRANSFORMATION_MATRIX = [
+  [3.2404542, -1.5371385, -0.4985314],
+  [-0.969266, 1.8760108, 0.041556],
+  [0.0556434, -0.2040259, 1.0572252],
+];
+
+function ciexyzToLrgb([X, Y, Z]) {
+  const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
+  );
+
+  const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
+  );
+
+  return [LR, LG, LB];
+}
+
+function lrgbToRgb([LR, LG, LB]) {
+  return [LR, LG, LB].map((V) =>
+    V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055
+  );
+}
+#+END_SRC
+
+***** Oklab to RGB
+
+#+BEGIN_SRC js
+export function oklabToRgb(color) {
+  const [, [L, a, b, A]] = parser(color);
+  const [LR, LG, LB] = oklabToLrgb([L, a, b]);
+
+  const [R, G, B] = lrgbToRgb([LR, LG, LB]).map((V) =>
+    pipe(V, numberToRgb, Math.round, curry(normalize)(255, 0))
+  );
+
+  return pipe(output(["rgb", [R, G, B, A]]), validator);
+}
+
+const LINEAR_LMS_CONE_ACTIVATIONS = [
+  [0.3963377774, 0.2158037573],
+  [0.1055613458, 0.0638541728],
+  [0.0894841775, 1.291485548],
+];
+
+const LINEAR_RGB_OKLAB_MATRIX = [
+  [4.076416621, 3.3077115913, 0.2309699292],
+  [-1.2684380046, 2.6097574011, 0.3413193965],
+  [-0.0041960863, 0.7034186147, 1.707614701],
+];
+
+function oklabToLrgb([L, a, b]) {
+  const [LONG, M, S] = LINEAR_LMS_CONE_ACTIVATIONS.map(([V1, V2], pos) => {
+    if (pos === 0) return L + a * V1 + b * V2;
+    if (pos === 1) return L - a * V1 - b * V2;
+    return L - a * V1 - b * V2;
+  }).map((V) => V ** 3);
+
+  const [LR, LG, LB] = LINEAR_RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
+    if (pos === 0) return LONG * V1 - M * V2 + S * V3;
+    if (pos === 1) return LONG * V1 + M * V2 - S * V3;
+    return LONG * V1 - M * V2 + S * V3;
+  });
+
+  return [LR, LG, LB];
+}
+#+END_SRC
+
+**** Color from RGB
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/converter/color_from_rgb.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { curry, pipe } from "../../fp.js";
+import { validator } from "../validator/index.js";
+import { output, parser } from "../parser/index.js";
+import {
+  hexFragmentFromRgb,
+  hueCorrection,
+  normalize,
+  numberToPercent,
+  numberToRgb,
+  precision,
+  radToDegrees,
+} from "./math.js";
+#+END_SRC
+
+***** Hex from RGB
+
+#+BEGIN_SRC js
+export function hexFromRgb(color) {
+  const [, components] = parser(color);
+  return pipe(
+    output([
+      "hex",
+      components.map((V) =>
+        pipe(
+          V,
+          numberToRgb,
+          Math.round,
+          curry(normalize)(255, 0),
+          hexFragmentFromRgb,
+        )
+      ),
+    ]),
+    validator,
+  );
+}
+#+END_SRC
+
+***** HSL from RGB
+
+#+BEGIN_SRC js
+export function hslFromRgb(color) {
+  const [, [R, G, B, A]] = parser(color);
+
+  const MIN = Math.min(R, G, B);
+  const MAX = Math.max(R, G, B);
+  const DELTA = MAX - MIN;
+
+  const L = calculateLightness(MIN, MAX);
+  const [[H], S] = [
+    Array.from(calculateHue(R, G, B, MAX, DELTA))
+      .filter(([, condition]) => condition)
+      .flatMap(([result]) => result),
+    calculateSaturation(DELTA, L),
+  ];
+
+  const limitPercent = curry(normalize)(100, 0);
+
+  return pipe(
+    output([
+      "hsl",
+      [
+        hueCorrection(H),
+        ...[S, L].map((V) =>
+          pipe(V, numberToPercent, limitPercent, (value) => value.toString())
+            .concat("%")
+        ),
+        A,
+      ],
+    ]),
+    validator,
+  );
+}
+
+function calculateLightness(cmin, cmax) {
+  return (cmax + cmin) / 2;
+}
+
+function calculateHue(R, G, B, cmax, delta) {
+  return new Map([
+    [0, delta === 0],
+    [60 * (((G - B) / delta) % 6), cmax === R],
+    [60 * ((B - R) / delta + 2), cmax === G],
+    [60 * ((R - G) / delta + 4), cmax === B],
+  ]);
+}
+
+function calculateSaturation(delta, L) {
+  return delta === 0 ? 0 : delta / (1 - Math.abs(2 * L - 1));
+}
+#+END_SRC
+
+***** CMYK from RGB
+
+#+BEGIN_SRC js
+export function cmykFromRgb(color) {
+  const [, [R, G, B, A]] = parser(color);
+
+  const K = 1 - Math.max(R, G, B);
+  const [C, M, Y] = [R, G, B].map((V) => (1 - V - K) / (1 - K));
+
+  const limitPercent = curry(normalize)(100, 0);
+
+  return pipe(
+    output([
+      "cmyk",
+      [
+        ...[C, M, Y, K]
+          .map((V) => (isNaN(V) ? 0 : pipe(V, numberToPercent, limitPercent)))
+          .map((V) => V.toString().concat("%")),
+        A,
+      ],
+    ]),
+    validator,
+  );
+}
+#+END_SRC
+
+***** HWB from RGB
+
+#+BEGIN_SRC js
+export function hwbFromRgb(color) {
+  const [, [R, G, B, A]] = parser(color);
+
+  const MAX = Math.max(R, G, B);
+  const MIN = Math.min(R, G, B);
+  const DELTA = MAX - MIN;
+
+  const [H] = Array.from(calculateHue(R, G, B, MAX, DELTA))
+    .filter(([, condition]) => condition)
+    .flatMap(([result]) => result);
+
+  const [W, BLK] = [MIN, 1 - MAX];
+
+  const limitPercent = curry(normalize)(100, 0);
+
+  return pipe(
+    output([
+      "hwb",
+      [
+        hueCorrection(H),
+        ...[W, BLK].map((V) =>
+          pipe(V, numberToPercent, limitPercent).toString().concat("%")
+        ),
+        A,
+      ],
+    ]),
+    validator,
+  );
+}
+#+END_SRC
+
+***** CIELAB from RGB
+
+#+BEGIN_SRC js
+export function cielabFromRgb(color) {
+  const [, [R, G, B, A]] = parser(color);
+  const [X, Y, Z] = rgbToCieXYZ([R, G, B]);
+  const [L, a, b] = ciexyzToCielab([X, Y, Z]);
+
+  return pipe(
+    output(["cielab", [L.toString().concat("%"), a, b, A]]),
+    validator,
+  );
+}
+
+function ciexyzToCielab([X, Y, Z]) {
+  // CIE standards
+  const ε = 216 / 24389;
+  const κ = 24389 / 27;
+  const D50_WHITE = [0.96422, 1.0, 0.82521];
+
+  // Calculating F for each value
+  const [FX, FY, FZ] = [X, Y, Z]
+    .map((V, i) => V / D50_WHITE[i])
+    .map((V) => (V > ε ? Math.cbrt(V) : (κ * V + 16) / 116));
+
+  const [L, a, b] = [116 * FY - 16, 500 * (FX - FY), 200 * (FY - FZ)]
+    .map((V) => precision(V))
+    .map((V, pos) =>
+      pos === 0 ? normalize(256, 0, V) : +normalize(128, -127, V).toFixed(4)
+    );
+
+  return [L, a, b];
+}
+
+const D65_REFERENCE_WHITE = [
+  [0.4124564, 0.3575761, 0.1804375],
+  [0.2126729, 0.7151522, 0.072175],
+  [0.0193339, 0.119192, 0.9503041],
+];
+
+const D50_CHROMATIC_ADAPTATION = [
+  [1.0478112, 0.0228866, -0.050127],
+  [0.0295424, 0.9904844, -0.0170491],
+  [-0.0092345, 0.0150436, 0.7521316],
+];
+
+function rgbToCieXYZ([R, G, B]) {
+  const [LR, LG, LB] = rgbToLinearRGB([R, G, B]);
+
+  const [x, y, z] = D65_REFERENCE_WHITE.map(
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
+  );
+
+  const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
+  );
+
+  return [X, Y, Z];
+}
+
+function rgbToLinearRGB([R, G, B]) {
+  return [R, G, B].map((V) =>
+    V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4
+  );
+}
+#+END_SRC
+
+***** Oklab from RGB
+
+#+BEGIN_SRC js
+export function oklabFromRgb(color) {
+  const [, [R, G, B, A]] = parser(color);
+  const [l, a, b] = linearRGBToOklab([R, G, B]);
+
+  const L = numberToPercent(l).toString().concat("%");
+  const c = normalize(0.5, 0, +Math.sqrt(a ** 2 + b ** 2).toFixed(4)); // toPrecision isn't strict enough
+  const C = Math.sign(Math.round(c)) === -1 ? 0 : c;
+  const H = pipe(Math.atan2(b, a), radToDegrees, hueCorrection);
+
+  return pipe(output(["oklab", [L, C, H, A]]), validator);
+}
+
+const NONLINEAR_LMS_CONE_ACTIVATIONS = [
+  [0.4122214708, 0.5363325363, 0.0514459929],
+  [0.2119034982, 0.6806995451, 0.1073969566],
+  [0.0883024619, 0.2817188376, 0.6299787005],
+];
+
+const RGB_OKLAB_MATRIX = [
+  [0.2104542553, 0.793617785, 0.0040720468],
+  [1.9779984951, 2.428592205, 0.4505937099],
+  [0.0259040371, 0.7827717662, 0.808675766],
+];
+
+function linearRGBToOklab([R, G, B]) {
+  const [LR, LG, LB] = rgbToLinearRGB([R, G, B]);
+
+  const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
+    ([L, M, S]) => L * LR + M * LG + S * LB,
+  ).map((V) => Math.cbrt(V));
+
+  return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
+    if (pos === 0) return V1 * L + V2 * M - V3 * S;
+    if (pos === 1) return V1 * L - V2 * M + V3 * S;
+    return V1 * L + V2 * M - V3 * S;
+  });
+}
+#+END_SRC
+
+**** Linkers
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/converter/linkers.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { NAMED_COLOR_KEYWORDS } from "../../../data.js";
+import { pipe } from "../../fp.js";
+import { validator } from "../validator/index.js";
+import { output, parser } from "../parser/index.js";
+import {
+  hueCorrection,
+  normalize,
+  radFromDegrees,
+  radToDegrees,
+} from "./math.js";
+#+END_SRC
+
+***** Named Color to Hex
+
+#+BEGIN_SRC js
+export function hexFromNamedColor(color) {
+  return validator(NAMED_COLOR_KEYWORDS[color]);
+}
+#+END_SRC
+
+***** CIELAB to CIELCh(ab)
+
+#+BEGIN_SRC js
+export function cielabToCielch(color) {
+  const [, [L, a, b, A]] = parser(color);
+
+  const C = normalize(132, 0, Math.sqrt(a ** 2 + b ** 2));
+  const H = pipe(Math.atan2(b, a), radToDegrees, hueCorrection);
+
+  return pipe(
+    output(["cielch", [L.toString().concat("%"), C, H, A]]),
+    validator,
+  );
+}
+#+END_SRC
+
+***** CIELCh(ab) to CIELAB
+
+#+BEGIN_SRC js
+export function cielabFromCielch(color) {
+  const [, [L, C, H, A]] = parser(color);
+
+  const [a, b] = [
+    C * Math.cos(radFromDegrees(H)),
+    C * Math.sin(radFromDegrees(H)),
+  ].map((V) => normalize(128, -127, V));
+
+  return pipe(
+    output(["cielab", [L.toString().concat("%"), a, b, A]]),
+    validator,
+  );
+}
+#+END_SRC
+
+**** Math
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/converter/math.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { compose } from "../../fp.js";
+#+END_SRC
+
+***** Arithmetic
+
+#+BEGIN_SRC js
+const add = (y, x) => x + y;
+const multiply = (y, x) => x * y;
+const divide = (y, x) => x / y;
+const remainder = (y, x) => x % y;
+#+END_SRC
+
+***** Limiters
+
+#+BEGIN_SRC js
+export const precision = (value) => +value.toPrecision(5);
+export const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
+#+END_SRC
+
+***** Hexadecimal
+
+#+BEGIN_SRC js
+export const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
+export const hexFragmentFromRgb = (channel) =>
+  channel.toString(16).padStart(2, "0");
+#+END_SRC
+
+***** Percent Calculations
+
+#+BEGIN_SRC js
+export const numberToPercent = (n) => multiply(100, n);
+export const numberFromPercent = (percentage) => divide(100, percentage);
+#+END_SRC
+
+***** RGB Component Calculations
+
+#+BEGIN_SRC js
+export const numberToRgb = (n) => multiply(255, n);
+export const numberFromRgb = (channel) => divide(255, channel);
+export const rgbFromPercent = compose(
+  numberFromPercent,
+  numberToRgb,
+  Math.round,
+);
+export const hexFragmentFromNumber = compose(
+  numberToRgb,
+  Math.round,
+  hexFragmentFromRgb,
+);
+#+END_SRC
+
+***** Hue Calculations
+
+#+BEGIN_SRC js
+export const radToDegrees = (radians) =>
+  compose(
+    () => divide(Math.PI, 180),
+    (result) => multiply(result, radians),
+    (degrees) => precision(degrees),
+  )();
+export const radFromDegrees = (degrees) =>
+  compose(
+    () => divide(180, Math.PI),
+    (result) => multiply(result, degrees),
+    (radians) => precision(radians),
+  )();
+export const gradToDegrees = (gradians) =>
+  compose(
+    () => divide(200, 180),
+    (result) => multiply(result, gradians),
+    (degrees) => precision(degrees),
+  )();
+export const numberToDegrees = (n) => multiply(360, n);
+export const hueCorrection = (hue) =>
+  normalize(
+    360,
+    -360,
+    Math.sign(hue) === -1 ? Math.abs(add(360, hue)) : hue > 360
+      ? remainder(360, hue)
+      : hue,
+  );
+#+END_SRC
+
+*** Validator
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/validator/index.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { QSCError } from "../../../error.js";
+#+END_SRC
+
+Before a color can be converted, we must be sure it's in fact a color.
+
+#+BEGIN_SRC js
+const SUPPORTED_FORMATS = {
+  named: namedValidator,
+  hex: hexValidator,
+  rgb: rgbValidator,
+  hsl: hslValidator,
+  cmyk: cmykValidator,
+  hwb: hwbValidator,
+  cielab: cielabValidator,
+  cielch: cielchValidator,
+  oklab: oklabValidator,
+};
+
+export function validator(color) {
+  return (
+    Object.entries(SUPPORTED_FORMATS)
+      .map(([format, fn]) => [format, fn(color) && color])
+      .find(([, color]) => color) || InvalidOrUnsupportedColorError()
+  );
+}
+
+function InvalidOrUnsupportedColorError() {
+  throw new QSCError({
+    name: "Invalid or Unsupported Color",
+    reason: `
+The input matches none of Quarks System Core's supported color formats. It's
+also possible you have a syntax error.
+`,
+    suggestion: `
+Check your input color against these supported CSS color formats:
+
+Named Colors
+------------
+coral
+springgreen
+dodgerblue
+rebeccapurple
+
+RGB Hex
+-------
+#f0f
+#ca5e
+#933cca
+#99eefff7
+
+Functional RGB
+--------------
+rgb(30, 110, 0)
+rgb(19%, 38.9%, 70%)
+rgba(255, 255, 255, 0.8)
+rgb(129 22 108)
+rgb(20% 2% 100% / 0.25)
+
+Functional HSL
+--------------
+hsl(240, 39%, 81%)
+hsla(120, 78%, 45%, 0.93)
+hsl(2.5rad 29% 40%)
+hsl(216.44grad 20% 90% / 0.75)
+
+Device CMYK
+-----------
+device-cmyk(0 0.2 0.399 0)
+device-cmyk(90% 0% 0% 37.5%)
+device-cmyk(0% 39% 0% 0 / 0.88)
+
+HWB
+---
+hwb(60 83% 0%)
+hwb(90 0% 37%)
+hwb(0.75turn 30% 25%)
+hwb(300 29% 5% / 0.99)
+
+CIELAB
+------
+lab(48% 101 -39)
+lab(87% -33 0)
+lab(59% -88 -2 / 0.5)
+
+CIELCh(ab)
+----------
+lch(25% 49 180)
+lch(75% 0 0)
+lch(56.551 77.38 2rad / 0.6892)
+
+Oklab (LCh)
+-----------
+NOTE: This format is non-standard. If you use it, be sure to
+convert to a standard CSS format. Example: hex("oklab(0% 0 0)")
+
+oklab(59.4% 0.33 150)
+oklab(33% 64% 0.2turn)
+oklab(68.332% 0.16 1.778rad)
+`,
+  });
+}
+#+END_SRC
+
+**** Syntax Tokens
+
+***** Primitives
+
+#+BEGIN_SRC js
+const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
+const PERCENT_TOKEN = new RegExp(["(?:", NUMBER_TOKEN.source, "%)"].join(""));
+#+END_SRC
+
+***** Delimiters
+
+#+BEGIN_SRC js
+const DELIMITER = /(?:[\s,]+)/;
+const ALPHA_DELIMITER = new RegExp(DELIMITER.source.replace(",", ",/"));
+const CSS4_DELIMITER = new RegExp(DELIMITER.source.replace(",", ""));
+const CSS4_ALPHA_DELIMITER = new RegExp(
+  ALPHA_DELIMITER.source.replace(",", ""),
+);
+#+END_SRC
+
+***** Components
+
+#+BEGIN_SRC js
+const COMPONENT_TOKEN = new RegExp(
+  ["(?:", PERCENT_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
+);
+const HUE_TOKEN = new RegExp(
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
+);
+#+END_SRC
+
+**** Named Color Validator
+
+#+BEGIN_SRC js
+function namedValidator(color) {
+  return !!NAMED_COLORS[color];
+}
+#+END_SRC
+
+**** Hex Validator
+
+#+BEGIN_SRC js
+function hexValidator(color) {
+  return /^#([\da-f]{3,4}){1,2}$/i.test(color);
+}
+#+END_SRC
+
+**** RGB Validator
+
+#+BEGIN_SRC js
+function rgbValidator(color) {
+  return matchFunctionalFormat(
+    { prefix: "rgba?" },
+    Array(3).fill(COMPONENT_TOKEN),
+  ).test(color);
+}
+#+END_SRC
+
+**** HSL Validator
+
+#+BEGIN_SRC js
+function hslValidator(color) {
+  return matchFunctionalFormat({ prefix: "hsla?" }, [
+    HUE_TOKEN,
+    ...Array(2).fill(PERCENT_TOKEN),
+  ]).test(color);
+}
+#+END_SRC
+
+**** CMYK Validator
+
+#+BEGIN_SRC js
+function cmykValidator(color) {
+  return matchFunctionalFormat(
+    { prefix: "device-cmyk", legacy: false },
+    Array(4).fill(COMPONENT_TOKEN),
+  ).test(color);
+}
+#+END_SRC
+
+**** HWB Validator
+
+#+BEGIN_SRC js
+function hwbValidator(color) {
+  return matchFunctionalFormat({ prefix: "hwb", legacy: false }, [
+    HUE_TOKEN,
+    ...Array(2).fill(PERCENT_TOKEN),
+  ]).test(color);
+}
+#+END_SRC
+
+**** CIELAB Validator
+
+#+BEGIN_SRC js
+function cielabValidator(color) {
+  return matchFunctionalFormat({ prefix: "lab", legacy: false }, [
+    PERCENT_TOKEN,
+    ...Array(2).fill(NUMBER_TOKEN),
+  ]).test(color);
+}
+#+END_SRC
+
+**** CIELCh(ab) Validator
+
+#+BEGIN_SRC js
+function cielchValidator(color) {
+  return matchFunctionalFormat({ prefix: "lch", legacy: false }, [
+    PERCENT_TOKEN,
+    NUMBER_TOKEN,
+    HUE_TOKEN,
+  ]).test(color);
+}
+#+END_SRC
+
+**** Oklab Validator
+
+#+BEGIN_SRC js
+function oklabValidator(color) {
+  return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
+    PERCENT_TOKEN,
+    COMPONENT_TOKEN,
+    HUE_TOKEN,
+  ]).test(color);
+}
+#+END_SRC
+
+**** Functional Formats
+
+#+BEGIN_SRC js
+function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
+  const VALUES = tokens.map((token) => token.source);
+
+  const SEPARATOR = legacy ? DELIMITER.source : CSS4_DELIMITER.source;
+  const ALPHA_SEPARATOR = legacy
+    ? ALPHA_DELIMITER.source
+    : CSS4_ALPHA_DELIMITER.source;
+
+  return new RegExp(
+    `(?:^${prefix}\\(`.concat(
+      VALUES.join(SEPARATOR),
+      `(?:${[ALPHA_SEPARATOR, COMPONENT_TOKEN.source].join("")})?\\))`,
+    ),
+  );
+}
+#+END_SRC
+
+*** Extractor
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/extractor/index.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { compose } from "../../fp.js";
+import { validator } from "../validator/index.js";
+#+END_SRC
+
+Once we're sure have a valid color, we need to extract its components.
+
+#+BEGIN_SRC js
+export const extractor = compose(validator, ([format, color]) => [
+  format,
+  format === "hex" ? hexExtractor(color) : componentExtractor(color),
+]);
+#+END_SRC
+
+**** Hex Extractor
+
+#+BEGIN_SRC js
+function hexExtractor(color) {
+  return expandHex(color).match(/[\da-f]{2}/gi);
+}
+
+function expandHex(color) {
+  const [, ...values] = color;
+
+  if (values.length === 3 || values.length === 4) {
+    return `#${values.map((channel) => channel.repeat(2)).join("")}`;
+  }
+
+  return color;
+}
+#+END_SRC
+
+**** Component Extractor
+
+#+BEGIN_SRC js
+function componentExtractor(color) {
+  return color.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
+}
+#+END_SRC
+
+*** Parser
+:PROPERTIES:
+:header-args:js: :tangle "./lib/utilities/color/parser/index.js" :comments link
+:END:
+
+#+BEGIN_SRC js
+import { compose, pipe } from "../../fp.js";
+import { validator } from "../validator/index.js";
+import { extractor } from "../extractor/index.js";
+import {
+  gradToDegrees,
+  hexFragmentToRgb,
+  hueCorrection,
+  numberFromPercent,
+  numberFromRgb,
+  numberToDegrees,
+  precision,
+  radFromDegrees,
+  radToDegrees,
+} from "../converter/math.js";
+#+END_SRC
+
+Finally, before the conversion math, we need to parse the extracted components to raw values as
+determined by the color conversion formulas below.
+
+#+BEGIN_SRC js
+const FORMAT_PARSERS = {
+  hex: parseHex,
+  rgb: parseRGB,
+  hsl: parseHSL,
+  cmyk: parseCMYK,
+  hwb: parseHSL, // identical to HSL
+  cielab: parseCielab,
+  cielch: parseCielch,
+  oklab: parseOklab,
+};
+
+export const parser = compose(
+  validator,
+  ([format, color]) => FORMAT_PARSERS[format](color),
+);
+#+END_SRC
+
+**** Format Parsers
+
+***** Hex Parser
+
+#+BEGIN_SRC js
+function parseHex(color) {
+  return pipe(
+    extractor(color),
+    ([format, components]) => [
+      format,
+      components.length === 4 ? components : [...components, "ff"],
+    ],
+    ([format, components]) => [
+      format,
+      components.map((c, pos) =>
+        pos === 3
+          ? pipe(c, hexFragmentToRgb, numberFromRgb)
+          : hexFragmentToRgb(c)
+      ),
+    ],
+  );
+}
+#+END_SRC
+
+***** RGB Parser
+
+#+BEGIN_SRC js
+function parseRGB(color) {
+  return pipe(
+    extractor(color),
+    ([format, components]) => [
+      format,
+      components.length === 4 ? components : [...components, "1"],
+    ],
+    ([format, components]) => [
+      format,
+      components.map((c, pos) =>
+        c.endsWith("%")
+          ? parsePercent(c)
+          : pos === 3
+          ? parseNumber(c)
+          : parseChannel(c)
+      ),
+    ],
+  );
+}
+#+END_SRC
+
+***** HSL Parser
+
+#+BEGIN_SRC js
+function parseHSL(color) {
+  return pipe(
+    extractor(color),
+    ([format, components]) => [
+      format,
+      components.length === 4 ? components : [...components, "1"],
+    ],
+    ([format, components]) => [
+      format,
+      components.map((c, pos) =>
+        pos === 0
+          ? parseHue(c)
+          : pos === 3
+          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          : parsePercent(c)
+      ),
+    ],
+  );
+}
+#+END_SRC
+
+***** CMYK Parser
+
+#+BEGIN_SRC js
+function parseCMYK(color) {
+  return pipe(
+    extractor(color),
+    ([format, components]) => [
+      format,
+      components.length === 5 ? components : [...components, "1"],
+    ],
+    ([format, components]) => [
+      format,
+      components.map((c) => c.endsWith("%") ? parsePercent(c) : parseNumber(c)),
+    ],
+  );
+}
+#+END_SRC
+
+***** CIELAB Parser
+
+#+BEGIN_SRC js
+function parseCielab(color) {
+  return parseCie((ab) => parseNumber(ab), color);
+}
+#+END_SRC
+
+***** CIELCh(ab) Parser
+
+#+BEGIN_SRC js
+function parseCielch(color) {
+  return parseCie(
+    (c, pos) => (pos === 2 ? parseHue(c) : parseNumber(c)),
+    color,
+  );
+}
+#+END_SRC
+
+***** Oklab Parser
+
+#+BEGIN_SRC js
+function parseOklab(color) {
+  return pipe(
+    extractor(color),
+    ([format, components]) => [
+      format,
+      components.length === 4 ? components : [...components, "1"],
+    ],
+    ([format, components]) => [
+      format,
+      components.map((c, pos) =>
+        pos === 0
+          ? parsePercent(c)
+          : pos === 1 || pos === 3
+          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          : parseHueAsRadians(c)
+      ),
+    ],
+    ([format, [L, C, H, A]]) => [
+      format,
+      [L, C * Math.cos(H), C * Math.sin(H), A],
+    ],
+  );
+}
+#+END_SRC
+
+**** Token Parsers
+
+***** Number Parser
+
+#+BEGIN_SRC js
+function parseNumber(n) {
+  return pipe(n, parseFloat, precision);
+}
+#+END_SRC
+
+***** Percent Parser
+
+#+BEGIN_SRC js
+function parsePercent(percentage) {
+  return pipe(percentage, parseFloat, numberFromPercent);
+}
+#+END_SRC
+
+***** RGB Channel Parser
+
+#+BEGIN_SRC js
+function parseChannel(channel) {
+  return pipe(channel, parseFloat, numberFromRgb);
+}
+#+END_SRC
+
+***** Hue Parsers
+
+#+BEGIN_SRC js
+function parseHue(hue) {
+  return hueCorrection(
+    hue.endsWith("grad")
+      ? gradToDegrees(parseFloat(hue))
+      : hue.endsWith("rad")
+      ? radToDegrees(parseFloat(hue))
+      : hue.endsWith("turn")
+      ? numberToDegrees(parseFloat(hue))
+      : parseFloat(hue),
+  );
+}
+
+function parseHueAsRadians(hue) {
+  return hue.endsWith("rad") && !hue.endsWith("grad")
+    ? parseNumber(hue)
+    : pipe(hue, parseHue, radFromDegrees);
+}
+#+END_SRC
+
+***** CIE* Parser
+
+#+BEGIN_SRC js
+function parseCie(unique, color) {
+  return pipe(
+    extractor(color),
+    ([format, components]) => [
+      format,
+      components.length === 4 ? components : [...components, "1"],
+    ],
+    ([format, components]) => [
+      format,
+      components.map((c, pos) =>
+        pos === 0
+          ? parseNumber(c)
+          : pos === 3
+          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          : unique(c, pos)
+      ),
+    ],
+  );
+}
+#+END_SRC
+
+**** Output
+
+#+BEGIN_SRC js
+export function output(data) {
+  return pipe(
+    data,
+    ([format, components]) => COLOR_ASSEMBLER(components)[format],
+  );
+}
+#+END_SRC
+
+#+BEGIN_SRC js
+function COLOR_ASSEMBLER(components) {
+  return {
+    hex: hexOutput(components),
+    rgb: legacyOutput("rgb", components),
+    hsl: legacyOutput("hsl", components),
+    cmyk: modernOutput("device-cmyk", components),
+    hwb: modernOutput("hwb", components),
+    cielab: modernOutput("lab", components),
+    cielch: modernOutput("lch", components),
+    oklab: modernOutput("oklab", components),
+  };
+}
+
+function hexOutput([R, G, B, A]) {
+  return "#".concat(R, G, B, A === "ff" ? "" : A);
+}
+
+function legacyOutput(prefix, [C1, C2, C3, A]) {
+  return `${A === 1 ? prefix : prefix.concat("a")}(`.concat(
+    (A === 1 ? [C1, C2, C3] : [C1, C2, C3, A]).join(", "),
+    ")",
+  );
+}
+
+function modernOutput(prefix, components) {
+  return `${prefix}(`.concat(
+    components.slice(0, components.length - 1).join(" "),
+    components[components.length - 1] === 1 ? "" : ` / ${components.slice(-1)}`,
+    ")",
+  );
+}
+#+END_SRC
+
 ** Error Handling
+:PROPERTIES:
+:header-args:js: :tangle "./lib/error.js" :comments link
+:END:
 
 For v1, I wanted to create better custom errors. So I decided to directly extend the =Error= class
 with my own general =QSCError= class. This will allow me to throw any number of errors I need
 /within/ the context they're triggered and gives me a free stack trace back to what broke.
 
 #+BEGIN_SRC js
-class QSCError extends Error {
+export class QSCError extends Error {
   constructor({
     name = "Unknown Error",
     reason = "here's why",
@@ -636,7 +1941,7 @@ ${"=".repeat(80)}
 
 * Data
 :PROPERTIES:
-:header-args:js: :tangle "./data.js"
+:header-args:js: :tangle "./lib/data.js" :comments link
 :END:
 
 At the bottom rung sits collections of hardcoded data required for processing named color keywords,
@@ -645,7 +1950,7 @@ Colors project defined web defaults, and system font stacks.
 *** Named Color Keywords
 
 #+BEGIN_SRC js
-const NAMED_COLOR_KEYWORDS = {
+export const NAMED_COLOR_KEYWORDS = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
   aqua: "#00ffff",
@@ -800,14 +2105,14 @@ const NAMED_COLOR_KEYWORDS = {
   white: "#ffffff",
   whitesmoke: "#f5f5f5",
   yellow: "#ffff00",
-  yellowgreen: "#9acd32"
+  yellowgreen: "#9acd32",
 };
 #+END_SRC
 
 *** Colors Project Web Defaults
 
 #+BEGIN_SRC js
-const A11Y_PALETTE = {
+export const A11Y_PALETTE = {
   navy: "#001f3f",
   blue: "#0074d9",
   aqua: "#7fdbff",
@@ -825,19 +2130,19 @@ const A11Y_PALETTE = {
   gray: "#aaaaaa",
   grey: "#aaaaaa",
   silver: "#dddddd",
-  white: "#ffffff"
+  white: "#ffffff",
 };
 #+END_SRC
 
 *** System Font Stacks
 
 #+BEGIN_SRC js
-const SYSTEM_FONT_STACKS = {
+export const SYSTEM_FONT_STACKS = {
   sans:
     "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   serif:
     "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
   monospace:
-    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace"
+    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
 };
 #+END_SRC
