@@ -1,12 +1,12 @@
 import {
-  css,
-  gpl,
-  less,
-  raw,
-  scss,
-  sketchpalette,
-  styl,
-  yaml,
+  output_css,
+  output_gpl,
+  output_less,
+  output_raw,
+  output_scss,
+  output_sketchpalette,
+  output_styl,
+  output_yaml,
 } from "./formatters.js";
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { Maven } from "https://deno.land/x/merlin/mod.ts";
@@ -83,9 +83,16 @@ const removeTimestamp = (format) =>
 
 const checkVersion = (dict) => dict.project.version;
 
-const rawify = ({ project, ...tokens }) => ({ project, tokens });
-
-const AllFormatters = [css, scss, less, styl, raw, yaml, gpl, sketchpalette];
+const AllFormatters = [
+  output_css,
+  output_scss,
+  output_less,
+  output_styl,
+  output_raw,
+  output_yaml,
+  output_gpl,
+  output_sketchpalette,
+];
 
 describe("Formatters", () => {
   AllFormatters.slice(0, AllFormatters.length - 1).forEach((Formatter) =>
@@ -94,15 +101,21 @@ describe("Formatters", () => {
   );
 
   it("should allow automatic versioning", () => {
-    expect(checkVersion(JSON.parse(raw(goGoGadgetVersioning)))).toBe("0.1.0");
-    expect(checkVersion(JSON.parse(raw(goGoGadgetVersioning)))).toBe("0.2.0");
-    expect(checkVersion(JSON.parse(raw(goGoGadgetVersioning)))).toBe("0.3.0");
+    expect(checkVersion(JSON.parse(output_raw(goGoGadgetVersioning)))).toBe(
+      "0.1.0",
+    );
+    expect(checkVersion(JSON.parse(output_raw(goGoGadgetVersioning)))).toBe(
+      "0.2.0",
+    );
+    expect(checkVersion(JSON.parse(output_raw(goGoGadgetVersioning)))).toBe(
+      "0.3.0",
+    );
   });
 
   describe("CSS Formats", () => {
-    describe("css(dict)", () => {
+    describe("output_css(dict)", () => {
       it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(css(completeQSD));
+        const result = removeTimestamp(output_css(completeQSD));
         expect(result).toBe(`
 /**
  * Project: Unknown Project (v0.0.0)
@@ -127,7 +140,7 @@ describe("Formatters", () => {
 `);
       });
       it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(css(completeQSDWithMeta));
+        const result = removeTimestamp(output_css(completeQSDWithMeta));
         expect(result).toBe(`
 /**
  * Project: Unknown Project (v0.0.0)
@@ -158,7 +171,9 @@ describe("Formatters", () => {
 `);
       });
       it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(css(completeQSDWithMultilineMeta));
+        const result = removeTimestamp(
+          output_css(completeQSDWithMultilineMeta),
+        );
         expect(result).toBe(`
 /**
  * Project: Unknown Project (v0.0.0)
@@ -202,9 +217,9 @@ describe("Formatters", () => {
 `);
       });
     });
-    describe("scss(dict)", () => {
+    describe("output_css(dict)", () => {
       it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(scss(completeQSD));
+        const result = removeTimestamp(output_scss(completeQSD));
         expect(result).toBe(`
 /*!
  * Project: Unknown Project (v0.0.0)
@@ -227,7 +242,7 @@ $color-highlight: blue;
 `);
       });
       it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(scss(completeQSDWithMeta));
+        const result = removeTimestamp(output_scss(completeQSDWithMeta));
         expect(result).toBe(`
 /*!
  * Project: Unknown Project (v0.0.0)
@@ -254,7 +269,9 @@ $color-highlight: blue;
 `);
       });
       it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(scss(completeQSDWithMultilineMeta));
+        const result = removeTimestamp(
+          output_scss(completeQSDWithMultilineMeta),
+        );
         expect(result).toBe(`
 /*!
  * Project: Unknown Project (v0.0.0)
@@ -294,9 +311,9 @@ $color-highlight: blue;
 `);
       });
     });
-    describe("less(dict)", () => {
+    describe("output_less(dict)", () => {
       it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(less(completeQSD));
+        const result = removeTimestamp(output_less(completeQSD));
         expect(result).toBe(`
 /*
  * Project: Unknown Project (v0.0.0)
@@ -319,7 +336,7 @@ $color-highlight: blue;
 `);
       });
       it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(less(completeQSDWithMeta));
+        const result = removeTimestamp(output_less(completeQSDWithMeta));
         expect(result).toBe(`
 /*
  * Project: Unknown Project (v0.0.0)
@@ -346,7 +363,9 @@ $color-highlight: blue;
 `);
       });
       it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(less(completeQSDWithMultilineMeta));
+        const result = removeTimestamp(
+          output_less(completeQSDWithMultilineMeta),
+        );
         expect(result).toBe(`
 /*
  * Project: Unknown Project (v0.0.0)
@@ -386,9 +405,9 @@ $color-highlight: blue;
 `);
       });
     });
-    describe("styl(dict)", () => {
+    describe("output_styl(dict)", () => {
       it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(styl(completeQSD));
+        const result = removeTimestamp(output_styl(completeQSD));
         expect(result).toBe(`
 /*!
  * Project: Unknown Project (v0.0.0)
@@ -411,7 +430,7 @@ color-highlight = blue
 `);
       });
       it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(styl(completeQSDWithMeta));
+        const result = removeTimestamp(output_styl(completeQSDWithMeta));
         expect(result).toBe(`
 /*!
  * Project: Unknown Project (v0.0.0)
@@ -438,7 +457,9 @@ color-highlight = blue
 `);
       });
       it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(styl(completeQSDWithMultilineMeta));
+        const result = removeTimestamp(
+          output_styl(completeQSDWithMultilineMeta),
+        );
         expect(result).toBe(`
 /*!
  * Project: Unknown Project (v0.0.0)
@@ -480,9 +501,9 @@ color-highlight = blue
     });
   });
   describe("Data Exports", () => {
-    describe("raw(dict)", () => {
+    describe("output_raw(dict)", () => {
       it("should correctly process complete dictionaries", () => {
-        const result = raw(completeQSD);
+        const result = output_raw(completeQSD);
         expect(JSON.parse(result)).toEqual({
           project: {
             name: "Unknown Project",
@@ -500,7 +521,7 @@ color-highlight = blue
         });
       });
       it("should correctly process complete dictionaries with metadata", () => {
-        const result = raw(completeQSDWithMeta);
+        const result = output_raw(completeQSDWithMeta);
         expect(JSON.parse(result)).toEqual({
           project: {
             name: "Unknown Project",
@@ -522,7 +543,7 @@ color-highlight = blue
         });
       });
       it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = raw(completeQSDWithMultilineMeta);
+        const result = output_raw(completeQSDWithMultilineMeta);
         expect(JSON.parse(result)).toEqual({
           project: {
             name: "Unknown Project",
@@ -545,9 +566,9 @@ color-highlight = blue
         });
       });
     });
-    describe("yaml(dict)", () => {
+    describe("output_yaml(dict)", () => {
       it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(yaml(completeQSD));
+        const result = removeTimestamp(output_yaml(completeQSD));
         expect(result).toBe(`
 # Updated on [Timestamp replaced for testing]
 
@@ -569,7 +590,7 @@ tokens:
 `);
       });
       it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(yaml(completeQSDWithMeta));
+        const result = removeTimestamp(output_yaml(completeQSDWithMeta));
         expect(result).toBe(`
 # Updated on [Timestamp replaced for testing]
 
@@ -594,7 +615,9 @@ tokens:
 `);
       });
       it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(yaml(completeQSDWithMultilineMeta));
+        const result = removeTimestamp(
+          output_yaml(completeQSDWithMultilineMeta),
+        );
         expect(result).toBe(`
 # Updated on [Timestamp replaced for testing]
 
@@ -633,17 +656,17 @@ tokens:
       });
     });
     describe("Desktop Palettes", () => {
-      describe("gpl(dict)", () => {
+      describe("output_gpl(dict)", () => {
         it("should correctly extract the colors from a dictionary", () => {
-          const result = removeTimestamp(gpl(completeQSD));
+          const result = removeTimestamp(output_gpl(completeQSD));
           expect(result).toBe(
             "\nGIMP Palette\nName: Unknown Project (v0.0.0)\n# Generator: Quarks System Core\n\n# Owned by Anonymous\n# Unlicense\n\n# DESCRIPTION: N/A\n# COMMENTS: N/A\n\n\n# Updated on [Timestamp replaced for testing]\n\nColumns: 6\n255\t  0\t  0\tMAIN BASE (#ff0000)\n220\t 20\t 60\tMAIN SHADES 0 (#dc143c)\n178\t 34\t 34\tMAIN SHADES 1 (#b22222)\n  0\t255\t  0\tACCENT (#00ff00)\n  0\t  0\t255\tHIGHLIGHT (#0000ff)\n\n",
           );
         });
       });
-      describe("sketchpalette(dict)", () => {
+      describe("output_sketchpalette(dict)", () => {
         it("should correctly extract the colors from a dictionary", () => {
-          const result = sketchpalette(completeQSD);
+          const result = output_sketchpalette(completeQSD);
           expect(JSON.parse(result)).toEqual({
             colors: [
               { red: 1, green: 0, blue: 0, alpha: 1 },

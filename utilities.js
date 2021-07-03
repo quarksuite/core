@@ -14,49 +14,53 @@ import { validator } from "./lib/utilities/color/validator/index.js";
 import { extractor } from "./lib/utilities/color/extractor/index.js";
 import { output, parser } from "./lib/utilities/color/parser/index.js";
 import { QSCError } from "./lib/error.js";
-import { A11Y_PALETTE } from "./lib/data.js";
+import { A11Y_PALETTE, SYSTEM_FONT_STACKS } from "./lib/data.js";
 // Utilities:1 ends here
 
 // [[file:Mod.org::*Functional Programming][Functional Programming:1]]
-export { compose, curry, pipe } from "./lib/utilities/fp.js";
+export {
+  compose as utility_compose,
+  curry as utility_curry,
+  pipe as utility_pipe,
+} from "./lib/utilities/fp.js";
 // Functional Programming:1 ends here
 
 // [[file:Mod.org::*Color Conversion][Color Conversion:1]]
-export function hex(color) {
+export function color_to_hex(color) {
   return compose(curry(convert)("hex"), passthrough)(color);
 }
 
-export function rgb(color) {
+export function color_to_rgb(color) {
   return compose(curry(convert)("rgb"), passthrough)(color);
 }
 
-export function hsl(color) {
+export function color_to_hsl(color) {
   return compose(curry(convert)("hsl"), passthrough)(color);
 }
 
-export function cmyk(color) {
+export function color_to_cmyk(color) {
   return compose(curry(convert)("cmyk"), passthrough)(color);
 }
 
-export function hwb(color) {
+export function color_to_hwb(color) {
   return compose(curry(convert)("hwb"), passthrough)(color);
 }
 
-export function cielab(color) {
+export function color_to_cielab(color) {
   return compose(curry(convert)("cielab"), passthrough)(color);
 }
 
-export function cielch(color) {
+export function color_to_cielch(color) {
   return compose(curry(convert)("cielch"), passthrough)(color);
 }
 
-export function oklab(color) {
+export function color_to_oklab(color) {
   return compose(curry(convert)("oklab"), passthrough)(color);
 }
 // Color Conversion:1 ends here
 
 // [[file:Mod.org::*Color Format Comparison][Color Format Comparison:1]]
-export function compare(formats, color) {
+export function color_format_compare(formats, color) {
   return formats.reduce(
     (acc, format) => ({
       ...acc,
@@ -69,12 +73,12 @@ export function compare(formats, color) {
 // Color Format Comparison:1 ends here
 
 // [[file:Mod.org::*Color Property Adjustment][Color Property Adjustment:1]]
-export function adjust(
+export function color_adjust(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
   color,
 ) {
   return pipe(
-    oklab(color),
+    color_to_oklab(color),
     extractor,
     ([, [L, C, H, A]]) => [
       normalize(200, 0, parseFloat(L) + lightness),
@@ -97,7 +101,9 @@ function revert(color, output) {
         color,
         validator,
         ([format]) =>
-          format === "named" ? hex(output) : convert(format, output)[1],
+          format === "named"
+            ? color_to_hex(output)
+            : convert(format, output)[1],
       ),
     (output) => validator(output)[1],
   );
@@ -105,7 +111,7 @@ function revert(color, output) {
 // Color Property Adjustment:1 ends here
 
 // [[file:Mod.org::*Color Mixture][Color Mixture:1]]
-export function mix({ amount = 50, target }, color) {
+export function color_mix({ amount = 50, target }, color) {
   return pipe(
     calculateMix(color, target, numberFromPercent(amount)),
     ([L, a, b, A]) => [
@@ -122,13 +128,13 @@ export function mix({ amount = 50, target }, color) {
 function calculateMix(original, target, amount) {
   const [OL, Oa, Ob, OA] = pipe(
     original,
-    oklab,
+    color_to_oklab,
     parser,
     ([, components]) => components,
   );
   const [TL, Ta, Tb, TA] = pipe(
     target,
-    oklab,
+    color_to_oklab,
     parser,
     ([, components]) => components,
   );
@@ -143,7 +149,7 @@ function calculateMix(original, target, amount) {
 // Color Mixture:1 ends here
 
 // [[file:Mod.org::*Interpolation][Interpolation:1]]
-export function interpolate(
+export function color_interpolation(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0, values = 7 },
   color,
 ) {
@@ -154,7 +160,7 @@ export function interpolate(
       Array(values + 1)
         .fill(color)
         .map((color, pos) => {
-          return adjust(
+          return color_adjust(
             {
               lightness: calculateProperty(lightness, pos),
               chroma: calculateProperty(chroma, pos),
@@ -172,13 +178,13 @@ export function interpolate(
 // Interpolation:1 ends here
 
 // [[file:Mod.org::*Blending][Blending:1]]
-export function blend({ values = 3, amount = 100, target }, color) {
+export function color_blend({ values = 3, amount = 100, target }, color) {
   return Array.from(
     new Set(
       Array(values)
         .fill(color)
         .map((color, index) => {
-          return mix(
+          return color_mix(
             { amount: amount - (amount / values) * index, target },
             color,
           );
@@ -189,115 +195,122 @@ export function blend({ values = 3, amount = 100, target }, color) {
 // Blending:1 ends here
 
 // [[file:Mod.org::*Material][Material:1]]
-export function material({ light = 95, dark = 70 }, color) {
+export function color_material({ light = 95, dark = 70 }, color) {
   return [
-    ...blend({ amount: light, target: "white", values: 5 }, color).reverse(),
-    mix(
+    ...color_blend(
+      { amount: light, target: "white", values: 5 },
+      color,
+    ).reverse(),
+    color_mix(
       {
         amount: dark,
-        target: mix({ amount: dark / 8, target: "black" }, color),
+        target: color_mix({ amount: dark / 8, target: "black" }, color),
       },
       color,
     ),
-    ...blend({ amount: dark, target: "black", values: 4 }, color),
+    ...color_blend({ amount: dark, target: "black", values: 4 }, color),
   ];
 }
 // Material:1 ends here
 
 // [[file:Mod.org::*Color Schemes][Color Schemes:1]]
-export function complementary(color) {
+export function scheme_complementary(color) {
   return Array(2)
     .fill(color)
-    .map((color, index) => adjust({ hue: 180 * index }, color));
+    .map((color, index) => color_adjust({ hue: 180 * index }, color));
 }
 
-export function analogous(color) {
+export function scheme_analogous(color) {
   return Array(3)
     .fill(color)
-    .map((color, index) => adjust({ hue: 30 * index }, color));
+    .map((color, index) => color_adjust({ hue: 30 * index }, color));
 }
 
-export function splitComplementary(color) {
+export function scheme_splitComplementary(color) {
   return [
-    adjust({}, color),
+    color_adjust({}, color),
     ...Array(2)
-      .fill(adjust({ hue: 180 }, color))
+      .fill(color_adjust({ hue: 180 }, color))
       .map((color, index) =>
-        index === 0 ? adjust({ hue: -30 }, color) : adjust({ hue: 30 }, color)
+        index === 0
+          ? color_adjust({ hue: -30 }, color)
+          : color_adjust({ hue: 30 }, color)
       ),
   ];
 }
 
-export function triadic(color) {
+export function scheme_triadic(color) {
   return Array(3)
     .fill(color)
-    .map((color, index) => adjust({ hue: 120 * index }, color));
+    .map((color, index) => color_adjust({ hue: 120 * index }, color));
 }
 
-export function clash(color) {
-  const [base, left, , right] = square(color);
+export function scheme_clash(color) {
+  const [base, left, , right] = scheme_square(color);
   return [base, left, right];
 }
 
-export function tetradic(color) {
+export function scheme_tetradic(color) {
   return [
     ...Array(2)
       .fill(color)
-      .map((color, index) => adjust({ hue: 60 * index }, color)),
+      .map((color, index) => color_adjust({ hue: 60 * index }, color)),
     ...Array(2)
-      .fill(adjust({ hue: 180 }, color))
-      .map((color, index) => adjust({ hue: 60 * index }, color)),
+      .fill(color_adjust({ hue: 180 }, color))
+      .map((color, index) => color_adjust({ hue: 60 * index }, color)),
   ];
 }
 
-export function square(color) {
+export function scheme_square(color) {
   return Array(4)
     .fill(color)
-    .map((color, index) => adjust({ hue: 90 * index }, color));
+    .map((color, index) => color_adjust({ hue: 90 * index }, color));
 }
 
-export function star(color) {
+export function scheme_star(color) {
   return Array(5)
     .fill(color)
-    .map((color, index) => adjust({ hue: 72 * index }, color));
+    .map((color, index) => color_adjust({ hue: 72 * index }, color));
 }
 
-export function hexagon(color) {
+export function scheme_hexagon(color) {
   return Array(6)
     .fill(color)
-    .map((color, index) => adjust({ hue: 60 * index }, color));
+    .map((color, index) => color_adjust({ hue: 60 * index }, color));
 }
 // Color Schemes:1 ends here
 
 // [[file:Mod.org::*Variants][Variants:1]]
-export function tints({ amount = 95, values = 3 }, color) {
-  return blend({ amount, values, target: "white" }, color);
+export function color_tints({ amount = 95, values = 3 }, color) {
+  return color_blend({ amount, values, target: "white" }, color);
 }
 
-export function tones({ amount = 90, values = 1 }, color) {
-  return blend({ amount, values, target: "gray" }, color);
+export function color_tones({ amount = 90, values = 1 }, color) {
+  return color_blend({ amount, values, target: "gray" }, color);
 }
 
-export function shades({ amount = 80, values = 2 }, color) {
-  return blend({ amount, values, target: "black" }, color);
+export function color_shades({ amount = 80, values = 2 }, color) {
+  return color_blend({ amount, values, target: "black" }, color);
 }
 // Variants:1 ends here
 
 // [[file:Mod.org::*Shifting][Shifting:1]]
-export function shift(
+export function palette_shift(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
   palette,
 ) {
   return Array.from(
     new Set(
-      palette.map((color) => adjust({ lightness, chroma, hue, alpha }, color)),
+      palette.map((color) =>
+        color_adjust({ lightness, chroma, hue, alpha }, color)
+      ),
     ),
   );
 }
 // Shifting:1 ends here
 
 // [[file:Mod.org::*Shuffling][Shuffling:1]]
-export function shuffle(condition, palette) {
+export function palette_sort(condition, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
@@ -310,7 +323,7 @@ export function shuffle(condition, palette) {
 function paletteToOklabValues(palette) {
   return pipe(
     Array.from(palette),
-    (palette) => palette.map((color) => oklab(color)),
+    (palette) => palette.map((color) => color_to_oklab(color)),
     (palette) => palette.map((color) => extractor(color)),
     (palette) => palette.map(([, color]) => color),
     (palette) => palette.map((color) => color.map((C) => parseFloat(C))),
@@ -346,7 +359,7 @@ function paletteFromOklab(input, palette) {
 // Shuffling:1 ends here
 
 // [[file:Mod.org::*Flushing][Flushing:1]]
-export function flush(condition, palette) {
+export function palette_filter(condition, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
@@ -394,7 +407,7 @@ function matchCondition(condition) {
 // Flushing:1 ends here
 
 // [[file:Mod.org::*Colors Project Web Defaults][Colors Project Web Defaults:1]]
-export function clrs(color) {
+export function output_clrs(color) {
   return A11Y_PALETTE[color] || UndefinedInA11yPaletteError(color);
 }
 
@@ -423,7 +436,7 @@ Valid colors in the Colors (https://clrs.cc) project:
 // Colors Project Web Defaults:1 ends here
 
 // [[file:Mod.org::*Color Contrast Ratio][Color Contrast Ratio:1]]
-export function contrast(
+export function palette_contrast(
   { rating = "AA", enhanced = false, background = "white" },
   palette,
 ) {
@@ -459,3 +472,111 @@ function calculateRelativeLuminance(color) {
   );
 }
 // Color Contrast Ratio:1 ends here
+
+// [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
+export function output_systemfonts(fonts = ["sans", "serif", "monospace"]) {
+  const FONTS = (fonts.every(
+    (key) => key === "sans" || key === "serif" || key === "monospace",
+  ) &&
+    fonts) ||
+    NotASystemFontFamilyError();
+
+  return Array.from(new Set(FONTS.map((font) => SYSTEM_FONT_STACKS[font])));
+}
+
+function NotASystemFontFamilyError() {
+  throw new QSCError({
+    name: "Not a System Font Stack",
+    reason: `
+One or more of the values passed is not a valid system font stack target.
+`,
+    suggestion: `
+The available values matching system font stacks are:
+
+sans
+serif
+monospace
+
+Passing in systemfonts() with no parameters will output all of them,
+but you can also narrow the output. Example: ["sans", "monospace"]
+`,
+  });
+}
+// System Font Stacks:1 ends here
+
+// [[file:Mod.org::*Scale Creation][Scale Creation:1]]
+export function ms_create({ values = 6, ratio = 1.5 }, base) {
+  return Array.isArray(ratio)
+    ? Array.from(
+      new Set(
+        Array(values)
+          .fill(base)
+          .reduce(
+            (acc, base, index) => [
+              ...acc,
+              ...ratio.map((r) => base * r ** index),
+            ],
+            [],
+          ),
+      ),
+    )
+      .slice(0, values)
+      .sort((a, b) => a - b)
+    : Array(values)
+      .fill(base)
+      .map((base, index) => base * ratio ** index);
+}
+// Scale Creation:1 ends here
+
+// [[file:Mod.org::*Scale Modification][Scale Modification:1]]
+export function ms_modify(calc, ms) {
+  return unlessMS(
+    ms.map((n) => calc(n)),
+    ms,
+  );
+}
+
+export function ms_split(partitions, ms) {
+  return unlessMS(
+    Array.from(ms).reduceRight(
+      (acc, _n, _index, array) => [...acc, array.splice(0, partitions)],
+      [],
+    ),
+    ms,
+  );
+}
+
+function unlessMS(body, data) {
+  return Array.isArray(data) && data.every((n) => typeof n === "number")
+    ? body
+    : NotARawMSError(data);
+}
+
+function NotARawMSError() {
+  throw new QSCError({
+    name: "Input Must Be Raw Modular Scale",
+    reason: `
+You've called a modular scale function with something other than a modular
+scale. So the function cannot work.
+`,
+    suggestion: `
+Remember that scale modification functions only work on a scale of raw values.
+Do all of your value transformations before you invoke ms_units().
+
+Also, remember to create a raw scale with ms_create(). Such as the following:
+
+ms_create({ values: 8, ratio: 1.618 }, 1);
+`,
+  });
+}
+
+// Scale Modification:1 ends here
+
+// [[file:Mod.org::*Attaching Units][Attaching Units:1]]
+export function ms_units(unit, ms) {
+  return unlessMS(
+    ms.map((n) => `${precision(n)}${unit}`, ms),
+    ms,
+  );
+}
+// Attaching Units:1 ends here

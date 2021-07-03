@@ -12,17 +12,17 @@ import {
 } from "./lib/formatters/index.js";
 import { extractor } from "./lib/utilities/color/extractor/index.js";
 import { parser } from "./lib/utilities/color/parser/index.js";
-import { hex, pipe, rgb } from "./utilities.js";
+import { color_to_hex, color_to_rgb, utility_pipe } from "./utilities.js";
 // Formatters:1 ends here
 
 // [[file:Mod.org::*Custom Properties][Custom Properties:1]]
-export function css(dict) {
+export function output_css(dict) {
   return cssFormatStructure({}, dict);
 }
 // Custom Properties:1 ends here
 
 // [[file:Mod.org::*Preprocessors][Preprocessors:1]]
-export function scss(dict) {
+export function output_scss(dict) {
   return cssFormatStructure(
     {
       doc: ["\n/*!", " */\n"],
@@ -36,7 +36,7 @@ export function scss(dict) {
 // Preprocessors:1 ends here
 
 // [[file:Mod.org::*Preprocessors][Preprocessors:2]]
-export function less(dict) {
+export function output_less(dict) {
   return cssFormatStructure(
     {
       doc: ["\n/*", " */\n"],
@@ -50,7 +50,7 @@ export function less(dict) {
 // Preprocessors:2 ends here
 
 // [[file:Mod.org::*Preprocessors][Preprocessors:3]]
-export function styl(dict) {
+export function output_styl(dict) {
   return cssFormatStructure(
     {
       doc: ["\n/*!", " */\n"],
@@ -64,7 +64,7 @@ export function styl(dict) {
 // Preprocessors:3 ends here
 
 // [[file:Mod.org::*Data Exports][Data Exports:1]]
-export function raw(dict) {
+export function output_raw(dict) {
   const { project, ...tokens } = dict;
   const { bump = "manual" } = project || MissingProjectMetadataError();
 
@@ -81,7 +81,7 @@ export function raw(dict) {
 // Data Exports:1 ends here
 
 // [[file:Mod.org::*Data Exports][Data Exports:2]]
-export function yaml(dict) {
+export function output_yaml(dict) {
   const { project, ...tokens } = dict;
   const { bump = "manual" } = project || MissingProjectMetadataError();
 
@@ -123,7 +123,7 @@ ${
 // Data Exports:2 ends here
 
 // [[file:Mod.org::*GIMP/Inkscape][GIMP/Inkscape:1]]
-export function gpl(dict) {
+export function output_gpl(dict) {
   const {
     project,
     color: { metadata, ...palette },
@@ -158,7 +158,7 @@ export function gpl(dict) {
         GIMPPaletteSwatch(value),
         "\t",
         tokenStringIdentifier(head, KEY, " "),
-        ` (${hex(value)})`,
+        ` (${color_to_hex(value)})`,
         "\n",
       );
     }, "");
@@ -187,16 +187,21 @@ ${assemble("", palette)}
 }
 
 function GIMPPaletteSwatch(color) {
-  return pipe(color, rgb, extractor, ([, components]) =>
-    components
-      .map((C) => C.padStart(3, " "))
-      .slice(0, 3)
-      .join("\t"));
+  return utility_pipe(
+    color,
+    color_to_rgb,
+    extractor,
+    ([, components]) =>
+      components
+        .map((C) => C.padStart(3, " "))
+        .slice(0, 3)
+        .join("\t"),
+  );
 }
 // GIMP/Inkscape:1 ends here
 
 // [[file:Mod.org::*Sketch][Sketch:1]]
-export function sketchpalette(dict) {
+export function output_sketchpalette(dict) {
   const {
     color: { metadata, ...palette },
   } = dict;
@@ -224,11 +229,16 @@ export function sketchpalette(dict) {
 }
 
 function sketchSwatch(color) {
-  return pipe(color, rgb, parser, ([, [red, green, blue, alpha]]) => ({
-    red,
-    green,
-    blue,
-    alpha,
-  }));
+  return utility_pipe(
+    color,
+    color_to_rgb,
+    parser,
+    ([, [red, green, blue, alpha]]) => ({
+      red,
+      green,
+      blue,
+      alpha,
+    }),
+  );
 }
 // Sketch:1 ends here
