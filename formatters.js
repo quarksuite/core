@@ -183,7 +183,7 @@ ${
 
 Columns: 6
 ${assemble("", palette)}
-`.trimStart();
+`;
 }
 
 function GIMPPaletteSwatch(color) {

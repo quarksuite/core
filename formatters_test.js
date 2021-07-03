@@ -93,6 +93,12 @@ describe("Formatters", () => {
       expect(() => Formatter(invalidSchema)).toThrow())
   );
 
+  it("should allow automatic versioning", () => {
+    expect(checkVersion(JSON.parse(raw(goGoGadgetVersioning)))).toBe("0.1.0");
+    expect(checkVersion(JSON.parse(raw(goGoGadgetVersioning)))).toBe("0.2.0");
+    expect(checkVersion(JSON.parse(raw(goGoGadgetVersioning)))).toBe("0.3.0");
+  });
+
   describe("CSS Formats", () => {
     describe("css(dict)", () => {
       it("should correctly process complete dictionaries", () => {
@@ -472,6 +478,8 @@ color-highlight = blue
 `);
       });
     });
+  });
+  describe("Data Exports", () => {
     describe("raw(dict)", () => {
       it("should correctly process complete dictionaries", () => {
         const result = raw(completeQSD);
@@ -587,7 +595,6 @@ tokens:
       });
       it("should correctly process complete dictionaries", () => {
         const result = removeTimestamp(yaml(completeQSDWithMultilineMeta));
-        console.log(result);
         expect(result).toBe(`
 # Updated on [Timestamp replaced for testing]
 
@@ -625,17 +632,52 @@ tokens:
 `);
       });
     });
+    describe("Desktop Palettes", () => {
+      describe("gpl(dict)", () => {
+        it("should correctly extract the colors from a dictionary", () => {
+          const result = removeTimestamp(gpl(completeQSD));
+          expect(result).toBe(
+            "\nGIMP Palette\nName: Unknown Project (v0.0.0)\n# Generator: Quarks System Core\n\n# Owned by Anonymous\n# Unlicense\n\n# DESCRIPTION: N/A\n# COMMENTS: N/A\n\n\n# Updated on [Timestamp replaced for testing]\n\nColumns: 6\n255\t  0\t  0\tMAIN BASE (#ff0000)\n220\t 20\t 60\tMAIN SHADES 0 (#dc143c)\n178\t 34\t 34\tMAIN SHADES 1 (#b22222)\n  0\t255\t  0\tACCENT (#00ff00)\n  0\t  0\t255\tHIGHLIGHT (#0000ff)\n\n",
+          );
+        });
+      });
+      describe("sketchpalette(dict)", () => {
+        it("should correctly extract the colors from a dictionary", () => {
+          const result = sketchpalette(completeQSD);
+          expect(JSON.parse(result)).toEqual({
+            colors: [
+              { red: 1, green: 0, blue: 0, alpha: 1 },
+              {
+                red: 0.8627450980392157,
+                green: 0.0784313725490196,
+                blue: 0.23529411764705882,
+                alpha: 1,
+              },
+              {
+                red: 0.6980392156862745,
+                green: 0.13333333333333333,
+                blue: 0.13333333333333333,
+                alpha: 1,
+              },
+              { red: 0, green: 1, blue: 0, alpha: 1 },
+              { red: 0, green: 0, blue: 1, alpha: 1 },
+            ],
+            pluginVersion: "1.4",
+            compatibleVersion: "1.4",
+          });
+        });
+      });
+    });
   });
 });
-
-run();
 
 benchmark.Bench({
   name: `Formatters perf`,
   fn() {
     AllFormatters.forEach((Formatter) => Formatter(completeQSDWithMeta));
   },
-  steps: 250,
+  steps: 1024,
 });
 
 benchmark.runBench().then(benchmark.Result());
+run();

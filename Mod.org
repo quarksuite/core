@@ -44,7 +44,7 @@ suite from =index.html=.
 import {
   bumpVersion,
   cssFormatStructure,
-  GIMPPaletteSwatch,
+  metadataEmitter,
   MissingProjectMetadataError,
   timestampEmitter,
   tokenStringIdentifier,
@@ -255,15 +255,20 @@ Name: ${name} (v${version})
 
 # Owned by ${author}
 # ${license}
-
-# Description: ${description}
-# Comments: ${comments}
-
+${
+    metadataEmitter(
+      { commentDelim: ["", "# ", "\n\n"] },
+      {
+        description,
+        comments,
+      },
+    )
+  }
 # ${timestampEmitter()}
 
 Columns: 6
 ${assemble("", palette)}
-`.trimStart();
+`;
 }
 
 function GIMPPaletteSwatch(color) {
