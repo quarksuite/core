@@ -21,7 +21,7 @@
       - [[#color-accessibility-a11y][Color Accessibility (A11y)]]
   - [[#internal][Internal]]
     - [[#library][Library]]
-      - [[#formatters-1][Formatters]]
+      - [[#formatter-helpers][Formatter Helpers]]
       - [[#utilities-1][Utilities]]
       - [[#error-handling][Error Handling]]
       - [[#data][Data]]
@@ -41,7 +41,20 @@ suite from =index.html=.
 :END:
 
 #+BEGIN_SRC js
-import { QSCError } from "../error.js";
+import {
+  bumpVersion,
+  cssFormatStructure,
+  GIMPPaletteSwatch,
+  MissingProjectMetadataError,
+  timestampEmitter,
+  tokenStringIdentifier,
+  yamlDictScale,
+  yamlDictSubcategory,
+  yamlDictValue,
+} from "./lib/formatters/index.js";
+import { extractor } from "./lib/utilities/color/extractor/index.js";
+import { parser } from "./lib/utilities/color/parser/index.js";
+import { hex, pipe, rgb } from "./utilities.js";
 #+END_SRC
 
 At the top layer sit the formatters. Their only purpose is to format Quarks System Dictionaries into
@@ -191,6 +204,116 @@ ${
 Quarks System Core supports GIMP/Inkscape and Sketch palette formatting as of v1. The Inkscape
 support was added because I occasionally create logos for stuff, and Sketch was added because it's
 a popular app and I didn't realize the Sketch palette plugin schema was so light.
+
+***** GIMP/Inkscape
+
+#+BEGIN_SRC js
+export function gpl(dict) {
+  const {
+    project,
+    color: { metadata, ...palette },
+  } = dict;
+  let {
+    name,
+    author,
+    version,
+    license,
+    bump = "manual",
+    metadata: { description = "N/A", comments = "N/A" } = {},
+  } = project || MissingProjectMetadataError(project);
+
+  // Check if bump matches an automation keyword
+  const autobump = ["major", "minor", "patch", "pre", "build"].some(
+    (keyword) => keyword === bump,
+  );
+  // Then bump the version
+  autobump && bumpVersion(project);
+
+  const assemble = (head, node) =>
+    Object.entries(node).reduce((str, [key, value]) => {
+      const KEY = key.toUpperCase();
+
+      if (typeof value === "object") {
+        return str.concat(
+          assemble(tokenStringIdentifier(head, KEY, " "), value),
+        );
+      }
+
+      return str.concat(
+        GIMPPaletteSwatch(value),
+        "\t",
+        tokenStringIdentifier(head, KEY, " "),
+        ` (${hex(value)})`,
+        "\n",
+      );
+    }, "");
+
+  return `
+GIMP Palette
+Name: ${name} (v${version})
+# Generator: Quarks System Core
+
+# Owned by ${author}
+# ${license}
+
+# Description: ${description}
+# Comments: ${comments}
+
+# ${timestampEmitter()}
+
+Columns: 6
+${assemble("", palette)}
+`.trimStart();
+}
+
+function GIMPPaletteSwatch(color) {
+  return pipe(color, rgb, extractor, ([, components]) =>
+    components
+      .map((C) => C.padStart(3, " "))
+      .slice(0, 3)
+      .join("\t"));
+}
+#+END_SRC
+
+***** Sketch
+
+#+BEGIN_SRC js
+export function sketchpalette(dict) {
+  const {
+    color: { metadata, ...palette },
+  } = dict;
+
+  const assemble = (tree) =>
+    Object.values(tree)
+      .map((data) => {
+        if (Array.isArray(data)) {
+          return data.map((color) => sketchSwatch(color)).flat();
+        }
+
+        if (typeof data === "object") {
+          return assemble(data);
+        }
+
+        return sketchSwatch(data);
+      })
+      .flat();
+
+  return JSON.stringify({
+    colors: assemble(palette),
+    pluginVersion: "1.4",
+    compatibleVersion: "1.4",
+  });
+}
+
+function sketchSwatch(color) {
+  return pipe(color, rgb, parser, ([, [red, green, blue, alpha]]) => ({
+    red,
+    green,
+    blue,
+    alpha,
+  }));
+}
+#+END_SRC
 
 ** Enhancements
 
@@ -703,12 +826,10 @@ function calculateRelativeLuminance(color) {
 }
 #+END_SRC
 
-
-
 ** Internal
 
 *** Library
-**** Formatters
+**** Formatter Helpers
 :PROPERTIES:
 :header-args:js: :tangle "./lib/formatters/index.js" :comments link
 :END:
@@ -825,7 +946,7 @@ This helper provides a convenient way to assemble metadata as a comment block or
 the format. It's used for both dictionary metadata and project metadata.
 
 #+BEGIN_SRC js
-function metadataEmitter(
+export function metadataEmitter(
   {
     commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
     str = "",
@@ -938,7 +1059,7 @@ through what it's already collected.
 So =color.main.base= becomes =--color-main= in CSS for example.
 
 #+BEGIN_SRC js
-function tokenStringIdentifier(collected, current, delimiter) {
+export function tokenStringIdentifier(collected, current, delimiter) {
   return current === "base"
     ? collected
     : collected
@@ -1813,6 +1934,7 @@ export const hueCorrection = (hue) =>
 
 #+BEGIN_SRC js
 import { QSCError } from "../../../error.js";
+import { NAMED_COLOR_KEYWORDS } from "../../../data.js";
 #+END_SRC
 
 Before a color can be converted, we must be sure it's in fact a color.
@@ -1950,7 +2072,7 @@ const HUE_TOKEN = new RegExp(
 
 #+BEGIN_SRC js
 function namedValidator(color) {
-  return !!NAMED_COLORS[color];
+  return !!NAMED_COLOR_KEYWORDS[color];
 }
 #+END_SRC
 
