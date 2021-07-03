@@ -14,6 +14,11 @@
   - [[#schema][Schema]]
   - [[#developer-tools][Developer Tools]]
     - [[#utilities][Utilities]]
+      - [[#functional-programming][Functional Programming]]
+      - [[#color][Color]]
+      - [[#color-scales-palettes][Color Scales (Palettes)]]
+      - [[#color-scale-adjustments][Color Scale Adjustments]]
+      - [[#color-accessibility-a11y][Color Accessibility (A11y)]]
   - [[#internal][Internal]]
     - [[#library][Library]]
       - [[#formatters-1][Formatters]]
@@ -197,6 +202,509 @@ a popular app and I didn't realize the Sketch palette plugin schema was so light
 :PROPERTIES:
 :header-args:js: :tangle "./utilities.js" :comments link
 :END:
+
+#+BEGIN_SRC js
+import { compose, curry, pipe } from "./lib/utilities/fp.js";
+import { convert, passthrough } from "./lib/utilities/color/converter/index.js";
+import { rgbToLrgb } from "./lib/utilities/color/converter/color_from_rgb.js";
+import {
+  hueCorrection,
+  normalize,
+  numberFromPercent,
+  numberToPercent,
+  precision,
+  radToDegrees,
+} from "./lib/utilities/color/converter/math.js";
+import { validator } from "./lib/utilities/color/validator/index.js";
+import { extractor } from "./lib/utilities/color/extractor/index.js";
+import { output, parser } from "./lib/utilities/color/parser/index.js";
+import { QSCError } from "./lib/error.js";
+import { A11Y_PALETTE } from "./lib/data.js";
+#+END_SRC
+
+**** Functional Programming
+
+#+BEGIN_SRC js
+export { compose, curry, pipe } from "./lib/utilities/fp.js";
+#+END_SRC
+
+**** Color
+
+***** Color Conversion
+
+#+BEGIN_SRC js
+export function hex(color) {
+  return compose(curry(convert)("hex"), passthrough)(color);
+}
+
+export function rgb(color) {
+  return compose(curry(convert)("rgb"), passthrough)(color);
+}
+
+export function hsl(color) {
+  return compose(curry(convert)("hsl"), passthrough)(color);
+}
+
+export function cmyk(color) {
+  return compose(curry(convert)("cmyk"), passthrough)(color);
+}
+
+export function hwb(color) {
+  return compose(curry(convert)("hwb"), passthrough)(color);
+}
+
+export function cielab(color) {
+  return compose(curry(convert)("cielab"), passthrough)(color);
+}
+
+export function cielch(color) {
+  return compose(curry(convert)("cielch"), passthrough)(color);
+}
+
+export function oklab(color) {
+  return compose(curry(convert)("oklab"), passthrough)(color);
+}
+#+END_SRC
+
+***** Color Format Comparison
+
+#+BEGIN_SRC js
+export function compare(formats, color) {
+  return formats.reduce(
+    (acc, format) => ({
+      ...acc,
+      original: color,
+      [format.name]: format(color),
+    }),
+    {},
+  );
+}
+#+END_SRC
+
+***** Color Property Adjustment
+
+#+BEGIN_SRC js
+export function adjust(
+  { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
+  color,
+) {
+  return pipe(
+    oklab(color),
+    extractor,
+    ([, [L, C, H, A]]) => [
+      normalize(200, 0, parseFloat(L) + lightness),
+      normalize(1, 0, parseFloat(C) + numberFromPercent(chroma)),
+      hueCorrection(parseFloat(H) + hue),
+      parseFloat(A ?? 1) + numberFromPercent(alpha),
+    ],
+    ([L, C, H, A]) => output(["oklab", [String(L).concat("%"), C, H, A]]),
+    curry(revert)(color),
+  );
+}
+
+function revert(color, output) {
+  return pipe(
+    output,
+    validator,
+    ([, output]) => [output, color],
+    ([output, color]) =>
+      pipe(
+        color,
+        validator,
+        ([format]) =>
+          format === "named" ? hex(output) : convert(format, output)[1],
+      ),
+    (output) => validator(output)[1],
+  );
+}
+#+END_SRC
+
+***** Color Mixture
+
+#+BEGIN_SRC js
+export function mix({ amount = 50, target }, color) {
+  return pipe(
+    calculateMix(color, target, numberFromPercent(amount)),
+    ([L, a, b, A]) => [
+      numberToPercent(L).toString().concat("%"),
+      Math.sqrt(a ** 2 + b ** 2).toFixed(4),
+      hueCorrection(radToDegrees(Math.atan2(b, a))),
+      A,
+    ],
+    (components) => output(["oklab", components]),
+    curry(revert)(color),
+  );
+}
+
+function calculateMix(original, target, amount) {
+  const [OL, Oa, Ob, OA] = pipe(
+    original,
+    oklab,
+    parser,
+    ([, components]) => components,
+  );
+  const [TL, Ta, Tb, TA] = pipe(
+    target,
+    oklab,
+    parser,
+    ([, components]) => components,
+  );
+
+  return [
+    [OL, TL],
+    [Oa, Ta],
+    [Ob, Tb],
+    [OA, TA],
+  ].map(([X, Y]) => X + (Y - X) * amount);
+}
+#+END_SRC
+
+**** Color Scales (Palettes)
+
+***** Interpolation
+
+#+BEGIN_SRC js
+export function interpolate(
+  { lightness = 0, chroma = 0, hue = 0, alpha = 0, values = 7 },
+  color,
+) {
+  const calculateProperty = (property, pos) =>
+    property - (property / values - 1) * pos;
+  return Array.from(
+    new Set(
+      Array(values + 1)
+        .fill(color)
+        .map((color, pos) => {
+          return adjust(
+            {
+              lightness: calculateProperty(lightness, pos),
+              chroma: calculateProperty(chroma, pos),
+              hue: calculateProperty(hue, pos),
+              alpha: calculateProperty(alpha, pos),
+            },
+            color,
+          );
+        }),
+    ),
+  )
+    .reverse()
+    .slice(0, -1);
+}
+#+END_SRC
+
+***** Blending
+
+#+BEGIN_SRC js
+export function blend({ values = 3, amount = 100, target }, color) {
+  return Array.from(
+    new Set(
+      Array(values)
+        .fill(color)
+        .map((color, index) => {
+          return mix(
+            { amount: amount - (amount / values) * index, target },
+            color,
+          );
+        }),
+    ),
+  ).reverse();
+}
+#+END_SRC
+
+***** Material
+
+#+BEGIN_SRC js
+export function material({ light = 95, dark = 70 }, color) {
+  return [
+    ...blend({ amount: light, target: "white", values: 5 }, color).reverse(),
+    mix(
+      {
+        amount: dark,
+        target: mix({ amount: dark / 8, target: "black" }, color),
+      },
+      color,
+    ),
+    ...blend({ amount: dark, target: "black", values: 4 }, color),
+  ];
+}
+#+END_SRC
+
+***** Color Schemes
+
+#+BEGIN_SRC js
+export function complementary(color) {
+  return Array(2)
+    .fill(color)
+    .map((color, index) => adjust({ hue: 180 * index }, color));
+}
+
+export function analogous(color) {
+  return Array(3)
+    .fill(color)
+    .map((color, index) => adjust({ hue: 30 * index }, color));
+}
+
+export function splitComplementary(color) {
+  return [
+    adjust({}, color),
+    ...Array(2)
+      .fill(adjust({ hue: 180 }, color))
+      .map((color, index) =>
+        index === 0 ? adjust({ hue: -30 }, color) : adjust({ hue: 30 }, color)
+      ),
+  ];
+}
+
+export function triadic(color) {
+  return Array(3)
+    .fill(color)
+    .map((color, index) => adjust({ hue: 120 * index }, color));
+}
+
+export function clash(color) {
+  const [base, left, , right] = square(color);
+  return [base, left, right];
+}
+
+export function tetradic(color) {
+  return [
+    ...Array(2)
+      .fill(color)
+      .map((color, index) => adjust({ hue: 60 * index }, color)),
+    ...Array(2)
+      .fill(adjust({ hue: 180 }, color))
+      .map((color, index) => adjust({ hue: 60 * index }, color)),
+  ];
+}
+
+export function square(color) {
+  return Array(4)
+    .fill(color)
+    .map((color, index) => adjust({ hue: 90 * index }, color));
+}
+
+export function star(color) {
+  return Array(5)
+    .fill(color)
+    .map((color, index) => adjust({ hue: 72 * index }, color));
+}
+
+export function hexagon(color) {
+  return Array(6)
+    .fill(color)
+    .map((color, index) => adjust({ hue: 60 * index }, color));
+}
+#+END_SRC
+
+***** Variants
+
+#+BEGIN_SRC js
+export function tints({ amount = 95, values = 3 }, color) {
+  return blend({ amount, values, target: "white" }, color);
+}
+
+export function tones({ amount = 90, values = 1 }, color) {
+  return blend({ amount, values, target: "gray" }, color);
+}
+
+export function shades({ amount = 80, values = 2 }, color) {
+  return blend({ amount, values, target: "black" }, color);
+}
+#+END_SRC
+
+**** Color Scale Adjustments
+
+***** Shifting
+
+#+BEGIN_SRC js
+export function shift(
+  { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
+  palette,
+) {
+  return Array.from(
+    new Set(
+      palette.map((color) => adjust({ lightness, chroma, hue, alpha }, color)),
+    ),
+  );
+}
+#+END_SRC
+
+***** Shuffling
+
+#+BEGIN_SRC js
+export function shuffle(condition, palette) {
+  const [, color] = validator(palette[0]);
+  return pipe(
+    palette,
+    paletteToOklabValues,
+    curry(sortPalette)(condition),
+    curry(paletteFromOklab)(color),
+  );
+}
+
+function paletteToOklabValues(palette) {
+  return pipe(
+    Array.from(palette),
+    (palette) => palette.map((color) => oklab(color)),
+    (palette) => palette.map((color) => extractor(color)),
+    (palette) => palette.map(([, color]) => color),
+    (palette) => palette.map((color) => color.map((C) => parseFloat(C))),
+  );
+}
+
+function sortPalette(condition, palette) {
+  const sortingConditions = new Map([
+    ["lightness", ([L], [LL]) => L - LL],
+    ["lightness:desc", ([L], [LL]) => LL - L],
+    ["chroma", ([, C], [, CC]) => C - CC],
+    ["chroma:desc", ([, C], [, CC]) => CC - C],
+    ["hue", ([, , H], [, , HH]) => H - HH],
+    ["hue:desc", ([, , H], [, , HH]) => HH - H],
+    ["alpha", ([, , , A], [, , , AA]) => A - AA],
+    ["alpha:desc", ([, , , A], [, , , AA]) => AA - A],
+  ]);
+
+  return palette.sort(sortingConditions.get(condition));
+}
+
+function paletteFromOklab(input, palette) {
+  return pipe(
+    palette,
+    (palette) =>
+      palette.map(([L, C, H, A]) =>
+        output(["oklab", [L.toString().concat("%"), C, H, A ?? 1]])
+      ),
+    (palette) => new Set(palette.map((color) => revert(input, color))),
+    Array.from,
+  );
+}
+#+END_SRC
+
+***** Flushing
+
+#+BEGIN_SRC js
+export function flush(condition, palette) {
+  const [, color] = validator(palette[0]);
+  return pipe(
+    palette,
+    paletteToOklabValues,
+    curry(flushPalette)(condition),
+    curry(paletteFromOklab)(color),
+  );
+}
+
+function flushPalette(condition, palette) {
+  return palette.filter(parseFlushCondition(condition));
+}
+
+function parseFlushCondition(condition) {
+  const [PROPERTY, VALUES] = matchCondition(condition);
+  const [MIN, MAX] = VALUES.split("&");
+  if (MAX) {
+    return new Map([
+      ["lightness:", ([L]) => L >= MIN && L <= MAX],
+      [
+        "chroma:",
+        ([, C]) => C >= numberFromPercent(MIN) && C <= numberFromPercent(MAX),
+      ],
+      ["hue:", ([, , H]) => H >= MIN && H <= MAX],
+      [
+        "alpha:",
+        ([, , H]) => H >= numberFromPercent(MIN) && H <= numberFromPercent(MAX),
+      ],
+    ]).get(PROPERTY);
+  }
+
+  return new Map([
+    ["lightness:", ([L]) => L >= MIN],
+    ["chroma:", ([, C]) => C >= numberFromPercent(MIN)],
+    ["hue:", ([, , H]) => H >= MIN],
+    ["alpha:", ([, , , A]) => A >= numberFromPercent(MIN)],
+  ]).get(PROPERTY);
+}
+
+function matchCondition(condition) {
+  return condition.match(
+    /(?:(?:lightness|chroma|hue|alpha):|(?:[\d.]+))(?:&[\d.]+)?/g,
+  );
+}
+#+END_SRC
+
+**** Color Accessibility (A11y)
+
+***** Colors Project Web Defaults
+
+#+BEGIN_SRC js
+export function clrs(color) {
+  return A11Y_PALETTE[color] || UndefinedInA11yPaletteError(color);
+}
+
+function UndefinedInA11yPaletteError() {
+  throw new QSCError({
+    name: "No Matching Keyword in A11y Palette",
+    reason: `
+This error throws when the input doesn't match any defined
+colors in the Colors project.
+`,
+    suggestion: `
+Valid colors in the Colors (https://clrs.cc) project:
+
++--------------------------------------+
+| navy   | blue      | aqua   | teal   |
++--------------------------------------+
+| olive  | green     | lime   | yellow |
++--------------------------------------+
+| maroon | fuschia   | purple | black  |
++--------------------------------------+
+| black  | gray/grey | silver | white  |
++--------------------------------------+
+`,
+  });
+}
+#+END_SRC
+
+***** Color Contrast Ratio
+
+#+BEGIN_SRC js
+export function contrast(
+  { rating = "AA", enhanced = false, background = "white" },
+  palette,
+) {
+  return palette.filter((foreground) => {
+    const CONTRAST_RATIO = calculateWCAGContrastRatio(background, foreground);
+    return contrastCriteria(CONTRAST_RATIO, enhanced).get(rating);
+  });
+}
+
+function calculateWCAGContrastRatio(a, b) {
+  return [a, b]
+    .map((color) => calculateRelativeLuminance(color))
+    .sort((a, b) => b - a)
+    .map((L) => L + 0.05)
+    .reduce((L1, L2) => precision(L1 / L2));
+}
+
+function contrastCriteria(ratio, enhanced) {
+  return new Map([
+    ["AA", enhanced ? ratio >= 4.5 : ratio >= 3.1],
+    ["AAA", enhanced ? ratio >= 7 : ratio >= 4.5],
+  ]);
+}
+
+function calculateRelativeLuminance(color) {
+  return pipe(
+    color,
+    rgb,
+    parser,
+    ([, [R, G, B]]) => [R, G, B],
+    rgbToLrgb,
+    ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B,
+  );
+}
+#+END_SRC
+
+
+
 ** Internal
 
 *** Library
@@ -658,7 +1166,7 @@ const OUTPUT_FROM_RGB = {
   oklab: oklabFromRgb,
 };
 
-function passthrough([, color]) {
+export function passthrough([, color]) {
   return color;
 }
 
@@ -1087,7 +1595,7 @@ const D50_CHROMATIC_ADAPTATION = [
 ];
 
 function rgbToCieXYZ([R, G, B]) {
-  const [LR, LG, LB] = rgbToLinearRGB([R, G, B]);
+  const [LR, LG, LB] = rgbToLrgb([R, G, B]);
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
     ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
@@ -1100,7 +1608,7 @@ function rgbToCieXYZ([R, G, B]) {
   return [X, Y, Z];
 }
 
-function rgbToLinearRGB([R, G, B]) {
+export function rgbToLrgb([R, G, B]) {
   return [R, G, B].map((V) =>
     V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4
   );
@@ -1112,7 +1620,7 @@ function rgbToLinearRGB([R, G, B]) {
 #+BEGIN_SRC js
 export function oklabFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
-  const [l, a, b] = linearRGBToOklab([R, G, B]);
+  const [l, a, b] = lrgbToOklab([R, G, B]);
 
   const L = numberToPercent(l).toString().concat("%");
   const c = normalize(0.5, 0, +Math.sqrt(a ** 2 + b ** 2).toFixed(4)); // toPrecision isn't strict enough
@@ -1134,8 +1642,8 @@ const RGB_OKLAB_MATRIX = [
   [0.0259040371, 0.7827717662, 0.808675766],
 ];
 
-function linearRGBToOklab([R, G, B]) {
-  const [LR, LG, LB] = rgbToLinearRGB([R, G, B]);
+function lrgbToOklab([R, G, B]) {
+  const [LR, LG, LB] = rgbToLrgb([R, G, B]);
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
     ([L, M, S]) => L * LR + M * LG + S * LB,

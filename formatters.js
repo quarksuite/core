@@ -1,13 +1,5 @@
 // [[file:Mod.org::*Formatters][Formatters:1]]
-import {
-  bumpVersion,
-  cssFormatStructure,
-  MissingProjectMetadataError,
-  timestampEmitter,
-  yamlDictScale,
-  yamlDictSubcategory,
-  yamlDictValue,
-} from "./lib/formatters/index.js";
+import { QSCError } from "../error.js";
 // Formatters:1 ends here
 
 // [[file:Mod.org::*Custom Properties][Custom Properties:1]]
