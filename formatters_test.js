@@ -762,13 +762,14 @@ tokens:
   });
 });
 
-benchmark.Bench({
-  name: `Formatters perf`,
-  fn() {
-    AllFormatters.forEach((Formatter) => Formatter(completeQSDWithMeta));
-  },
-  steps: 1024,
-});
+AllFormatters.forEach((Formatter) =>
+  benchmark.Bench({
+    name: `${Formatter.name} perf`,
+    fn() {
+      return Formatter(completeQSD);
+    },
+    steps: 100,
+  })
+);
 
-benchmark.runBench().then(benchmark.Result());
-run();
+benchmark.runBench().then(benchmark.Result(7)).then(run());
