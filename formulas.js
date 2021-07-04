@@ -1,32 +1,45 @@
 // [[file:Mod.org::*Formulas][Formulas:1]]
-
+import { precision } from "./lib/utilities/color/index.js";
+import {
+  color_blend,
+  color_interpolation,
+  color_material,
+  color_shades,
+  color_tints,
+  color_to_hex,
+  ms_modify,
+  ms_units,
+  output_systemfonts,
+  utility_curry,
+  utility_pipe,
+} from "./utilities.js";
 // Formulas:1 ends here
 
 // [[file:Mod.org::*Palette Formulas][Palette Formulas:1]]
 export function MaterialPalette(
   { light = 95, dark = 70, scheme = undefined, format = undefined },
-  color
+  color,
 ) {
-  return pipe(
+  return utility_pipe(
     color,
-    curry(paletteSettings)({ format, scheme }),
-    curry(generateMaterialPalette)({ light, dark })
+    utility_curry(paletteSettings)({ format, scheme }),
+    utility_curry(generateMaterialPalette)({ light, dark }),
   );
 }
 
 function paletteSettings({ scheme, format }, color) {
-  return pipe(
+  return utility_pipe(
     color,
-    color => (format ? format(color) : hex(color)),
-    color => (scheme ? scheme(color) : [color])
+    (color) => (format ? format(color) : color_to_hex(color)),
+    (color) => (scheme ? scheme(color) : [color]),
   );
 }
 
 function generateMaterialPalette({ light, dark }, palette) {
-  return pipe(
+  return utility_pipe(
     palette,
-    palette => palette.map(color => material({ light, dark }, color)),
-    palette =>
+    (palette) => palette.map((color) => color_material({ light, dark }, color)),
+    (palette) =>
       palette.reduce((acc, value, index) => {
         return {
           ...acc,
@@ -34,13 +47,13 @@ function generateMaterialPalette({ light, dark }, palette) {
             ...value.reduce(
               (a, v, i) => ({
                 ...a,
-                ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v })
+                ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
               }),
-              {}
-            )
-          }
+              {},
+            ),
+          },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -50,14 +63,17 @@ export function StandardPalette(
     scheme = undefined,
     contrast = 95,
     tints = 3,
-    shades = 2
+    shades = 2,
   },
-  color
+  color,
 ) {
-  return pipe(
+  return utility_pipe(
     color,
-    curry(paletteSettings)({ format, scheme }),
-    curry(generateStandardPalette)({ contrast, values: { tints, shades } })
+    utility_curry(paletteSettings)({ format, scheme }),
+    utility_curry(generateStandardPalette)({
+      contrast,
+      values: { tints, shades },
+    }),
   );
 }
 
@@ -70,16 +86,19 @@ export function InterpolatedPalette(
     contrast = 95,
     tints = 2,
     shades = 2,
-    format = undefined
+    format = undefined,
   },
-  color
+  color,
 ) {
-  return pipe(
-    interpolate(
+  return utility_pipe(
+    color_interpolation(
       { lightness, chroma, hue, values },
-      format ? format(color) : hex(color)
+      format ? format(color) : color_to_hex(color),
     ),
-    curry(generateStandardPalette)({ contrast, values: { tints, shades } })
+    utility_curry(generateStandardPalette)({
+      contrast,
+      values: { tints, shades },
+    }),
   );
 }
 
@@ -91,42 +110,53 @@ export function BlendedPalette(
     contrast = 95,
     tints = 2,
     shades = 2,
-    format = undefined
+    format = undefined,
   },
-  color
+  color,
 ) {
-  return pipe(
-    blend({ values, amount, target }, format ? format(color) : hex(color)),
-    curry(generateStandardPalette)({
+  return utility_pipe(
+    color_blend(
+      { values, amount, target },
+      format ? format(color) : color_to_hex(color),
+    ),
+    utility_curry(generateStandardPalette)({
       contrast,
-      values: { tints, shades }
-    })
+      values: { tints, shades },
+    }),
   );
 }
 
-
 function generateStandardPalette({ contrast, values }, palette) {
-  return pipe(
+  return utility_pipe(
     palette,
-    palette =>
+    (palette) =>
       palette.map((color, index) => {
         const category = paletteCategories(index);
-        const light = tints({ values: values.tints, amount: contrast }, color);
-        const dark = shades(
-          { values: values.shades, amount: contrast / 1.25 },
-          color
+        const light = color_tints(
+          {
+            values: values.tints,
+            amount: contrast,
+          },
+          color,
         );
-        const fillDark = shades(
-          { values: values.tints + values.shades, amount: contrast / 1.25 },
-          color
+        const dark = color_shades(
+          { values: values.shades, amount: contrast / 1.25 },
+          color,
+        );
+        const fillDark = color_shades(
+          {
+            values: values.tints + values.shades,
+            amount: contrast / 1.25,
+          },
+          color,
         );
 
         return [
           category,
-          category === "main" ? [color, light, dark] : [color, fillDark]
+          category === "main" ? [color, light, dark] : [color, fillDark],
         ];
       }),
-    palette =>
+    (palette) =>
       palette.reduce((acc, [key, data], index) => {
         const [base, ...variants] = data;
         const [a, b] = variants;
@@ -137,13 +167,13 @@ function generateStandardPalette({ contrast, values }, palette) {
             base,
             ...(variants.length === 2
               ? {
-                  light: NumericScale(a),
-                  dark: NumericScale(b)
-                }
-              : { dark: NumericScale(a) })
-          }
+                light: NumericColorScale(a),
+                dark: NumericColorScale(b),
+              }
+              : { dark: NumericColorScale(a) }),
+          },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -154,7 +184,7 @@ function paletteCategories(index) {
     [2, "highlight"],
     [3, "link"],
     [4, "spot"],
-    [5, "splash"]
+    [5, "splash"],
   ]).get(index);
 }
 // Palette Formulas:1 ends here
@@ -162,8 +192,8 @@ function paletteCategories(index) {
 // [[file:Mod.org::*Typography Formulas][Typography Formulas:1]]
 export function TextStack(fallback, font = null) {
   return font === null
-    ? "".concat(systemfonts([fallback]))
-    : [font, ...systemfonts([fallback])].join(", ");
+    ? "".concat(output_systemfonts([fallback]))
+    : [font, ...output_systemfonts([fallback])].join(", ");
 }
 
 export function TextStyle(weights) {
@@ -184,32 +214,29 @@ function fontWeights(weight) {
     [600, "semibold"],
     [700, "bold"],
     [800, "extrabold"],
-    [900, "black"]
-  ]).get(weight)
+    [900, "black"],
+  ]).get(weight);
 }
 
-export const TextSize = curry(Content)(["rem", "em"])
+export const TextSize = utility_curry(Content)(["rem", "em"]);
 
 function Content([unit, inversionUnit], scale) {
   const [base] = Array.from(scale);
   const values = Array.from(scale);
 
   return {
-    base: pipe(
-      [base],
-      curry(units)(unit)
-    ).toString(),
+    base: utility_pipe([base], utility_curry(ms_units)(unit)).toString(),
     ...BidirectionalScale(
       ["x", "d"],
       [
-        units(unit, values),
-        pipe(
+        ms_units(unit, values),
+        utility_pipe(
           values,
-          curry(update)(n => base / n),
-          curry(units)(inversionUnit ? inversionUnit : unit)
-        )
-      ]
-    )
+          utility_curry(ms_modify)((n) => base / n),
+          utility_curry(ms_units)(inversionUnit ? inversionUnit : unit),
+        ),
+      ],
+    ),
   };
 }
 
@@ -223,13 +250,14 @@ export function TextLeading({ normal = 1.5, tight = 1.125 }, scale) {
         max: normal,
         unit: "",
         keys: ["narrow", "tight"],
-        calc: n => tight + (normal - tight) / (base * ratio ** n)
+        calc: (n) => tight + (normal - tight) / (base * ratio ** n),
       },
-      scale
-    )
+      scale,
+    ),
   ).reduce((acc, [key, value]) => {
-    if (Array.isArray(value))
-      return { ...acc, [key]: value.map(n => parseFloat(n)) };
+    if (Array.isArray(value)) {
+      return { ...acc, [key]: value.map((n) => parseFloat(n)) };
+    }
     return { ...acc, [key]: parseFloat(value) };
   }, {});
 }
@@ -242,37 +270,40 @@ export function ContentMeasure({ min = 45, max = 75 }, scale) {
       max,
       unit: "ch",
       keys: ["segment", "minimum"],
-      calc: n => Math.trunc(min + (max - min) / (base * ratio ** n))
+      calc: (n) => Math.trunc(min + (max - min) / (base * ratio ** n)),
     },
-    scale
+    scale,
   );
 }
 
 function ContentRange({ min, max, unit, keys, calc }, scale) {
-  const SCALE = Array.from(update(calc, scale));
-  const output = curry(units)(unit);
+  const SCALE = Array.from(ms_modify(calc, scale));
+  const output = utility_curry(ms_units)(unit);
 
   return RangedScale(keys, [
     output([max]).toString(),
-    pipe(
+    utility_pipe(
       SCALE,
-      scale => Array.from(new Set(SCALE)),
-      scale => scale.filter(n => n > min && n < max),
-      output
+      (scale) => Array.from(new Set(SCALE)),
+      (scale) => scale.filter((n) => n > min && n < max),
+      output,
     ),
-    output([min]).toString()
+    output([min]).toString(),
   ]);
 }
 // Typography Formulas:1 ends here
 
 // [[file:Mod.org::*Layout Formulas][Layout Formulas:1]]
-export const LayoutSpacing = curry(Content)(["ex"]);
-export const GridFractions = curry(ContentUnidirectional)({ key: "x", unit: "fr" })
+export const LayoutSpacing = utility_curry(Content)(["ex"]);
+export const GridFractions = utility_curry(ContentUnidirectional)({
+  key: "x",
+  unit: "fr",
+});
 
 export function GridDimensions(columns, rows) {
   return {
     x: assembleSpan(columns),
-    y: assembleSpan(rows)
+    y: assembleSpan(rows),
   };
 }
 
@@ -281,7 +312,7 @@ function assembleSpan(dimension) {
   const [base] = SCALE;
   return {
     base,
-    ...UnidirectionalScale("", SCALE)
+    ...UnidirectionalScale("", SCALE),
   };
 }
 
@@ -294,20 +325,11 @@ function spanCalculation(xs) {
 function ContentUnidirectional({ key, unit }, scale) {
   const [base] = Array.from(scale);
   const values = Array.from(scale);
-  const output = curry(units)(unit);
+  const output = utility_curry(ms_units)(unit);
 
   return {
-    base: pipe(
-      [base],
-      output
-    ).toString(),
-    ...UnidirectionalScale(
-      key,
-      pipe(
-        values,
-        output
-      )
-    )
+    base: utility_pipe([base], output).toString(),
+    ...UnidirectionalScale(key, utility_pipe(values, output)),
   };
 }
 
@@ -317,7 +339,10 @@ export function FigureCalculations(scale) {
 
   return {
     base,
-    ...UnidirectionalScale("x", values.map(n => precision(n)))
+    ...UnidirectionalScale(
+      "x",
+      values.map((n) => precision(n)),
+    ),
   };
 }
 // Layout Formulas:1 ends here
@@ -325,7 +350,7 @@ export function FigureCalculations(scale) {
 // [[file:Mod.org::*Viewport Formulas][Viewport Formulas:1]]
 export function Viewport(
   { threshold = 5, full = 100, context = ["w", "h", "min", "max"] },
-  scale
+  scale,
 ) {
   const [base, ratio] = Array.from(scale);
 
@@ -340,11 +365,11 @@ export function Viewport(
           max: full,
           keys: ["segment", "threshold"],
           unit,
-          calc: n =>
-            Math.trunc(threshold + (full - threshold) / (base * ratio ** n))
+          calc: (n) =>
+            Math.trunc(threshold + (full - threshold) / (base * ratio ** n)),
         },
-        scale
-      )
+        scale,
+      ),
     };
   }, {});
 }
@@ -358,7 +383,7 @@ function viewportTargets(target) {
     ["minimum", ["min", "vmin"]],
     ["min", ["min", "vmin"]],
     ["maximum", ["max", "vmax"]],
-    ["max", ["max", "vmax"]]
+    ["max", ["max", "vmax"]],
   ]).get(target);
 }
 // Viewport Formulas:1 ends here
@@ -367,7 +392,7 @@ function viewportTargets(target) {
 export function NumericColorScale(data) {
   return data.reduce(
     (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {}
+    {},
   );
 }
 // Numeric Color Scale:1 ends here
@@ -378,7 +403,7 @@ export function BidirectionalScale(keys, data) {
   const [multiply, divide] = Array.from(data);
   return {
     ...VariantScale(x, multiply),
-    ...VariantScale(d, divide)
+    ...VariantScale(d, divide),
   };
 }
 
@@ -388,12 +413,12 @@ export function UnidirectionalScale(key, data) {
 
 export function RangedScale(
   [rangeKey, floorKey] = ["fragment", "min"],
-  [base, range, min]
+  [base, range, min],
 ) {
   return {
     base,
     [rangeKey]: range,
-    [floorKey]: min
+    [floorKey]: min,
   };
 }
 
@@ -401,9 +426,9 @@ function VariantScale(key, [, ...values]) {
   return values.reduce(
     (acc, value, index) => ({
       ...acc,
-      [[key, index + 2].join("")]: value
+      [[key, index + 2].join("")]: value,
     }),
-    {}
+    {},
   );
 }
 // Modular Scale Types:1 ends here
