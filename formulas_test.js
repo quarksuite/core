@@ -353,6 +353,22 @@ describe("Formulas", () => {
       });
     });
   });
+  describe("Text/Typography", () => {
+    describe("TextStack(fallback, font)", () => {
+      it("should work with system stacks", () => {
+        const result = TextStack("sans");
+        expect(result).toBe(
+          "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+        );
+      });
+      it("should allow attaching a custom stack", () => {
+        const result = TextStack("sans", "Zilla Slab");
+        expect(result).toBe(
+          "Zilla Slab, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+        );
+      });
+    });
+  });
 });
 
 Palettes.forEach((Palette) =>
