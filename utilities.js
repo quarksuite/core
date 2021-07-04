@@ -217,68 +217,56 @@ export function color_material({ light = 95, dark = 70 }, color) {
 
 // [[file:Mod.org::*Color Schemes][Color Schemes:1]]
 export function scheme_complementary(color) {
-  return Array(2)
-    .fill(color)
-    .map((color, index) => color_adjust({ hue: 180 * index }, color));
+  return generateUniformScheme({ count: 2, arc: 180 }, color);
+}
+
+export function scheme_dyadic(color) {
+  return generateUniformScheme({ count: 2, arc: 60 }, color);
 }
 
 export function scheme_analogous(color) {
-  return Array(3)
-    .fill(color)
-    .map((color, index) => color_adjust({ hue: 30 * index }, color));
+  return generateUniformScheme({ count: 3, arc: 45 }, color);
 }
 
-export function scheme_splitComplementary(color) {
+export function scheme_split_complementary(color) {
+  const [origin, complement] = Array.from(scheme_complementary(color));
   return [
-    color_adjust({}, color),
-    ...Array(2)
-      .fill(color_adjust({ hue: 180 }, color))
-      .map((color, index) =>
-        index === 0
-          ? color_adjust({ hue: -30 }, color)
-          : color_adjust({ hue: 30 }, color)
-      ),
+    origin,
+    color_adjust({ hue: -30 }, complement),
+    color_adjust({ hue: 30 }, complement),
   ];
 }
 
 export function scheme_triadic(color) {
-  return Array(3)
-    .fill(color)
-    .map((color, index) => color_adjust({ hue: 120 * index }, color));
+  return generateUniformScheme({ count: 3, arc: 120 }, color);
 }
 
 export function scheme_clash(color) {
-  const [base, left, , right] = scheme_square(color);
-  return [base, left, right];
+  const [origin, right, , left] = Array.from(scheme_square(color));
+  return [origin, right, left];
 }
 
 export function scheme_tetradic(color) {
-  return [
-    ...Array(2)
-      .fill(color)
-      .map((color, index) => color_adjust({ hue: 60 * index }, color)),
-    ...Array(2)
-      .fill(color_adjust({ hue: 180 }, color))
-      .map((color, index) => color_adjust({ hue: 60 * index }, color)),
-  ];
+  const [origin, opposite] = Array.from(scheme_complementary(color));
+  return [...scheme_dyadic(origin), ...scheme_dyadic(opposite)];
 }
 
 export function scheme_square(color) {
-  return Array(4)
-    .fill(color)
-    .map((color, index) => color_adjust({ hue: 90 * index }, color));
+  return generateUniformScheme({ count: 4, arc: 90 }, color);
 }
 
 export function scheme_star(color) {
-  return Array(5)
-    .fill(color)
-    .map((color, index) => color_adjust({ hue: 72 * index }, color));
+  return generateUniformScheme({ count: 5, arc: 72 }, color);
 }
 
 export function scheme_hexagon(color) {
-  return Array(6)
+  return generateUniformScheme({ count: 6, arc: 60 }, color);
+}
+
+function generateUniformScheme({ count, arc }, color) {
+  return Array(count)
     .fill(color)
-    .map((color, index) => color_adjust({ hue: 60 * index }, color));
+    .map((color, index) => color_adjust({ hue: arc * index }, color));
 }
 // Color Schemes:1 ends here
 
@@ -296,7 +284,7 @@ export function color_shades({ amount = 80, values = 2 }, color) {
 }
 // Variants:1 ends here
 
-// [[file:Mod.org::*Shifting][Shifting:1]]
+// [[file:Mod.org::*Palette Shifting][Palette Shifting:1]]
 export function palette_shift(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
   palette,
@@ -309,9 +297,9 @@ export function palette_shift(
     ),
   );
 }
-// Shifting:1 ends here
+// Palette Shifting:1 ends here
 
-// [[file:Mod.org::*Shuffling][Shuffling:1]]
+// [[file:Mod.org::*Palette Sorting][Palette Sorting:1]]
 export function palette_sort(condition, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
@@ -358,9 +346,9 @@ function paletteFromOklab(input, palette) {
     Array.from,
   );
 }
-// Shuffling:1 ends here
+// Palette Sorting:1 ends here
 
-// [[file:Mod.org::*Flushing][Flushing:1]]
+// [[file:Mod.org::*Palette Filtering][Palette Filtering:1]]
 export function palette_filter(condition, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
@@ -406,7 +394,7 @@ function matchCondition(condition) {
     /(?:(?:lightness|chroma|hue|alpha):|(?:[\d.]+))(?:&[\d.]+)?/g,
   );
 }
-// Flushing:1 ends here
+// Palette Filtering:1 ends here
 
 // [[file:Mod.org::*Colors Project Web Defaults][Colors Project Web Defaults:1]]
 export function output_clrs(color) {
