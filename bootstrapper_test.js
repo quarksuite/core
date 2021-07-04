@@ -210,7 +210,7 @@ benchmark.Bench({
   fn() {
     return Quarks();
   },
-  steps: 512,
+  steps: 100,
 });
 
 benchmark.runBench().then(benchmark.Result(7)).then(run());
