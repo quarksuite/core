@@ -3,8 +3,8 @@
   "name": "quarksuite:core",
   "description": "QuarkSuite is a toolkit for creating, assembling, and distributing digital design systems. Quarks System Core is the engine powering it.",
   "homepage": "https://github.com/quarksuite/core",
-  "version": "0.2.1",
-  "releaseType": "patch",
+  "version": "1.0.0-0",
+  "releaseType": "premajor",
   "unlisted": true,
   "entry": "./mod.js",
   "files": [
