@@ -1,18 +1,20 @@
 // [[file:Mod.org::*Utilities][Utilities:1]]
 import { compose, curry, pipe } from "./lib/utilities/fp.js";
-import { convert, passthrough } from "./lib/utilities/color/converter/index.js";
-import { rgbToLrgb } from "./lib/utilities/color/converter/color_from_rgb.js";
 import {
+  convert,
+  extractor,
   hueCorrection,
   normalize,
   numberFromPercent,
   numberToPercent,
+  output,
+  parser,
+  passthrough,
   precision,
   radToDegrees,
-} from "./lib/utilities/color/converter/math.js";
-import { validator } from "./lib/utilities/color/validator/index.js";
-import { extractor } from "./lib/utilities/color/extractor/index.js";
-import { output, parser } from "./lib/utilities/color/parser/index.js";
+  rgbToLrgb,
+  validator,
+} from "./lib/utilities/color/index.js";
 import { QSCError } from "./lib/error.js";
 import { A11Y_PALETTE, SYSTEM_FONT_STACKS } from "./lib/data.js";
 // Utilities:1 ends here
@@ -569,7 +571,6 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 `,
   });
 }
-
 // Scale Modification:1 ends here
 
 // [[file:Mod.org::*Attaching Units][Attaching Units:1]]

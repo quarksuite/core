@@ -242,3 +242,43 @@ function sketchSwatch(color) {
   );
 }
 // Sketch:1 ends here
+
+// [[file:Mod.org::*Interop/Integration][Interop/Integration:1]]
+export function output_tailwindcss(dict) {
+  const { project, ...tokens } = dict;
+
+  return (
+    (project &&
+      Object.entries(tokens).reduce((acc, [key, data]) => {
+        if (key === "base") return { ...acc, DEFAULT: data };
+
+        // Skip past any metadata
+        if (key === "metadata") return { ...acc };
+
+        if (typeof data === "object") {
+          return { ...acc, [key]: output_tailwindcss(data) };
+        }
+
+        return { ...acc, [key]: data };
+      }, {})) ||
+    MissingProjectMetadataError()
+  );
+}
+
+export function output_style_dictionary(dict) {
+  const { project, ...tokens } = dict;
+  return (
+    (project &&
+      Object.entries(tokens).reduce((acc, [key, data]) => {
+        if (key === "metadata") return { ...acc };
+
+        if (typeof data === "object") {
+          return { ...acc, [key]: output_style_dictionary(data) };
+        }
+
+        return { ...acc, [key]: { value: String(data) } };
+      }, {})) ||
+    MissingProjectMetadataError()
+  );
+}
+// Interop/Integration:1 ends here
