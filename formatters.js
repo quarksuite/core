@@ -135,7 +135,7 @@ export function output_gpl(dict) {
     license,
     bump = "manual",
     metadata: { description = "N/A", comments = "N/A" } = {},
-  } = project || MissingProjectMetadataError(project);
+  } = project || MissingProjectMetadataError();
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
@@ -203,8 +203,18 @@ function GIMPPaletteSwatch(color) {
 // [[file:Mod.org::*Sketch][Sketch:1]]
 export function output_sketchpalette(dict) {
   const {
+    project,
     color: { metadata, ...palette },
   } = dict;
+
+  let {
+    name,
+    author,
+    version,
+    license,
+    bump = "manual",
+    metadata: { description = "N/A", comments = "N/A" } = {},
+  } = project || MissingProjectMetadataError();
 
   const assemble = (tree) =>
     Object.values(tree)
@@ -247,38 +257,37 @@ function sketchSwatch(color) {
 export function output_tailwindcss(dict) {
   const { project, ...tokens } = dict;
 
-  return (
-    (project &&
-      Object.entries(tokens).reduce((acc, [key, data]) => {
-        if (key === "base") return { ...acc, DEFAULT: data };
+  const assemble = (node) =>
+    Object.entries(node).reduce((acc, [key, data]) => {
+      if (key === "base") return { ...acc, DEFAULT: data };
 
-        // Skip past any metadata
-        if (key === "metadata") return { ...acc };
+      // Skip past any metadata
+      if (key === "metadata") return { ...acc };
 
-        if (typeof data === "object") {
-          return { ...acc, [key]: output_tailwindcss(data) };
-        }
+      if (typeof data === "object") {
+        return { ...acc, [key]: assemble(data) };
+      }
 
-        return { ...acc, [key]: data };
-      }, {})) ||
-    MissingProjectMetadataError()
-  );
+      return { ...acc, [key]: data };
+    }, {});
+
+  return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
 
 export function output_style_dictionary(dict) {
   const { project, ...tokens } = dict;
-  return (
-    (project &&
-      Object.entries(tokens).reduce((acc, [key, data]) => {
-        if (key === "metadata") return { ...acc };
 
-        if (typeof data === "object") {
-          return { ...acc, [key]: output_style_dictionary(data) };
-        }
+  const assemble = (node) =>
+    Object.entries(node).reduce((acc, [key, data]) => {
+      if (key === "metadata") return { ...acc };
 
-        return { ...acc, [key]: { value: String(data) } };
-      }, {})) ||
-    MissingProjectMetadataError()
-  );
+      if (typeof data === "object") {
+        return { ...acc, [key]: assemble(data) };
+      }
+
+      return { ...acc, [key]: { value: String(data) } };
+    }, {});
+
+  return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
 // Interop/Integration:1 ends here

@@ -363,10 +363,6 @@ function viewportTargets(target) {
 }
 // Viewport Formulas:1 ends here
 
-// [[file:Mod.org::*Configurations][Configurations:1]]
-
-// Configurations:1 ends here
-
 // [[file:Mod.org::*Numeric Color Scale][Numeric Color Scale:1]]
 export function NumericColorScale(data) {
   return data.reduce(

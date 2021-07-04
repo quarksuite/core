@@ -23,9 +23,9 @@
   - [[#typography-formulas][Typography Formulas]]
   - [[#layout-formulas][Layout Formulas]]
   - [[#viewport-formulas][Viewport Formulas]]
-- [[#configurations][Configurations]]
-  - [[#numeric-color-scale][Numeric Color Scale]]
-  - [[#modular-scale-types][Modular Scale Types]]
+  - [[#configurations][Configurations]]
+    - [[#numeric-color-scale][Numeric Color Scale]]
+    - [[#modular-scale-types][Modular Scale Types]]
 - [[#utilities][Utilities]]
   - [[#functional-programming][Functional Programming]]
   - [[#color][Color]]
@@ -240,7 +240,7 @@ export function output_gpl(dict) {
     license,
     bump = "manual",
     metadata: { description = "N/A", comments = "N/A" } = {},
-  } = project || MissingProjectMetadataError(project);
+  } = project || MissingProjectMetadataError();
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
@@ -310,8 +310,18 @@ function GIMPPaletteSwatch(color) {
 #+BEGIN_SRC js
 export function output_sketchpalette(dict) {
   const {
+    project,
     color: { metadata, ...palette },
   } = dict;
+
+  let {
+    name,
+    author,
+    version,
+    license,
+    bump = "manual",
+    metadata: { description = "N/A", comments = "N/A" } = {},
+  } = project || MissingProjectMetadataError();
 
   const assemble = (tree) =>
     Object.values(tree)
@@ -356,39 +366,38 @@ function sketchSwatch(color) {
 export function output_tailwindcss(dict) {
   const { project, ...tokens } = dict;
 
-  return (
-    (project &&
-      Object.entries(tokens).reduce((acc, [key, data]) => {
-        if (key === "base") return { ...acc, DEFAULT: data };
+  const assemble = (node) =>
+    Object.entries(node).reduce((acc, [key, data]) => {
+      if (key === "base") return { ...acc, DEFAULT: data };
 
-        // Skip past any metadata
-        if (key === "metadata") return { ...acc };
+      // Skip past any metadata
+      if (key === "metadata") return { ...acc };
 
-        if (typeof data === "object") {
-          return { ...acc, [key]: output_tailwindcss(data) };
-        }
+      if (typeof data === "object") {
+        return { ...acc, [key]: assemble(data) };
+      }
 
-        return { ...acc, [key]: data };
-      }, {})) ||
-    MissingProjectMetadataError()
-  );
+      return { ...acc, [key]: data };
+    }, {});
+
+  return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
 
 export function output_style_dictionary(dict) {
   const { project, ...tokens } = dict;
-  return (
-    (project &&
-      Object.entries(tokens).reduce((acc, [key, data]) => {
-        if (key === "metadata") return { ...acc };
 
-        if (typeof data === "object") {
-          return { ...acc, [key]: output_style_dictionary(data) };
-        }
+  const assemble = (node) =>
+    Object.entries(node).reduce((acc, [key, data]) => {
+      if (key === "metadata") return { ...acc };
 
-        return { ...acc, [key]: { value: String(data) } };
-      }, {})) ||
-    MissingProjectMetadataError()
-  );
+      if (typeof data === "object") {
+        return { ...acc, [key]: assemble(data) };
+      }
+
+      return { ...acc, [key]: { value: String(data) } };
+    }, {});
+
+  return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
 #+END_SRC
 
@@ -876,16 +885,9 @@ function viewportTargets(target) {
 }
 #+END_SRC
 
-* Configurations
-:PROPERTIES:
-:header-args:js: :tangle "./formulas.js" :comments link
-:END:
+** Configurations
 
-#+BEGIN_SRC js
-
-#+END_SRC
-
-** Numeric Color Scale
+*** Numeric Color Scale
 
 #+BEGIN_SRC js
 export function NumericColorScale(data) {
@@ -896,7 +898,7 @@ export function NumericColorScale(data) {
 }
 #+END_SRC
 
-** Modular Scale Types
+*** Modular Scale Types
 
 #+BEGIN_SRC js
 export function BidirectionalScale(keys, data) {
@@ -1914,7 +1916,12 @@ export function pipe(x, ...fns) {
 :END:
 
 #+BEGIN_SRC js
-
+export { convert, passthrough } from "./converter/index.js";
+export { rgbToLrgb } from "./converter/color_from_rgb.js";
+export * from "./converter/math.js";
+export { validator } from "./validator/index.js";
+export { extractor } from "./extractor/index.js";
+export { output, parser } from "./parser/index.js";
 #+END_SRC
 
 **** Converter

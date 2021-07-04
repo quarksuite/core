@@ -6,6 +6,8 @@ import {
   output_scss,
   output_sketchpalette,
   output_styl,
+  output_style_dictionary,
+  output_tailwindcss,
   output_yaml,
 } from "./formatters.js";
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -92,10 +94,12 @@ const AllFormatters = [
   output_yaml,
   output_gpl,
   output_sketchpalette,
+  output_tailwindcss,
+  output_style_dictionary,
 ];
 
 describe("Formatters", () => {
-  AllFormatters.slice(0, AllFormatters.length - 1).forEach((Formatter) =>
+  AllFormatters.forEach((Formatter) =>
     it(`${Formatter.name}(dict) should whine if the project metadata is missing from the dictionary`, () =>
       expect(() => Formatter(invalidSchema)).toThrow())
   );
@@ -687,6 +691,70 @@ tokens:
             ],
             pluginVersion: "1.4",
             compatibleVersion: "1.4",
+          });
+        });
+      });
+    });
+    describe("Integration/Interop", () => {
+      describe("output_tailwindcss(dict)", () => {
+        it("should transform Quarks System Dictionaries into TailwindCSS theme data", () => {
+          const result = output_tailwindcss(completeQSD);
+          expect(result).toEqual({
+            color: {
+              main: {
+                DEFAULT: "red",
+                shades: { 0: "crimson", 1: "firebrick" },
+              },
+              accent: "lime",
+              highlight: "blue",
+            },
+          });
+        });
+        it("should ignore metadata", () => {
+          const result = output_tailwindcss(completeQSDWithMeta);
+          expect(result).toEqual({
+            color: {
+              main: {
+                DEFAULT: "red",
+                shades: { 0: "crimson", 1: "firebrick" },
+              },
+              accent: "lime",
+              highlight: "blue",
+            },
+          });
+        });
+      });
+      describe("output_style_dictionary(dict)", () => {
+        it("should transform Quarks System Dictionaries into Style Dictionary tokens", () => {
+          const result = output_style_dictionary(completeQSD);
+          expect(result).toEqual({
+            color: {
+              main: {
+                base: { value: "red" },
+                shades: {
+                  0: { value: "crimson" },
+                  1: { value: "firebrick" },
+                },
+              },
+              accent: { value: "lime" },
+              highlight: { value: "blue" },
+            },
+          });
+        });
+        it("should ignore metadata", () => {
+          const result = output_style_dictionary(completeQSDWithMeta);
+          expect(result).toEqual({
+            color: {
+              main: {
+                base: { value: "red" },
+                shades: {
+                  0: { value: "crimson" },
+                  1: { value: "firebrick" },
+                },
+              },
+              accent: { value: "lime" },
+              highlight: { value: "blue" },
+            },
           });
         });
       });
