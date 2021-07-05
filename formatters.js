@@ -167,12 +167,11 @@ export function output_gpl(dict) {
 GIMP Palette
 Name: ${name} (v${version})
 # Generator: Quarks System Core
-
 # Owned by ${author}
 # ${license}
 ${
     metadataEmitter(
-      { commentDelim: ["", "# ", "\n\n"] },
+      { commentDelim: ["# ", "# ", "\n#"] },
       {
         description,
         comments,
@@ -183,7 +182,7 @@ ${
 
 Columns: 6
 ${assemble("", palette)}
-`;
+`.trimStart();
 }
 
 function GIMPPaletteSwatch(color) {

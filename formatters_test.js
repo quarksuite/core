@@ -665,7 +665,7 @@ tokens:
       it("should correctly extract the colors from a dictionary", () => {
         const result = removeTimestamp(output_gpl(completeQSD));
         expect(result).toBe(
-          "\nGIMP Palette\nName: Unknown Project (v0.0.0)\n# Generator: Quarks System Core\n\n# Owned by Anonymous\n# Unlicense\n\n# DESCRIPTION: N/A\n# COMMENTS: N/A\n\n\n# Updated on [Timestamp replaced for testing]\n\nColumns: 6\n255\t  0\t  0\tMAIN BASE (#ff0000)\n220\t 20\t 60\tMAIN SHADES 0 (#dc143c)\n178\t 34\t 34\tMAIN SHADES 1 (#b22222)\n  0\t255\t  0\tACCENT (#00ff00)\n  0\t  0\t255\tHIGHLIGHT (#0000ff)\n\n",
+          "GIMP Palette\nName: Unknown Project (v0.0.0)\n# Generator: Quarks System Core\n# Owned by Anonymous\n# Unlicense\n# \n# DESCRIPTION: N/A\n# COMMENTS: N/A\n#\n# Updated on [Timestamp replaced for testing]\n\nColumns: 6\n255\t  0\t  0\tMAIN BASE (#ff0000)\n220\t 20\t 60\tMAIN SHADES 0 (#dc143c)\n178\t 34\t 34\tMAIN SHADES 1 (#b22222)\n  0\t255\t  0\tACCENT (#00ff00)\n  0\t  0\t255\tHIGHLIGHT (#0000ff)\n\n",
         );
       });
     });
