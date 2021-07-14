@@ -432,6 +432,28 @@ describe("Formulas", () => {
       });
     });
   });
+  describe("Content", () => {
+    describe("ContentMeasure({ min, max }, scale)", () => {
+      it("should work with default configuration", () => {
+        const result = ContentMeasure({}, ms_create({}, 1));
+
+        expect(result).toEqual({
+          base: "75ch",
+          segment: ["65ch", "61ch", "57ch", "52ch", "48ch", "46ch"],
+          minimum: "45ch",
+        });
+      });
+      it("should allow setting a minimum and maximum measure", () => {
+        const result = ContentMeasure({ min: 48, max: 72 }, ms_create({}, 1));
+
+        expect(result).toEqual({
+          base: "72ch",
+          segment: ["64ch", "61ch", "57ch", "54ch", "51ch", "49ch"],
+          minimum: "48ch",
+        });
+      });
+    });
+  });
 });
 
 function formulaBenchmark(fn, ...args) {
@@ -450,5 +472,7 @@ formulaBenchmark(TextStack, "sans");
 formulaBenchmark(TextStyle, [100, 200, 400]);
 formulaBenchmark(TextSize, ms_create({}, 1));
 formulaBenchmark(TextLeading, {}, ms_create({}, 1));
+
+formulaBenchmark(ContentMeasure, {}, ms_create({}, 1));
 
 benchmark.runBench().then(benchmark.Result(7)).then(run());
