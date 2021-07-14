@@ -218,7 +218,9 @@ function fontWeights(weight) {
   ]).get(weight);
 }
 
-export const TextSize = utility_curry(Content)(["rem", "em"]);
+export function TextSize(scale) {
+  return Content(["rem", "em"], scale);
+}
 
 function Content([unit, inversionUnit], scale) {
   const [base] = Array.from(scale);
@@ -294,11 +296,13 @@ function ContentRange({ min, max, unit, keys, calc }, scale) {
 // Typography Formulas:1 ends here
 
 // [[file:Mod.org::*Layout Formulas][Layout Formulas:1]]
-export const LayoutSpacing = utility_curry(Content)(["ex"]);
-export const GridFractions = utility_curry(ContentUnidirectional)({
-  key: "x",
-  unit: "fr",
-});
+export function LayoutSpacing(scale) {
+  return Content(["ex"], scale);
+}
+
+export function GridFractions(scale) {
+  return ContentUnidirectional({ key: "x", unit: "fr" }, scale);
+}
 
 export function GridDimensions(columns, rows) {
   return {

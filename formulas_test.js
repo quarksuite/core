@@ -20,6 +20,7 @@ import {
 } from "./formulas.js";
 import {
   color_to_rgb,
+  ms_create,
   scheme_analogous,
   scheme_complementary,
   scheme_dyadic,
@@ -294,7 +295,6 @@ describe("Formulas", () => {
       });
     });
     describe("InterpolatedPalette({ lightness, chroma, hue, values, contrast, tints, shades, format }, color)", () => {
-      const target = "coral";
       it("should work without configuration", () => {
         const result = InterpolatedPalette({}, color);
         expect(result).toEqual({
@@ -368,17 +368,75 @@ describe("Formulas", () => {
         );
       });
     });
+    describe("TextStyle(weights)", () => {
+      it("should map text styles by their weight values", () => {
+        const result = TextStyle([400, 700]);
+
+        expect(result).toEqual({
+          regular: 400,
+          bold: 700,
+        });
+      });
+      it("should disregard the order of the values", () => {
+        const result = TextStyle([100, 700, 300, 500]);
+
+        expect(result).toEqual({
+          thin: 100,
+          light: 300,
+          medium: 500,
+          bold: 700,
+        });
+      });
+    });
+    describe("TextSize(scale)", () => {
+      it("should output a complete text size scale from a raw scale", () => {
+        const scale = ms_create({ values: 6, ratio: 1.25 }, 1);
+        const result = TextSize(scale);
+
+        expect(result).toEqual({
+          base: "1rem",
+          x2: "1.25rem",
+          x3: "1.5625rem",
+          x4: "1.9531rem",
+          x5: "2.4414rem",
+          x6: "3.0518rem",
+          d2: "0.8em",
+          d3: "0.64em",
+          d4: "0.512em",
+          d5: "0.4096em",
+          d6: "0.32768em",
+        });
+      });
+    });
+    describe("TextLeading({normal, tight}, scale)", () => {
+      it("should work with default configuration", () => {
+        const result = TextLeading({}, ms_create({}, 1));
+
+        expect(result).toEqual({
+          base: 1.5,
+          narrow: [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423],
+          tight: 1.125,
+        });
+      });
+    });
   });
 });
 
-Palettes.forEach((Palette) =>
-  benchmark.Bench({
-    name: `${Palette.name} perf`,
+function formulaBenchmark(fn, ...args) {
+  return benchmark.Bench({
+    name: fn.name,
     fn() {
-      return Palette({}, "gainsboro");
+      return fn(...args);
     },
     steps: 100,
-  })
-);
+  });
+}
+
+Palettes.forEach((Palette) => formulaBenchmark(Palette, {}, "gainsboro"));
+
+formulaBenchmark(TextStack, "sans");
+formulaBenchmark(TextStyle, [100, 200, 400]);
+formulaBenchmark(TextSize, ms_create({}, 1));
+formulaBenchmark(TextLeading, {}, ms_create({}, 1));
 
 benchmark.runBench().then(benchmark.Result(7)).then(run());
