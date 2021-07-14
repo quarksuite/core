@@ -408,7 +408,7 @@ describe("Formulas", () => {
         });
       });
     });
-    describe("TextLeading({normal, tight}, scale)", () => {
+    describe("TextLeading({ normal, tight }, scale)", () => {
       it("should work with default configuration", () => {
         const result = TextLeading({}, ms_create({}, 1));
 
@@ -416,6 +416,18 @@ describe("Formulas", () => {
           base: 1.5,
           narrow: [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423],
           tight: 1.125,
+        });
+      });
+      it("should allow setting normal and tight leading bounds", () => {
+        const result = TextLeading(
+          { normal: 1.75, tight: 1.25 },
+          ms_create({}, 1),
+        );
+
+        expect(result).toEqual({
+          base: 1.75,
+          narrow: [1.5833, 1.5222, 1.4508, 1.3773, 1.3142, 1.273],
+          tight: 1.25,
         });
       });
     });
