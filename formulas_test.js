@@ -1,5 +1,4 @@
 import {
-  BidirectionalScale,
   BlendedPalette,
   ContentMeasure,
   FigureCalculations,
@@ -8,14 +7,11 @@ import {
   InterpolatedPalette,
   LayoutSpacing,
   MaterialPalette,
-  NumericColorScale,
-  RangedScale,
   StandardPalette,
   TextLeading,
   TextSize,
   TextStack,
   TextStyle,
-  UnidirectionalScale,
   Viewport,
 } from "./formulas.js";
 import {

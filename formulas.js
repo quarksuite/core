@@ -1,6 +1,12 @@
 // [[file:Mod.org::*Formulas][Formulas:1]]
 import { precision } from "./lib/utilities/color/index.js";
 import {
+  BidirectionalScale,
+  NumericColorScale,
+  RangedScale,
+  UnidirectionalScale,
+} from "./configurations.js";
+import {
   color_blend,
   color_interpolation,
   color_material,
@@ -157,7 +163,7 @@ function generateStandardPalette({ contrast, values }, palette) {
         ];
       }),
     (palette) =>
-      palette.reduce((acc, [key, data], index) => {
+      palette.reduce((acc, [key, data]) => {
         const [base, ...variants] = data;
         const [a, b] = variants;
 
@@ -279,14 +285,13 @@ export function ContentMeasure({ min = 45, max = 75 }, scale) {
 }
 
 function ContentRange({ min, max, unit, keys, calc }, scale) {
-  const SCALE = Array.from(ms_modify(calc, scale));
   const output = utility_curry(ms_units)(unit);
 
   return RangedScale(keys, [
     output([max]).toString(),
     utility_pipe(
-      SCALE,
-      (scale) => Array.from(new Set(SCALE)),
+      new Set(ms_modify(calc, scale)),
+      (scale) => Array.from(scale),
       (scale) => scale.filter((n) => n > min && n < max),
       output,
     ),
@@ -391,48 +396,3 @@ function viewportTargets(target) {
   ]).get(target);
 }
 // Viewport Formulas:1 ends here
-
-// [[file:Mod.org::*Numeric Color Scale][Numeric Color Scale:1]]
-export function NumericColorScale(data) {
-  return data.reduce(
-    (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {},
-  );
-}
-// Numeric Color Scale:1 ends here
-
-// [[file:Mod.org::*Modular Scale Types][Modular Scale Types:1]]
-export function BidirectionalScale(keys, data) {
-  const [x, d] = keys;
-  const [multiply, divide] = Array.from(data);
-  return {
-    ...VariantScale(x, multiply),
-    ...VariantScale(d, divide),
-  };
-}
-
-export function UnidirectionalScale(key, data) {
-  return VariantScale(key, data);
-}
-
-export function RangedScale(
-  [rangeKey, floorKey] = ["fragment", "min"],
-  [base, range, min],
-) {
-  return {
-    base,
-    [rangeKey]: range,
-    [floorKey]: min,
-  };
-}
-
-function VariantScale(key, [, ...values]) {
-  return values.reduce(
-    (acc, value, index) => ({
-      ...acc,
-      [[key, index + 2].join("")]: value,
-    }),
-    {},
-  );
-}
-// Modular Scale Types:1 ends here

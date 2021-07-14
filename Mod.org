@@ -23,9 +23,9 @@
   - [[#typography-formulas][Typography Formulas]]
   - [[#layout-formulas][Layout Formulas]]
   - [[#viewport-formulas][Viewport Formulas]]
-  - [[#configurations][Configurations]]
-    - [[#numeric-color-scale][Numeric Color Scale]]
-    - [[#modular-scale-types][Modular Scale Types]]
+- [[#configurations][Configurations]]
+  - [[#numeric-color-scale][Numeric Color Scale]]
+  - [[#modular-scale-types][Modular Scale Types]]
 - [[#utilities][Utilities]]
   - [[#functional-programming][Functional Programming]]
   - [[#color][Color]]
@@ -81,11 +81,14 @@
 export * from "./formatters.js";
 export * from "./bootstrapper.js";
 export * from "./formulas.js";
+export * from "./configurations.js";
 export * from "./utilities.js";
 #+END_SRC
 
 * Overview of System Design
+
 * Schema
+
 * Formatters
 :PROPERTIES:
 :header-args:js: :tangle "./formatters.js" :comments link
@@ -272,12 +275,11 @@ export function output_gpl(dict) {
 GIMP Palette
 Name: ${name} (v${version})
 # Generator: Quarks System Core
-
 # Owned by ${author}
 # ${license}
 ${
     metadataEmitter(
-      { commentDelim: ["", "# ", "\n\n"] },
+      { commentDelim: ["# ", "# ", "\n#"] },
       {
         description,
         comments,
@@ -288,7 +290,7 @@ ${
 
 Columns: 6
 ${assemble("", palette)}
-`;
+`.trimStart();
 }
 
 function GIMPPaletteSwatch(color) {
@@ -530,6 +532,12 @@ export function Quarks({
 #+BEGIN_SRC js
 import { precision } from "./lib/utilities/color/index.js";
 import {
+  BidirectionalScale,
+  NumericColorScale,
+  RangedScale,
+  UnidirectionalScale,
+} from "./configurations.js";
+import {
   color_blend,
   color_interpolation,
   color_material,
@@ -688,7 +696,7 @@ function generateStandardPalette({ contrast, values }, palette) {
         ];
       }),
     (palette) =>
-      palette.reduce((acc, [key, data], index) => {
+      palette.reduce((acc, [key, data]) => {
         const [base, ...variants] = data;
         const [a, b] = variants;
 
@@ -812,14 +820,13 @@ export function ContentMeasure({ min = 45, max = 75 }, scale) {
 }
 
 function ContentRange({ min, max, unit, keys, calc }, scale) {
-  const SCALE = Array.from(ms_modify(calc, scale));
   const output = utility_curry(ms_units)(unit);
 
   return RangedScale(keys, [
     output([max]).toString(),
     utility_pipe(
-      SCALE,
-      (scale) => Array.from(new Set(SCALE)),
+      new Set(ms_modify(calc, scale)),
+      (scale) => Array.from(scale),
       (scale) => scale.filter((n) => n > min && n < max),
       output,
     ),
@@ -929,9 +936,12 @@ function viewportTargets(target) {
 }
 #+END_SRC
 
-** Configurations
+* Configurations
+:PROPERTIES:
+:header-args:js: :tangle "./configurations.js" :comments link
+:END:
 
-*** Numeric Color Scale
+** Numeric Color Scale
 
 #+BEGIN_SRC js
 export function NumericColorScale(data) {
@@ -942,7 +952,7 @@ export function NumericColorScale(data) {
 }
 #+END_SRC
 
-*** Modular Scale Types
+** Modular Scale Types
 
 #+BEGIN_SRC js
 export function BidirectionalScale(keys, data) {
