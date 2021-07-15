@@ -49,7 +49,7 @@ function generateMaterialPalette({ light, dark }, palette) {
       palette.reduce((acc, value, index) => {
         return {
           ...acc,
-          [paletteCategories(index)]: {
+          [standardCategories(index)]: {
             ...value.reduce(
               (a, v, i) => ({
                 ...a,
@@ -76,9 +76,10 @@ export function StandardPalette(
   return utility_pipe(
     color,
     utility_curry(paletteSettings)({ format, scheme }),
-    utility_curry(generateStandardPalette)({
+    utility_curry(structurePalette)({
       contrast,
       values: { tints, shades },
+      categories: standardCategories,
     }),
   );
 }
@@ -88,9 +89,9 @@ export function InterpolatedPalette(
     lightness = 0,
     chroma = 0,
     hue = 0,
-    values = 3,
+    values = 1,
     contrast = 95,
-    tints = 2,
+    tints = 3,
     shades = 2,
     format = undefined,
   },
@@ -101,20 +102,21 @@ export function InterpolatedPalette(
       { lightness, chroma, hue, values },
       format ? format(color) : color_to_hex(color),
     ),
-    utility_curry(generateStandardPalette)({
+    utility_curry(structurePalette)({
       contrast,
       values: { tints, shades },
+      categories: generatedCategories,
     }),
   );
 }
 
 export function BlendedPalette(
   {
-    values = 3,
-    amount = 100,
+    values = 1,
+    amount = 50,
     target = "black",
     contrast = 95,
-    tints = 2,
+    tints = 3,
     shades = 2,
     format = undefined,
   },
@@ -125,19 +127,20 @@ export function BlendedPalette(
       { values, amount, target },
       format ? format(color) : color_to_hex(color),
     ),
-    utility_curry(generateStandardPalette)({
+    utility_curry(structurePalette)({
       contrast,
       values: { tints, shades },
+      categories: generatedCategories,
     }),
   );
 }
 
-function generateStandardPalette({ contrast, values }, palette) {
+function structurePalette({ contrast, values, categories }, palette) {
   return utility_pipe(
     palette,
     (palette) =>
       palette.map((color, index) => {
-        const category = paletteCategories(index);
+        const category = categories(index);
         const light = color_tints(
           {
             values: values.tints,
@@ -159,7 +162,9 @@ function generateStandardPalette({ contrast, values }, palette) {
 
         return [
           category,
-          category === "main" ? [color, light, dark] : [color, fillDark],
+          category === "main" || category === "a"
+            ? [color, light, dark]
+            : [color, fillDark],
         ];
       }),
     (palette) =>
@@ -183,14 +188,25 @@ function generateStandardPalette({ contrast, values }, palette) {
   );
 }
 
-function paletteCategories(index) {
+function standardCategories(index) {
   return new Map([
     [0, "main"],
     [1, "accent"],
     [2, "highlight"],
-    [3, "link"],
-    [4, "spot"],
-    [5, "splash"],
+    [3, "spot-a"],
+    [4, "spot-b"],
+    [5, "spot-c"],
+  ]).get(index);
+}
+
+function generatedCategories(index) {
+  return new Map([
+    ...Array(26)
+      .fill(0)
+      .map((v, i) => {
+        const category = String.fromCharCode(65).toLowerCase(); // starting from "a"
+        return [v * i, category];
+      }),
   ]).get(index);
 }
 // Palette Formulas:1 ends here
