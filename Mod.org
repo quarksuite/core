@@ -721,10 +721,10 @@ function structurePalette({ contrast, values }, palette) {
 function alphabeticalCategories(index) {
   return new Map([
     ...Array(26)
-      .fill(0)
+      .fill(65)
       .map((v, i) => {
-        const category = String.fromCharCode(65).toLowerCase(); // starting from "a"
-        return [v * i, category];
+        const category = String.fromCharCode(v + i).toLowerCase(); // starting from "a"
+        return [i, category];
       }),
   ]).get(index);
 }
@@ -785,7 +785,7 @@ function Content([unit, inversionUnit], scale) {
   };
 }
 
-export function TextLeading({ normal = 1.5, tight = 1.125 }, scale) {
+export function TextLeading({ normal = 1.5, tight = 1.25 }, scale) {
   const [base, ratio] = Array.from(scale);
 
   return Object.entries(
@@ -807,7 +807,7 @@ export function TextLeading({ normal = 1.5, tight = 1.125 }, scale) {
   }, {});
 }
 
-export function ContentMeasure({ min = 45, max = 75 }, scale) {
+export function TextMeasure({ min = 45, max = 75 }, scale) {
   const [base, ratio] = Array.from(scale);
   return ContentRange(
     {
