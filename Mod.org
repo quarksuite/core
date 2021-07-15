@@ -840,7 +840,7 @@ function ContentRange({ min, max, unit, keys, calc }, scale) {
 ** Layout Formulas
 
 #+BEGIN_SRC js
-export function LayoutSpacing(scale) {
+export function Spacing(scale) {
   return Content(["ex"], scale);
 }
 
@@ -848,7 +848,7 @@ export function GridFractions(scale) {
   return ContentUnidirectional({ key: "x", unit: "fr" }, scale);
 }
 
-export function GridDimensions(columns, rows) {
+export function GridDimensions(columns, rows = columns) {
   return {
     x: assembleSpan(columns),
     y: assembleSpan(rows),

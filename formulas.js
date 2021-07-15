@@ -303,7 +303,7 @@ function ContentRange({ min, max, unit, keys, calc }, scale) {
 // Typography Formulas:1 ends here
 
 // [[file:Mod.org::*Layout Formulas][Layout Formulas:1]]
-export function LayoutSpacing(scale) {
+export function Spacing(scale) {
   return Content(["ex"], scale);
 }
 
@@ -311,7 +311,7 @@ export function GridFractions(scale) {
   return ContentUnidirectional({ key: "x", unit: "fr" }, scale);
 }
 
-export function GridDimensions(columns, rows) {
+export function GridDimensions(columns, rows = columns) {
   return {
     x: assembleSpan(columns),
     y: assembleSpan(rows),
