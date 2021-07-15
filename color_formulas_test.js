@@ -10,6 +10,7 @@ import {
   scheme_analogous,
   scheme_complementary,
   scheme_dyadic,
+  scheme_hexagon,
   scheme_square,
 } from "./utilities.js";
 
@@ -490,6 +491,9 @@ suite(
   testBlendedPalette,
 );
 
-Palettes.forEach((Formula) => benchmark(Formula, {}, "gainsboro"));
+benchmark(MaterialPalette, { scheme: scheme_hexagon }, color);
+benchmark(StandardPalette, { scheme: scheme_hexagon }, color);
+benchmark(InterpolatedPalette, { values: 7, hue: 360, chroma: -25 }, color);
+benchmark(BlendedPalette, { values: 8, amount: 80 }, color);
 
 init(7);
