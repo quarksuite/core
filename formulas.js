@@ -49,7 +49,7 @@ function generateMaterialPalette({ light, dark }, palette) {
       palette.reduce((acc, value, index) => {
         return {
           ...acc,
-          [standardCategories(index)]: {
+          [alphabeticalCategories(index)]: {
             ...value.reduce(
               (a, v, i) => ({
                 ...a,
@@ -79,7 +79,6 @@ export function StandardPalette(
     utility_curry(structurePalette)({
       contrast,
       values: { tints, shades },
-      categories: standardCategories,
     }),
   );
 }
@@ -105,7 +104,6 @@ export function InterpolatedPalette(
     utility_curry(structurePalette)({
       contrast,
       values: { tints, shades },
-      categories: generatedCategories,
     }),
   );
 }
@@ -130,17 +128,16 @@ export function BlendedPalette(
     utility_curry(structurePalette)({
       contrast,
       values: { tints, shades },
-      categories: generatedCategories,
     }),
   );
 }
 
-function structurePalette({ contrast, values, categories }, palette) {
+function structurePalette({ contrast, values }, palette) {
   return utility_pipe(
     palette,
     (palette) =>
       palette.map((color, index) => {
-        const category = categories(index);
+        const category = alphabeticalCategories(index);
         const light = color_tints(
           {
             values: values.tints,
@@ -188,18 +185,7 @@ function structurePalette({ contrast, values, categories }, palette) {
   );
 }
 
-function standardCategories(index) {
-  return new Map([
-    [0, "main"],
-    [1, "accent"],
-    [2, "highlight"],
-    [3, "spot-a"],
-    [4, "spot-b"],
-    [5, "spot-c"],
-  ]).get(index);
-}
-
-function generatedCategories(index) {
+function alphabeticalCategories(index) {
   return new Map([
     ...Array(26)
       .fill(0)
