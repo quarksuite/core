@@ -312,18 +312,14 @@ export function GridFractions(scale) {
 }
 
 export function GridDimensions(columns, rows = columns) {
-  return {
-    x: assembleSpan(columns),
-    y: assembleSpan(rows),
-  };
-}
+  const xs = spanCalculation(columns);
+  const ys = spanCalculation(rows);
 
-function assembleSpan(dimension) {
-  const SCALE = spanCalculation(dimension);
-  const [base] = SCALE;
   return {
-    base,
-    ...UnidirectionalScale("", SCALE),
+    x: xs[0],
+    ...UnidirectionalScale("x", xs),
+    y: xs[0],
+    ...UnidirectionalScale("y", ys),
   };
 }
 

@@ -409,12 +409,12 @@ export function output_style_dictionary(dict) {
 
 #+BEGIN_SRC js
 import {
-  ContentMeasure,
   FigureCalculations,
   GridDimensions,
   GridFractions,
-  LayoutSpacing,
+  Spacing,
   StandardPalette,
+  TextMeasure,
   TextSize,
   TextStack,
   TextStyle,
@@ -496,14 +496,14 @@ export function Quarks({
       size: TextSize(TEXT),
     },
     content: {
-      measure: ContentMeasure({ min, max }, MEASURE),
-      rhythm: LayoutSpacing(WHITESPACE),
+      measure: TextMeasure({ min, max }, MEASURE),
+      rhythm: Spacing(WHITESPACE),
     },
     layout: {
       grid: {
         columns: GRID_COLUMNS,
         rows: GRID_ROWS,
-        gap: LayoutSpacing(WHITESPACE),
+        gap: Spacing(WHITESPACE),
         fr: GridFractions(FR),
         ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
       },
@@ -848,18 +848,14 @@ export function GridFractions(scale) {
 }
 
 export function GridDimensions(columns, rows = columns) {
-  return {
-    x: assembleSpan(columns),
-    y: assembleSpan(rows),
-  };
-}
+  const xs = spanCalculation(columns);
+  const ys = spanCalculation(rows);
 
-function assembleSpan(dimension) {
-  const SCALE = spanCalculation(dimension);
-  const [base] = SCALE;
   return {
-    base,
-    ...UnidirectionalScale("", SCALE),
+    x: xs[0],
+    ...UnidirectionalScale("x", xs),
+    y: xs[0],
+    ...UnidirectionalScale("y", ys),
   };
 }
 
