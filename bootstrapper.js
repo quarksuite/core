@@ -1,11 +1,11 @@
 // [[file:Mod.org::*Bootstrapper][Bootstrapper:1]]
 import {
-  ContentMeasure,
   FigureCalculations,
   GridDimensions,
   GridFractions,
-  LayoutSpacing,
+  Spacing,
   StandardPalette,
+  TextMeasure,
   TextSize,
   TextStack,
   TextStyle,
@@ -16,7 +16,7 @@ import { ms_create } from "./utilities.js";
 
 // [[file:Mod.org::*Quarks System Standard][Quarks System Standard:1]]
 export function Quarks({
-  color = "gainsboro",
+  color = "gray",
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
   tokens: {
     palette: {
@@ -32,12 +32,12 @@ export function Quarks({
       headings: {
         family: HEADING_FAMILY = null,
         system: HEADING_SYSTEM_STACK = "serif",
-        weights: HEADING_WEIGHTS = [300, 700, 900],
+        weights: HEADING_WEIGHTS = [700],
       } = {},
       code: {
         family: CODE_FAMILY = null,
         system: CODE_SYSTEM_STACK = "monospace",
-        weights: CODE_WEIGHTS = [400, 700],
+        weights: CODE_WEIGHTS = BODY_WEIGHTS,
       } = {},
       size: { values: TEXT_VALUES = limit } = {},
     } = {},
@@ -85,14 +85,14 @@ export function Quarks({
       size: TextSize(TEXT),
     },
     content: {
-      measure: ContentMeasure({ min, max }, MEASURE),
-      rhythm: LayoutSpacing(WHITESPACE),
+      measure: TextMeasure({ min, max }, MEASURE),
+      rhythm: Spacing(WHITESPACE),
     },
     layout: {
       grid: {
         columns: GRID_COLUMNS,
         rows: GRID_ROWS,
-        gap: LayoutSpacing(WHITESPACE),
+        gap: Spacing(WHITESPACE),
         fr: GridFractions(FR),
         ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
       },

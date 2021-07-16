@@ -427,7 +427,7 @@ import { ms_create } from "./utilities.js";
 
 #+BEGIN_SRC js
 export function Quarks({
-  color = "gainsboro",
+  color = "gray",
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
   tokens: {
     palette: {
@@ -443,12 +443,12 @@ export function Quarks({
       headings: {
         family: HEADING_FAMILY = null,
         system: HEADING_SYSTEM_STACK = "serif",
-        weights: HEADING_WEIGHTS = [300, 700, 900],
+        weights: HEADING_WEIGHTS = [700],
       } = {},
       code: {
         family: CODE_FAMILY = null,
         system: CODE_SYSTEM_STACK = "monospace",
-        weights: CODE_WEIGHTS = [400, 700],
+        weights: CODE_WEIGHTS = BODY_WEIGHTS,
       } = {},
       size: { values: TEXT_VALUES = limit } = {},
     } = {},
