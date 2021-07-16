@@ -3,6 +3,7 @@ import {
   GridDimensions,
   GridFractions,
   Spacing,
+  Viewport,
 } from "./formulas.js";
 import { ms_create } from "./utilities.js";
 
@@ -112,17 +113,115 @@ const testFigureCalculations = [
   ],
 ];
 
+const testViewport = [
+  "Viewport",
+  [
+    "with the default scale",
+    data(Viewport({}, ms_create({}, 1)), {
+      width: {
+        base: "100vw",
+        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        threshold: "5vw",
+      },
+      height: {
+        base: "100vh",
+        segment: ["68vh", "56vh", "43vh", "29vh", "17vh", "9vh"],
+        threshold: "5vh",
+      },
+      min: {
+        base: "100vmin",
+        segment: ["68vmin", "56vmin", "43vmin", "29vmin", "17vmin", "9vmin"],
+        threshold: "5vmin",
+      },
+      max: {
+        base: "100vmax",
+        segment: ["68vmax", "56vmax", "43vmax", "29vmax", "17vmax", "9vmax"],
+        threshold: "5vmax",
+      },
+    }),
+  ],
+  [
+    "setting the viewport threshold and full view",
+    data(Viewport({ threshold: 36, full: 120 }, ms_create({}, 1)), {
+      width: {
+        base: "120vw",
+        segment: ["92vw", "81vw", "69vw", "57vw", "46vw", "39vw"],
+        threshold: "36vw",
+      },
+      height: {
+        base: "120vh",
+        segment: ["92vh", "81vh", "69vh", "57vh", "46vh", "39vh"],
+        threshold: "36vh",
+      },
+      min: {
+        base: "120vmin",
+        segment: ["92vmin", "81vmin", "69vmin", "57vmin", "46vmin", "39vmin"],
+        threshold: "36vmin",
+      },
+      max: {
+        base: "120vmax",
+        segment: ["92vmax", "81vmax", "69vmax", "57vmax", "46vmax", "39vmax"],
+        threshold: "36vmax",
+      },
+    }),
+  ],
+  [
+    "setting the context",
+    data(Viewport({ context: ["w"] }, ms_create({}, 1)), {
+      width: {
+        base: "100vw",
+        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        threshold: "5vw",
+      },
+    }),
+    data(Viewport({ context: ["w", "min"] }, ms_create({}, 1)), {
+      width: {
+        base: "100vw",
+        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        threshold: "5vw",
+      },
+      min: {
+        base: "100vmin",
+        segment: ["68vmin", "56vmin", "43vmin", "29vmin", "17vmin", "9vmin"],
+        threshold: "5vmin",
+      },
+    }),
+  ],
+  [
+    "context is assembled in order",
+    data(Viewport({ context: ["h", "min", "w"] }, ms_create({}, 1)), {
+      height: {
+        base: "100vh",
+        segment: ["68vh", "56vh", "43vh", "29vh", "17vh", "9vh"],
+        threshold: "5vh",
+      },
+      min: {
+        base: "100vmin",
+        segment: ["68vmin", "56vmin", "43vmin", "29vmin", "17vmin", "9vmin"],
+        threshold: "5vmin",
+      },
+      width: {
+        base: "100vw",
+        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        threshold: "5vw",
+      },
+    }),
+  ],
+];
+
 suite(
   "Layout formulas",
   testSpacing,
   testGridFractions,
   testGridDimensions,
   testFigureCalculations,
+  testViewport,
 );
 
 benchmark(Spacing, ms_create({ values: 100 }, 1));
 benchmark(GridFractions, ms_create({ values: 100 }, 1));
 benchmark(GridDimensions, 100, 25);
 benchmark(FigureCalculations, ms_create({ values: 100 }, 1));
+benchmark(Viewport, {}, ms_create({ values: 100 }, 1));
 
 init(7);
