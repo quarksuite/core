@@ -22,7 +22,6 @@
   - [[#palette-formulas][Palette Formulas]]
   - [[#typography-formulas][Typography Formulas]]
   - [[#layout-formulas][Layout Formulas]]
-  - [[#viewport-formulas][Viewport Formulas]]
 - [[#configurations][Configurations]]
   - [[#numeric-color-scale][Numeric Color Scale]]
   - [[#modular-scale-types][Modular Scale Types]]
@@ -893,11 +892,7 @@ export function FigureCalculations(scale) {
     ),
   };
 }
-#+END_SRC
 
-** Viewport Formulas
-
-#+BEGIN_SRC js
 export function Viewport(
   { threshold = 5, full = 100, context = ["w", "h", "min", "max"] },
   scale,

@@ -356,9 +356,7 @@ export function FigureCalculations(scale) {
     ),
   };
 }
-// Layout Formulas:1 ends here
 
-// [[file:Mod.org::*Viewport Formulas][Viewport Formulas:1]]
 export function Viewport(
   { threshold = 5, full = 100, context = ["w", "h", "min", "max"] },
   scale,
@@ -397,4 +395,4 @@ function viewportTargets(target) {
     ["max", ["max", "vmax"]],
   ]).get(target);
 }
-// Viewport Formulas:1 ends here
+// Layout Formulas:1 ends here
