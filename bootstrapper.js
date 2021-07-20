@@ -5,6 +5,7 @@ import {
   GridFractions,
   MaterialPalette,
   Spacing,
+  TextLeading,
   TextMeasure,
   TextSize,
   TextStack,
@@ -36,7 +37,8 @@ export function Quarks({
         system: CODE_SYSTEM_STACK = "monospace",
         weights: CODE_WEIGHTS = BODY_WEIGHTS,
       } = {},
-      size: { values: TEXT_VALUES = limit } = {},
+      leading: { normal = 1.5, tight = 1.125 } = {},
+      values: TEXT_VALUES = limit,
     } = {},
     content: {
       measure: { min = 45, max = 75, values: CPL_VALUES = limit } = {},
@@ -80,6 +82,7 @@ export function Quarks({
         style: TextStyle(CODE_WEIGHTS),
       },
       size: TextSize(TEXT),
+      leading: TextLeading({ normal, tight }, TEXT),
     },
     content: {
       measure: TextMeasure({ min, max }, MEASURE),
@@ -93,16 +96,14 @@ export function Quarks({
         ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
       },
     },
-    viewport: {
-      ...Viewport(
-        {
-          threshold,
-          full,
-          context,
-        },
-        VP,
-      ),
-    },
+    viewport: Viewport(
+      {
+        threshold,
+        full,
+        context,
+      },
+      VP,
+    ),
     calc: FigureCalculations(SCALE),
   };
 }
