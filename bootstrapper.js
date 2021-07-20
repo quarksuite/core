@@ -3,8 +3,8 @@ import {
   FigureCalculations,
   GridDimensions,
   GridFractions,
+  MaterialPalette,
   Spacing,
-  StandardPalette,
   TextMeasure,
   TextSize,
   TextStack,
@@ -19,10 +19,7 @@ export function Quarks({
   color = "gray",
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
   tokens: {
-    palette: {
-      formula = StandardPalette,
-      modifiers = { tints: 4, shades: 4 },
-    } = {},
+    palette: { formula = MaterialPalette, modifiers = {} } = {},
     text: {
       body: {
         family: BODY_FAMILY = null,

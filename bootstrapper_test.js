@@ -1,5 +1,4 @@
 import { Quarks } from "./bootstrapper.js";
-import { MaterialPalette } from "./formulas.js";
 import { scheme_analogous } from "./utilities.js";
 import { benchmark, data, init, suite } from "./tests/index.js";
 
@@ -10,19 +9,16 @@ const testQuarks = [
     data(Quarks(), {
       color: {
         a: {
-          base: "#808080",
-          light: {
-            100: "#9d9d9d",
-            200: "#bababa",
-            300: "#d9d9d9",
-            400: "#f8f8f8",
-          },
-          dark: {
-            100: "#5f5f5f",
-            200: "#404040",
-            300: "#232323",
-            400: "#0a0a0a",
-          },
+          50: "#f8f8f8",
+          100: "#dfdfdf",
+          200: "#c6c6c6",
+          300: "#aeaeae",
+          400: "#979797",
+          500: "#757575",
+          600: "#626262",
+          700: "#454545",
+          800: "#2a2a2a",
+          900: "#121212",
         },
       },
       text: {
@@ -121,7 +117,6 @@ const testQuarks = [
         color: "dodgerblue",
         tokens: {
           palette: {
-            formula: MaterialPalette,
             modifiers: { scheme: scheme_analogous },
           },
         },
@@ -293,7 +288,6 @@ benchmark(Quarks, {
   scale: { limit: 100 },
   tokens: {
     palette: {
-      formula: MaterialPalette,
       modifiers: { scheme: scheme_analogous },
     },
   },
