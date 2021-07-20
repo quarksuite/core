@@ -308,7 +308,7 @@ export function Spacing(scale) {
 }
 
 export function GridFractions(scale) {
-  return ContentUnidirectional({ key: "x", unit: "fr" }, scale);
+  return Content(["fr"], scale);
 }
 
 export function GridDimensions(columns, rows = columns) {
@@ -327,17 +327,6 @@ function spanCalculation(xs) {
   return Array(xs)
     .fill(1)
     .map((x, pos) => x + pos);
-}
-
-function ContentUnidirectional({ key, unit }, scale) {
-  const [base] = Array.from(scale);
-  const values = Array.from(scale);
-  const output = utility_curry(ms_units)(unit);
-
-  return {
-    base: utility_pipe([base], output).toString(),
-    ...UnidirectionalScale(key, utility_pipe(values, output)),
-  };
 }
 
 export function FigureCalculations(scale) {
