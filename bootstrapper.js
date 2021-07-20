@@ -86,13 +86,12 @@ export function Quarks({
     },
     content: {
       measure: TextMeasure({ min, max }, MEASURE),
-      rhythm: Spacing(WHITESPACE),
+      whitespace: Spacing(WHITESPACE),
     },
     layout: {
       grid: {
         columns: GRID_COLUMNS,
         rows: GRID_ROWS,
-        gap: Spacing(WHITESPACE),
         fr: GridFractions(FR),
         ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
       },

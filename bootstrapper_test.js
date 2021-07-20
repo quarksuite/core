@@ -61,7 +61,7 @@ const testQuarks = [
           segment: ["65ch", "61ch", "57ch", "52ch", "48ch", "46ch"],
           minimum: "45ch",
         },
-        rhythm: {
+        whitespace: {
           base: "1ex",
           x2: "1.5ex",
           x3: "2.25ex",
@@ -79,19 +79,6 @@ const testQuarks = [
         grid: {
           columns: 6,
           rows: 4,
-          gap: {
-            base: "1ex",
-            x2: "1.5ex",
-            x3: "2.25ex",
-            x4: "3.375ex",
-            x5: "5.0625ex",
-            x6: "7.5938ex",
-            d2: "0.66667ex",
-            d3: "0.44444ex",
-            d4: "0.2963ex",
-            d5: "0.19753ex",
-            d6: "0.13169ex",
-          },
           fr: {
             base: "1fr",
             x2: "1.5fr",
@@ -238,7 +225,7 @@ const testQuarks = [
           segment: ["53ch", "49ch", "44ch", "40ch"],
           minimum: "32ch",
         },
-        rhythm: {
+        whitespace: {
           base: "1ex",
           x2: "1.5ex",
           x3: "2.25ex",
@@ -260,19 +247,6 @@ const testQuarks = [
       grid: {
         columns: 5,
         rows: 3,
-        gap: {
-          base: "1ex",
-          x2: "1.5ex",
-          x3: "2.25ex",
-          x4: "3.375ex",
-          x5: "5.0625ex",
-          x6: "7.5938ex",
-          d2: "0.66667ex",
-          d3: "0.44444ex",
-          d4: "0.2963ex",
-          d5: "0.19753ex",
-          d6: "0.13169ex",
-        },
         fr: {
           base: "1fr",
           x2: "1.5fr",
