@@ -22,20 +22,18 @@ const testQuarks = [
         },
       },
       text: {
-        body: {
-          family:
+        family: {
+          body:
             "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-          style: { regular: 400, bold: 700 },
-        },
-        headings: {
-          family:
+          headings:
             "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-          style: { bold: 700 },
-        },
-        code: {
-          family:
+          code:
             "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-          style: { regular: 400, bold: 700 },
+        },
+        weight: {
+          body: { regular: 400, bold: 700 },
+          headings: { bold: 700 },
+          code: { regular: 400, bold: 700 },
         },
         size: {
           base: "1rem",
@@ -50,19 +48,17 @@ const testQuarks = [
           d5: "0.19753em",
           d6: "0.13169em",
         },
-        leading: {
-          base: 1.5,
-          narrow: [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423],
-          tight: 1.125,
-        },
-      },
-      content: {
         measure: {
           base: "75ch",
           segment: ["65ch", "61ch", "57ch", "52ch", "48ch", "46ch"],
           minimum: "45ch",
         },
-        whitespace: {
+        leading: {
+          base: 1.5,
+          narrow: [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423],
+          tight: 1.125,
+        },
+        unit: {
           base: "1ex",
           x2: "1.5ex",
           x3: "2.25ex",
@@ -76,34 +72,32 @@ const testQuarks = [
           d6: "0.13169ex",
         },
       },
-      layout: {
-        grid: {
-          columns: 6,
-          rows: 4,
-          fr: {
-            base: "1fr",
-            x2: "1.5fr",
-            x3: "2.25fr",
-            x4: "3.375fr",
-            x5: "5.0625fr",
-            x6: "7.5938fr",
-            d2: "0.66667fr",
-            d3: "0.44444fr",
-            d4: "0.2963fr",
-            d5: "0.19753fr",
-            d6: "0.13169fr",
-          },
-          x: 1,
-          x2: 2,
-          x3: 3,
-          x4: 4,
-          x5: 5,
-          x6: 6,
-          y: 1,
-          y2: 2,
-          y3: 3,
-          y4: 4,
+      grid: {
+        columns: 6,
+        rows: 4,
+        fr: {
+          base: "1fr",
+          x2: "1.5fr",
+          x3: "2.25fr",
+          x4: "3.375fr",
+          x5: "5.0625fr",
+          x6: "7.5938fr",
+          d2: "0.66667fr",
+          d3: "0.44444fr",
+          d4: "0.2963fr",
+          d5: "0.19753fr",
+          d6: "0.13169fr",
         },
+        x: 1,
+        x2: 2,
+        x3: 3,
+        x4: 4,
+        x5: 5,
+        x6: 6,
+        y: 1,
+        y2: 2,
+        y3: 3,
+        y4: 4,
       },
       viewport: {
         width: {
@@ -117,7 +111,7 @@ const testQuarks = [
           threshold: "5vh",
         },
       },
-      calc: { base: 1, x2: 1.5, x3: 2.25, x4: 3.375, x5: 5.0625, x6: 7.5938 },
+      ms: { base: 1, x2: 1.5, x3: 2.25, x4: 3.375, x5: 5.0625, x6: 7.5938 },
     }),
   ],
   [
@@ -126,7 +120,7 @@ const testQuarks = [
       Quarks({
         color: "dodgerblue",
         tokens: {
-          palette: {
+          color: {
             modifiers: { scheme: scheme_analogous },
           },
         },
@@ -181,25 +175,24 @@ const testQuarks = [
             body: { system: "serif", family: "Zilla Slab" },
             headings: { system: "sans", family: "Rubik" },
             code: { family: "Space Mono" },
+            measure: { min: 32, max: 64, values: 4 },
             leading: { tight: 1.25 },
           },
         },
       }).text,
       {
-        body: {
-          family:
-            "Zilla Slab, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-          style: { regular: 400, bold: 700 },
+        family: {
+          body:
+            "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+          headings:
+            "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+          code:
+            "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
         },
-        headings: {
-          family:
-            "Rubik, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-          style: { bold: 700 },
-        },
-        code: {
-          family:
-            "Space Mono, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-          style: { regular: 400, bold: 700 },
+        weight: {
+          body: { regular: 400, bold: 700 },
+          headings: { bold: 700 },
+          code: { regular: 400, bold: 700 },
         },
         size: {
           base: "1rem",
@@ -210,74 +203,52 @@ const testQuarks = [
           d3: "0.44444em",
           d4: "0.2963em",
         },
-        leading: {
-          base: 1.5,
-          narrow: [1.4167, 1.3861, 1.3504, 1.3136],
-          tight: 1.25,
-        },
-      },
-    ),
-  ],
-  [
-    "setting content token configuration",
-    data(
-      Quarks({
-        scale: { limit: 8 },
-        tokens: {
-          content: {
-            measure: { min: 32, max: 64, values: 4 },
-            whitespace: { values: 6 },
-          },
-        },
-      }).content,
-      {
         measure: {
           base: "64ch",
           segment: ["53ch", "49ch", "44ch", "40ch"],
           minimum: "32ch",
         },
-        whitespace: {
+        leading: {
+          base: 1.5,
+          narrow: [1.4167, 1.3861, 1.3504, 1.3136],
+          tight: 1.25,
+        },
+        unit: {
           base: "1ex",
           x2: "1.5ex",
           x3: "2.25ex",
           x4: "3.375ex",
-          x5: "5.0625ex",
-          x6: "7.5938ex",
           d2: "0.66667ex",
           d3: "0.44444ex",
           d4: "0.2963ex",
-          d5: "0.19753ex",
-          d6: "0.13169ex",
         },
       },
     ),
   ],
   [
-    "setting layout token configuration",
-    data(Quarks({ tokens: { layout: { grid: { columns: 5 } } } }).layout, {
-      grid: {
-        columns: 5,
-        rows: 3,
-        fr: {
-          base: "1fr",
-          x2: "1.5fr",
-          x3: "2.25fr",
-          x4: "3.375fr",
-          x5: "5.0625fr",
-          d2: "0.66667fr",
-          d3: "0.44444fr",
-          d4: "0.2963fr",
-          d5: "0.19753fr",
-        },
-        x: 1,
-        x2: 2,
-        x3: 3,
-        x4: 4,
-        x5: 5,
-        y: 1,
-        y2: 2,
-        y3: 3,
+    "setting grid token configuration",
+    data(Quarks({ tokens: { grid: { columns: 5 } } }).grid, {
+      columns: 5,
+      rows: 3,
+      fr: {
+        base: "1fr",
+        x2: "1.5fr",
+        x3: "2.25fr",
+        x4: "3.375fr",
+        x5: "5.0625fr",
+        d2: "0.66667fr",
+        d3: "0.44444fr",
+        d4: "0.2963fr",
+        d5: "0.19753fr",
       },
+      x: 1,
+      x2: 2,
+      x3: 3,
+      x4: 4,
+      x5: 5,
+      y: 1,
+      y2: 2,
+      y3: 3,
     }),
   ],
   [

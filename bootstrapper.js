@@ -4,12 +4,12 @@ import {
   GridDimensions,
   GridFractions,
   MaterialPalette,
-  Spacing,
   TextLeading,
   TextMeasure,
   TextSize,
   TextStack,
   TextStyle,
+  TextUnits,
   Viewport,
 } from "./formulas.js";
 import { ms_create } from "./utilities.js";
@@ -20,33 +20,28 @@ export function Quarks({
   color = "gray",
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
   tokens: {
-    palette: { formula = MaterialPalette, modifiers = {} } = {},
+    color: { formula = MaterialPalette, modifiers = {} } = {},
     text: {
-      body: {
-        family: BODY_FAMILY = null,
-        system: BODY_SYSTEM_STACK = "sans",
-        weights: BODY_WEIGHTS = [400, 700],
+      family: {
+        body: BODY_FAMILY = null,
+        headings: HEADING_FAMILY = null,
+        code: CODE_FAMILY = null,
       } = {},
-      headings: {
-        family: HEADING_FAMILY = null,
-        system: HEADING_SYSTEM_STACK = "serif",
-        weights: HEADING_WEIGHTS = [700],
+      fallback: {
+        body: BODY_FALLBACK = "sans",
+        headings: HEADING_FALLBACK = "serif",
+        code: CODE_FALLBACK = "monospace",
       } = {},
-      code: {
-        family: CODE_FAMILY = null,
-        system: CODE_SYSTEM_STACK = "monospace",
-        weights: CODE_WEIGHTS = BODY_WEIGHTS,
+      weights: {
+        body: BODY_WEIGHTS = [400, 700],
+        headings: HEADING_WEIGHTS = [700],
+        code: CODE_WEIGHTS = BODY_WEIGHTS,
       } = {},
+      measure: { min = 45, max = 75 } = {},
       leading: { normal = 1.5, tight = 1.125 } = {},
       values: TEXT_VALUES = limit,
     } = {},
-    content: {
-      measure: { min = 45, max = 75, values: CPL_VALUES = limit } = {},
-      whitespace: { values: SPACING_VALUES = limit } = {},
-    } = {},
-    layout: {
-      grid: { columns: GRID_COLUMNS = limit, ratio: GRID_RATIO = ratio } = {},
-    } = {},
+    grid: { columns: GRID_COLUMNS = limit, ratio: GRID_RATIO = ratio } = {},
     viewport: {
       threshold = 5,
       full = 100,
@@ -56,10 +51,8 @@ export function Quarks({
   } = {},
 } = {}) {
   const SCALE = ms_create({ ratio, values: limit }, initial);
-  const [TEXT, MEASURE, WHITESPACE, FR, VP] = [
+  const [TEXT, GRID, VIEWPORT] = [
     TEXT_VALUES,
-    CPL_VALUES,
-    SPACING_VALUES,
     GRID_COLUMNS,
     VIEWPORT_VALUES,
   ].map((values) => ms_create({ ratio, values }, initial));
@@ -69,42 +62,29 @@ export function Quarks({
   return {
     color: formula(modifiers, color),
     text: {
-      body: {
-        family: TextStack(BODY_SYSTEM_STACK, BODY_FAMILY),
-        style: TextStyle(BODY_WEIGHTS),
+      family: {
+        body: TextStack(BODY_FALLBACK, BODY_FAMILY),
+        headings: TextStack(HEADING_FALLBACK, HEADING_FAMILY),
+        code: TextStack(CODE_FALLBACK, CODE_FAMILY),
       },
-      headings: {
-        family: TextStack(HEADING_SYSTEM_STACK, HEADING_FAMILY),
-        style: TextStyle(HEADING_WEIGHTS),
-      },
-      code: {
-        family: TextStack(CODE_SYSTEM_STACK, CODE_FAMILY),
-        style: TextStyle(CODE_WEIGHTS),
+      weight: {
+        body: TextStyle(BODY_WEIGHTS),
+        headings: TextStyle(HEADING_WEIGHTS),
+        code: TextStyle(CODE_WEIGHTS),
       },
       size: TextSize(TEXT),
+      measure: TextMeasure({ min, max }, TEXT),
       leading: TextLeading({ normal, tight }, TEXT),
+      unit: TextUnits(TEXT),
     },
-    content: {
-      measure: TextMeasure({ min, max }, MEASURE),
-      whitespace: Spacing(WHITESPACE),
+    grid: {
+      columns: GRID_COLUMNS,
+      rows: GRID_ROWS,
+      fr: GridFractions(GRID),
+      ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
     },
-    layout: {
-      grid: {
-        columns: GRID_COLUMNS,
-        rows: GRID_ROWS,
-        fr: GridFractions(FR),
-        ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
-      },
-    },
-    viewport: Viewport(
-      {
-        threshold,
-        full,
-        context,
-      },
-      VP,
-    ),
-    calc: FigureCalculations(SCALE),
+    viewport: Viewport({ threshold, full, context }, VIEWPORT),
+    ms: FigureCalculations(SCALE),
   };
 }
 // Quarks System Standard:1 ends here
