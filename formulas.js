@@ -286,6 +286,10 @@ export function TextMeasure({ min = 45, max = 75 }, scale) {
   );
 }
 
+export function TextUnits(scale) {
+  return Content(["ex"], scale);
+}
+
 function ContentRange({ min, max, unit, keys, calc }, scale) {
   const output = utility_curry(ms_units)(unit);
 
@@ -303,10 +307,6 @@ function ContentRange({ min, max, unit, keys, calc }, scale) {
 // Typography Formulas:1 ends here
 
 // [[file:Mod.org::*Layout Formulas][Layout Formulas:1]]
-export function Spacing(scale) {
-  return Content(["ex"], scale);
-}
-
 export function GridFractions(scale) {
   return Content(["fr"], scale);
 }
@@ -381,3 +381,7 @@ function viewportTargets(target) {
   ]).get(target);
 }
 // Layout Formulas:1 ends here
+
+// [[file:Mod.org::*UI Formulas][UI Formulas:1]]
+
+// UI Formulas:1 ends here

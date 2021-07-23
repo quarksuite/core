@@ -4,6 +4,7 @@ import {
   TextSize,
   TextStack,
   TextStyle,
+  TextUnits,
 } from "./formulas.js";
 import { ms_create } from "./utilities.js";
 
@@ -71,7 +72,7 @@ const testTextSize = [
     }),
   ],
   [
-    "passing in a custom scale",
+    "with a custom scale",
     data(TextSize(ms_create({ ratio: 1.25 }, 1)), {
       base: "1rem",
       x2: "1.25rem",
@@ -108,7 +109,7 @@ const testTextLeading = [
     }),
   ],
   [
-    "passing in a custom scale",
+    "with a custom scale",
     data(TextLeading({}, ms_create({ values: 4, ratio: 2 }, 1)), {
       base: 1.5,
       narrow: [1.375, 1.3125, 1.2656, 1.251],
@@ -136,11 +137,43 @@ const testTextMeasure = [
     }),
   ],
   [
-    "passing in a custom scale",
+    "with a custom scale",
     data(TextMeasure({}, ms_create({ values: 4, ratio: 2 }, 1)), {
       base: "75ch",
       segment: ["60ch", "52ch", "46ch"],
       minimum: "45ch",
+    }),
+  ],
+];
+
+const testTextUnits = [
+  "TextUnits",
+  [
+    "with the default scale",
+    data(TextUnits(ms_create({}, 1)), {
+      base: "1ex",
+      x2: "1.5ex",
+      x3: "2.25ex",
+      x4: "3.375ex",
+      x5: "5.0625ex",
+      x6: "7.5938ex",
+      d2: "0.66667ex",
+      d3: "0.44444ex",
+      d4: "0.2963ex",
+      d5: "0.19753ex",
+      d6: "0.13169ex",
+    }),
+  ],
+  [
+    "with a custom scale",
+    data(TextUnits(ms_create({ values: 4, ratio: 2 }, 1)), {
+      base: "1ex",
+      x2: "2ex",
+      x3: "4ex",
+      x4: "8ex",
+      d2: "0.5ex",
+      d3: "0.25ex",
+      d4: "0.125ex",
     }),
   ],
 ];
@@ -152,6 +185,7 @@ suite(
   testTextSize,
   testTextLeading,
   testTextMeasure,
+  testTextUnits,
 );
 
 benchmark(TextStack, "sans");
@@ -159,5 +193,6 @@ benchmark(TextStyle, [100, 200, 300, 400, 500, 600, 700, 800, 900]);
 benchmark(TextSize, ms_create({ values: 100 }, 1));
 benchmark(TextLeading, {}, ms_create({ values: 100 }, 1));
 benchmark(TextMeasure, {}, ms_create({ values: 100 }, 1));
+benchmark(TextUnits, ms_create({ values: 100 }, 1));
 
 init(7);

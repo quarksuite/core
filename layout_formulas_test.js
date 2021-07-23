@@ -2,44 +2,11 @@ import {
   FigureCalculations,
   GridDimensions,
   GridFractions,
-  Spacing,
   Viewport,
 } from "./formulas.js";
 import { ms_create } from "./utilities.js";
 
 import { benchmark, data, init, suite } from "./tests/index.js";
-
-const testSpacing = [
-  "Spacing",
-  [
-    "with the default scale",
-    data(Spacing(ms_create({}, 1)), {
-      base: "1ex",
-      x2: "1.5ex",
-      x3: "2.25ex",
-      x4: "3.375ex",
-      x5: "5.0625ex",
-      x6: "7.5938ex",
-      d2: "0.66667ex",
-      d3: "0.44444ex",
-      d4: "0.2963ex",
-      d5: "0.19753ex",
-      d6: "0.13169ex",
-    }),
-  ],
-  [
-    "with a custom scale",
-    data(Spacing(ms_create({ values: 4, ratio: 2 }, 1)), {
-      base: "1ex",
-      x2: "2ex",
-      x3: "4ex",
-      x4: "8ex",
-      d2: "0.5ex",
-      d3: "0.25ex",
-      d4: "0.125ex",
-    }),
-  ],
-];
 
 const testGridFractions = [
   "GridFractions",
@@ -229,14 +196,12 @@ const testViewport = [
 
 suite(
   "Layout formulas",
-  testSpacing,
   testGridFractions,
   testGridDimensions,
   testFigureCalculations,
   testViewport,
 );
 
-benchmark(Spacing, ms_create({ values: 100 }, 1));
 benchmark(GridFractions, ms_create({ values: 100 }, 1));
 benchmark(GridDimensions, 100, 25);
 benchmark(FigureCalculations, ms_create({ values: 100 }, 1));

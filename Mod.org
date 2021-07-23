@@ -817,6 +817,10 @@ export function TextMeasure({ min = 45, max = 75 }, scale) {
   );
 }
 
+export function TextUnits(scale) {
+  return Content(["ex"], scale);
+}
+
 function ContentRange({ min, max, unit, keys, calc }, scale) {
   const output = utility_curry(ms_units)(unit);
 
@@ -836,12 +840,8 @@ function ContentRange({ min, max, unit, keys, calc }, scale) {
 ** Layout Formulas
 
 #+BEGIN_SRC js
-export function Spacing(scale) {
-  return Content(["ex"], scale);
-}
-
 export function GridFractions(scale) {
-  return ContentUnidirectional({ key: "x", unit: "fr" }, scale);
+  return Content(["fr"], scale);
 }
 
 export function GridDimensions(columns, rows = columns) {
