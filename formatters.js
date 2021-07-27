@@ -168,10 +168,10 @@ GIMP Palette
 Name: ${name} (v${version})
 # Generator: Quarks System Core
 # Owned by ${author}
-# ${license}
+# License: ${license}
 ${
     metadataEmitter(
-      { commentDelim: ["# ", "# ", "\n#"] },
+      { commentDelim: ["#", "# ", "\n#"] },
       {
         description,
         comments,

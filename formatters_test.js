@@ -10,82 +10,17 @@ import {
   output_tailwindcss,
   output_yaml,
 } from "./formatters.js";
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { Maven } from "https://deno.land/x/merlin/mod.ts";
+import { Quarks } from "./bootstrapper.js";
+import {
+  benchmark,
+  data,
+  exception,
+  init,
+  string,
+  suite,
+} from "./tests/index.js";
 
-const benchmark = new Maven();
-
-const invalidSchema = {
-  color: {
-    main: {
-      base: "red",
-      shades: ["crimson", "firebrick"],
-    },
-    accent: "lime",
-    highlight: "blue",
-  },
-};
-
-const completeQSD = {
-  project: {
-    name: "Unknown Project",
-    author: "Anonymous",
-    version: "0.0.0",
-    license: "Unlicense",
-  },
-  ...invalidSchema,
-};
-
-const completeQSDWithMeta = {
-  ...completeQSD,
-  color: {
-    metadata: {
-      description: "Do I have meta? Yes I do!",
-      comments: "Sweet, a comment!",
-    },
-    ...completeQSD.color,
-  },
-};
-
-const completeQSDWithMultilineMeta = {
-  ...completeQSD,
-  color: {
-    metadata: {
-      description: `
-Metadata
-is
-totally
-allowed
-to
-span
-lines
-`,
-      comments: `
-See what
-I mean?
-`,
-    },
-    ...completeQSD.color,
-  },
-};
-
-const goGoGadgetVersioning = {
-  ...completeQSD,
-  project: {
-    ...completeQSD.project,
-    bump: "minor",
-  },
-};
-
-const removeTimestamp = (format) =>
-  format.replace(
-    /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
-    "Updated on [Timestamp replaced for testing]",
-  );
-
-const checkVersion = (dict) => dict.project.version;
-
-const AllFormatters = [
+const formats = [
   output_css,
   output_scss,
   output_less,
@@ -98,678 +33,481 @@ const AllFormatters = [
   output_style_dictionary,
 ];
 
-describe("Formatters", () => {
-  AllFormatters.forEach((Formatter) =>
-    it(`${Formatter.name}(dict) should whine if the project metadata is missing from the dictionary`, () =>
-      expect(() => Formatter(invalidSchema)).toThrow())
+const removeTimestamp = (format) =>
+  format.replace(
+    /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
+    "Updated on [Timestamp replaced for testing]",
   );
 
-  it("should allow automatic versioning", () => {
-    expect(checkVersion(JSON.parse(output_raw(goGoGadgetVersioning)))).toBe(
-      "0.1.0",
-    );
-    expect(checkVersion(JSON.parse(output_raw(goGoGadgetVersioning)))).toBe(
-      "0.2.0",
-    );
-    expect(checkVersion(JSON.parse(output_raw(goGoGadgetVersioning)))).toBe(
-      "0.3.0",
-    );
-  });
+const checkVersion = (dict) => dict.project.version;
 
-  describe("CSS Formats", () => {
-    describe("output_css(dict)", () => {
-      it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(output_css(completeQSD));
-        expect(result).toBe(`
-/**
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- **/
+const options = Quarks();
 
-:root {
-  --color-main: red;
-  --color-main-shades-0: crimson;
-  --color-main-shades-1: firebrick;
-  --color-accent: lime;
-  --color-highlight: blue;
+const testExceptions = [
+  "Exceptions",
+  ["reject incomplete schema", formats.forEach((f) => exception(f, options))],
+];
 
-}
-`);
-      });
-      it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(output_css(completeQSDWithMeta));
-        expect(result).toBe(`
-/**
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- **/
+// lot of data, so I'm only going to test bits of it
+const dict = {
+  project: {
+    name: "Example Design Tokens",
+    author: "Chatman R. Jr",
+    version: "0.0.0",
+    license: "Unlicense",
+  },
+  color: {
+    bg: options.color.a["50"],
+    fg: options.color.a["900"],
+    light: options.color.a["300"],
+    lighter: options.color.a["200"],
+    dark: options.color.a["600"],
+    darker: options.color.a["700"],
+  },
+};
 
-:root {
-
-  /**
-   * DESCRIPTION: Do I have meta? Yes I do!
-   * COMMENTS: Sweet, a comment!
-   **/
-
-  --color-main: red;
-  --color-main-shades-0: crimson;
-  --color-main-shades-1: firebrick;
-  --color-accent: lime;
-  --color-highlight: blue;
-
-}
-`);
-      });
-      it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(
-          output_css(completeQSDWithMultilineMeta),
-        );
-        expect(result).toBe(`
-/**
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- **/
-
-:root {
-
-  /**
-   * DESCRIPTION:
-   *
-   * Metadata
-   * is
-   * totally
-   * allowed
-   * to
-   * span
-   * lines
-   *
-   * COMMENTS:
-   *
-   * See what
-   * I mean?
-   *
-   **/
-
-  --color-main: red;
-  --color-main-shades-0: crimson;
-  --color-main-shades-1: firebrick;
-  --color-accent: lime;
-  --color-highlight: blue;
-
-}
-`);
-      });
-    });
-    describe("output_css(dict)", () => {
-      it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(output_scss(completeQSD));
-        expect(result).toBe(`
-/*!
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-$color-main: red;
-$color-main-shades-0: crimson;
-$color-main-shades-1: firebrick;
-$color-accent: lime;
-$color-highlight: blue;
-
-`);
-      });
-      it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(output_scss(completeQSDWithMeta));
-        expect(result).toBe(`
-/*!
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-
-// DESCRIPTION: Do I have meta? Yes I do!
-// COMMENTS: Sweet, a comment!
-
-$color-main: red;
-$color-main-shades-0: crimson;
-$color-main-shades-1: firebrick;
-$color-accent: lime;
-$color-highlight: blue;
-
-`);
-      });
-      it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(
-          output_scss(completeQSDWithMultilineMeta),
-        );
-        expect(result).toBe(`
-/*!
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-
-// DESCRIPTION:
-//
-// Metadata
-// is
-// totally
-// allowed
-// to
-// span
-// lines
-//
-// COMMENTS:
-//
-// See what
-// I mean?
-//
-
-$color-main: red;
-$color-main-shades-0: crimson;
-$color-main-shades-1: firebrick;
-$color-accent: lime;
-$color-highlight: blue;
-
-`);
-      });
-    });
-    describe("output_less(dict)", () => {
-      it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(output_less(completeQSD));
-        expect(result).toBe(`
-/*
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-@color-main: red;
-@color-main-shades-0: crimson;
-@color-main-shades-1: firebrick;
-@color-accent: lime;
-@color-highlight: blue;
-
-`);
-      });
-      it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(output_less(completeQSDWithMeta));
-        expect(result).toBe(`
-/*
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-
-// DESCRIPTION: Do I have meta? Yes I do!
-// COMMENTS: Sweet, a comment!
-
-@color-main: red;
-@color-main-shades-0: crimson;
-@color-main-shades-1: firebrick;
-@color-accent: lime;
-@color-highlight: blue;
-
-`);
-      });
-      it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(
-          output_less(completeQSDWithMultilineMeta),
-        );
-        expect(result).toBe(`
-/*
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-
-// DESCRIPTION:
-//
-// Metadata
-// is
-// totally
-// allowed
-// to
-// span
-// lines
-//
-// COMMENTS:
-//
-// See what
-// I mean?
-//
-
-@color-main: red;
-@color-main-shades-0: crimson;
-@color-main-shades-1: firebrick;
-@color-accent: lime;
-@color-highlight: blue;
-
-`);
-      });
-    });
-    describe("output_styl(dict)", () => {
-      it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(output_styl(completeQSD));
-        expect(result).toBe(`
-/*!
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-color-main = red
-color-main-shades-0 = crimson
-color-main-shades-1 = firebrick
-color-accent = lime
-color-highlight = blue
-
-`);
-      });
-      it("should correctly process complete dictionaries with metadata", () => {
-        const result = removeTimestamp(output_styl(completeQSDWithMeta));
-        expect(result).toBe(`
-/*!
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-
-// DESCRIPTION: Do I have meta? Yes I do!
-// COMMENTS: Sweet, a comment!
-
-color-main = red
-color-main-shades-0 = crimson
-color-main-shades-1 = firebrick
-color-accent = lime
-color-highlight = blue
-
-`);
-      });
-      it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = removeTimestamp(
-          output_styl(completeQSDWithMultilineMeta),
-        );
-        expect(result).toBe(`
-/*!
- * Project: Unknown Project (v0.0.0)
- * Owned by: Anonymous
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on [Timestamp replaced for testing]
- */
-
-
-// DESCRIPTION:
-//
-// Metadata
-// is
-// totally
-// allowed
-// to
-// span
-// lines
-//
-// COMMENTS:
-//
-// See what
-// I mean?
-//
-
-color-main = red
-color-main-shades-0 = crimson
-color-main-shades-1 = firebrick
-color-accent = lime
-color-highlight = blue
-
-`);
-      });
-    });
-  });
-  describe("Data Exports", () => {
-    describe("output_raw(dict)", () => {
-      it("should correctly process complete dictionaries", () => {
-        const result = output_raw(completeQSD);
-        expect(JSON.parse(result)).toEqual({
-          project: {
-            name: "Unknown Project",
-            author: "Anonymous",
-            version: "0.0.0",
-            license: "Unlicense",
-          },
-          tokens: {
-            color: {
-              main: { base: "red", shades: ["crimson", "firebrick"] },
-              accent: "lime",
-              highlight: "blue",
-            },
-          },
-        });
-      });
-      it("should correctly process complete dictionaries with metadata", () => {
-        const result = output_raw(completeQSDWithMeta);
-        expect(JSON.parse(result)).toEqual({
-          project: {
-            name: "Unknown Project",
-            author: "Anonymous",
-            version: "0.0.0",
-            license: "Unlicense",
-          },
-          tokens: {
-            color: {
-              metadata: {
-                description: "Do I have meta? Yes I do!",
-                comments: "Sweet, a comment!",
-              },
-              main: { base: "red", shades: ["crimson", "firebrick"] },
-              accent: "lime",
-              highlight: "blue",
-            },
-          },
-        });
-      });
-      it("should correctly process complete dictionaries with multiline metadata", () => {
-        const result = output_raw(completeQSDWithMultilineMeta);
-        expect(JSON.parse(result)).toEqual({
-          project: {
-            name: "Unknown Project",
-            author: "Anonymous",
-            version: "0.0.0",
-            license: "Unlicense",
-          },
-          tokens: {
-            color: {
-              metadata: {
-                description:
-                  "\nMetadata\nis\ntotally\nallowed\nto\nspan\nlines\n",
-                comments: "\nSee what\nI mean?\n",
-              },
-              main: { base: "red", shades: ["crimson", "firebrick"] },
-              accent: "lime",
-              highlight: "blue",
-            },
-          },
-        });
-      });
-    });
-    describe("output_yaml(dict)", () => {
-      it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(output_yaml(completeQSD));
-        expect(result).toBe(`
-# Updated on [Timestamp replaced for testing]
-
-project:
-  name: Unknown Project
-  author: Anonymous
-  version: 0.0.0
-  license: Unlicense
-
-tokens:
-  color:
-    main:
-      base: red
-      shades:
-        - crimson
-        - firebrick
-    accent: lime
-    highlight: blue
-`);
-      });
-      it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(output_yaml(completeQSDWithMeta));
-        expect(result).toBe(`
-# Updated on [Timestamp replaced for testing]
-
-project:
-  name: Unknown Project
-  author: Anonymous
-  version: 0.0.0
-  license: Unlicense
-
-tokens:
-  color:
-    metadata:
-      description: Do I have meta? Yes I do!
-      comments: Sweet, a comment!
-    main:
-      base: red
-      shades:
-        - crimson
-        - firebrick
-    accent: lime
-    highlight: blue
-`);
-      });
-      it("should correctly process complete dictionaries", () => {
-        const result = removeTimestamp(
-          output_yaml(completeQSDWithMultilineMeta),
-        );
-        expect(result).toBe(`
-# Updated on [Timestamp replaced for testing]
-
-project:
-  name: Unknown Project
-  author: Anonymous
-  version: 0.0.0
-  license: Unlicense
-
-tokens:
-  color:
-    metadata:
-      description: |
-        
-        Metadata
-        is
-        totally
-        allowed
-        to
-        span
-        lines
-        
-      comments: |
-        
-        See what
-        I mean?
-        
-    main:
-      base: red
-      shades:
-        - crimson
-        - firebrick
-    accent: lime
-    highlight: blue
-`);
-      });
-    });
-  });
-  describe("Desktop Palettes", () => {
-    describe("output_gpl(dict)", () => {
-      it("should correctly extract the colors from a dictionary", () => {
-        const result = removeTimestamp(output_gpl(completeQSD));
-        expect(result).toBe(
-          "GIMP Palette\nName: Unknown Project (v0.0.0)\n# Generator: Quarks System Core\n# Owned by Anonymous\n# Unlicense\n# \n# DESCRIPTION: N/A\n# COMMENTS: N/A\n#\n# Updated on [Timestamp replaced for testing]\n\nColumns: 6\n255\t  0\t  0\tMAIN BASE (#ff0000)\n220\t 20\t 60\tMAIN SHADES 0 (#dc143c)\n178\t 34\t 34\tMAIN SHADES 1 (#b22222)\n  0\t255\t  0\tACCENT (#00ff00)\n  0\t  0\t255\tHIGHLIGHT (#0000ff)\n\n",
-        );
-      });
-    });
-    describe("output_sketchpalette(dict)", () => {
-      it("should correctly extract the colors from a dictionary", () => {
-        const result = output_sketchpalette(completeQSD);
-        expect(JSON.parse(result)).toEqual({
-          colors: [
-            { red: 1, green: 0, blue: 0, alpha: 1 },
-            {
-              red: 0.8627450980392157,
-              green: 0.0784313725490196,
-              blue: 0.23529411764705882,
-              alpha: 1,
-            },
-            {
-              red: 0.6980392156862745,
-              green: 0.13333333333333333,
-              blue: 0.13333333333333333,
-              alpha: 1,
-            },
-            { red: 0, green: 1, blue: 0, alpha: 1 },
-            { red: 0, green: 0, blue: 1, alpha: 1 },
-          ],
-          pluginVersion: "1.4",
-          compatibleVersion: "1.4",
-        });
-      });
-    });
-  });
-  describe("Integration/Interop", () => {
-    describe("output_tailwindcss(dict)", () => {
-      it("should transform Quarks System Dictionaries into TailwindCSS theme data", () => {
-        const result = output_tailwindcss(completeQSD);
-        expect(result).toEqual({
-          color: {
-            main: {
-              DEFAULT: "red",
-              shades: { 0: "crimson", 1: "firebrick" },
-            },
-            accent: "lime",
-            highlight: "blue",
-          },
-        });
-      });
-      it("should ignore metadata", () => {
-        const result = output_tailwindcss(completeQSDWithMeta);
-        expect(result).toEqual({
-          color: {
-            main: {
-              DEFAULT: "red",
-              shades: { 0: "crimson", 1: "firebrick" },
-            },
-            accent: "lime",
-            highlight: "blue",
-          },
-        });
-      });
-    });
-    describe("output_style_dictionary(dict)", () => {
-      it("should transform Quarks System Dictionaries into Style Dictionary tokens", () => {
-        const result = output_style_dictionary(completeQSD);
-        expect(result).toEqual({
-          color: {
-            main: {
-              base: { value: "red" },
-              shades: {
-                0: { value: "crimson" },
-                1: { value: "firebrick" },
-              },
-            },
-            accent: { value: "lime" },
-            highlight: { value: "blue" },
-          },
-        });
-      });
-      it("should ignore metadata", () => {
-        const result = output_style_dictionary(completeQSDWithMeta);
-        expect(result).toEqual({
-          color: {
-            main: {
-              base: { value: "red" },
-              shades: {
-                0: { value: "crimson" },
-                1: { value: "firebrick" },
-              },
-            },
-            accent: { value: "lime" },
-            highlight: { value: "blue" },
-          },
-        });
-      });
-    });
-  });
-});
-
-AllFormatters.forEach((Formatter) =>
-  benchmark.Bench({
-    name: `${Formatter.name} perf`,
-    fn() {
-      return Formatter(completeQSD);
+const dictWithMeta = {
+  ...dict,
+  project: {
+    ...dict.project,
+    metadata: {
+      description: "My sample project",
+      comments: "Testing formatters with my sample project",
     },
-    steps: 100,
-  })
-);
+  },
+  color: {
+    metadata: {
+      description: "My sample palette",
+      comments: "Testing metadata for my sample palette",
+    },
+    ...dict.color,
+  },
+};
 
-benchmark.runBench().then(benchmark.Result(7)).then(run());
+const dictWithAutoversion = {
+  ...dict,
+  project: {
+    ...dict.project,
+    bump: "minor",
+  },
+};
+
+const testCSS = [
+  "Stylesheet",
+  [
+    "no metadata",
+    string(
+      removeTimestamp(output_css(dict)),
+      `
+/**
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ **/
+
+:root {
+  --color-bg: #f8f8f8;
+  --color-fg: #0b0b0b;
+  --color-light: #aeaeae;
+  --color-lighter: #c6c6c6;
+  --color-dark: #606060;
+  --color-darker: #414141;
+
+}
+`,
+    ),
+    string(
+      removeTimestamp(output_scss(dict)),
+      `
+/*!
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+$color-bg: #f8f8f8;
+$color-fg: #0b0b0b;
+$color-light: #aeaeae;
+$color-lighter: #c6c6c6;
+$color-dark: #606060;
+$color-darker: #414141;
+
+`,
+    ),
+    string(
+      removeTimestamp(output_less(dict)),
+      `
+/*
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+@color-bg: #f8f8f8;
+@color-fg: #0b0b0b;
+@color-light: #aeaeae;
+@color-lighter: #c6c6c6;
+@color-dark: #606060;
+@color-darker: #414141;
+
+`,
+    ),
+    string(
+      removeTimestamp(output_styl(dict)),
+      `
+/*!
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+color-bg = #f8f8f8
+color-fg = #0b0b0b
+color-light = #aeaeae
+color-lighter = #c6c6c6
+color-dark = #606060
+color-darker = #414141
+
+`,
+    ),
+  ],
+  [
+    "some metadata",
+    string(
+      removeTimestamp(output_css(dictWithMeta)),
+      `
+/**
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: My sample project
+ * COMMENTS: Testing formatters with my sample project
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ **/
+
+:root {
+
+  /**
+   * DESCRIPTION: My sample palette
+   * COMMENTS: Testing metadata for my sample palette
+   **/
+
+  --color-bg: #f8f8f8;
+  --color-fg: #0b0b0b;
+  --color-light: #aeaeae;
+  --color-lighter: #c6c6c6;
+  --color-dark: #606060;
+  --color-darker: #414141;
+
+}
+`,
+    ),
+    string(
+      removeTimestamp(output_less(dictWithMeta)),
+      `
+/*
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: My sample project
+ * COMMENTS: Testing formatters with my sample project
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION: My sample palette
+// COMMENTS: Testing metadata for my sample palette
+
+@color-bg: #f8f8f8;
+@color-fg: #0b0b0b;
+@color-light: #aeaeae;
+@color-lighter: #c6c6c6;
+@color-dark: #606060;
+@color-darker: #414141;
+
+`,
+    ),
+    string(
+      removeTimestamp(output_less(dictWithMeta)),
+      `
+/*
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: My sample project
+ * COMMENTS: Testing formatters with my sample project
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION: My sample palette
+// COMMENTS: Testing metadata for my sample palette
+
+@color-bg: #f8f8f8;
+@color-fg: #0b0b0b;
+@color-light: #aeaeae;
+@color-lighter: #c6c6c6;
+@color-dark: #606060;
+@color-darker: #414141;
+
+`,
+    ),
+    string(
+      removeTimestamp(output_styl(dictWithMeta)),
+      `
+/*!
+ * Project: Example Design Tokens (v0.0.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================
+ *
+ * DESCRIPTION: My sample project
+ * COMMENTS: Testing formatters with my sample project
+ * ----------------------------------------------------------------
+ * Updated on [Timestamp replaced for testing]
+ */
+
+
+// DESCRIPTION: My sample palette
+// COMMENTS: Testing metadata for my sample palette
+
+color-bg = #f8f8f8
+color-fg = #0b0b0b
+color-light = #aeaeae
+color-lighter = #c6c6c6
+color-dark = #606060
+color-darker = #414141
+
+`,
+    ),
+  ],
+];
+
+const testData = [
+  "Data Exports",
+  [
+    "no metadata",
+    data(JSON.parse(output_raw(dict)), {
+      project: {
+        name: "Example Design Tokens",
+        author: "Chatman R. Jr",
+        version: "0.0.0",
+        license: "Unlicense",
+      },
+      tokens: {
+        color: {
+          bg: "#f8f8f8",
+          fg: "#0b0b0b",
+          light: "#aeaeae",
+          lighter: "#c6c6c6",
+          dark: "#606060",
+          darker: "#414141",
+        },
+      },
+    }),
+    data(
+      removeTimestamp(output_yaml(dict)),
+      `
+# Updated on [Timestamp replaced for testing]
+
+project:
+  name: Example Design Tokens
+  author: Chatman R. Jr
+  version: 0.0.0
+  license: Unlicense
+
+tokens:
+  color:
+    bg: #f8f8f8
+    fg: #0b0b0b
+    light: #aeaeae
+    lighter: #c6c6c6
+    dark: #606060
+    darker: #414141
+`,
+    ),
+  ],
+  [
+    "some metadata",
+    data(JSON.parse(output_raw(dictWithMeta)), {
+      project: {
+        name: "Example Design Tokens",
+        author: "Chatman R. Jr",
+        version: "0.0.0",
+        license: "Unlicense",
+        metadata: {
+          description: "My sample project",
+          comments: "Testing formatters with my sample project",
+        },
+      },
+      tokens: {
+        color: {
+          metadata: {
+            description: "My sample palette",
+            comments: "Testing metadata for my sample palette",
+          },
+          bg: "#f8f8f8",
+          fg: "#0b0b0b",
+          light: "#aeaeae",
+          lighter: "#c6c6c6",
+          dark: "#606060",
+          darker: "#414141",
+        },
+      },
+    }),
+    string(
+      removeTimestamp(output_yaml(dictWithMeta)),
+      `
+# Updated on [Timestamp replaced for testing]
+
+project:
+  name: Example Design Tokens
+  author: Chatman R. Jr
+  version: 0.0.0
+  license: Unlicense
+  metadata:
+    description: My sample project
+    comments: Testing formatters with my sample project
+
+tokens:
+  color:
+    metadata:
+      description: My sample palette
+      comments: Testing metadata for my sample palette
+    bg: #f8f8f8
+    fg: #0b0b0b
+    light: #aeaeae
+    lighter: #c6c6c6
+    dark: #606060
+    darker: #414141
+`,
+    ),
+  ],
+];
+
+const testApps = [
+  "Desktop Apps",
+  [
+    "no metadata",
+    string(
+      removeTimestamp(output_gpl(dict)),
+      `GIMP Palette
+Name: Example Design Tokens (v0.0.0)
+# Generator: Quarks System Core
+# Owned by Chatman R. Jr
+# License: Unlicense
+#
+# DESCRIPTION: N/A
+# COMMENTS: N/A
+#
+# Updated on [Timestamp replaced for testing]
+
+Columns: 6
+248\t248\t248\tBG (#f8f8f8)\n 11\t 11\t 11\tFG (#0b0b0b)\n174\t174\t174\tLIGHT (#aeaeae)\n198\t198\t198\tLIGHTER (#c6c6c6)\n 96\t 96\t 96\tDARK (#606060)\n 65\t 65\t 65\tDARKER (#414141)
+
+`,
+    ),
+    data(JSON.parse(output_sketchpalette(dict)), {
+      colors: [
+        {
+          red: 0.9725490196078431,
+          green: 0.9725490196078431,
+          blue: 0.9725490196078431,
+          alpha: 1,
+        },
+        {
+          red: 0.043137254901960784,
+          green: 0.043137254901960784,
+          blue: 0.043137254901960784,
+          alpha: 1,
+        },
+        {
+          red: 0.6823529411764706,
+          green: 0.6823529411764706,
+          blue: 0.6823529411764706,
+          alpha: 1,
+        },
+        {
+          red: 0.7764705882352941,
+          green: 0.7764705882352941,
+          blue: 0.7764705882352941,
+          alpha: 1,
+        },
+        {
+          red: 0.3764705882352941,
+          green: 0.3764705882352941,
+          blue: 0.3764705882352941,
+          alpha: 1,
+        },
+        {
+          red: 0.2549019607843137,
+          green: 0.2549019607843137,
+          blue: 0.2549019607843137,
+          alpha: 1,
+        },
+      ],
+      pluginVersion: "1.4",
+      compatibleVersion: "1.4",
+    }),
+  ],
+  [
+    "some metadata",
+    string(
+      removeTimestamp(output_gpl(dictWithMeta)),
+      `GIMP Palette
+Name: Example Design Tokens (v0.0.0)
+# Generator: Quarks System Core
+# Owned by Chatman R. Jr
+# License: Unlicense
+#
+# DESCRIPTION: My sample project
+# COMMENTS: Testing formatters with my sample project
+#
+# Updated on [Timestamp replaced for testing]
+
+Columns: 6
+248\t248\t248\tBG (#f8f8f8)\n 11\t 11\t 11\tFG (#0b0b0b)\n174\t174\t174\tLIGHT (#aeaeae)\n198\t198\t198\tLIGHTER (#c6c6c6)\n 96\t 96\t 96\tDARK (#606060)\n 65\t 65\t 65\tDARKER (#414141)
+
+`,
+    ),
+  ],
+];
+
+suite("Formatters", testCSS, testData, testApps);
+
+formats.forEach((f) => benchmark(f, { project: dict.project, ...options }));
+
+init(7);
