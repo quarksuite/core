@@ -1,5 +1,7 @@
 // [[file:Mod.org::*Bootstrapper][Bootstrapper:1]]
 import {
+  AnimationCubicBezier,
+  AnimationDuration,
   FigureCalculations,
   GridDimensions,
   GridFractions,
@@ -48,13 +50,19 @@ export function Quarks({
       context = ["w", "h"],
       values: VIEWPORT_VALUES = limit,
     } = {},
+    animation: {
+      duration: { fastest = 250, slowest = 1000 } = {},
+      easing: { floor = 0, ceiling = 1 } = {},
+      values: ANIMATION_VALUES = limit,
+    } = {},
   } = {},
 } = {}) {
   const SCALE = ms_create({ ratio, values: limit }, initial);
-  const [TEXT, GRID, VIEWPORT] = [
+  const [TEXT, GRID, VIEWPORT, ANIMATION] = [
     TEXT_VALUES,
     GRID_COLUMNS,
     VIEWPORT_VALUES,
+    ANIMATION_VALUES,
   ].map((values) => ms_create({ ratio, values }, initial));
 
   const GRID_ROWS = Math.round(GRID_COLUMNS / GRID_RATIO);
@@ -84,6 +92,10 @@ export function Quarks({
       ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
     },
     viewport: Viewport({ threshold, full, context }, VIEWPORT),
+    animation: {
+      duration: AnimationDuration({ fastest, slowest }, ANIMATION),
+      easing: AnimationCubicBezier({ floor, ceiling }, ANIMATION),
+    },
     ms: FigureCalculations(SCALE),
   };
 }
