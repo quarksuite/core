@@ -506,6 +506,46 @@ Columns: 6
   ],
 ];
 
+const testInterOp = [
+  "Interoperability/Integration",
+  [
+    "TailwindCSS theme",
+    data(output_tailwindcss(dict), {
+      color: {
+        bg: "#f8f8f8",
+        fg: "#0b0b0b",
+        light: "#aeaeae",
+        lighter: "#c6c6c6",
+        dark: "#606060",
+        darker: "#414141",
+      },
+    }),
+    data(output_tailwindcss(dictWithMeta), {
+      color: {
+        bg: "#f8f8f8",
+        fg: "#0b0b0b",
+        light: "#aeaeae",
+        lighter: "#c6c6c6",
+        dark: "#606060",
+        darker: "#414141",
+      },
+    }),
+  ],
+  [
+    "Style Dictionary Tokens",
+    data(output_style_dictionary(dict), {
+      color: {
+        bg: { value: "#f8f8f8" },
+        fg: { value: "#0b0b0b" },
+        light: { value: "#aeaeae" },
+        lighter: { value: "#c6c6c6" },
+        dark: { value: "#606060" },
+        darker: { value: "#414141" },
+      },
+    }),
+  ],
+];
+
 suite("Formatters", testCSS, testData, testApps);
 
 formats.forEach((f) => benchmark(f, { project: dict.project, ...options }));
