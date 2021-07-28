@@ -14,6 +14,7 @@ import {
   color_tints,
   color_to_hex,
   color_tones,
+  ms_create,
   ms_modify,
   ms_units,
   output_systemfonts,
@@ -25,12 +26,12 @@ import {
 // [[file:Mod.org::*Palette Formulas][Palette Formulas:1]]
 export function MaterialPalette(
   { light = 95, dark = 75, scheme = undefined, format = undefined },
-  color
+  color,
 ) {
   return utility_pipe(
     color,
     utility_curry(paletteSettings)({ format, scheme }),
-    utility_curry(generateMaterialPalette)({ light, dark })
+    utility_curry(generateMaterialPalette)({ light, dark }),
   );
 }
 
@@ -38,7 +39,7 @@ function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
     (color) => (format ? format(color) : color_to_hex(color)),
-    (color) => (scheme ? scheme(color) : [color])
+    (color) => (scheme ? scheme(color) : [color]),
   );
 }
 
@@ -56,11 +57,11 @@ function generateMaterialPalette({ light, dark }, palette) {
                 ...a,
                 ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
               }),
-              {}
+              {},
             ),
           },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -73,7 +74,7 @@ export function StandardPalette(
     tones = 3,
     shades = 3,
   },
-  color
+  color,
 ) {
   return utility_pipe(
     color,
@@ -81,7 +82,7 @@ export function StandardPalette(
     utility_curry(structurePalette)({
       contrast,
       values: { tints, tones, shades },
-    })
+    }),
   );
 }
 
@@ -97,23 +98,21 @@ export function InterpolatedPalette(
     shades = 3,
     format = undefined,
   },
-  color
+  color,
 ) {
   return utility_pipe(
     format ? format(color) : color_to_hex(color),
     (color) => [
       color,
-      ...(values === 1
-        ? []
-        : color_interpolation(
-            { lightness, chroma, hue, values: values - 1 },
-            color
-          )),
+      ...(values === 1 ? [] : color_interpolation(
+        { lightness, chroma, hue, values: values - 1 },
+        color,
+      )),
     ],
     utility_curry(structurePalette)({
       contrast,
       values: { tints, tones, shades },
-    })
+    }),
   );
 }
 
@@ -128,7 +127,7 @@ export function BlendedPalette(
     shades = 3,
     format = undefined,
   },
-  color
+  color,
 ) {
   return utility_pipe(
     format ? format(color) : color_to_hex(color),
@@ -141,7 +140,7 @@ export function BlendedPalette(
     utility_curry(structurePalette)({
       contrast,
       values: { tints, tones, shades },
-    })
+    }),
   );
 }
 
@@ -156,18 +155,18 @@ function structurePalette({ contrast, values }, palette) {
             values: values.tints,
             amount: contrast,
           },
-          color
+          color,
         );
         const muted = color_tones(
           {
             values: values.tones,
             amount: contrast / 1.27,
           },
-          color
+          color,
         );
         const dark = color_shades(
           { values: values.shades, amount: contrast / 1.27 },
-          color
+          color,
         );
 
         return [category, [color, light, muted, dark]];
@@ -186,7 +185,7 @@ function structurePalette({ contrast, values }, palette) {
             ...variants,
           },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -248,9 +247,9 @@ function Content([unit, inversionUnit], scale) {
         utility_pipe(
           values,
           utility_curry(ms_modify)((n) => base / n),
-          utility_curry(ms_units)(inversionUnit ? inversionUnit : unit)
+          utility_curry(ms_units)(inversionUnit ? inversionUnit : unit),
         ),
-      ]
+      ],
     ),
   };
 }
@@ -267,8 +266,8 @@ export function TextLeading({ normal = 1.5, tight = 1.25 }, scale) {
         keys: ["narrow", "tight"],
         calc: (n) => tight + (normal - tight) / (base * ratio ** n),
       },
-      scale
-    )
+      scale,
+    ),
   ).reduce((acc, [key, value]) => {
     if (Array.isArray(value)) {
       return { ...acc, [key]: value.map((n) => parseFloat(n)) };
@@ -287,7 +286,7 @@ export function TextMeasure({ min = 45, max = 75 }, scale) {
       keys: ["segment", "minimum"],
       calc: (n) => Math.trunc(min + (max - min) / (base * ratio ** n)),
     },
-    scale
+    scale,
   );
 }
 
@@ -304,7 +303,7 @@ function ContentRange({ min, max, unit, keys, calc }, scale) {
       new Set(ms_modify(calc, scale)),
       (scale) => Array.from(scale),
       (scale) => scale.filter((n) => n > min && n < max),
-      output
+      output,
     ),
     output([min]).toString(),
   ]);
@@ -342,14 +341,14 @@ export function FigureCalculations(scale) {
     base,
     ...UnidirectionalScale(
       "x",
-      values.map((n) => precision(n))
+      values.map((n) => precision(n)),
     ),
   };
 }
 
 export function Viewport(
   { threshold = 5, full = 100, context = ["w", "h", "min", "max"] },
-  scale
+  scale,
 ) {
   const [base, ratio] = Array.from(scale);
 
@@ -367,7 +366,7 @@ export function Viewport(
           calc: (n) =>
             Math.trunc(threshold + (full - threshold) / (base * ratio ** n)),
         },
-        scale
+        scale,
       ),
     };
   }, {});
@@ -387,6 +386,41 @@ function viewportTargets(target) {
 }
 // Layout Formulas:1 ends here
 
-// [[file:Mod.org::*UI Formulas][UI Formulas:1]]
+// [[file:Mod.org::*Animation Formulas][Animation Formulas:1]]
+export function AnimationDuration({ fastest = 250, slowest = 1000 }, scale) {
+  const [base, ratio] = Array.from(scale);
+  return ContentRange(
+    {
+      min: fastest,
+      max: slowest,
+      unit: "ms",
+      keys: ["interval", "fastest"],
+      calc: (n) => fastest + (slowest - fastest) / (base * ratio ** n),
+    },
+    scale,
+  );
+}
 
-// UI Formulas:1 ends here
+export function AnimationCubicBezier({ floor = 0, ceiling = 1 }, scale) {
+  const [base, ratio] = Array.from(scale);
+  const [maximum] = scale.slice(-1);
+
+  const ABSCISSAS = new Set(
+    ms_modify((n) => precision(n / maximum), scale).filter(
+      (n) => n > 0 && n < 1,
+    ),
+  );
+
+  const ORDINATES = new Set(
+    ms_modify(
+      (n) => precision(floor + (ceiling - floor) / (base * ratio ** n)),
+      scale,
+    ).filter((n) => n > floor && n < ceiling),
+  );
+
+  return {
+    x: Array.from([0, ...ABSCISSAS, 1]),
+    y: Array.from([floor, ...Array.from(ORDINATES).reverse(), ceiling]),
+  };
+}
+// Animation Formulas:1 ends here
