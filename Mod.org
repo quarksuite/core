@@ -1182,69 +1182,68 @@ function calculateMix(original, target, amount) {
 
 #+BEGIN_SRC js
 export function color_interpolation(
-  { lightness = 0, chroma = 0, hue = 0, alpha = 0, values = 7 },
+  { lightness = 0, chroma = 0, hue = 0, alpha = 0, values = 10 },
   color,
 ) {
   const calculateProperty = (property, pos) =>
-    property - (property / values - 1) * pos;
-  return Array.from(
-    new Set(
-      Array(values + 1)
-        .fill(color)
-        .map((color, pos) => {
-          return color_adjust(
-            {
-              lightness: calculateProperty(lightness, pos),
-              chroma: calculateProperty(chroma, pos),
-              hue: calculateProperty(hue, pos),
-              alpha: calculateProperty(alpha, pos),
-            },
-            color,
-          );
-        }),
+    property - (property / values) * pos;
+
+  return [
+    ...new Set(
+      Array.from({ length: values }, (_, pos) =>
+        color_adjust(
+          {
+            lightness: calculateProperty(lightness, pos),
+            chroma: calculateProperty(chroma, pos),
+            hue: calculateProperty(hue, pos),
+            alpha: calculateProperty(alpha, pos),
+          },
+          color,
+        )).reverse(),
     ),
-  )
-    .reverse()
-    .slice(0, -1);
+  ];
 }
 #+END_SRC
 
 *** Blending
 
 #+BEGIN_SRC js
-export function color_blend({ values = 3, amount = 100, target }, color) {
-  return Array.from(
-    new Set(
-      Array(values)
-        .fill(color)
-        .map((color, index) => {
-          return color_mix(
-            { amount: amount - (amount / values) * index, target },
+export function color_blend(
+  { amount = 100, target = "black", values = 10 },
+  color,
+) {
+  return [
+    ...new Set(
+      Array.from(
+        { length: values },
+        (_, pos) =>
+          color_mix(
+            { amount: amount - (amount / values) * pos, target },
             color,
-          );
-        }),
+          ),
+      ).reverse(),
     ),
-  ).reverse();
+  ];
 }
 #+END_SRC
 
 *** Material
 
 #+BEGIN_SRC js
-export function color_material({ light = 95, dark = 70 }, color) {
+export function color_material({ light = 95, dark = 80 }, color) {
   return [
-    ...color_blend(
-      { amount: light, target: "white", values: 5 },
-      color,
-    ).reverse(),
+    ...color_tints({ amount: light, values: 5 }, color).reverse(),
     color_mix(
       {
         amount: dark,
-        target: color_mix({ amount: dark / 8, target: "black" }, color),
+        target: color_mix(
+          { amount: light / 10 - dark / 10, target: "black" },
+          color,
+        ),
       },
       color,
     ),
-    ...color_blend({ amount: dark, target: "black", values: 4 }, color),
+    ...color_shades({ amount: dark, values: 4 }, color),
   ];
 }
 #+END_SRC
@@ -1313,11 +1312,11 @@ export function color_tints({ amount = 95, values = 3 }, color) {
   return color_blend({ amount, values, target: "white" }, color);
 }
 
-export function color_tones({ amount = 90, values = 1 }, color) {
+export function color_tones({ amount = 90, values = 3 }, color) {
   return color_blend({ amount, values, target: "gray" }, color);
 }
 
-export function color_shades({ amount = 80, values = 2 }, color) {
+export function color_shades({ amount = 80, values = 3 }, color) {
   return color_blend({ amount, values, target: "black" }, color);
 }
 #+END_SRC
