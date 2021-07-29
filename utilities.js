@@ -113,7 +113,7 @@ function revert(color, output) {
 // Color Property Adjustment:1 ends here
 
 // [[file:Mod.org::*Color Mixture][Color Mixture:1]]
-export function color_mix({ amount = 50, target }, color) {
+export function color_mix({ amount = 50, target = "black" }, color) {
   return pipe(
     calculateMix(color, target, numberFromPercent(amount)),
     ([L, a, b, A]) => [
