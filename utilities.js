@@ -67,7 +67,7 @@ export function color_format_compare(formats, color) {
     (acc, format) => ({
       ...acc,
       original: color,
-      [format.name]: format(color),
+      [format.name.split("_")[2]]: format(color),
     }),
     {},
   );
