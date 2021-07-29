@@ -215,12 +215,12 @@ export function color_material({ light = 95, dark = 80 }, color) {
 // Material:1 ends here
 
 // [[file:Mod.org::*Color Schemes][Color Schemes:1]]
-export function scheme_complementary(color) {
-  return generateUniformScheme({ count: 2, arc: 180 }, color);
+export function scheme_dyadic(color) {
+  return generateUniformScheme({ count: 2, arc: 90 }, color);
 }
 
-export function scheme_dyadic(color) {
-  return generateUniformScheme({ count: 2, arc: 60 }, color);
+export function scheme_complementary(color) {
+  return generateUniformScheme({ count: 2, arc: 180 }, color);
 }
 
 export function scheme_analogous(color) {
@@ -247,7 +247,12 @@ export function scheme_clash(color) {
 
 export function scheme_tetradic(color) {
   const [origin, opposite] = Array.from(scheme_complementary(color));
-  return [...scheme_dyadic(origin), ...scheme_dyadic(opposite)];
+  return [
+    origin,
+    color_adjust({ hue: 45 }, origin),
+    opposite,
+    color_adjust({ hue: 45 }, opposite),
+  ];
 }
 
 export function scheme_square(color) {
@@ -263,9 +268,10 @@ export function scheme_hexagon(color) {
 }
 
 function generateUniformScheme({ count, arc }, color) {
-  return Array(count)
-    .fill(color)
-    .map((color, index) => color_adjust({ hue: arc * index }, color));
+  return Array.from(
+    { length: count },
+    (_, pos) => color_adjust({ hue: arc * pos }, color),
+  );
 }
 // Color Schemes:1 ends here
 
