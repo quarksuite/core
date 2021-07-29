@@ -2429,7 +2429,7 @@ export function cielabFromRgb(color) {
   const [L, a, b] = ciexyzToCielab([X, Y, Z]);
 
   return pipe(
-    output(["cielab", [L.toString().concat("%"), a, b, A]]),
+    output(["cielab", [precision(L).toString().concat("%"), a, b, A]]),
     validator,
   );
 }
@@ -2494,7 +2494,7 @@ export function oklabFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
   const [l, a, b] = lrgbToOklab([R, G, B]);
 
-  const L = numberToPercent(l).toString().concat("%");
+  const L = precision(numberToPercent(l)).toString().concat("%");
   const c = normalize(0.5, 0, +Math.sqrt(a ** 2 + b ** 2).toFixed(4)); // toPrecision isn't strict enough
   const C = Math.sign(Math.round(c)) === -1 ? 0 : c;
   const H = pipe(Math.atan2(b, a), radToDegrees, hueCorrection);
@@ -3259,7 +3259,9 @@ function hexOutput([R, G, B, A]) {
 
 function legacyOutput(prefix, [C1, C2, C3, A]) {
   return `${A === 1 ? prefix : prefix.concat("a")}(`.concat(
-    (A === 1 ? [C1, C2, C3] : [C1, C2, C3, A]).join(", "),
+    (A === 1 ? [C1, C2, C3] : [C1, C2, C3, precision(parseFloat(A))]).join(
+      ", ",
+    ),
     ")",
   );
 }
@@ -3267,7 +3269,9 @@ function legacyOutput(prefix, [C1, C2, C3, A]) {
 function modernOutput(prefix, components) {
   return `${prefix}(`.concat(
     components.slice(0, components.length - 1).join(" "),
-    components[components.length - 1] === 1 ? "" : ` / ${components.slice(-1)}`,
+    components[components.length - 1] === 1
+      ? ""
+      : ` / ${precision(parseFloat(components.slice(-1)))}`,
     ")",
   );
 }
