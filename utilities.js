@@ -69,7 +69,7 @@ export function color_format_compare(formats, color) {
       original: color,
       [format.name.split("_")[2]]: format(color),
     }),
-    {}
+    {},
   );
 }
 // Color Format Comparison:1 ends here
@@ -77,7 +77,7 @@ export function color_format_compare(formats, color) {
 // [[file:Mod.org::*Color Property Adjustment][Color Property Adjustment:1]]
 export function color_adjust(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  color
+  color,
 ) {
   return pipe(
     color_to_oklab(color),
@@ -89,7 +89,7 @@ export function color_adjust(
       parseFloat(A ?? 1) + numberFromPercent(alpha),
     ],
     ([L, C, H, A]) => output(["oklab", [String(L).concat("%"), C, H, A]]),
-    curry(revert)(color)
+    curry(revert)(color),
   );
 }
 
@@ -99,10 +99,15 @@ function revert(color, output) {
     validator,
     ([, output]) => [output, color],
     ([output, color]) =>
-      pipe(color, validator, ([format]) =>
-        format === "named" ? color_to_hex(output) : convert(format, output)[1]
+      pipe(
+        color,
+        validator,
+        ([format]) =>
+          format === "named"
+            ? color_to_hex(output)
+            : convert(format, output)[1],
       ),
-    (output) => validator(output)[1]
+    (output) => validator(output)[1],
   );
 }
 // Color Property Adjustment:1 ends here
@@ -118,7 +123,7 @@ export function color_mix({ amount = 50, target = "black" }, color) {
       A,
     ],
     (components) => output(["oklab", components]),
-    curry(revert)(color)
+    curry(revert)(color),
   );
 }
 
@@ -127,13 +132,13 @@ function calculateMix(original, target, amount) {
     original,
     color_to_oklab,
     parser,
-    ([, components]) => components
+    ([, components]) => components,
   );
   const [TL, Ta, Tb, TA] = pipe(
     target,
     color_to_oklab,
     parser,
-    ([, components]) => components
+    ([, components]) => components,
   );
 
   return [
@@ -148,7 +153,7 @@ function calculateMix(original, target, amount) {
 // [[file:Mod.org::*Interpolation][Interpolation:1]]
 export function color_interpolation(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0, values = 10 },
-  color
+  color,
 ) {
   const calculateProperty = (property, pos) =>
     property - (property / values) * pos;
@@ -163,9 +168,8 @@ export function color_interpolation(
             hue: calculateProperty(hue, pos),
             alpha: calculateProperty(alpha, pos),
           },
-          color
-        )
-      ).reverse()
+          color,
+        )).reverse(),
     ),
   ];
 }
@@ -174,13 +178,18 @@ export function color_interpolation(
 // [[file:Mod.org::*Blending][Blending:1]]
 export function color_blend(
   { amount = 100, target = "black", values = 10 },
-  color
+  color,
 ) {
   return [
     ...new Set(
-      Array.from({ length: values }, (_, pos) =>
-        color_mix({ amount: amount - (amount / values) * pos, target }, color)
-      ).reverse()
+      Array.from(
+        { length: values },
+        (_, pos) =>
+          color_mix(
+            { amount: amount - (amount / values) * pos, target },
+            color,
+          ),
+      ).reverse(),
     ),
   ];
 }
@@ -195,10 +204,10 @@ export function color_material({ light = 95, dark = 80 }, color) {
         amount: dark,
         target: color_mix(
           { amount: light / 10 - dark / 10, target: "black" },
-          color
+          color,
         ),
       },
-      color
+      color,
     ),
     ...color_shades({ amount: dark, values: 4 }, color),
   ];
@@ -259,8 +268,9 @@ export function scheme_hexagon(color) {
 }
 
 function generateUniformScheme({ count, arc }, color) {
-  return Array.from({ length: count }, (_, pos) =>
-    color_adjust({ hue: arc * pos }, color)
+  return Array.from(
+    { length: count },
+    (_, pos) => color_adjust({ hue: arc * pos }, color),
   );
 }
 // Color Schemes:1 ends here
@@ -282,26 +292,26 @@ export function color_shades({ amount = 80, values = 3 }, color) {
 // [[file:Mod.org::*Palette Shifting][Palette Shifting:1]]
 export function palette_shift(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  palette
+  palette,
 ) {
   return Array.from(
     new Set(
       palette.map((color) =>
         color_adjust({ lightness, chroma, hue, alpha }, color)
-      )
-    )
+      ),
+    ),
   );
 }
 // Palette Shifting:1 ends here
 
 // [[file:Mod.org::*Palette Sorting][Palette Sorting:1]]
-export function palette_sort({ by = "lightness", order = "asc" }, palette) {
+export function palette_sort({ by, order = "asc" }, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
     paletteToOklabValues,
     curry(sortPalette)({ by, order }),
-    curry(paletteFromOklab)(color)
+    curry(paletteFromOklab)(color),
   );
 }
 
@@ -311,17 +321,18 @@ function paletteToOklabValues(palette) {
     (palette) => palette.map((color) => color_to_oklab(color)),
     (palette) => palette.map((color) => extractor(color)),
     (palette) => palette.map(([, color]) => color),
-    (palette) => palette.map((color) => color.map((C) => parseFloat(C)))
+    (palette) => palette.map((color) => color.map((C) => parseFloat(C))),
   );
 }
 
 function sortPalette({ by, order }, palette) {
+  const evalCondition = (a, b) => (order === "desc" ? b - a : a - b);
   const sortingConditions = (property, order) =>
     new Map([
-      ["lightness", ([A], [B]) => (order === "desc" ? B - A : A - B)],
-      ["chroma", ([, A], [, B]) => (order === "desc" ? B - A : A - B)],
-      ["hue", ([, , A], [, , B]) => (order === "desc" ? B - A : A - B)],
-      ["alpha", ([, , , A], [, , , B]) => (order === "desc" ? B - A : A - B)],
+      ["lightness", ([A], [B]) => evalCondition(A, B)],
+      ["chroma", ([, A], [, B]) => evalCondition(A, B)],
+      ["hue", ([, , A], [, , B]) => evalCondition(A, B)],
+      ["alpha", ([, , , A], [, , , B]) => evalCondition(A, B)],
     ]).get(property);
 
   return palette.sort(sortingConditions(by, order));
@@ -335,56 +346,41 @@ function paletteFromOklab(input, palette) {
         output(["oklab", [L.toString().concat("%"), C, H, A ?? 1]])
       ),
     (palette) => new Set(palette.map((color) => revert(input, color))),
-    Array.from
+    Array.from,
   );
 }
 // Palette Sorting:1 ends here
 
 // [[file:Mod.org::*Palette Filtering][Palette Filtering:1]]
-export function palette_filter(condition, palette) {
+export function palette_filter({ by, min, max }, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
     paletteToOklabValues,
-    curry(flushPalette)(condition),
-    curry(paletteFromOklab)(color)
+    curry(flushPalette)({ by, min, max }),
+    curry(paletteFromOklab)(color),
   );
 }
 
-function flushPalette(condition, palette) {
-  return palette.filter(parseFlushCondition(condition));
+function flushPalette({ by, min, max }, palette) {
+  return palette.filter(parseFlushCondition({ by, min, max }));
 }
 
-function parseFlushCondition(condition) {
-  const [PROPERTY, VALUES] = matchCondition(condition);
-  const [MIN, MAX] = VALUES.split("&");
-  if (MAX) {
-    return new Map([
-      ["lightness:", ([L]) => L >= MIN && L <= MAX],
-      [
-        "chroma:",
-        ([, C]) => C >= numberFromPercent(MIN) && C <= numberFromPercent(MAX),
-      ],
-      ["hue:", ([, , H]) => H >= MIN && H <= MAX],
-      [
-        "alpha:",
-        ([, , H]) => H >= numberFromPercent(MIN) && H <= numberFromPercent(MAX),
-      ],
-    ]).get(PROPERTY);
-  }
+function parseFlushCondition({ by, min, max }) {
+  const filterCondition = (v) => (max ? v > min && v < max : v > min);
+  const filterConditionAsNumber = (v) =>
+    max
+      ? v > numberFromPercent(min) && v < numberFromPercent(max)
+      : v > numberFromPercent(min);
+  const matchProperty = (property) =>
+    new Map([
+      ["lightness", ([V]) => filterCondition(V)],
+      ["chroma", ([, V]) => filterConditionAsNumber(V)],
+      ["hue", ([, , V]) => filterCondition(V)],
+      ["alpha", ([, , , V]) => filterConditionAsNumber(V)],
+    ]).get(property);
 
-  return new Map([
-    ["lightness:", ([L]) => L >= MIN],
-    ["chroma:", ([, C]) => C >= numberFromPercent(MIN)],
-    ["hue:", ([, , H]) => H >= MIN],
-    ["alpha:", ([, , , A]) => A >= numberFromPercent(MIN)],
-  ]).get(PROPERTY);
-}
-
-function matchCondition(condition) {
-  return condition.match(
-    /(?:(?:lightness|chroma|hue|alpha):|(?:[\d.]+))(?:&[\d.]+)?/g
-  );
+  return matchProperty(by);
 }
 // Palette Filtering:1 ends here
 
@@ -420,7 +416,7 @@ Valid colors in the Colors (https://clrs.cc) project:
 // [[file:Mod.org::*Color Contrast Ratio][Color Contrast Ratio:1]]
 export function palette_contrast(
   { rating = "AA", enhanced = false, background = "white" },
-  palette
+  palette,
 ) {
   return palette.filter((foreground) => {
     const CONTRAST_RATIO = calculateWCAGContrastRatio(background, foreground);
@@ -450,18 +446,17 @@ function calculateRelativeLuminance(color) {
     parser,
     ([, [R, G, B]]) => [R, G, B],
     rgbToLrgb,
-    ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B
+    ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B,
   );
 }
 // Color Contrast Ratio:1 ends here
 
 // [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
 export function output_systemfonts(fonts = ["sans", "serif", "monospace"]) {
-  const FONTS =
-    (fonts.every(
-      (key) => key === "sans" || key === "serif" || key === "monospace"
-    ) &&
-      fonts) ||
+  const FONTS = (fonts.every(
+    (key) => key === "sans" || key === "serif" || key === "monospace",
+  ) &&
+    fonts) ||
     NotASystemFontFamilyError();
 
   return Array.from(new Set(FONTS.map((font) => SYSTEM_FONT_STACKS[font])));
@@ -491,23 +486,23 @@ but you can also narrow the output. Example: ["sans", "monospace"]
 export function ms_create({ values = 6, ratio = 1.5 }, base) {
   return Array.isArray(ratio)
     ? Array.from(
-        new Set(
-          Array(values)
-            .fill(base)
-            .reduce(
-              (acc, base, index) => [
-                ...acc,
-                ...ratio.map((r) => base * r ** index),
-              ],
-              []
-            )
-        )
-      )
-        .slice(0, values)
-        .sort((a, b) => a - b)
+      new Set(
+        Array(values)
+          .fill(base)
+          .reduce(
+            (acc, base, index) => [
+              ...acc,
+              ...ratio.map((r) => base * r ** index),
+            ],
+            [],
+          ),
+      ),
+    )
+      .slice(0, values)
+      .sort((a, b) => a - b)
     : Array(values)
-        .fill(base)
-        .map((base, index) => base * ratio ** index);
+      .fill(base)
+      .map((base, index) => base * ratio ** index);
 }
 // Scale Creation:1 ends here
 
@@ -515,7 +510,7 @@ export function ms_create({ values = 6, ratio = 1.5 }, base) {
 export function ms_modify(calc, ms) {
   return unlessMS(
     ms.map((n) => calc(n)),
-    ms
+    ms,
   );
 }
 
@@ -523,9 +518,9 @@ export function ms_split(partitions, ms) {
   return unlessMS(
     Array.from(ms).reduceRight(
       (acc, _n, _index, array) => [...acc, array.splice(0, partitions)],
-      []
+      [],
     ),
-    ms
+    ms,
   );
 }
 
@@ -558,7 +553,7 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 export function ms_units(unit, ms) {
   return unlessMS(
     ms.map((n) => `${precision(n)}${unit}`, ms),
-    ms
+    ms,
   );
 }
 // Attaching Units:1 ends here
