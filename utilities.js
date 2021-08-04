@@ -442,7 +442,7 @@ function contrastCriteria(ratio, enhanced) {
 function calculateRelativeLuminance(color) {
   return pipe(
     color,
-    rgb,
+    color_to_rgb,
     parser,
     ([, [R, G, B]]) => [R, G, B],
     rgbToLrgb,

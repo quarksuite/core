@@ -948,11 +948,103 @@ const testPaletteFilter = [
   ],
 ];
 
+const testPaletteContrast = [
+  "Contrast Ratio",
+  [
+    "reject invalid colors",
+    exception(palette_contrast, {}, [color, "invalid"]),
+  ],
+  [
+    "AA recommendation",
+    data(palette_contrast({}, color_interpolation({}, color)), ["#1e90ff"]),
+    data(palette_contrast({}, color_interpolation({ lightness: -80 }, color)), [
+      "#0076e3",
+      "#005dc8",
+      "#0044ad",
+      "#002992",
+      "#000579",
+      "#00005f",
+      "#0e0046",
+      "#0a002e",
+      "#07002a",
+    ]),
+    data(
+      palette_contrast(
+        { rating: "AA", enhanced: true },
+        color_interpolation({ lightness: -80 }, color),
+      ),
+      [
+        "#005dc8",
+        "#0044ad",
+        "#002992",
+        "#000579",
+        "#00005f",
+        "#0e0046",
+        "#0a002e",
+        "#07002a",
+      ],
+    ),
+    data(
+      palette_contrast(
+        { rating: "AA", enhanced: true, background: "coral" },
+        color_interpolation({ lightness: -80 }, color),
+      ),
+      ["#002992", "#000579", "#00005f", "#0e0046", "#0a002e", "#07002a"],
+    ),
+  ],
+  [
+    "AAA recommendation",
+    data(
+      palette_contrast({ rating: "AAA" }, color_interpolation({}, color)),
+      [],
+    ),
+    data(
+      palette_contrast(
+        { rating: "AAA" },
+        color_interpolation({ lightness: -80 }, color),
+      ),
+      [
+        "#005dc8",
+        "#0044ad",
+        "#002992",
+        "#000579",
+        "#00005f",
+        "#0e0046",
+        "#0a002e",
+        "#07002a",
+      ],
+    ),
+    data(
+      palette_contrast(
+        { rating: "AAA", enhanced: true },
+        color_interpolation({ lightness: -80 }, color),
+      ),
+      [
+        "#0044ad",
+        "#002992",
+        "#000579",
+        "#00005f",
+        "#0e0046",
+        "#0a002e",
+        "#07002a",
+      ],
+    ),
+    data(
+      palette_contrast(
+        { rating: "AAA", enhanced: true, background: "coral" },
+        color_interpolation({ lightness: -80 }, color),
+      ),
+      ["#00005f", "#0e0046", "#0a002e", "#07002a"],
+    ),
+  ],
+];
+
 suite(
   "Palette Utilities",
   testPaletteShift,
   testPaletteSort,
   testPaletteFilter,
+  testPaletteContrast,
 );
 
 formats.forEach((f) => benchmark(f, color));
@@ -986,6 +1078,12 @@ benchmark(
   palette_filter,
   { by: "hue", min: 30, max: 120 },
   color_interpolation({ hue: 360, values: 26 }, color),
+);
+
+benchmark(
+  palette_contrast,
+  {},
+  color_interpolation({ lightness: -50, values: 26 }, color),
 );
 
 init(7);
