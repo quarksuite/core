@@ -22,7 +22,7 @@ export function Quarks({
   color = "gray",
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
   tokens: {
-    color: { formula = MaterialPalette, modifiers = {} } = {},
+    color: { formula = MaterialPalette, ...modifiers } = {},
     text: {
       family: {
         body: BODY_FAMILY = null,
@@ -68,7 +68,7 @@ export function Quarks({
   const GRID_ROWS = Math.round(GRID_COLUMNS / GRID_RATIO);
 
   return {
-    color: formula(modifiers, color),
+    color: formula({ ...modifiers }, color),
     text: {
       family: {
         body: TextStack(BODY_FALLBACK, BODY_FAMILY),

@@ -139,7 +139,7 @@ const testQuarks = [
         color: "dodgerblue",
         tokens: {
           color: {
-            modifiers: { scheme: scheme_analogous },
+            scheme: scheme_analogous,
           },
         },
       }).color,
@@ -328,7 +328,7 @@ benchmark(Quarks, {
   scale: { limit: 100 },
   tokens: {
     color: {
-      modifiers: { scheme: scheme_analogous },
+      scheme: scheme_analogous,
     },
   },
 });
