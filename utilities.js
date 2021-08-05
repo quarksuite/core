@@ -385,8 +385,8 @@ function parseFlushCondition({ by, min, max }) {
 // Palette Filtering:1 ends here
 
 // [[file:Mod.org::*Colors Project Web Defaults][Colors Project Web Defaults:1]]
-export function output_clrs(color) {
-  return A11Y_PALETTE[color] || UndefinedInA11yPaletteError(color);
+export function data_clrs(color) {
+  return A11Y_PALETTE[color] || UndefinedInA11yPaletteError();
 }
 
 function UndefinedInA11yPaletteError() {
@@ -452,31 +452,22 @@ function calculateRelativeLuminance(color) {
 // Color Contrast Ratio:1 ends here
 
 // [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
-export function output_systemfonts(fonts = ["sans", "serif", "monospace"]) {
-  const FONTS = (fonts.every(
-    (key) => key === "sans" || key === "serif" || key === "monospace",
-  ) &&
-    fonts) ||
-    NotASystemFontFamilyError();
-
-  return Array.from(new Set(FONTS.map((font) => SYSTEM_FONT_STACKS[font])));
+export function data_systemfonts(family) {
+  return SYSTEM_FONT_STACKS[family] || NotASystemFontFamilyError();
 }
 
 function NotASystemFontFamilyError() {
   throw new QSCError({
     name: "Not a System Font Stack",
     reason: `
-One or more of the values passed is not a valid system font stack target.
+The value entered is not a valid system font family.
 `,
     suggestion: `
-The available values matching system font stacks are:
+The available values matching system font families are:
 
 sans
 serif
 monospace
-
-Passing in systemfonts() with no parameters will output all of them,
-but you can also narrow the output. Example: ["sans", "monospace"]
 `,
   });
 }
