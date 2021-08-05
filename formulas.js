@@ -14,10 +14,10 @@ import {
   color_tints,
   color_to_hex,
   color_tones,
+  data_systemfonts,
   ms_create,
   ms_modify,
   ms_units,
-  output_systemfonts,
   utility_curry,
   utility_pipe,
 } from "./utilities.js";
@@ -204,8 +204,8 @@ function alphabeticalCategories(index) {
 // [[file:Mod.org::*Typography Formulas][Typography Formulas:1]]
 export function TextStack(fallback, font = null) {
   return font === null
-    ? "".concat(output_systemfonts([fallback]))
-    : [font, ...output_systemfonts([fallback])].join(", ");
+    ? data_systemfonts(fallback)
+    : [font, data_systemfonts(fallback)].join(", ");
 }
 
 export function TextStyle(weights) {
