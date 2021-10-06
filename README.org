@@ -100,10 +100,11 @@ That's all you need in native ES Module environments.
 
 *** Offline
 
-For an offline workflow, you can =curl= the package source directly.
+For an offline workflow, you can clone the repo. Quarks System Core has no build steps or bundling,
+so the source code is also the package code.
 
 #+BEGIN_SRC shell
-curl -o /path/to/your/local/copy.js https://raw.githubusercontent.com/quarksuite/core/main/main.js
+git clone https://github.com/quarksuite/core.git quarksuite:core
 #+END_SRC
 
 *** What About Node?
