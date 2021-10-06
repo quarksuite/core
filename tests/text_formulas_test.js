@@ -5,10 +5,10 @@ import {
   TextStack,
   TextStyle,
   TextUnits,
-} from "./formulas.js";
-import { ms_create } from "./utilities.js";
+} from "../formulas.js";
+import { ms_create } from "../utilities.js";
 
-import { benchmark, data, init, string, suite } from "./tests/index.js";
+import { benchmark, data, init, string, suite } from "./index.js";
 
 const testTextStack = [
   "TextStack",

@@ -9,16 +9,9 @@ import {
   output_style_dictionary,
   output_tailwindcss,
   output_yaml,
-} from "./formatters.js";
-import { Quarks } from "./bootstrapper.js";
-import {
-  benchmark,
-  data,
-  exception,
-  init,
-  string,
-  suite,
-} from "./tests/index.js";
+} from "../formatters.js";
+import { Quarks } from "../bootstrapper.js";
+import { benchmark, data, exception, init, string, suite } from "./index.js";
 
 const formats = [
   output_css,
@@ -506,7 +499,7 @@ Columns: 6
   ],
 ];
 
-const testInterOp = [
+const testInterop = [
   "Interoperability/Integration",
   [
     "TailwindCSS theme",
@@ -546,7 +539,7 @@ const testInterOp = [
   ],
 ];
 
-suite("Formatters", testCSS, testData, testApps);
+suite("Formatters", testExceptions, testCSS, testData, testApps, testInterop);
 
 formats.forEach((f) => benchmark(f, { project: dict.project, ...options }));
 

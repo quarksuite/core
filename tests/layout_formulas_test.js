@@ -3,10 +3,10 @@ import {
   GridDimensions,
   GridFractions,
   Viewport,
-} from "./formulas.js";
-import { ms_create } from "./utilities.js";
+} from "../formulas.js";
+import { ms_create } from "../utilities.js";
 
-import { benchmark, data, init, suite } from "./tests/index.js";
+import { benchmark, data, init, suite } from "./index.js";
 
 const testGridFractions = [
   "GridFractions",

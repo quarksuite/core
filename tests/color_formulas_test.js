@@ -3,7 +3,7 @@ import {
   InterpolatedPalette,
   MaterialPalette,
   StandardPalette,
-} from "./formulas.js";
+} from "../formulas.js";
 import {
   color_to_hex,
   color_to_rgb,
@@ -12,9 +12,9 @@ import {
   scheme_dyadic,
   scheme_hexagon,
   scheme_square,
-} from "./utilities.js";
+} from "../utilities.js";
 
-import { benchmark, data, exception, init, suite } from "./tests/index.js";
+import { benchmark, data, exception, init, suite } from "./index.js";
 
 const color = color_to_hex("coral");
 

@@ -1,6 +1,6 @@
-import { Quarks } from "./bootstrapper.js";
-import { scheme_analogous } from "./utilities.js";
-import { benchmark, data, init, suite } from "./tests/index.js";
+import { Quarks } from "../bootstrapper.js";
+import { scheme_analogous } from "../utilities.js";
+import { benchmark, data, init, suite } from "./index.js";
 
 const testQuarks = [
   "Quarks",

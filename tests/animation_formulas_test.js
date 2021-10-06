@@ -1,7 +1,7 @@
-import { AnimationCubicBezier, AnimationDuration } from "./formulas.js";
-import { ms_create } from "./utilities.js";
+import { AnimationCubicBezier, AnimationDuration } from "../formulas.js";
+import { ms_create } from "../utilities.js";
 
-import { benchmark, data, init, suite } from "./tests/index.js";
+import { benchmark, data, init, suite } from "./index.js";
 
 const testAnimationDuration = [
   "AnimationDuration",
@@ -87,6 +87,13 @@ const testAnimationCubicBezier = [
     data(AnimationCubicBezier({ ceiling: 20 }, ms_create({}, 1)), {
       x: [0, 0.13169, 0.19753, 0.2963, 0.44444, 0.66667, 1],
       y: [0, 0.9201, 2.5678, 5.09, 8.032, 10.887, 13.333, 20],
+    }),
+  ],
+  [
+    "with a custom scale",
+    data(AnimationCubicBezier({}, ms_create({ values: 3, ratio: 1.24 }, 1)), {
+      x: [0, 0.65036, 0.80645, 1],
+      y: [0, 0.71838, 0.76587, 0.80645, 1],
     }),
   ],
 ];

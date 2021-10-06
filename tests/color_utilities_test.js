@@ -30,7 +30,7 @@ import {
   scheme_star,
   scheme_tetradic,
   scheme_triadic,
-} from "./utilities.js";
+} from "../utilities.js";
 import {
   benchmark,
   data,
@@ -38,7 +38,7 @@ import {
   init,
   string,
   suite,
-} from "./tests/index.js";
+} from "../tests/index.js";
 
 const color = "dodgerblue";
 const formats = [
