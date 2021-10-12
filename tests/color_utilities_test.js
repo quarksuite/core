@@ -15,21 +15,21 @@ import {
   color_to_hwb,
   color_to_oklab,
   color_to_rgb,
+  color_to_scheme_analogous,
+  color_to_scheme_clash,
+  color_to_scheme_complementary,
+  color_to_scheme_dyadic,
+  color_to_scheme_hexagon,
+  color_to_scheme_split_complementary,
+  color_to_scheme_square,
+  color_to_scheme_star,
+  color_to_scheme_tetradic,
+  color_to_scheme_triadic,
   color_tones,
   palette_contrast,
   palette_filter,
   palette_shift,
   palette_sort,
-  scheme_analogous,
-  scheme_clash,
-  scheme_complementary,
-  scheme_dyadic,
-  scheme_hexagon,
-  scheme_split_complementary,
-  scheme_square,
-  scheme_star,
-  scheme_tetradic,
-  scheme_triadic,
 } from "../utilities.js";
 import {
   benchmark,
@@ -52,16 +52,16 @@ const formats = [
   color_to_oklab,
 ];
 const schemes = [
-  scheme_dyadic,
-  scheme_analogous,
-  scheme_complementary,
-  scheme_split_complementary,
-  scheme_triadic,
-  scheme_clash,
-  scheme_tetradic,
-  scheme_square,
-  scheme_star,
-  scheme_hexagon,
+  color_to_scheme_dyadic,
+  color_to_scheme_analogous,
+  color_to_scheme_complementary,
+  color_to_scheme_split_complementary,
+  color_to_scheme_triadic,
+  color_to_scheme_clash,
+  color_to_scheme_tetradic,
+  color_to_scheme_square,
+  color_to_scheme_star,
+  color_to_scheme_hexagon,
 ];
 const variants = [color_tints, color_tones, color_shades];
 
@@ -521,29 +521,52 @@ const testColorMaterial = [
 const testColorSchemes = [
   "Schemes",
   ["reject invalid color", schemes.forEach((f) => exception(f, "invalid"))],
-  ["dyadic", data(scheme_dyadic(color), ["#1e90ff", "#da56ad"])],
-  ["complementary", data(scheme_complementary(color), ["#1e90ff", "#d37700"])],
+  ["dyadic", data(color_to_scheme_dyadic(color), ["#1e90ff", "#da56ad"])],
+  [
+    "complementary",
+    data(color_to_scheme_complementary(color), ["#1e90ff", "#d37700"]),
+  ],
   [
     "analogous",
-    data(scheme_analogous(color), ["#1e90ff", "#a06ff2", "#da56ad"]),
+    data(color_to_scheme_analogous(color), ["#1e90ff", "#a06ff2", "#da56ad"]),
   ],
   [
     "split complementary",
-    data(scheme_split_complementary(color), ["#1e90ff", "#df6855", "#b58c00"]),
+    data(color_to_scheme_split_complementary(color), [
+      "#1e90ff",
+      "#df6855",
+      "#b58c00",
+    ]),
   ],
-  ["triadic", data(scheme_triadic(color), ["#1e90ff", "#ec516e", "#5da600"])],
-  ["clash", data(scheme_clash(color), ["#1e90ff", "#da56ad", "#00b16d"])],
+  [
+    "triadic",
+    data(color_to_scheme_triadic(color), ["#1e90ff", "#ec516e", "#5da600"]),
+  ],
+  [
+    "clash",
+    data(color_to_scheme_clash(color), ["#1e90ff", "#da56ad", "#00b16d"]),
+  ],
   [
     "tetradic",
-    data(scheme_tetradic(color), ["#1e90ff", "#a06ff2", "#d37700", "#9f9600"]),
+    data(color_to_scheme_tetradic(color), [
+      "#1e90ff",
+      "#a06ff2",
+      "#d37700",
+      "#9f9600",
+    ]),
   ],
   [
     "square",
-    data(scheme_square(color), ["#1e90ff", "#da56ad", "#d37700", "#00b16d"]),
+    data(color_to_scheme_square(color), [
+      "#1e90ff",
+      "#da56ad",
+      "#d37700",
+      "#00b16d",
+    ]),
   ],
   [
     "star",
-    data(scheme_star(color), [
+    data(color_to_scheme_star(color), [
       "#1e90ff",
       "#c75fce",
       "#ec592b",
@@ -553,7 +576,7 @@ const testColorSchemes = [
   ],
   [
     "hexagon",
-    data(scheme_hexagon(color), [
+    data(color_to_scheme_hexagon(color), [
       "#1e90ff",
       "#b866e0",
       "#ec516e",

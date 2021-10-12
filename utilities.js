@@ -215,20 +215,20 @@ export function color_material({ light = 95, dark = 80 }, color) {
 // Material:1 ends here
 
 // [[file:Mod.org::*Color Schemes][Color Schemes:1]]
-export function scheme_dyadic(color) {
+export function color_to_scheme_dyadic(color) {
   return generateUniformScheme({ count: 2, arc: 90 }, color);
 }
 
-export function scheme_complementary(color) {
+export function color_to_scheme_complementary(color) {
   return generateUniformScheme({ count: 2, arc: 180 }, color);
 }
 
-export function scheme_analogous(color) {
+export function color_to_scheme_analogous(color) {
   return generateUniformScheme({ count: 3, arc: 45 }, color);
 }
 
-export function scheme_split_complementary(color) {
-  const [origin, complement] = Array.from(scheme_complementary(color));
+export function color_to_scheme_split_complementary(color) {
+  const [origin, complement] = Array.from(color_to_scheme_complementary(color));
   return [
     origin,
     color_adjust({ hue: -30 }, complement),
@@ -236,17 +236,17 @@ export function scheme_split_complementary(color) {
   ];
 }
 
-export function scheme_triadic(color) {
+export function color_to_scheme_triadic(color) {
   return generateUniformScheme({ count: 3, arc: 120 }, color);
 }
 
-export function scheme_clash(color) {
-  const [origin, right, , left] = Array.from(scheme_square(color));
+export function color_to_scheme_clash(color) {
+  const [origin, right, , left] = Array.from(color_to_scheme_square(color));
   return [origin, right, left];
 }
 
-export function scheme_tetradic(color) {
-  const [origin, opposite] = Array.from(scheme_complementary(color));
+export function color_to_scheme_tetradic(color) {
+  const [origin, opposite] = Array.from(color_to_scheme_complementary(color));
   return [
     origin,
     color_adjust({ hue: 45 }, origin),
@@ -255,15 +255,15 @@ export function scheme_tetradic(color) {
   ];
 }
 
-export function scheme_square(color) {
+export function color_to_scheme_square(color) {
   return generateUniformScheme({ count: 4, arc: 90 }, color);
 }
 
-export function scheme_star(color) {
+export function color_to_scheme_star(color) {
   return generateUniformScheme({ count: 5, arc: 72 }, color);
 }
 
-export function scheme_hexagon(color) {
+export function color_to_scheme_hexagon(color) {
   return generateUniformScheme({ count: 6, arc: 60 }, color);
 }
 
