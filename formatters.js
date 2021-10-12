@@ -1,4 +1,4 @@
-// [[file:Mod.org::*Formatters][Formatters:1]]
+// [[file:Mod.org::*Setting Up Formatter Helpers][Setting Up Formatter Helpers:1]]
 import {
   bumpVersion,
   cssFormatStructure,
@@ -13,7 +13,7 @@ import {
 import { extractor } from "./lib/utilities/color/extractor/index.js";
 import { parser } from "./lib/utilities/color/parser/index.js";
 import { color_to_hex, color_to_rgb, utility_pipe } from "./utilities.js";
-// Formatters:1 ends here
+// Setting Up Formatter Helpers:1 ends here
 
 // [[file:Mod.org::*Custom Properties][Custom Properties:1]]
 export function output_css(dict) {
@@ -21,7 +21,7 @@ export function output_css(dict) {
 }
 // Custom Properties:1 ends here
 
-// [[file:Mod.org::*Preprocessors][Preprocessors:1]]
+// [[file:Mod.org::*Sass][Sass:1]]
 export function output_scss(dict) {
   return cssFormatStructure(
     {
@@ -33,9 +33,9 @@ export function output_scss(dict) {
     dict,
   );
 }
-// Preprocessors:1 ends here
+// Sass:1 ends here
 
-// [[file:Mod.org::*Preprocessors][Preprocessors:2]]
+// [[file:Mod.org::*Less][Less:1]]
 export function output_less(dict) {
   return cssFormatStructure(
     {
@@ -47,9 +47,9 @@ export function output_less(dict) {
     dict,
   );
 }
-// Preprocessors:2 ends here
+// Less:1 ends here
 
-// [[file:Mod.org::*Preprocessors][Preprocessors:3]]
+// [[file:Mod.org::*Stylus][Stylus:1]]
 export function output_styl(dict) {
   return cssFormatStructure(
     {
@@ -61,9 +61,9 @@ export function output_styl(dict) {
     dict,
   );
 }
-// Preprocessors:3 ends here
+// Stylus:1 ends here
 
-// [[file:Mod.org::*Data Exports][Data Exports:1]]
+// [[file:Mod.org::*Raw (JSON)][Raw (JSON):1]]
 export function output_raw(dict) {
   const { project, ...tokens } = dict;
   const { bump = "manual" } = project || MissingProjectMetadataError();
@@ -78,9 +78,9 @@ export function output_raw(dict) {
 
   return JSON.stringify({ project, tokens }, null, 2);
 }
-// Data Exports:1 ends here
+// Raw (JSON):1 ends here
 
-// [[file:Mod.org::*Data Exports][Data Exports:2]]
+// [[file:Mod.org::*YAML][YAML:1]]
 export function output_yaml(dict) {
   const { project, ...tokens } = dict;
   const { bump = "manual" } = project || MissingProjectMetadataError();
@@ -120,7 +120,7 @@ ${
   }
 `;
 }
-// Data Exports:2 ends here
+// YAML:1 ends here
 
 // [[file:Mod.org::*GIMP/Inkscape][GIMP/Inkscape:1]]
 export function output_gpl(dict) {
@@ -252,7 +252,7 @@ function sketchSwatch(color) {
 }
 // Sketch:1 ends here
 
-// [[file:Mod.org::*Interop/Integration][Interop/Integration:1]]
+// [[file:Mod.org::*TailwindCSS][TailwindCSS:1]]
 export function output_tailwindcss(dict) {
   const { project, ...tokens } = dict;
 
@@ -272,7 +272,17 @@ export function output_tailwindcss(dict) {
 
   return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
+// TailwindCSS:1 ends here
 
+// [[file:Mod.org::*Example Setup][Example Setup:2]]
+const theme = require("/path/to/theme.js");
+
+module.exports = {
+  theme
+};
+// Example Setup:2 ends here
+
+// [[file:Mod.org::*Style Dictionary][Style Dictionary:1]]
 export function output_style_dictionary(dict) {
   const { project, ...tokens } = dict;
 
@@ -289,4 +299,4 @@ export function output_style_dictionary(dict) {
 
   return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
-// Interop/Integration:1 ends here
+// Style Dictionary:1 ends here
