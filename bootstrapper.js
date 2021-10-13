@@ -17,12 +17,24 @@ import {
   TextUnits,
   Viewport,
 } from "./formulas.js";
-import { ms_create } from "./utilities.js";
+import {
+  color_to_scheme_analogous,
+  color_to_scheme_clash,
+  color_to_scheme_complementary,
+  color_to_scheme_dyadic,
+  color_to_scheme_hexagon,
+  color_to_scheme_split_complementary,
+  color_to_scheme_square,
+  color_to_scheme_star,
+  color_to_scheme_tetradic,
+  color_to_scheme_triadic,
+  ms_create,
+} from "./utilities.js";
 // Importing the Bootstrapper Helpers:1 ends here
 
 // [[file:Mod.org::*Quarks System Standard][Quarks System Standard:1]]
 export function Quarks({
-  color: { base = "gray", type = MaterialPalette, ...modifiers } = {},
+  color: { base = "gray", type = "material", ...modifiers } = {},
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
   text: {
     body: { family: BODY = null, weights: BODY_WEIGHTS = [400, 700] } = {},
@@ -63,7 +75,7 @@ export function Quarks({
   const ROWS = Math.round(COLUMNS / GRID_RATIO);
 
   return {
-    color: type({ ...modifiers }, base),
+    color: paletteFromType(base, type, modifiers),
     text: {
       body: {
         family: TextStack("sans", BODY),
@@ -97,3 +109,32 @@ export function Quarks({
   };
 }
 // Quarks System Standard:1 ends here
+
+// [[file:Mod.org::*Bootstrapper Palette Types][Bootstrapper Palette Types:1]]
+function paletteFromType(base, type, modifiers = {}) {
+  return {
+    material: MaterialPalette(selectScheme(modifiers), base),
+    basic: StandardPalette(selectScheme(modifiers), base),
+    blended: BlendedPalette(modifiers, base),
+    interpolated: InterpolatedPalette(modifiers, base),
+  }[type];
+}
+
+function selectScheme(modifiers) {
+  return {
+    ...modifiers,
+    scheme: {
+      dyadic: color_to_scheme_dyadic,
+      analogous: color_to_scheme_analogous,
+      complementary: color_to_scheme_complementary,
+      split: color_to_scheme_split_complementary,
+      triadic: color_to_scheme_triadic,
+      clash: color_to_scheme_clash,
+      tetradic: color_to_scheme_tetradic,
+      square: color_to_scheme_square,
+      star: color_to_scheme_star,
+      hexagon: color_to_scheme_hexagon,
+    }[modifiers.scheme],
+  };
+}
+// Bootstrapper Palette Types:1 ends here

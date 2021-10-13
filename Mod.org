@@ -32,6 +32,7 @@
 - [[#bootstrapper][Bootstrapper]]
   - [[#importing-the-bootstrapper-helpers][Importing the Bootstrapper Helpers]]
   - [[#quarks-system-standard][Quarks System Standard]]
+    - [[#bootstrapper-palette-types][Bootstrapper Palette Types]]
 - [[#formulas][Formulas]]
   - [[#palette-formulas][Palette Formulas]]
   - [[#typography-formulas][Typography Formulas]]
@@ -620,7 +621,19 @@ import {
   TextUnits,
   Viewport,
 } from "./formulas.js";
-import { ms_create } from "./utilities.js";
+import {
+  color_to_scheme_analogous,
+  color_to_scheme_clash,
+  color_to_scheme_complementary,
+  color_to_scheme_dyadic,
+  color_to_scheme_hexagon,
+  color_to_scheme_split_complementary,
+  color_to_scheme_square,
+  color_to_scheme_star,
+  color_to_scheme_tetradic,
+  color_to_scheme_triadic,
+  ms_create,
+} from "./utilities.js";
 #+END_SRC
 
 ** Quarks System Standard
@@ -631,7 +644,7 @@ for most of my work. It may not suit your work, which is why I also provide the 
 
 #+BEGIN_SRC js
 export function Quarks({
-  color: { base = "gray", type = MaterialPalette, ...modifiers } = {},
+  color: { base = "gray", type = "material", ...modifiers } = {},
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
   text: {
     body: { family: BODY = null, weights: BODY_WEIGHTS = [400, 700] } = {},
@@ -672,7 +685,7 @@ export function Quarks({
   const ROWS = Math.round(COLUMNS / GRID_RATIO);
 
   return {
-    color: type({ ...modifiers }, base),
+    color: paletteFromType(base, type, modifiers),
     text: {
       body: {
         family: TextStack("sans", BODY),
@@ -703,6 +716,45 @@ export function Quarks({
       easing: AnimationCubicBezier({ floor, ceiling }, ANIMATION),
     },
     ms: FigureCalculations(SCALE),
+  };
+}
+#+END_SRC
+
+*** Bootstrapper Palette Types
+
+Since, I want keep the bootstrapper self-contained, I needed to ensure that palettes could be
+generated from specially recognized keys. The other approache would be to pass the formulas as a
+type directly, but that means extra imports when I want to modify anything.
+
+By mapping the =color.type= and =color.scheme= options instead to keywords, the bootstrapper
+configuration object asks nothing extra of the user. This did make it a bit slower (=~60-90ms=
+instead of =~30-50ms=) but it was worthwhile for ease of use.
+
+#+BEGIN_SRC js
+function paletteFromType(base, type, modifiers = {}) {
+  return {
+    material: MaterialPalette(selectScheme(modifiers), base),
+    basic: StandardPalette(selectScheme(modifiers), base),
+    blended: BlendedPalette(modifiers, base),
+    interpolated: InterpolatedPalette(modifiers, base),
+  }[type];
+}
+
+function selectScheme(modifiers) {
+  return {
+    ...modifiers,
+    scheme: {
+      dyadic: color_to_scheme_dyadic,
+      analogous: color_to_scheme_analogous,
+      complementary: color_to_scheme_complementary,
+      split: color_to_scheme_split_complementary,
+      triadic: color_to_scheme_triadic,
+      clash: color_to_scheme_clash,
+      tetradic: color_to_scheme_tetradic,
+      square: color_to_scheme_square,
+      star: color_to_scheme_star,
+      hexagon: color_to_scheme_hexagon,
+    }[modifiers.scheme],
   };
 }
 #+END_SRC

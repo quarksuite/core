@@ -1,5 +1,4 @@
 import { Quarks } from "../bootstrapper.js";
-import { color_to_scheme_analogous } from "../utilities.js";
 import { benchmark, data, init, suite } from "./index.js";
 
 const testQuarks = [
@@ -138,7 +137,7 @@ const testQuarks = [
     "setting color token configuration",
     data(
       Quarks({
-        color: { base: "dodgerblue", scheme: color_to_scheme_analogous },
+        color: { base: "dodgerblue", scheme: "analogous" },
       }).color,
       {
         a: {
@@ -322,7 +321,7 @@ benchmark(Quarks, {
   scale: { limit: 100 },
   tokens: {
     color: {
-      scheme: color_to_scheme_analogous,
+      scheme: "analogous",
     },
   },
 });
