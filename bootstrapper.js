@@ -1,11 +1,14 @@
-// [[file:Mod.org::*Bootstrapper][Bootstrapper:1]]
+// [[file:Mod.org::*Importing the Bootstrapper Helpers][Importing the Bootstrapper Helpers:1]]
 import {
   AnimationCubicBezier,
   AnimationDuration,
+  BlendedPalette,
   FigureCalculations,
   GridDimensions,
   GridFractions,
+  InterpolatedPalette,
   MaterialPalette,
+  StandardPalette,
   TextLeading,
   TextMeasure,
   TextSize,
@@ -15,70 +18,64 @@ import {
   Viewport,
 } from "./formulas.js";
 import { ms_create } from "./utilities.js";
-// Bootstrapper:1 ends here
+// Importing the Bootstrapper Helpers:1 ends here
 
 // [[file:Mod.org::*Quarks System Standard][Quarks System Standard:1]]
 export function Quarks({
-  color = "gray",
+  color: { base = "gray", type = MaterialPalette, ...modifiers } = {},
   scale: { initial = 1, ratio = 1.5, limit = 6 } = {},
-  tokens: {
-    color: { formula = MaterialPalette, ...modifiers } = {},
-    text: {
-      family: {
-        body: BODY_FAMILY = null,
-        headings: HEADING_FAMILY = null,
-        code: CODE_FAMILY = null,
-      } = {},
-      fallback: {
-        body: BODY_FALLBACK = "sans",
-        headings: HEADING_FALLBACK = "serif",
-        code: CODE_FALLBACK = "monospace",
-      } = {},
-      weights: {
-        body: BODY_WEIGHTS = [400, 700],
-        headings: HEADING_WEIGHTS = [700],
-        code: CODE_WEIGHTS = BODY_WEIGHTS,
-      } = {},
-      measure: { min = 45, max = 75 } = {},
-      leading: { normal = 1.5, tight = 1.125 } = {},
-      values: TEXT_VALUES = limit,
+  text: {
+    body: { family: BODY = null, weights: BODY_WEIGHTS = [400, 700] } = {},
+    headings: {
+      family: HEADING = BODY,
+      weights: HEADING_WEIGHTS = BODY_WEIGHTS,
     } = {},
-    grid: { columns: GRID_COLUMNS = limit, ratio: GRID_RATIO = ratio } = {},
-    viewport: {
-      threshold = 5,
-      full = 100,
-      context = ["w", "h"],
-      values: VIEWPORT_VALUES = limit,
-    } = {},
-    animation: {
-      duration: { fastest = 250, slowest = 1000 } = {},
-      easing: { floor = 0, ceiling = 1 } = {},
-      values: ANIMATION_VALUES = limit,
-    } = {},
+    code: { family: CODE = null, weights: CODE_WEIGHTS = BODY_WEIGHTS } = {},
+    measure: { min = 45, max = 75 } = {},
+    leading: { normal = 1.5, tight = 1.125 } = {},
+    values: TEXT_VALUES = limit,
+  } = {},
+  grid: { columns: COLUMNS = limit, ratio: GRID_RATIO = ratio } = {},
+  viewport: {
+    threshold = 10,
+    full = 100,
+    context = ["width", "height"],
+    values: VP_VALUES = limit,
+  } = {},
+  animation: {
+    duration: { fastest = 250, slowest = 1000 } = {},
+    easing: { floor = 0, ceiling = 1 } = {},
+    values: ANIMATION_VALUES = limit,
   } = {},
 } = {}) {
+  // Create global modular scale
   const SCALE = ms_create({ ratio, values: limit }, initial);
-  const [TEXT, GRID, VIEWPORT, ANIMATION] = [
+
+  // If config has limits defined, use those instead of global
+  const [TEXT, GRID, VP, ANIMATION] = [
     TEXT_VALUES,
-    GRID_COLUMNS,
-    VIEWPORT_VALUES,
+    COLUMNS,
+    VP_VALUES,
     ANIMATION_VALUES,
   ].map((values) => ms_create({ ratio, values }, initial));
 
-  const GRID_ROWS = Math.round(GRID_COLUMNS / GRID_RATIO);
+  // Generate grid rows from ratio
+  const ROWS = Math.round(COLUMNS / GRID_RATIO);
 
   return {
-    color: formula({ ...modifiers }, color),
+    color: type({ ...modifiers }, base),
     text: {
-      family: {
-        body: TextStack(BODY_FALLBACK, BODY_FAMILY),
-        headings: TextStack(HEADING_FALLBACK, HEADING_FAMILY),
-        code: TextStack(CODE_FALLBACK, CODE_FAMILY),
+      body: {
+        family: TextStack("sans", BODY),
+        weight: TextStyle(BODY_WEIGHTS),
       },
-      weight: {
-        body: TextStyle(BODY_WEIGHTS),
-        headings: TextStyle(HEADING_WEIGHTS),
-        code: TextStyle(CODE_WEIGHTS),
+      headings: {
+        family: TextStack("serif", HEADING),
+        weight: TextStyle(HEADING_WEIGHTS),
+      },
+      code: {
+        family: TextStack("monospace", CODE),
+        weight: TextStyle(CODE_WEIGHTS),
       },
       size: TextSize(TEXT),
       measure: TextMeasure({ min, max }, TEXT),
@@ -86,12 +83,12 @@ export function Quarks({
       unit: TextUnits(TEXT),
     },
     grid: {
-      columns: GRID_COLUMNS,
-      rows: GRID_ROWS,
+      columns: COLUMNS,
+      rows: ROWS,
       fr: GridFractions(GRID),
-      ...GridDimensions(GRID_COLUMNS, GRID_ROWS),
+      ...GridDimensions(COLUMNS, ROWS),
     },
-    viewport: Viewport({ threshold, full, context }, VIEWPORT),
+    viewport: Viewport({ threshold, full, context }, VP),
     animation: {
       duration: AnimationDuration({ fastest, slowest }, ANIMATION),
       easing: AnimationCubicBezier({ floor, ceiling }, ANIMATION),

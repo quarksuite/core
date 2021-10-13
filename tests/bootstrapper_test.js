@@ -22,18 +22,20 @@ const testQuarks = [
         },
       },
       text: {
-        family: {
-          body:
+        body: {
+          family:
             "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-          headings:
-            "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-          code:
-            "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+          weight: { regular: 400, bold: 700 },
         },
-        weight: {
-          body: { regular: 400, bold: 700 },
-          headings: { bold: 700 },
-          code: { regular: 400, bold: 700 },
+        headings: {
+          family:
+            "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+          weight: { regular: 400, bold: 700 },
+        },
+        code: {
+          family:
+            "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+          weight: { regular: 400, bold: 700 },
         },
         size: {
           base: "1rem",
@@ -102,13 +104,13 @@ const testQuarks = [
       viewport: {
         width: {
           base: "100vw",
-          segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
-          threshold: "5vw",
+          segment: ["70vw", "58vw", "46vw", "32vw", "21vw", "14vw"],
+          threshold: "10vw",
         },
         height: {
           base: "100vh",
-          segment: ["68vh", "56vh", "43vh", "29vh", "17vh", "9vh"],
-          threshold: "5vh",
+          segment: ["70vh", "58vh", "46vh", "32vh", "21vh", "14vh"],
+          threshold: "10vh",
         },
       },
       animation: {
@@ -136,12 +138,7 @@ const testQuarks = [
     "setting color token configuration",
     data(
       Quarks({
-        color: "dodgerblue",
-        tokens: {
-          color: {
-            scheme: color_to_scheme_analogous,
-          },
-        },
+        color: { base: "dodgerblue", scheme: color_to_scheme_analogous },
       }).color,
       {
         a: {
@@ -188,29 +185,29 @@ const testQuarks = [
     data(
       Quarks({
         scale: { limit: 4 },
-        tokens: {
-          text: {
-            body: { system: "serif", family: "Zilla Slab" },
-            headings: { system: "sans", family: "Rubik" },
-            code: { family: "Space Mono" },
-            measure: { min: 32, max: 64, values: 4 },
-            leading: { tight: 1.25 },
-          },
+        text: {
+          body: { family: "Zilla Slab" },
+          headings: { family: "Rubik" },
+          code: { family: "Space Mono" },
+          measure: { min: 32, max: 64, values: 4 },
+          leading: { tight: 1.25 },
         },
       }).text,
       {
-        family: {
-          body:
-            "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-          headings:
-            "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-          code:
-            "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+        body: {
+          family:
+            "Zilla Slab, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+          weight: { regular: 400, bold: 700 },
         },
-        weight: {
-          body: { regular: 400, bold: 700 },
-          headings: { bold: 700 },
-          code: { regular: 400, bold: 700 },
+        headings: {
+          family:
+            "Rubik, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+          weight: { regular: 400, bold: 700 },
+        },
+        code: {
+          family:
+            "Space Mono, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+          weight: { regular: 400, bold: 700 },
         },
         size: {
           base: "1rem",
@@ -245,7 +242,7 @@ const testQuarks = [
   ],
   [
     "setting grid token configuration",
-    data(Quarks({ tokens: { grid: { columns: 5 } } }).grid, {
+    data(Quarks({ grid: { columns: 5 } }).grid, {
       columns: 5,
       rows: 3,
       fr: {
@@ -272,8 +269,7 @@ const testQuarks = [
   [
     "setting viewport token configuration",
     data(
-      Quarks({ tokens: { viewport: { threshold: 25, context: ["w", "min"] } } })
-        .viewport,
+      Quarks({ viewport: { threshold: 25, context: ["w", "min"] } }).viewport,
       {
         width: {
           base: "100vw",
@@ -292,11 +288,9 @@ const testQuarks = [
     "setting animation token configuration",
     data(
       Quarks({
-        tokens: {
-          animation: {
-            duration: { fastest: 100, slowest: 500 },
-            easing: { floor: -1000, ceiling: 1000 },
-          },
+        animation: {
+          duration: { fastest: 100, slowest: 500 },
+          easing: { floor: -1000, ceiling: 1000 },
         },
       }).animation,
       {
