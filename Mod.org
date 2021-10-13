@@ -8,7 +8,6 @@
 - [[#overview-of-system-design][Overview of System Design]]
   - [[#rules][Rules]]
 - [[#quarks-system-dictionary][Quarks System Dictionary]]
-  - [[#example][Example]]
   - [[#structure][Structure]]
     - [[#partial-and-complete-schemas][Partial and Complete Schemas]]
     - [[#values][Values]]
@@ -16,8 +15,6 @@
     - [[#subcategories][Subcategories]]
     - [[#categories][Categories]]
     - [[#metadata][Metadata]]
-  - [[#options--decisions][Options & Decisions]]
-    - [[#example-1][Example]]
 - [[#formatters][Formatters]]
   - [[#setting-up-formatter-helpers][Setting Up Formatter Helpers]]
   - [[#css-formats][CSS Formats]]
@@ -33,6 +30,7 @@
     - [[#tailwindcss][TailwindCSS]]
     - [[#style-dictionary][Style Dictionary]]
 - [[#bootstrapper][Bootstrapper]]
+  - [[#importing-the-bootstrapper-helpers][Importing the Bootstrapper Helpers]]
   - [[#quarks-system-standard][Quarks System Standard]]
 - [[#formulas][Formulas]]
   - [[#palette-formulas][Palette Formulas]]
@@ -88,12 +86,19 @@
 
 * Introduction
 
-This document contains the source code of Quarks System Core written in a literate programming
-style. The main reason I opted to write this way is that, as of v1, QSC now explicitly builds off
-layers of abstraction and very /specific/ kinds of functional composition.
+#+BEGIN_QUOTE
+This document provides a conceptual overview of Quarks System Core intended for developers looking
+to extend the library. If you're new or don't care about the technical bits, head to the user
+guide. If you just need to know what tools are provided and their options, you'll want to read the
+API documentation instead.
+#+END_QUOTE
 
-Hopefully these decisions make the right workflows easier for you to accomplish and errors harder to
-come by. I invite you to submit an issue if you hit a bump.
+Quarks System Core written in a literate programming style. The main reason I opted to write this
+way is that, as of v1, QSC now explicitly builds off layers of abstraction and very /specific/ kinds
+of functional composition.
+
+Hopefully these decisions make the right workflows easier to accomplish and errors harder to come
+by. I invite you to submit an issue if you hit a bump.
 
 I would *highly recommend* that you read the source in the order laid out below. It'll give you a
 better idea of how the parts all fit together and why.
@@ -103,12 +108,8 @@ better idea of how the parts all fit together and why.
 :header-args:js: :tangle "./mod.js" :comments link
 :END:
 
-The entry point of the entire library is =mod.js=. Importing this will give you the entire kit to
-play with and open up any approach to using it. The main time to use the entry point is during the
-development of your tokens.
-
-When you're ready for production, you'll want to narrow your imports to the layers you used. This
-will reduce the overall size of your system.
+The entry point of the entire library is =mod.js=. It provides the entire kit to play with and opens
+up any approach to using it.
 
 #+BEGIN_SRC js
 export * from "./formatters.js";
@@ -134,8 +135,8 @@ highest to lowest layer of abstraction. I'll give a short description of each la
 
 ** Rules
 
-The system design also lays down a set of ground rules intended to aid understanding and use of all
-these moving parts.
+The system design also lays down a set of ground rules intended to aid understanding and define
+clear limits for all these moving parts.
 
 1) Utilities and formatters are always =snake_case=
 2) Utilities are always named by the data type they affect (=color_to_hex=, =ms_create=)
@@ -155,142 +156,6 @@ The details of the spec are essentially a combination of the [[https://styled-sy
 design token specs. Generating data as values and scales derives from Styled System; allowing
 flexible token hierarchies and freeform structure derives from Style Dictionary.
 
-** Example
-
-By default, the =Quarks= bootstrapper outputs a standard option schema ideal for grayscale prototyping
-and filled with data that's about as complete as you can get for small to medium web projects.
-
-The best way to understand the schema: don't pay attention to the naming, pay attention to the /structure/.
-
-#+NAME: bootstrapper-defaults
-#+begin_src js
-const dict = {
-  color: {
-    a: {
-      "50": "#f8f8f8",
-      "100": "#dfdfdf",
-      "200": "#c6c6c6",
-      "300": "#aeaeae",
-      "400": "#979797",
-      "500": "#7d7d7d",
-      "600": "#606060",
-      "700": "#414141",
-      "800": "#252525",
-      "900": "#0b0b0b"
-    }
-  },
-  text: {
-    family: {
-      body: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...",
-      headings: "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...",
-      code: "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace"
-    },
-    weight: {
-      body: { regular: 400, bold: 700 },
-      headings: { bold: 700 },
-      code: { regular: 400, bold: 700 }
-    },
-    size: {
-      base: "1rem",
-      x2: "1.5rem",
-      x3: "2.25rem",
-      x4: "3.375rem",
-      x5: "5.0625rem",
-      x6: "7.5938rem",
-      d2: "0.66667em",
-      d3: "0.44444em",
-      d4: "0.2963em",
-      d5: "0.19753em",
-      d6: "0.13169em"
-    },
-    measure: {
-      base: "75ch",
-      segment: [ "65ch", "61ch", "57ch", "52ch", "48ch", "46ch" ],
-      minimum: "45ch"
-    },
-    leading: {
-      base: 1.5,
-      narrow: [ 1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423 ],
-      tight: 1.125
-    },
-    unit: {
-      base: "1ex",
-      x2: "1.5ex",
-      x3: "2.25ex",
-      x4: "3.375ex",
-      x5: "5.0625ex",
-      x6: "7.5938ex",
-      d2: "0.66667ex",
-      d3: "0.44444ex",
-      d4: "0.2963ex",
-      d5: "0.19753ex",
-      d6: "0.13169ex"
-    }
-  },
-  grid: {
-    columns: 6,
-    rows: 4,
-    fr: {
-      base: "1fr",
-      x2: "1.5fr",
-      x3: "2.25fr",
-      x4: "3.375fr",
-      x5: "5.0625fr",
-      x6: "7.5938fr",
-      d2: "0.66667fr",
-      d3: "0.44444fr",
-      d4: "0.2963fr",
-      d5: "0.19753fr",
-      d6: "0.13169fr"
-    },
-    x: 1,
-    x2: 2,
-    x3: 3,
-    x4: 4,
-    x5: 5,
-    x6: 6,
-    y: 1,
-    y2: 2,
-    y3: 3,
-    y4: 4
-  },
-  viewport: {
-    width: {
-      base: "100vw",
-      segment: [ "68vw", "56vw", "43vw", "29vw", "17vw", "9vw" ],
-      threshold: "5vw"
-    },
-    height: {
-      base: "100vh",
-      segment: [ "68vh", "56vh", "43vh", "29vh", "17vh", "9vh" ],
-      threshold: "5vh"
-    }
-  },
-  animation: {
-    duration: {
-      base: "1000ms",
-      interval: [ "750ms", "658.25ms", "551.2ms", "440.88ms", "346.29ms", "284.5ms" ],
-      fastest: "250ms"
-    },
-    easing: {
-      x: [
-              0, 0.13169,
-        0.19753,  0.2963,
-        0.44444, 0.66667,
-              1
-      ],
-      y: [
-              0, 0.046005,
-        0.12839,   0.2545,
-         0.4016,  0.54433,
-        0.66667,        1
-      ]
-    }
-  },
-  ms: { base: 1, x2: 1.5, x3: 2.25, x4: 3.375, x5: 5.0625, x6: 7.5938 }
-}
-#+end_src
-
 ** Structure
 
 First, a Quarks System Dictionary is nothing but an ordinary JavaScript object. The schema is more
@@ -305,36 +170,10 @@ As a rule, formatters will refuse to process QSDs that don't begin with =project
 to prevent unintentional design token builds while developing your data. The presence of project
 metadata indicates that the schema is ready for production and exporting.
 
-As a basic example:
-
-#+NAME: complete-dict
-#+BEGIN_SRC js :noweb yes
-<<bootstrapper-defaults>>
-
-const completeQSD = {
-  project: {
-    name: "Example Design Tokens",
-    author: "Ed N. Bacon",
-    version: "0.0.0",
-    // bump: "minor" (optional autobumping via "major", "minor", "patch", "pre", "build")
-    license: "Unlicense"
-  },
-  ...dict
-}
-#+END_SRC
-
-For the sake of focus, I'm only going to use subsets of the data for examples.
-
 *** Values
 
 Every design token is represented by a value. It's a singular piece of data (such as a color or a
 particular font size). Some examples:
-
-#+BEGIN_SRC js
-console.log(dict.color.a["500"]) // #7d7d7d
-console.log(dict.text.size.x3) // 2.25rem
-console.log(dict.grid.columns) // 6
-#+END_SRC
 
 *** Scales
 
@@ -344,18 +183,10 @@ generating scales from values, so you'll rarely write them manually.
 
 Scale values are accessed by their index.
 
-#+BEGIN_SRC js
-console.log(
-  dict.text.leading.narrow, // [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423]
-  dict.text.leading.narrow[0], // 1.375
-  dict.text.leading.narrow[3] // 1.2204
-)
-#+END_SRC
-
 *** Subcategories
 
 Subcategories are special. They always have a =base= value and any values or scales defined
-within are treated as variants. The significance of this won't be evident until we reach formatters,
+within are treated as variants. The significance of this won't be evident until defining formatters,
 so let's continue on.
 
 *** Categories
@@ -363,145 +194,10 @@ so let's continue on.
 Categories are purely for organization and have many uses. Besides token categories, you can namespace
 your project by assigning the dictionary itself a key.
 
-#+BEGIN_SRC js
-const namespacedDict = {
-  edt: dict
-}
-#+END_SRC
-
 *** Metadata
 
 As of v1, QSDs now support a =metadata= object. This allows you to add supplementary information
-about your data that the formatters will use if supported. Multiline metadata is allowed, so add as
-much info as neccessary.
-
-#+BEGIN_SRC js
-const withMeta = {
-  project: {
-    name: "Sample Project",
-    author: "Jill Kane",
-    version: "0.0.0",
-    license: "Unlicense",
-    metadata: {
-     description: "Project can have a description",
-     comments: "Project can also have some useful comments"
-   }
-  },
-  color: {
-    metadata: {
-     description: "Individual categories can also have a description",
-     comments: "Individual categories can have useful comments",
-   },
-    // ...tokens
-  }
-}
-#+END_SRC
-
-
-
-** Options & Decisions
-
-Another idea central to design token authorship is the distinction between a broad pool of option
-tokens and narrowing by the needs of your project down to decision tokens.
-
-The bootstrapper excels at providing a breadth of options that you can then drill down to only what
-you use.
-
-*** Example
-
-#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-<<complete-dict>>
-
-const schema = {
-  project: completeQSD.project,
-  color: {
-    light: dict.color.a["400"],
-    lighter: dict.color.a["200"],
-    bg: dict.color.a["50"],
-    dark: dict.color.a["500"],
-    darker: dict.color.a["700"],
-    fg: dict.color.a["900"]
-  },
-  text: {
-    primary: {
-      family: dict.text.family.body,
-      regular: dict.text.weight.body.regular,
-      bold: dict.text.weight.body.bold,
-      size: dict.text.size.base,
-      leading: dict.text.leading.base,
-      measure: dict.text.measure.base
-    },
-    secondary: {
-      family: dict.text.family.headings,
-      bold: dict.text.weight.headings.bold,
-      size: {
-        headline: dict.text.size.x5,
-        subheading: {
-          base: dict.text.size.x2,
-          x2: dict.text.size.x3,
-          x3: dict.text.size.x4
-        }
-      }
-    },
-    source: {
-      family: dict.text.family.code,
-      regular: dict.text.weight.code.regular,
-      bold: dict.text.weight.code.bold,
-      leading: dict.text.leading.narrow[1]
-    },
-  }
-}
-
-console.log(schema)
-#+END_SRC
-
-#+NAME: decision-tokens
-#+begin_src deno
-const QSD = {
-  project: {
-    name: "Example Design Tokens",
-    author: "Ed N. Bacon",
-    version: "0.0.0",
-    license: "Unlicense"
-  },
-  color: {
-    light: "#979797",
-    lighter: "#c6c6c6",
-    bg: "#f8f8f8",
-    dark: "#7d7d7d",
-    darker: "#414141",
-    fg: "#0b0b0b"
-  },
-  text: {
-    primary: {
-      family: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...",
-      regular: 400,
-      bold: 700,
-      size: "1rem",
-      leading: 1.5,
-      measure: "75ch"
-    },
-    secondary: {
-      family: "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...",
-      bold: 700,
-      size: {
-       headline: "5.0625rem",
-       subheading: {
-         base: "1.5rem",
-         x2: "2.25rem",
-         x3: "3.375rem"
-       }
-      }
-    },
-    source: {
-      family: "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-      regular: 400,
-      bold: 700,
-      leading: 1.3291
-    }
-  }
-}
-#+end_src
+about your data that the formatters will use if supported. Multiline metadata is allowed.
 
 * Formatters
 :PROPERTIES:
@@ -549,8 +245,9 @@ import { color_to_hex, color_to_rgb, utility_pipe } from "./utilities.js";
 ** CSS Formats
 
 Quarks System Core, as a web-driven tool, has first class support for vanilla CSS custom properties
-as well as the most popular preprocessors. The included examples are the *real output* of calling
-each formatter with the =QSD= data defined above.
+as well as the most popular preprocessors. Since the difference between CSS formats for tokens are
+cosmetic from a data perspective, the CSS formats use a general =cssFormatStructure= helper that
+does the real work.
 
 *** Custom Properties
 
@@ -559,50 +256,6 @@ export function output_css(dict) {
   return cssFormatStructure({}, dict);
 }
 #+END_SRC
-
-**** Example
-
-#+begin_src css
-
-/**
- * Project: Example Design Tokens (v0.0.0)
- * Owned by: Ed N. Bacon
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on 10/8/2021 at 12:27:59 PM
- **/
-
-:root {
-  --color-light: #979797;
-  --color-lighter: #c6c6c6;
-  --color-bg: #f8f8f8;
-  --color-dark: #7d7d7d;
-  --color-darker: #414141;
-  --color-fg: #0b0b0b;
-  --text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...;
-  --text-primary-regular: 400;
-  --text-primary-bold: 700;
-  --text-primary-size: 1rem;
-  --text-primary-leading: 1.5;
-  --text-primary-measure: 75ch;
-  --text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...;
-  --text-secondary-bold: 700;
-  --text-secondary-size-headline: 5.0625rem;
-  --text-secondary-size-subheading: 1.5rem;
-  --text-secondary-size-subheading-x2: 2.25rem;
-  --text-secondary-size-subheading-x3: 3.375rem;
-  --text-source-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
-  --text-source-regular: 400;
-  --text-source-bold: 700;
-  --text-source-leading: 1.3291;
-
-}
-
-#+end_src
 
 *** Preprocessors
 
@@ -625,48 +278,6 @@ export function output_scss(dict) {
 }
 #+END_SRC
 
-***** Example
-
-#+begin_src scss
-
-/*!
- * Project: Example Design Tokens (v0.0.0)
- * Owned by: Ed N. Bacon
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on 10/12/2021 at 11:39:02 AM
- */
-
-$color-light: #979797;
-$color-lighter: #c6c6c6;
-$color-bg: #f8f8f8;
-$color-dark: #7d7d7d;
-$color-darker: #414141;
-$color-fg: #0b0b0b;
-$text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...;
-$text-primary-regular: 400;
-$text-primary-bold: 700;
-$text-primary-size: 1rem;
-$text-primary-leading: 1.5;
-$text-primary-measure: 75ch;
-$text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...;
-$text-secondary-bold: 700;
-$text-secondary-size-headline: 5.0625rem;
-$text-secondary-size-subheading: 1.5rem;
-$text-secondary-size-subheading-x2: 2.25rem;
-$text-secondary-size-subheading-x3: 3.375rem;
-$text-source-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
-$text-source-regular: 400;
-$text-source-bold: 700;
-$text-source-leading: 1.3291;
-
-
-#+end_src
-
 **** Less
 
 #+BEGIN_SRC js
@@ -682,48 +293,6 @@ export function output_less(dict) {
   );
 }
 #+END_SRC
-
-***** Example
-
-#+begin_src less-css
-
-/*
- * Project: Example Design Tokens (v0.0.0)
- * Owned by: Ed N. Bacon
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on 10/12/2021 at 11:41:04 AM
- */
-
-@color-light: #979797;
-@color-lighter: #c6c6c6;
-@color-bg: #f8f8f8;
-@color-dark: #7d7d7d;
-@color-darker: #414141;
-@color-fg: #0b0b0b;
-@text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...;
-@text-primary-regular: 400;
-@text-primary-bold: 700;
-@text-primary-size: 1rem;
-@text-primary-leading: 1.5;
-@text-primary-measure: 75ch;
-@text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...;
-@text-secondary-bold: 700;
-@text-secondary-size-headline: 5.0625rem;
-@text-secondary-size-subheading: 1.5rem;
-@text-secondary-size-subheading-x2: 2.25rem;
-@text-secondary-size-subheading-x3: 3.375rem;
-@text-source-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
-@text-source-regular: 400;
-@text-source-bold: 700;
-@text-source-leading: 1.3291;
-
-
-#+end_src
 
 **** Stylus
 
@@ -741,53 +310,11 @@ export function output_styl(dict) {
 }
 #+END_SRC
 
-***** Example
-
-#+begin_src styl
-
-/*!
- * Project: Example Design Tokens (v0.0.0)
- * Owned by: Ed N. Bacon
- * License: Unlicense
- * ================================================================
- *
- * DESCRIPTION: N/A
- * COMMENTS: N/A
- * ----------------------------------------------------------------
- * Updated on 10/12/2021 at 11:43:56 AM
- */
-
-color-light = #979797
-color-lighter = #c6c6c6
-color-bg = #f8f8f8
-color-dark = #7d7d7d
-color-darker = #414141
-color-fg = #0b0b0b
-text-primary-family = -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...
-text-primary-regular = 400
-text-primary-bold = 700
-text-primary-size = 1rem
-text-primary-leading = 1.5
-text-primary-measure = 75ch
-text-secondary-family = Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...
-text-secondary-bold = 700
-text-secondary-size-headline = 5.0625rem
-text-secondary-size-subheading = 1.5rem
-text-secondary-size-subheading-x2 = 2.25rem
-text-secondary-size-subheading-x3 = 3.375rem
-text-source-family = Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace
-text-source-regular = 400
-text-source-bold = 700
-text-source-leading = 1.3291
-
-
-#+end_src
-
 ** Data Exports
 
 This section covers the most portable formatters. Since the tokens output to general data formats,
 this means you can use them outside of a web or even JavaScript project. For convenience, the
-=project= data is explicitly split off from the =token= data.
+project data is explicitly split off from token data.
 
 *** Raw (JSON)
 
@@ -808,65 +335,6 @@ export function output_raw(dict) {
 }
 #+END_SRC
 
-**** Example
-
-#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const { output_raw } = await import(`${Deno.cwd()}/formatters.js`);
-
-<<decision-tokens>>
-
-console.log(output_raw(QSD))
-#+END_SRC
-
-#+begin_src json
-{
-  "project": {
-    "name": "Example Design Tokens",
-    "author": "Ed N. Bacon",
-    "version": "0.0.0",
-    "license": "Unlicense"
-  },
-  "tokens": {
-    "color": {
-      "light": "#979797",
-      "lighter": "#c6c6c6",
-      "bg": "#f8f8f8",
-      "dark": "#7d7d7d",
-      "darker": "#414141",
-      "fg": "#0b0b0b"
-    },
-    "text": {
-      "primary": {
-        "family": "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...",
-        "regular": 400,
-        "bold": 700,
-        "size": "1rem",
-        "leading": 1.5,
-        "measure": "75ch"
-      },
-      "secondary": {
-        "family": "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...",
-        "bold": 700,
-        "size": {
-          "headline": "5.0625rem",
-          "subheading": {
-            "base": "1.5rem",
-            "x2": "2.25rem",
-            "x3": "3.375rem"
-          }
-        }
-      },
-      "source": {
-        "family": "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-        "regular": 400,
-        "bold": 700,
-        "leading": 1.3291
-      }
-    }
-  }
-}
-#+end_src
-
 *** YAML
 
 #+BEGIN_SRC js
@@ -882,6 +350,7 @@ export function output_yaml(dict) {
   // Then bump the version
   autobump && bumpVersion(project);
 
+  // Recursively assemble the data tree
   const assemble = (level, tree) =>
     Object.entries(tree).reduce((str, [key, data]) => {
       if (typeof data === "string") return yamlDictValue(level, str, key, data);
@@ -910,51 +379,6 @@ ${
 `;
 }
 #+END_SRC
-
-**** Example
-
-#+begin_src yaml
-
-# Updated on 10/12/2021 at 12:02:33 PM
-
-project:
-  name: Example Design Tokens
-  author: Ed N. Bacon
-  version: 0.0.0
-  license: Unlicense
-
-tokens:
-  color:
-    light: #979797
-    lighter: #c6c6c6
-    bg: #f8f8f8
-    dark: #7d7d7d
-    darker: #414141
-    fg: #0b0b0b
-  text:
-    primary:
-      family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...
-      regular:
-      bold:
-      size: 1rem
-      leading:
-      measure: 75ch
-    secondary:
-      family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...
-      bold:
-      size:
-        headline: 5.0625rem
-        subheading:
-          base: 1.5rem
-          x2: 2.25rem
-          x3: 3.375rem
-    source:
-      family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace
-      regular:
-      bold:
-      leading:
-
-#+end_src
 
 ** Desktop Support
 
@@ -1040,31 +464,6 @@ function GIMPPaletteSwatch(color) {
 }
 #+END_SRC
 
-**** Example
-
-#+begin_src text
-GIMP Palette
-Name: Example Design Tokens (v0.0.0)
-# Generator: Quarks System Core
-# Owned by Ed N. Bacon
-# License: Unlicense
-#
-# DESCRIPTION: N/A
-# COMMENTS: N/A
-#
-# Updated on 10/12/2021 at 12:04:52 PM
-
-Columns: 6
-151	151	151	LIGHT (#979797)
-198	198	198	LIGHTER (#c6c6c6)
-248	248	248	BG (#f8f8f8)
-125	125	125	DARK (#7d7d7d)
- 65	 65	 65	DARKER (#414141)
- 11	 11	 11	FG (#0b0b0b)
-
-
-#+end_src
-
 *** Sketch
 
 #+BEGIN_SRC js
@@ -1120,12 +519,6 @@ function sketchSwatch(color) {
 }
 #+END_SRC
 
-**** Example
-
-#+begin_src json
-{"colors":[{"red":0.592156862745098,"green":0.592156862745098,"blue":0.592156862745098,"alpha":1},{"red":0.7764705882352941,"green":0.7764705882352941,"blue":0.7764705882352941,"alpha":1},{"red":0.9725490196078431,"green":0.9725490196078431,"blue":0.9725490196078431,"alpha":1},{"red":0.49019607843137253,"green":0.49019607843137253,"blue":0.49019607843137253,"alpha":1},{"red":0.2549019607843137,"green":0.2549019607843137,"blue":0.2549019607843137,"alpha":1},{"red":0.043137254901960784,"green":0.043137254901960784,"blue":0.043137254901960784,"alpha":1}],"pluginVersion":"1.4","compatibleVersion":"1.4"}
-#+end_src
-
 ** Interop
 
 Quarks System Core (and the QuarkSuite project as a whole) is designed with the full understanding
@@ -1167,51 +560,6 @@ export function output_tailwindcss(dict) {
 }
 #+END_SRC
 
-**** Example Setup
-
-#+BEGIN_QUOTE
-TailwindCSS interop makes much more sense to use with a full collection of option tokens as it has
-its own tree-shaking behavior to weed out what you don't use. This makes narrowing unnecessary.
-
-As such, the example is generated from the =dict= orginally built by the bootstrapper.
-
-The actual setup may vary depending on your kit.
-#+END_QUOTE
-
-As mentioned earlier, the Quarks System Dictionary schema is just a plain JavaScript object that
-goes through no special processing. The TailwindCSS data transformer scans the data and changes any
-=base= properties it finds to the =DEFAULT= key Tailwind uses. This is enough to make it compatible.
-
-As an example:
-
-#+BEGIN_SRC deno :results output code replace :allow read :noweb yes
-const { output_tailwindcss } = await import(`${Deno.cwd()}/formatters.js`);
-
-<<complete-dict>>
-
-const { color, text } = output_tailwindcss(completeQSD);
-
-const theme = {
-  colors: color,
-  fontFamily: text.family,
-  fontSize: text.size,
-  lineHeight: text.leading,
-  minWidth: text.measure,
-  spacing: text.unit
-};
-#+END_SRC
-
-Then, in =tailwind.config.js=:
-
-#+BEGIN_SRC js
-const theme = require("/path/to/theme.js");
-
-module.exports = {
-  theme
-};
-
-#+END_SRC
-
 *** Style Dictionary
 
 Integrating with Style Dictionary is even simpler. It's more or a less a raw translation, except
@@ -1235,19 +583,6 @@ export function output_style_dictionary(dict) {
   return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
 #+END_SRC
-
-**** Example
-
-After =QSD= passes through the data transformer, convert it to JSON with =JSON.stringify= and it
-will satisfy Style Dictionary's requirement. From there, you can do additional processing.
-
-#+BEGIN_QUOTE
-Don't worry about pretty-printing the JSON as it's simply a bridge into Style Dictionary.
-#+END_QUOTE
-
-#+begin_src json
-{"color":{"light":{"value":"#979797"},"lighter":{"value":"#c6c6c6"},"bg":{"value":"#f8f8f8"},"dark":{"value":"#7d7d7d"},"darker":{"value":"#414141"},"fg":{"value":"#0b0b0b"}},"text":{"primary":{"family":{"value":"-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n..."},"regular":{"value":"400"},"bold":{"value":"700"},"size":{"value":"1rem"},"leading":{"value":"1.5"},"measure":{"value":"75ch"}},"secondary":{"family":{"value":"Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,..."},"bold":{"value":"700"},"size":{"headline":{"value":"5.0625rem"},"subheading":{"base":{"value":"1.5rem"},"x2":{"value":"2.25rem"},"x3":{"value":"3.375rem"}}}},"source":{"family":{"value":"Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace"},"regular":{"value":"400"},"bold":{"value":"700"},"leading":{"value":"1.3291"}}}}
-#+end_src
 
 * Bootstrapper
 :PROPERTIES:

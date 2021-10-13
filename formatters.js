@@ -93,6 +93,7 @@ export function output_yaml(dict) {
   // Then bump the version
   autobump && bumpVersion(project);
 
+  // Recursively assemble the data tree
   const assemble = (level, tree) =>
     Object.entries(tree).reduce((str, [key, data]) => {
       if (typeof data === "string") return yamlDictValue(level, str, key, data);
@@ -273,14 +274,6 @@ export function output_tailwindcss(dict) {
   return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
 // TailwindCSS:1 ends here
-
-// [[file:Mod.org::*Example Setup][Example Setup:2]]
-const theme = require("/path/to/theme.js");
-
-module.exports = {
-  theme
-};
-// Example Setup:2 ends here
 
 // [[file:Mod.org::*Style Dictionary][Style Dictionary:1]]
 export function output_style_dictionary(dict) {
