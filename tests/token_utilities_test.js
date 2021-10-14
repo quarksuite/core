@@ -1,29 +1,29 @@
 import {
-  output_css,
-  output_gpl,
-  output_less,
-  output_raw,
-  output_scss,
-  output_sketchpalette,
-  output_styl,
-  output_style_dictionary,
-  output_tailwindcss,
-  output_yaml,
-} from "../formatters.js";
+  tokens_to_css,
+  tokens_to_gpl,
+  tokens_to_json,
+  tokens_to_less,
+  tokens_to_scss,
+  tokens_to_sketchpalette,
+  tokens_to_styl,
+  tokens_to_style_dictionary,
+  tokens_to_tailwindcss,
+  tokens_to_yaml,
+} from "../utilities.js";
 import { Quarks } from "../bootstrapper.js";
 import { benchmark, data, exception, init, string, suite } from "./index.js";
 
 const formats = [
-  output_css,
-  output_scss,
-  output_less,
-  output_styl,
-  output_raw,
-  output_yaml,
-  output_gpl,
-  output_sketchpalette,
-  output_tailwindcss,
-  output_style_dictionary,
+  tokens_to_css,
+  tokens_to_scss,
+  tokens_to_less,
+  tokens_to_styl,
+  tokens_to_json,
+  tokens_to_yaml,
+  tokens_to_gpl,
+  tokens_to_sketchpalette,
+  tokens_to_tailwindcss,
+  tokens_to_style_dictionary,
 ];
 
 const removeTimestamp = (format) =>
@@ -77,20 +77,12 @@ const dictWithMeta = {
   },
 };
 
-const dictWithAutoversion = {
-  ...dict,
-  project: {
-    ...dict.project,
-    bump: "minor",
-  },
-};
-
 const testCSS = [
   "Stylesheet",
   [
     "no metadata",
     string(
-      removeTimestamp(output_css(dict)),
+      removeTimestamp(tokens_to_css(dict)),
       `
 /**
  * Project: Example Design Tokens (v0.0.0)
@@ -116,7 +108,7 @@ const testCSS = [
 `,
     ),
     string(
-      removeTimestamp(output_scss(dict)),
+      removeTimestamp(tokens_to_scss(dict)),
       `
 /*!
  * Project: Example Design Tokens (v0.0.0)
@@ -140,7 +132,7 @@ $color-darker: #414141;
 `,
     ),
     string(
-      removeTimestamp(output_less(dict)),
+      removeTimestamp(tokens_to_less(dict)),
       `
 /*
  * Project: Example Design Tokens (v0.0.0)
@@ -164,7 +156,7 @@ $color-darker: #414141;
 `,
     ),
     string(
-      removeTimestamp(output_styl(dict)),
+      removeTimestamp(tokens_to_styl(dict)),
       `
 /*!
  * Project: Example Design Tokens (v0.0.0)
@@ -191,7 +183,7 @@ color-darker = #414141
   [
     "some metadata",
     string(
-      removeTimestamp(output_css(dictWithMeta)),
+      removeTimestamp(tokens_to_css(dictWithMeta)),
       `
 /**
  * Project: Example Design Tokens (v0.0.0)
@@ -223,7 +215,7 @@ color-darker = #414141
 `,
     ),
     string(
-      removeTimestamp(output_less(dictWithMeta)),
+      removeTimestamp(tokens_to_less(dictWithMeta)),
       `
 /*
  * Project: Example Design Tokens (v0.0.0)
@@ -251,7 +243,7 @@ color-darker = #414141
 `,
     ),
     string(
-      removeTimestamp(output_less(dictWithMeta)),
+      removeTimestamp(tokens_to_less(dictWithMeta)),
       `
 /*
  * Project: Example Design Tokens (v0.0.0)
@@ -279,7 +271,7 @@ color-darker = #414141
 `,
     ),
     string(
-      removeTimestamp(output_styl(dictWithMeta)),
+      removeTimestamp(tokens_to_styl(dictWithMeta)),
       `
 /*!
  * Project: Example Design Tokens (v0.0.0)
@@ -313,7 +305,7 @@ const testData = [
   "Data Exports",
   [
     "no metadata",
-    data(JSON.parse(output_raw(dict)), {
+    data(JSON.parse(tokens_to_json(dict)), {
       project: {
         name: "Example Design Tokens",
         author: "Chatman R. Jr",
@@ -332,7 +324,7 @@ const testData = [
       },
     }),
     data(
-      removeTimestamp(output_yaml(dict)),
+      removeTimestamp(tokens_to_yaml(dict)),
       `
 # Updated on [Timestamp replaced for testing]
 
@@ -355,7 +347,7 @@ tokens:
   ],
   [
     "some metadata",
-    data(JSON.parse(output_raw(dictWithMeta)), {
+    data(JSON.parse(tokens_to_json(dictWithMeta)), {
       project: {
         name: "Example Design Tokens",
         author: "Chatman R. Jr",
@@ -382,7 +374,7 @@ tokens:
       },
     }),
     string(
-      removeTimestamp(output_yaml(dictWithMeta)),
+      removeTimestamp(tokens_to_yaml(dictWithMeta)),
       `
 # Updated on [Timestamp replaced for testing]
 
@@ -416,7 +408,7 @@ const testApps = [
   [
     "no metadata",
     string(
-      removeTimestamp(output_gpl(dict)),
+      removeTimestamp(tokens_to_gpl(dict)),
       `GIMP Palette
 Name: Example Design Tokens (v0.0.0)
 # Generator: Quarks System Core
@@ -433,7 +425,7 @@ Columns: 6
 
 `,
     ),
-    data(JSON.parse(output_sketchpalette(dict)), {
+    data(JSON.parse(tokens_to_sketchpalette(dict)), {
       colors: [
         {
           red: 0.9725490196078431,
@@ -479,7 +471,7 @@ Columns: 6
   [
     "some metadata",
     string(
-      removeTimestamp(output_gpl(dictWithMeta)),
+      removeTimestamp(tokens_to_gpl(dictWithMeta)),
       `GIMP Palette
 Name: Example Design Tokens (v0.0.0)
 # Generator: Quarks System Core
@@ -503,7 +495,7 @@ const testInterop = [
   "Interoperability/Integration",
   [
     "TailwindCSS theme",
-    data(output_tailwindcss(dict), {
+    data(tokens_to_tailwindcss(dict), {
       color: {
         bg: "#f8f8f8",
         fg: "#0b0b0b",
@@ -513,7 +505,7 @@ const testInterop = [
         darker: "#414141",
       },
     }),
-    data(output_tailwindcss(dictWithMeta), {
+    data(tokens_to_tailwindcss(dictWithMeta), {
       color: {
         bg: "#f8f8f8",
         fg: "#0b0b0b",
@@ -526,7 +518,7 @@ const testInterop = [
   ],
   [
     "Style Dictionary Tokens",
-    data(output_style_dictionary(dict), {
+    data(tokens_to_style_dictionary(dict), {
       color: {
         bg: { value: "#f8f8f8" },
         fg: { value: "#0b0b0b" },
@@ -539,7 +531,14 @@ const testInterop = [
   ],
 ];
 
-suite("Formatters", testExceptions, testCSS, testData, testApps, testInterop);
+suite(
+  "Token Utilities",
+  testExceptions,
+  testCSS,
+  testData,
+  testApps,
+  testInterop,
+);
 
 formats.forEach((f) => benchmark(f, { project: dict.project, ...options }));
 
