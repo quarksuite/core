@@ -237,14 +237,14 @@ function fontWeights(weight) {
 // Text Families:1 ends here
 
 // [[file:Mod.org::*Text Sizing][Text Sizing:1]]
-export function TextSize(scale) {
-  return Subcategory({ unit: "rem", inversionUnit: "em" }, scale);
+export function TextSize(ms) {
+  return Subcategory({ unit: "rem", inversionUnit: "em" }, ms);
 }
 // Text Sizing:1 ends here
 
 // [[file:Mod.org::*Text Attributes][Text Attributes:1]]
-export function TextLeading({ normal = 1.5, tight = 1.25 }, scale) {
-  const [base, ratio] = Array.from(scale);
+export function TextLeading({ normal = 1.5, tight = 1.25 }, ms) {
+  const [base, ratio] = Array.from(ms);
 
   return Object.entries(
     SubcategoryRange(
@@ -253,42 +253,40 @@ export function TextLeading({ normal = 1.5, tight = 1.25 }, scale) {
         max: normal,
         unit: "",
         keys: ["narrow", "tight"],
-        calc: (n) => tight + (normal - tight) / (base * ratio ** n),
       },
-      scale,
+      ms,
     ),
   ).reduce((acc, [key, value]) => {
     if (Array.isArray(value)) {
-      return { ...acc, [key]: value.map((n) => parseFloat(n)) };
+      return { ...acc, [key]: value.map((n) => Number(n)) };
     }
-    return { ...acc, [key]: parseFloat(value) };
+    return { ...acc, [key]: Number(value) };
   }, {});
 }
 
-export function TextMeasure({ min = 45, max = 75 }, scale) {
-  const [base, ratio] = Array.from(scale);
+export function TextMeasure({ min = 45, max = 75 }, ms) {
   return SubcategoryRange(
     {
       min,
       max,
       unit: "ch",
       keys: ["segment", "minimum"],
-      calc: (n) => Math.trunc(min + (max - min) / (base * ratio ** n)),
+      trunc: true,
     },
-    scale,
+    ms,
   );
 }
 // Text Attributes:1 ends here
 
 // [[file:Mod.org::*Text Spacing][Text Spacing:1]]
-export function TextUnits(scale) {
-  return Subcategory({ unit: "ex" }, scale);
+export function TextUnits(ms) {
+  return Subcategory({ unit: "ex" }, ms);
 }
 // Text Spacing:1 ends here
 
 // [[file:Mod.org::*Grid Formulas][Grid Formulas:1]]
-export function GridFractions(scale) {
-  return Subcategory({ unit: "fr" }, scale);
+export function GridFractions(ms) {
+  return Subcategory({ unit: "fr" }, ms);
 }
 
 export function GridDimensions(columns, rows = columns) {
@@ -297,9 +295,9 @@ export function GridDimensions(columns, rows = columns) {
 
   return {
     x: xs[0],
-    ...UnidirectionalScale("x", xs),
-    y: xs[0],
-    ...UnidirectionalScale("y", ys),
+    ...generateUnidirectional("x", xs),
+    y: ys[0],
+    ...generateUnidirectional("y", ys),
   };
 }
 
@@ -311,27 +309,18 @@ function spanCalculation(xs) {
 // Grid Formulas:1 ends here
 
 // [[file:Mod.org::*Global Scale Formula][Global Scale Formula:1]]
-export function FigureCalculations(scale) {
-  const [base] = Array.from(scale);
-  const values = Array.from(scale);
-
-  return {
-    base,
-    ...UnidirectionalScale(
-      "x",
-      values.map((n) => precision(n)),
-    ),
-  };
+export function FigureCalculations(ms) {
+  return Object.entries(
+    SubcategoryUnidirectional({ unit: "", variant: "x" }, ms),
+  ).reduce((acc, [k, v]) => ({ ...acc, [k]: Number(v) }), {});
 }
 // Global Scale Formula:1 ends here
 
 // [[file:Mod.org::*Viewport Formula][Viewport Formula:1]]
 export function Viewport(
   { threshold = 5, full = 100, context = ["w", "h", "min", "max"] },
-  scale,
+  ms,
 ) {
-  const [base, ratio] = Array.from(scale);
-
   return context.reduce((acc, target) => {
     const [key, unit] = viewportTargets(target);
 
@@ -343,10 +332,9 @@ export function Viewport(
           max: full,
           keys: ["segment", "threshold"],
           unit,
-          calc: (n) =>
-            Math.trunc(threshold + (full - threshold) / (base * ratio ** n)),
+          trunc: true,
         },
-        scale,
+        ms,
       ),
     };
   }, {});
@@ -367,8 +355,8 @@ function viewportTargets(target) {
 // Viewport Formula:1 ends here
 
 // [[file:Mod.org::*Animation Formulas][Animation Formulas:1]]
-export function AnimationDuration({ fastest = 250, slowest = 1000 }, scale) {
-  const [base, ratio] = Array.from(scale);
+export function AnimationDuration({ fastest = 250, slowest = 1000 }, ms) {
+  const [base, ratio] = Array.from(ms);
   return SubcategoryRange(
     {
       min: fastest,
@@ -377,24 +365,22 @@ export function AnimationDuration({ fastest = 250, slowest = 1000 }, scale) {
       keys: ["interval", "fastest"],
       calc: (n) => fastest + (slowest - fastest) / (base * ratio ** n),
     },
-    scale,
+    ms,
   );
 }
 
-export function AnimationCubicBezier({ floor = 0, ceiling = 1 }, scale) {
-  const [base, ratio] = Array.from(scale);
-  const [maximum] = scale.slice(-1);
+export function AnimationCubicBezier({ floor = 0, ceiling = 1 }, ms) {
+  const [base, ratio] = Array.from(ms);
+  const [maximum] = ms.slice(-1);
 
   const ABSCISSAS = new Set(
-    ms_modify((n) => precision(n / maximum), scale).filter(
-      (n) => n > 0 && n < 1,
-    ),
+    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1),
   );
 
   const ORDINATES = new Set(
     ms_modify(
       (n) => precision(floor + (ceiling - floor) / (base * ratio ** n)),
-      scale,
+      ms,
     ).filter((n) => n > floor && n < ceiling),
   );
 
@@ -405,67 +391,93 @@ export function AnimationCubicBezier({ floor = 0, ceiling = 1 }, scale) {
 }
 // Animation Formulas:1 ends here
 
-// [[file:Mod.org::*Subcategory Formulas][Subcategory Formulas:1]]
-export function Subcategory({ unit, inversionUnit = undefined }, scale) {
-  const [base] = Array.from(scale);
-  const values = Array.from(scale);
+// [[file:Mod.org::*Base Subcategory (Bidirectional)][Base Subcategory (Bidirectional):1]]
+export function Subcategory({ unit = "rem", inversionUnit = undefined }, ms) {
+  const [base] = Array.from(ms);
+  const values = Array.from(ms);
 
   return {
     base: utility_pipe([base], utility_curry(ms_units)(unit)).toString(),
-    ...BidirectionalScale(
+    ...generateScale(
       ["x", "d"],
       [
         ms_units(unit, values),
         utility_pipe(
           values,
-          utility_curry(ms_modify)((n) => base / n),
+          utility_curry(ms_modify)((n) => precision(base / n)),
           utility_curry(ms_units)(inversionUnit ? inversionUnit : unit),
         ),
       ],
     ),
   };
 }
+// Base Subcategory (Bidirectional):1 ends here
 
-export function SubcategoryRange({ min, max, unit, keys, calc }, scale) {
+// [[file:Mod.org::*Unidirectional Subcategory][Unidirectional Subcategory:1]]
+export function SubcategoryUnidirectional({ unit = "rem", variant = "x" }, ms) {
+  const [base] = Array.from(ms);
+  const values = Array.from(ms);
+
   const output = utility_curry(ms_units)(unit);
 
-  return RangedScale(keys, [
+  return {
+    base: output([base]).toString(),
+    ...generateUnidirectional(
+      variant,
+      utility_pipe(values, (values) => values.map((n) => precision(n)), output),
+    ),
+  };
+}
+// Unidirectional Subcategory:1 ends here
+
+// [[file:Mod.org::*Ranged Subcategory][Ranged Subcategory:1]]
+export function SubcategoryRange(
+  {
+    min = 1,
+    max = 10,
+    unit = "rem",
+    keys = ["segment", "minimum"],
+    trunc = false,
+  },
+  ms,
+) {
+  const [base, ratio] = Array.from(ms);
+  const output = utility_curry(ms_units)(unit);
+
+  return generateRange(keys, [
     output([max]).toString(),
     utility_pipe(
-      new Set(ms_modify(calc, scale)),
-      (scale) => Array.from(scale),
-      (scale) => scale.filter((n) => n > min && n < max),
+      Array.from(
+        new Set(
+          ms_modify((n) => {
+            const RANGE = min + (max - min) / (base * ratio ** n);
+            return trunc ? Math.trunc(RANGE) : RANGE;
+          }, ms),
+        ),
+      ),
+      (ms) => ms.map((n) => precision(n)),
+      (ms) => ms.filter((n) => n > min && n < max),
       output,
     ),
     output([min]).toString(),
   ]);
 }
-// Subcategory Formulas:1 ends here
+// Ranged Subcategory:1 ends here
 
-// [[file:Mod.org::*Color Scale][Color Scale:1]]
-export function NumericColorScale(data) {
-  return data.reduce(
-    (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {},
-  );
-}
-// Color Scale:1 ends here
-
-// [[file:Mod.org::*Modular Scale][Modular Scale:1]]
-export function BidirectionalScale(keys, data) {
-  const [x, d] = keys;
-  const [multiply, divide] = Array.from(data);
+// [[file:Mod.org::*General Formula Structure][General Formula Structure:1]]
+function generateScale([x, d] = ["x", "d"], ms) {
+  const [multiply, divide] = Array.from(ms);
   return {
-    ...VariantScale(x, multiply),
-    ...VariantScale(d, divide),
+    ...generateVariants(x, multiply),
+    ...generateVariants(d, divide),
   };
 }
 
-export function UnidirectionalScale(key, data) {
-  return VariantScale(key, data);
+function generateUnidirectional(x = "x", ms) {
+  return generateVariants(x, ms);
 }
 
-export function RangedScale(
+function generateRange(
   [rangeKey, floorKey] = ["fragment", "min"],
   [base, range, min],
 ) {
@@ -476,7 +488,7 @@ export function RangedScale(
   };
 }
 
-function VariantScale(key, [, ...values]) {
+function generateVariants(key, [, ...values]) {
   return values.reduce(
     (acc, value, index) => ({
       ...acc,
@@ -485,4 +497,13 @@ function VariantScale(key, [, ...values]) {
     {},
   );
 }
-// Modular Scale:1 ends here
+// General Formula Structure:1 ends here
+
+// [[file:Mod.org::*Color Scale][Color Scale:1]]
+export function NumericColorScale(palette) {
+  return palette.reduce(
+    (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
+    {},
+  );
+}
+// Color Scale:1 ends here
