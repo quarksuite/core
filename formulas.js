@@ -6,7 +6,24 @@ import {
   color_material,
   color_shades,
   color_tints,
+  color_to_cielab,
+  color_to_cielch,
+  color_to_cmyk,
   color_to_hex,
+  color_to_hsl,
+  color_to_hwb,
+  color_to_oklab,
+  color_to_rgb,
+  color_to_scheme_analogous,
+  color_to_scheme_clash,
+  color_to_scheme_complementary,
+  color_to_scheme_dyadic,
+  color_to_scheme_hexagon,
+  color_to_scheme_split_complementary,
+  color_to_scheme_square,
+  color_to_scheme_star,
+  color_to_scheme_tetradic,
+  color_to_scheme_triadic,
   color_tones,
   data_systemfonts,
   ms_create,
@@ -32,8 +49,8 @@ export function MaterialPalette(
 function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
-    (color) => (format ? format(color) : color_to_hex(color)),
-    (color) => (scheme ? scheme(color) : [color]),
+    (color) => (format ? setFormat(format, color) : color_to_hex(color)),
+    (color) => (scheme ? setScheme(scheme, color) : [color]),
   );
 }
 
@@ -57,6 +74,34 @@ function generateMaterialPalette({ light, dark }, palette) {
         };
       }, {}),
   );
+}
+
+function setFormat(format, color) {
+  return {
+    hex: color_to_hex(color),
+    rgb: color_to_rgb(color),
+    hsl: color_to_hsl(color),
+    cmyk: color_to_cmyk(color),
+    hwb: color_to_hwb(color),
+    cielab: color_to_cielab(color),
+    cielch: color_to_cielch(color),
+    oklab: color_to_oklab(color),
+  }[format];
+}
+
+function setScheme(scheme, color) {
+  return {
+    dyadic: color_to_scheme_dyadic(color),
+    analogous: color_to_scheme_analogous(color),
+    complementary: color_to_scheme_complementary(color),
+    split: color_to_scheme_split_complementary(color),
+    triadic: color_to_scheme_triadic(color),
+    clash: color_to_scheme_clash(color),
+    tetradic: color_to_scheme_tetradic(color),
+    square: color_to_scheme_square(color),
+    star: color_to_scheme_star(color),
+    hexagon: color_to_scheme_hexagon(color),
+  }[scheme];
 }
 // Material Palette:1 ends here
 
@@ -99,7 +144,7 @@ export function InterpolatedPalette(
   color,
 ) {
   return utility_pipe(
-    format ? format(color) : color_to_hex(color),
+    format ? setFormat(format, color) : color_to_hex(color),
     (color) => [
       color,
       ...(values === 1 ? [] : color_interpolation(
@@ -130,7 +175,7 @@ export function BlendedPalette(
   color,
 ) {
   return utility_pipe(
-    format ? format(color) : color_to_hex(color),
+    format ? setFormat(format, color) : color_to_hex(color),
     (color) => [
       color,
       ...(values === 1

@@ -4,15 +4,7 @@ import {
   MaterialPalette,
   StandardPalette,
 } from "../formulas.js";
-import {
-  color_to_hex,
-  color_to_rgb,
-  color_to_scheme_analogous,
-  color_to_scheme_complementary,
-  color_to_scheme_dyadic,
-  color_to_scheme_hexagon,
-  color_to_scheme_square,
-} from "../utilities.js";
+import { color_to_hex } from "../utilities.js";
 
 import { benchmark, data, exception, init, suite } from "./index.js";
 
@@ -78,7 +70,7 @@ const testCommonScenarios = [
   ],
   [
     "setting the palette format",
-    data(MaterialPalette({ format: color_to_rgb }, color), {
+    data(MaterialPalette({ format: "rgb" }, color), {
       a: {
         50: "rgb(255, 249, 246)",
         100: "rgb(255, 226, 214)",
@@ -92,7 +84,7 @@ const testCommonScenarios = [
         900: "rgb(34, 11, 4)",
       },
     }),
-    data(StandardPalette({ format: color_to_rgb }, color), {
+    data(StandardPalette({ format: "rgb" }, color), {
       a: {
         base: "rgb(255, 127, 80)",
         light: {
@@ -112,7 +104,7 @@ const testCommonScenarios = [
         },
       },
     }),
-    data(InterpolatedPalette({ format: color_to_rgb }, color), {
+    data(InterpolatedPalette({ format: "rgb" }, color), {
       a: {
         base: "rgb(255, 127, 80)",
         light: {
@@ -132,7 +124,7 @@ const testCommonScenarios = [
         },
       },
     }),
-    data(BlendedPalette({ format: color_to_rgb }, color), {
+    data(BlendedPalette({ format: "rgb" }, color), {
       a: {
         base: "rgb(255, 127, 80)",
         light: {
@@ -159,7 +151,7 @@ const testColorSchemes = [
   "MaterialPalette & StandardPalette",
   [
     "setting a color scheme",
-    data(MaterialPalette({ scheme: color_to_scheme_dyadic }, color), {
+    data(MaterialPalette({ scheme: "dyadic" }, color), {
       a: {
         50: "#fff9f6",
         100: "#ffe2d6",
@@ -185,7 +177,7 @@ const testColorSchemes = [
         900: "#0c1602",
       },
     }),
-    data(StandardPalette({ scheme: color_to_scheme_analogous }, color), {
+    data(StandardPalette({ scheme: "analogous" }, color), {
       a: {
         base: "#ff7f50",
         light: { 100: "#ffaa8a", 200: "#ffd2c1", 300: "#fff9f6" },
@@ -507,9 +499,9 @@ suite(
   testBlendedPalette,
 );
 
-benchmark(MaterialPalette, { scheme: color_to_scheme_hexagon }, color);
-benchmark(StandardPalette, { scheme: color_to_scheme_hexagon }, color);
-benchmark(InterpolatedPalette, { values: 8, hue: 360 }, color);
-benchmark(BlendedPalette, { values: 8, amount: 80 }, color);
+benchmark(MaterialPalette, { scheme: "hexagon" }, color);
+benchmark(StandardPalette, { scheme: "hexagon" }, color);
+benchmark(InterpolatedPalette, { values: 6, hue: 360 }, color);
+benchmark(BlendedPalette, { values: 6, amount: 80 }, color);
 
 init(7);
