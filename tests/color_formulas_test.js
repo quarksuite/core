@@ -1,8 +1,8 @@
 import {
+  ArtisticPalette,
   BlendedPalette,
   InterpolatedPalette,
   MaterialPalette,
-  StandardPalette,
 } from "../formulas.js";
 import { color_to_hex } from "../utilities.js";
 
@@ -12,7 +12,7 @@ const color = color_to_hex("coral");
 
 const Palettes = [
   MaterialPalette,
-  StandardPalette,
+  ArtisticPalette,
   InterpolatedPalette,
   BlendedPalette,
 ];
@@ -43,7 +43,7 @@ const testCommonScenarios = [
         900: "#220b04",
       },
     }),
-    data(StandardPalette({}, color), {
+    data(ArtisticPalette({}, color), {
       a: {
         base: "#ff7f50",
         light: { 100: "#ffaa8a", 200: "#ffd2c1", 300: "#fff9f6" },
@@ -84,7 +84,7 @@ const testCommonScenarios = [
         900: "rgb(34, 11, 4)",
       },
     }),
-    data(StandardPalette({ format: "rgb" }, color), {
+    data(ArtisticPalette({ format: "rgb" }, color), {
       a: {
         base: "rgb(255, 127, 80)",
         light: {
@@ -148,7 +148,7 @@ const testCommonScenarios = [
 ];
 
 const testColorSchemes = [
-  "MaterialPalette & StandardPalette",
+  "MaterialPalette & ArtisticPalette",
   [
     "setting a color scheme",
     data(MaterialPalette({ scheme: "dyadic" }, color), {
@@ -177,7 +177,7 @@ const testColorSchemes = [
         900: "#0c1602",
       },
     }),
-    data(StandardPalette({ scheme: "analogous" }, color), {
+    data(ArtisticPalette({ scheme: "analogous" }, color), {
       a: {
         base: "#ff7f50",
         light: { 100: "#ffaa8a", 200: "#ffd2c1", 300: "#fff9f6" },
@@ -201,10 +201,10 @@ const testColorSchemes = [
 ];
 
 const testPaletteSettings = [
-  "StandardPalette, InterpolatedPalette, BlendedPalette",
+  "ArtisticPalette, InterpolatedPalette, BlendedPalette",
   [
     "setting the overall contrast",
-    data(StandardPalette({ contrast: 81 }, color), {
+    data(ArtisticPalette({ contrast: 81 }, color), {
       a: {
         base: "#ff7f50",
         light: { 100: "#ffa482", 200: "#ffc6b1", 300: "#ffe8df" },
@@ -231,7 +231,7 @@ const testPaletteSettings = [
   ],
   [
     "setting number of tints, tones, and shades",
-    data(StandardPalette({ tints: 2, tones: 2, shades: 1 }, color), {
+    data(ArtisticPalette({ tints: 2, tones: 2, shades: 1 }, color), {
       a: {
         base: "#ff7f50",
         light: { 100: "#ffbea6", 200: "#fff9f6" },
@@ -500,7 +500,7 @@ suite(
 );
 
 benchmark(MaterialPalette, { scheme: "hexagon" }, color);
-benchmark(StandardPalette, { scheme: "hexagon" }, color);
+benchmark(ArtisticPalette, { scheme: "hexagon" }, color);
 benchmark(InterpolatedPalette, { values: 6, hue: 360 }, color);
 benchmark(BlendedPalette, { values: 6, amount: 80 }, color);
 

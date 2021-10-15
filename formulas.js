@@ -34,45 +34,263 @@ import {
 } from "./utilities.js";
 // Importing Formula Helpers:1 ends here
 
+// [[file:Mod.org::*Palette Formula Typedefs][Palette Formula Typedefs:1]]
+/** @typedef {"dyadic" | "complementary" | "analgous" | "split" | "triadic" | "clash" | "tetradic" | "square" | "star" | "hexagon"} QSPaletteScheme - built-in color schemes for palette formulas */
+
+/** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab"} QSPaletteFormat - built-in color formats for palette formulas */
+
+/** @typedef {{
+  [index: string]: {
+    50: string,
+    100: string,
+    200: string,
+    300: string
+    400: string,
+    500: string,
+    600: string,
+    700: string,
+    800: string,
+    900: string
+  }
+  }} QSPaletteMaterial - material palette color token structure */
+
+/** @typedef {{
+  [index: string]: {
+    light?: {
+      [index: string | number]: string
+    },
+    muted?: {
+      [index: string | number]: string
+    },
+    dark?: {
+      [index: string | number]: string
+    },
+  }
+}} QSPaletteArtistic - artistic palette color tokens structure  */
+// Palette Formula Typedefs:1 ends here
+
 // [[file:Mod.org::*Material Palette][Material Palette:1]]
-export function MaterialPalette(
-  { light = 95, dark = 75, scheme = undefined, format = undefined },
-  color,
-) {
+/**
+ * A palette formula to generate `50-900` material-esque color tokens.
+ *
+ * @param {object} modifiers - the available modifiers for customizing output
+ * @param {number} [modifiers.light] - adjust the overall light contrast of the palette
+ * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette
+ *
+ * @param {QSPaletteScheme} [modifiers.scheme] - set the base color scheme to generate from
+ * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @returns {QSPaletteMaterial} output palette
+ *
+ * @remarks
+ * If `modifiers.scheme` is set, the colors are mapped to an alphabetical index.
+ * Since the most complex scheme is `"hexagon"`, this means the range is `a-f`.
+ */
+export function MaterialPalette(modifiers, color) {
+  // Set default modifiers
+  const {
+    light = 95,
+    dark = 75,
+    scheme = undefined,
+    format = undefined,
+  } = modifiers;
+
   return utility_pipe(
     color,
     utility_curry(paletteSettings)({ format, scheme }),
     utility_curry(generateMaterialPalette)({ light, dark }),
   );
 }
+// Material Palette:1 ends here
 
+// [[file:Mod.org::*Artistic Palette][Artistic Palette:1]]
+/**
+ * A palette formula to generate a standard artistic color palette.
+ *
+ * @param {object} modifiers - the available modifiers for customizing output
+ * @param {number} [modifiers.contrast] - adjust the overall contrast of the palette
+ * @param {number} [modifiers.tints] - the number of tints to create for each subcategory
+ * @param {number} [modifiers.tones] - the number of tones to create for each subcategory
+ * @param {number} [modifiers.shades] - the number of shades to create for each subcategory
+ *
+ * @param {QSPaletteScheme} [modifiers.scheme] - set the base color scheme to generate from
+ * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @returns {QSPaletteArtistic} output palette
+ *
+ * @remarks
+ * If `modifiers.scheme` is set, the colors are mapped to an alphabetical index.
+ * Since the most complex scheme is `"hexagon"`, this means the range is `a-f`.
+ *
+ * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
+ * stripped from the palette
+ */
+export function ArtisticPalette(modifiers, color) {
+  // Set default modifiers
+  const {
+    contrast = 95,
+    tints = 3,
+    tones = 3,
+    shades = 3,
+    format = undefined,
+    scheme = undefined,
+  } = modifiers;
+
+  return utility_pipe(
+    color,
+    utility_curry(paletteSettings)({ format, scheme }),
+    utility_curry(generateArtisticPalette)({
+      contrast,
+      values: { tints, tones, shades },
+    }),
+  );
+}
+// Artistic Palette:1 ends here
+
+// [[file:Mod.org::*Interpolated Palette][Interpolated Palette:1]]
+/**
+ * An advanced palette formula to generate a color palette from interpolation.
+ *
+ * @param {object} modifiers - the available modifiers for customizing output
+ * @param {number} [modifiers.lightness] - interpolate to target lightness/luminance (+: brighten, -: darken)
+ * @param {number} [modifiers.chroma] - interpolate to target chroma/intensity (+: saturate, -: desaturate)
+ * @param {number} [modifiers.hue] - interpolate by hue rotation (+: right rotation, -: left rotation)
+ * @param {number} [modifiers.alpha] - interpolate to target transparency (+: more opaque, -: more transparent)
+ * @param {number} [modifiers.values] - total number of color categories
+ *
+ * @param {number} [modifiers.contrast] - adjust the overall contrast of the palette (artistic)
+ * @param {number} [modifiers.tints] - the number of tints to create for each subcategory (artistic)
+ * @param {number} [modifiers.tones] - the number of tones to create for each subcategory (artistic)
+ * @param {number} [modifiers.shades] - the number of shades to create for each subcategory (artistic)
+ *
+ * @param {boolean} [modifiers.material] - use material palette configuration
+ * @param {number} [modifiers.light] - adjust the overall light contrast of the palette (material)
+ * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
+ *
+ * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
+ *
+ * @remarks
+ * The `values` you can generate are theoretically infinite, but the formula will only return
+ * *unique* colors. There is no internal mechanism checking for similar colors, so it's up to you
+ * to ensure your palette is distinct.
+ *
+ * If you're unsure how to do that, @see {@link MaterialPalette} and @see {@link ArtisticPalette}.
+ *
+ * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
+ * stripped from the palette.
+ *
+ * If `modifiers.material` is true, the palette will use the material structure
+ * and *its* modifiers instead of the artistic.
+ */
+export function InterpolatedPalette(modifiers, color) {
+  // Set default modifiers
+  const {
+    lightness = 0,
+    chroma = 0,
+    hue = 0,
+    alpha = 100,
+    values = 1,
+    contrast = 95,
+    tints = 3,
+    tones = 3,
+    shades = 3,
+    material = false,
+    light = 90,
+    dark = 75,
+    format = undefined,
+  } = modifiers;
+
+  return utility_pipe(
+    color,
+    utility_curry(paletteSettings)({ format }),
+    ([color]) => [
+      color,
+      ...(values === 1 ? [] : color_interpolation(
+        { lightness, chroma, hue, alpha, values: values - 1 },
+        color,
+      )),
+    ],
+    material
+      ? utility_curry(generateMaterialPalette)({ light, dark })
+      : utility_curry(generateArtisticPalette)({
+        contrast,
+        values: { tints, tones, shades },
+      }),
+  );
+}
+// Interpolated Palette:1 ends here
+
+// [[file:Mod.org::*Blended Palette][Blended Palette:1]]
+/**
+ * An advanced palette formula to generate a color palette from color blending.
+ *
+ * @param {object} modifiers - the available modifiers for customizing output
+ * @param {number} [modifiers.amount] - the total amount of color mixture (100 will fully mix)
+ * @param {string} [modifiers.target] - the blend target color
+ * @param {number} [modifiers.values] - total number of color categories
+ *
+ * @param {number} [modifiers.contrast] - adjust the overall contrast of the palette (artistic)
+ * @param {number} [modifiers.tints] - the number of tints to create for each subcategory (artistic)
+ * @param {number} [modifiers.tones] - the number of tones to create for each subcategory (artistic)
+ * @param {number} [modifiers.shades] - the number of shades to create for each subcategory (artistic)
+ *
+ * @param {boolean} [modifiers.material] - use material palette configuration
+ * @param {number} [modifiers.light] - adjust the overall light contrast of the palette (material)
+ * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
+ *
+ * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
+ *
+ * @remarks
+ * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
+ * stripped from the palette.
+ *
+ * If `modifiers.material` is true, the palette will use the material structure
+ * and *its* modifiers instead of the artistic.
+ */
+export function BlendedPalette(modifiers, color) {
+  // Set default modifiers
+  const {
+    amount = 50,
+    target = "black",
+    values = 1,
+    contrast = 95,
+    tints = 3,
+    tones = 3,
+    shades = 3,
+    material = false,
+    light = 90,
+    dark = 75,
+    format = undefined,
+  } = modifiers;
+
+  return utility_pipe(
+    color,
+    utility_curry(paletteSettings)({ format }),
+    ([color]) => [
+      color,
+      ...(values === 1
+        ? []
+        : color_blend({ target, amount, values: values - 1 }, color)),
+    ],
+    material ? utility_curry(generateMaterialPalette)({ light, dark })
+    : utility_curry(generateArtisticPalette)({
+      contrast,
+      values: { tints, tones, shades },
+    }),
+  );
+}
+// Blended Palette:1 ends here
+
+// [[file:Mod.org::*Palette Setup][Palette Setup:1]]
 function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
     (color) => (format ? setFormat(format, color) : color_to_hex(color)),
     (color) => (scheme ? setScheme(scheme, color) : [color]),
-  );
-}
-
-function generateMaterialPalette({ light, dark }, palette) {
-  return utility_pipe(
-    palette,
-    (palette) => palette.map((color) => color_material({ light, dark }, color)),
-    (palette) =>
-      palette.reduce((acc, value, index) => {
-        return {
-          ...acc,
-          [alphabeticalCategories(index)]: {
-            ...value.reduce(
-              (a, v, i) => ({
-                ...a,
-                ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
-              }),
-              {},
-            ),
-          },
-        };
-      }, {}),
   );
 }
 
@@ -103,94 +321,29 @@ function setScheme(scheme, color) {
     hexagon: color_to_scheme_hexagon(color),
   }[scheme];
 }
-// Material Palette:1 ends here
 
-// [[file:Mod.org::*Standard Palette][Standard Palette:1]]
-export function StandardPalette(
-  {
-    format = undefined,
-    scheme = undefined,
-    contrast = 95,
-    tints = 3,
-    tones = 3,
-    shades = 3,
-  },
-  color,
-) {
+function generateMaterialPalette({ light, dark }, palette) {
   return utility_pipe(
-    color,
-    utility_curry(paletteSettings)({ format, scheme }),
-    utility_curry(generateArtisticPalette)({
-      contrast,
-      values: { tints, tones, shades },
-    }),
+    palette,
+    (palette) => palette.map((color) => color_material({ light, dark }, color)),
+    (palette) =>
+      palette.reduce((acc, value, index) => {
+        return {
+          ...acc,
+          [alphabeticalCategories(index)]: {
+            ...value.reduce(
+              (a, v, i) => ({
+                ...a,
+                ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
+              }),
+              {},
+            ),
+          },
+        };
+      }, {}),
   );
 }
-// Standard Palette:1 ends here
 
-// [[file:Mod.org::*Interpolated Palette][Interpolated Palette:1]]
-export function InterpolatedPalette(
-  {
-    lightness = 0,
-    chroma = 0,
-    hue = 0,
-    values = 1,
-    contrast = 95,
-    tints = 3,
-    tones = 3,
-    shades = 3,
-    format = undefined,
-  },
-  color,
-) {
-  return utility_pipe(
-    format ? setFormat(format, color) : color_to_hex(color),
-    (color) => [
-      color,
-      ...(values === 1 ? [] : color_interpolation(
-        { lightness, chroma, hue, values: values - 1 },
-        color,
-      )),
-    ],
-    utility_curry(generateArtisticPalette)({
-      contrast,
-      values: { tints, tones, shades },
-    }),
-  );
-}
-// Interpolated Palette:1 ends here
-
-// [[file:Mod.org::*Blended Palette][Blended Palette:1]]
-export function BlendedPalette(
-  {
-    values = 1,
-    amount = 50,
-    target = "black",
-    contrast = 95,
-    tints = 3,
-    tones = 3,
-    shades = 3,
-    format = undefined,
-  },
-  color,
-) {
-  return utility_pipe(
-    format ? setFormat(format, color) : color_to_hex(color),
-    (color) => [
-      color,
-      ...(values === 1
-        ? []
-        : color_blend({ target, amount, values: values - 1 }, color)),
-    ],
-    utility_curry(generateArtisticPalette)({
-      contrast,
-      values: { tints, tones, shades },
-    }),
-  );
-}
-// Blended Palette:1 ends here
-
-// [[file:Mod.org::*Artistic Palette Setup][Artistic Palette Setup:1]]
 function generateArtisticPalette({ contrast, values }, palette) {
   // Oklab trends a little dark, so tones and shades need adjustment
   const ADJUSTMENT_VALUE = 1.27;
@@ -249,7 +402,7 @@ function alphabeticalCategories(index) {
       }),
   ]).get(index);
 }
-// Artistic Palette Setup:1 ends here
+// Palette Setup:1 ends here
 
 // [[file:Mod.org::*Text Families][Text Families:1]]
 export function TextStack(fallback, font = null) {

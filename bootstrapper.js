@@ -8,7 +8,7 @@ import {
   GridFractions,
   InterpolatedPalette,
   MaterialPalette,
-  StandardPalette,
+  ArtisticPalette,
   TextLeading,
   TextMeasure,
   TextSize,
@@ -53,7 +53,7 @@ import { ms_create } from "./utilities.js";
 
 // [[file:Mod.org::*Quarks Bootstrapper Typedefs][Quarks Bootstrapper Typedefs:1]]
 /**
- * @typedef {{base?: string, type?: "material" | "basic" | "interpolated" | "blended", [index: string]: string | number}} QuarksConfigColor - palette configuration (each type has its own options)
+ * @typedef {{base?: string, type?: "material" | "artistic" | "interpolated" | "blended", [index: string]: string | number}} QuarksConfigColor - palette configuration (each type has its own options)
  */
 
 /**
@@ -234,7 +234,7 @@ export function Quarks(config = {}) {
 function paletteFromType(base, type, modifiers = {}) {
   return {
     material: MaterialPalette(modifiers, base),
-    basic: StandardPalette(modifiers, base),
+    artistic: ArtisticPalette(modifiers, base),
     blended: BlendedPalette(modifiers, base),
     interpolated: InterpolatedPalette(modifiers, base),
   }[type];
