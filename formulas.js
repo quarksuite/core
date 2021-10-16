@@ -77,8 +77,10 @@ import {
  * @param {number} [modifiers.light] - adjust the overall light contrast of the palette
  * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette
  *
- * @param {QSPaletteScheme} [modifiers.scheme] - set the base color scheme to generate from
+ * @param {QSPaletteScheme} [modifiers.scheme] - configure the palette to use a color scheme
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteMaterial} output palette
  *
@@ -113,8 +115,10 @@ export function MaterialPalette(modifiers, color) {
  * @param {number} [modifiers.tones] - the number of tones to create for each subcategory
  * @param {number} [modifiers.shades] - the number of shades to create for each subcategory
  *
- * @param {QSPaletteScheme} [modifiers.scheme] - set the base color scheme to generate from
+ * @param {QSPaletteScheme} [modifiers.scheme] - configure the palette to use a color scheme
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteArtistic} output palette
  *
@@ -168,6 +172,8 @@ export function ArtisticPalette(modifiers, color) {
  * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
  *
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
@@ -241,6 +247,8 @@ export function InterpolatedPalette(modifiers, color) {
  * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
  *
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
@@ -404,14 +412,28 @@ function alphabeticalCategories(index) {
 }
 // Palette Setup:1 ends here
 
-// [[file:Mod.org::*Text Families][Text Families:1]]
-export function TextStack(fallback, font = null) {
+// [[file:Mod.org::*Typography Formula Typedefs][Typography Formula Typedefs:1]]
+
+// Typography Formula Typedefs:1 ends here
+
+// [[file:Mod.org::*Text Family][Text Family:1]]
+
+export function TextFamily(modifiers, font = null) {
+  const { system = "sans", weights = [400, 700] } = modifiers;
+
+  return {
+    family: generateStack(system, font),
+    weight: generateWeights(weights),
+  };
+}
+
+function generateStack(fallback, font = null) {
   return font === null
     ? data_systemfonts(fallback)
     : [font, data_systemfonts(fallback)].join(", ");
 }
 
-export function TextStyle(weights) {
+function generateWeights(weights) {
   return weights.reduce((acc, weight) => {
     const key = fontWeights(weight);
 
@@ -432,7 +454,7 @@ function fontWeights(weight) {
     [900, "black"],
   ]).get(weight);
 }
-// Text Families:1 ends here
+// Text Family:1 ends here
 
 // [[file:Mod.org::*Text Sizing][Text Sizing:1]]
 export function TextSize(ms) {

@@ -2,18 +2,17 @@
 import {
   AnimationCubicBezier,
   AnimationDuration,
+  ArtisticPalette,
   BlendedPalette,
   FigureCalculations,
   GridDimensions,
   GridFractions,
   InterpolatedPalette,
   MaterialPalette,
-  ArtisticPalette,
+  TextFamily,
   TextLeading,
   TextMeasure,
   TextSize,
-  TextStack,
-  TextStyle,
   TextUnits,
   Viewport,
 } from "./formulas.js";
@@ -150,12 +149,21 @@ export function Quarks(config = {}) {
 
   // Set default text options
   const {
-    body: { family: BODY = null, weights: BODY_WEIGHTS = [400, 700] } = {},
-    headings: {
-      family: HEADING = null,
-      weights: HEADING_WEIGHTS = BODY_WEIGHTS,
+    primary: {
+      family: PRIMARY = null,
+      system: PRIMARY_FALLBACK = "sans",
+      weights: PRIMARY_WEIGHTS = [400, 700],
     } = {},
-    code: { family: CODE = null, weights: CODE_WEIGHTS = BODY_WEIGHTS } = {},
+    secondary: {
+      family: SEC = null,
+      system: SEC_FALLBACK = "serif",
+      weights: SEC_WEIGHTS = PRIMARY_WEIGHTS,
+    } = {},
+    source: {
+      family: SRC = null,
+      system: SRC_FALLBACK = "monospace",
+      weights: SRC_WEIGHTS = PRIMARY_WEIGHTS,
+    } = {},
     measure: { min = 45, max = 75 } = {},
     leading: { normal = 1.5, tight = 1.125 } = {},
     values: TEXT_VALUES = limit,
@@ -197,18 +205,24 @@ export function Quarks(config = {}) {
   return {
     color: paletteFromType(base, type, modifiers),
     text: {
-      body: {
-        family: TextStack("sans", BODY),
-        weight: TextStyle(BODY_WEIGHTS),
-      },
-      headings: {
-        family: TextStack("serif", HEADING),
-        weight: TextStyle(HEADING_WEIGHTS),
-      },
-      code: {
-        family: TextStack("monospace", CODE),
-        weight: TextStyle(CODE_WEIGHTS),
-      },
+      primary: TextFamily(
+        {
+          system: PRIMARY_FALLBACK,
+          weights: PRIMARY_WEIGHTS,
+        },
+        PRIMARY,
+      ),
+      secondary: TextFamily(
+        { system: SEC_FALLBACK, weights: SEC_WEIGHTS },
+        SEC,
+      ),
+      source: TextFamily(
+        {
+          system: SRC_FALLBACK,
+          weights: PRIMARY_WEIGHTS,
+        },
+        SRC,
+      ),
       size: TextSize(TEXT),
       measure: TextMeasure({ min, max }, TEXT),
       leading: TextLeading({ normal, tight }, TEXT),

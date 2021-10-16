@@ -21,17 +21,17 @@ const testQuarks = [
         },
       },
       text: {
-        body: {
+        primary: {
           family:
             "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
           weight: { regular: 400, bold: 700 },
         },
-        headings: {
+        secondary: {
           family:
             "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
           weight: { regular: 400, bold: 700 },
         },
-        code: {
+        source: {
           family:
             "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
           weight: { regular: 400, bold: 700 },
@@ -185,25 +185,25 @@ const testQuarks = [
       Quarks({
         scale: { limit: 4 },
         text: {
-          body: { family: "Zilla Slab" },
-          headings: { family: "Rubik" },
-          code: { family: "Space Mono" },
+          primary: { family: "Zilla Slab" },
+          secondary: { family: "Rubik" },
+          source: { family: "Space Mono" },
           measure: { min: 32, max: 64, values: 4 },
           leading: { tight: 1.25 },
         },
       }).text,
       {
-        body: {
+        primary: {
           family:
             "Zilla Slab, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
           weight: { regular: 400, bold: 700 },
         },
-        headings: {
+        secondary: {
           family:
             "Rubik, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
           weight: { regular: 400, bold: 700 },
         },
-        code: {
+        source: {
           family:
             "Space Mono, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
           weight: { regular: 400, bold: 700 },

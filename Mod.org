@@ -204,18 +204,17 @@ straightforward to implement your own.
 import {
   AnimationCubicBezier,
   AnimationDuration,
+  ArtisticPalette,
   BlendedPalette,
   FigureCalculations,
   GridDimensions,
   GridFractions,
   InterpolatedPalette,
   MaterialPalette,
-  ArtisticPalette,
+  TextFamily,
   TextLeading,
   TextMeasure,
   TextSize,
-  TextStack,
-  TextStyle,
   TextUnits,
   Viewport,
 } from "./formulas.js";
@@ -364,12 +363,21 @@ export function Quarks(config = {}) {
 
   // Set default text options
   const {
-    body: { family: BODY = null, weights: BODY_WEIGHTS = [400, 700] } = {},
-    headings: {
-      family: HEADING = null,
-      weights: HEADING_WEIGHTS = BODY_WEIGHTS,
+    primary: {
+      family: PRIMARY = null,
+      system: PRIMARY_FALLBACK = "sans",
+      weights: PRIMARY_WEIGHTS = [400, 700],
     } = {},
-    code: { family: CODE = null, weights: CODE_WEIGHTS = BODY_WEIGHTS } = {},
+    secondary: {
+      family: SEC = null,
+      system: SEC_FALLBACK = "serif",
+      weights: SEC_WEIGHTS = PRIMARY_WEIGHTS,
+    } = {},
+    source: {
+      family: SRC = null,
+      system: SRC_FALLBACK = "monospace",
+      weights: SRC_WEIGHTS = PRIMARY_WEIGHTS,
+    } = {},
     measure: { min = 45, max = 75 } = {},
     leading: { normal = 1.5, tight = 1.125 } = {},
     values: TEXT_VALUES = limit,
@@ -411,18 +419,24 @@ export function Quarks(config = {}) {
   return {
     color: paletteFromType(base, type, modifiers),
     text: {
-      body: {
-        family: TextStack("sans", BODY),
-        weight: TextStyle(BODY_WEIGHTS),
-      },
-      headings: {
-        family: TextStack("serif", HEADING),
-        weight: TextStyle(HEADING_WEIGHTS),
-      },
-      code: {
-        family: TextStack("monospace", CODE),
-        weight: TextStyle(CODE_WEIGHTS),
-      },
+      primary: TextFamily(
+        {
+          system: PRIMARY_FALLBACK,
+          weights: PRIMARY_WEIGHTS,
+        },
+        PRIMARY,
+      ),
+      secondary: TextFamily(
+        { system: SEC_FALLBACK, weights: SEC_WEIGHTS },
+        SEC,
+      ),
+      source: TextFamily(
+        {
+          system: SRC_FALLBACK,
+          weights: PRIMARY_WEIGHTS,
+        },
+        SRC,
+      ),
       size: TextSize(TEXT),
       measure: TextMeasure({ min, max }, TEXT),
       leading: TextLeading({ normal, tight }, TEXT),
@@ -577,8 +591,10 @@ mind that the implementation is inexact, but works well enough for most use case
  * @param {number} [modifiers.light] - adjust the overall light contrast of the palette
  * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette
  *
- * @param {QSPaletteScheme} [modifiers.scheme] - set the base color scheme to generate from
+ * @param {QSPaletteScheme} [modifiers.scheme] - configure the palette to use a color scheme
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteMaterial} output palette
  *
@@ -615,8 +631,10 @@ export function MaterialPalette(modifiers, color) {
  * @param {number} [modifiers.tones] - the number of tones to create for each subcategory
  * @param {number} [modifiers.shades] - the number of shades to create for each subcategory
  *
- * @param {QSPaletteScheme} [modifiers.scheme] - set the base color scheme to generate from
+ * @param {QSPaletteScheme} [modifiers.scheme] - configure the palette to use a color scheme
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteArtistic} output palette
  *
@@ -672,6 +690,8 @@ export function ArtisticPalette(modifiers, color) {
  * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
  *
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
@@ -747,6 +767,8 @@ export function InterpolatedPalette(modifiers, color) {
  * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
  *
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
+ *
+ * @param {string} color - the base color to generate from
  *
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
@@ -946,16 +968,32 @@ function alphabeticalCategories(index) {
 
 The following formulas allow simple generation of typography data.
 
-**** Text Families
+**** Typography Formula Typedefs
 
 #+BEGIN_SRC js
-export function TextStack(fallback, font = null) {
+
+#+END_SRC
+
+**** Text Family
+
+#+BEGIN_SRC js
+
+export function TextFamily(modifiers, font = null) {
+  const { system = "sans", weights = [400, 700] } = modifiers;
+
+  return {
+    family: generateStack(system, font),
+    weight: generateWeights(weights),
+  };
+}
+
+function generateStack(fallback, font = null) {
   return font === null
     ? data_systemfonts(fallback)
     : [font, data_systemfonts(fallback)].join(", ");
 }
 
-export function TextStyle(weights) {
+function generateWeights(weights) {
   return weights.reduce((acc, weight) => {
     const key = fontWeights(weight);
 

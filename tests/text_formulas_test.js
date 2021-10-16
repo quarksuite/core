@@ -1,55 +1,52 @@
 import {
+  TextFamily,
   TextLeading,
   TextMeasure,
   TextSize,
-  TextStack,
-  TextStyle,
   TextUnits,
 } from "../formulas.js";
 import { ms_create } from "../utilities.js";
 
-import { benchmark, data, init, string, suite } from "./index.js";
+import { benchmark, data, init, suite } from "./index.js";
 
-const testTextStack = [
-  "TextStack",
+const testTextFamily = [
+  "TextFamily",
   [
-    "setting system font stacks",
-    string(
-      TextStack("sans"),
-      "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+    "with default configuration",
+    data(TextFamily({}), {
+      family:
+        "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+      weight: { regular: 400, bold: 700 },
+    }),
+  ],
+  [
+    "set system fallback",
+    data(TextFamily({ system: "serif" }), {
+      family:
+        "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+      weight: { regular: 400, bold: 700 },
+    }),
+  ],
+  [
+    "set weights",
+    data(
+      TextFamily({ weights: [100, 200, 300, 400, 500, 600, 700, 800, 900] }),
+      {
+        family:
+          "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+        weight: {
+          thin: 100,
+          extralight: 200,
+          light: 300,
+          regular: 400,
+          medium: 500,
+          semibold: 600,
+          bold: 700,
+          extrabold: 800,
+          black: 900,
+        },
+      },
     ),
-  ],
-  [
-    "prepending a custom font",
-    string(
-      TextStack("sans", "Zilla Slab"),
-      "Zilla Slab, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-    ),
-  ],
-];
-
-const testTextStyle = [
-  "TextStyle",
-  [
-    "setting font weights",
-    data(TextStyle([400, 700]), {
-      regular: 400,
-      bold: 700,
-    }),
-    data(TextStyle([300, 400, 700, 900]), {
-      light: 300,
-      regular: 400,
-      bold: 700,
-      black: 900,
-    }),
-  ],
-  [
-    "disregard the order",
-    data(TextStyle([200, 500, 400]), {
-      extralight: 200,
-      regular: 400,
-      medium: 500,
-    }),
   ],
 ];
 
@@ -180,16 +177,21 @@ const testTextUnits = [
 
 suite(
   "Typography formulas",
-  testTextStack,
-  testTextStyle,
+  testTextFamily,
   testTextSize,
   testTextLeading,
   testTextMeasure,
   testTextUnits,
 );
 
-benchmark(TextStack, "sans");
-benchmark(TextStyle, [100, 200, 300, 400, 500, 600, 700, 800, 900]);
+benchmark(
+  TextFamily,
+  {
+    weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+    system: "monospace",
+  },
+  "Victor Mono",
+);
 benchmark(TextSize, ms_create({ values: 100 }, 1));
 benchmark(TextLeading, {}, ms_create({ values: 100 }, 1));
 benchmark(TextMeasure, {}, ms_create({ values: 100 }, 1));
