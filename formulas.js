@@ -417,7 +417,6 @@ function alphabeticalCategories(index) {
 // Typography Formula Typedefs:1 ends here
 
 // [[file:Mod.org::*Text Family][Text Family:1]]
-
 export function TextFamily(modifiers, font = null) {
   const { system = "sans", weights = [400, 700] } = modifiers;
 

@@ -17,7 +17,10 @@
     - [[#metadata][Metadata]]
 - [[#bootstrapper][Bootstrapper]]
   - [[#importing-the-bootstrapper-helpers][Importing the Bootstrapper Helpers]]
-  - [[#quarks-system-standard][Quarks System Standard]]
+  - [[#quarks-system-dictionary-typedefs][Quarks System Dictionary Typedefs]]
+  - [[#quarks-bootstrapper][Quarks Bootstrapper]]
+    - [[#quarks-bootstrapper-typedefs][Quarks Bootstrapper Typedefs]]
+    - [[#bootstrapper-implementation][Bootstrapper Implementation]]
     - [[#bootstrapper-palette-types][Bootstrapper Palette Types]]
 - [[#formulas][Formulas]]
     - [[#importing-formula-helpers][Importing Formula Helpers]]
@@ -221,13 +224,7 @@ import {
 import { ms_create } from "./utilities.js";
 #+END_SRC
 
-** Quarks System Standard
-
-The default bootstrapper has a structure that's largely informed by the way I build web
-projects. From a configuration object, it generates a "standard" schema for design tokens that I use
-for most of my work. It may not suit your work, which is why I also provide the raw materials.
-
-**** Quarks System Dictionary Typedefs
+** Quarks System Dictionary Typedefs
 
 #+BEGIN_SRC js
 /**
@@ -260,7 +257,13 @@ for most of my work. It may not suit your work, which is why I also provide the 
  */
 #+END_SRC
 
-**** Quarks Bootstrapper Typedefs
+** Quarks Bootstrapper
+
+The default bootstrapper has a structure that's largely informed by the way I build web
+projects. From a configuration object, it generates a "standard" schema for design tokens that I use
+for most of my work. It may not suit your work, which is why I also provide the raw materials.
+
+*** Quarks Bootstrapper Typedefs
 
 #+BEGIN_SRC js
 /**
@@ -320,7 +323,7 @@ for most of my work. It may not suit your work, which is why I also provide the 
  */
 #+END_SRC
 
-**** Bootstrapper Implementation
+*** Bootstrapper Implementation
 
 #+BEGIN_SRC js
 /**
