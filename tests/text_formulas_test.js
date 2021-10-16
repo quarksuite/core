@@ -30,7 +30,19 @@ const testTextFamily = [
   [
     "set weights",
     data(
-      TextFamily({ weights: [100, 200, 300, 400, 500, 600, 700, 800, 900] }),
+      TextFamily({
+        weights: [
+          "thin",
+          "extralight",
+          "light",
+          "regular",
+          "medium",
+          "semibold",
+          "bold",
+          "extrabold",
+          "black",
+        ],
+      }),
       {
         family:
           "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
@@ -187,7 +199,17 @@ suite(
 benchmark(
   TextFamily,
   {
-    weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+    weights: [
+      "thin",
+      "extralight",
+      "light",
+      "regular",
+      "medium",
+      "semibold",
+      "bold",
+      "extrabold",
+      "black",
+    ],
     system: "monospace",
   },
   "Victor Mono",

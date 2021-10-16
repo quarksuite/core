@@ -418,7 +418,7 @@ function alphabeticalCategories(index) {
 
 // [[file:Mod.org::*Text Family][Text Family:1]]
 export function TextFamily(modifiers, font = null) {
-  const { system = "sans", weights = [400, 700] } = modifiers;
+  const { system = "sans", weights = ["regular", "bold"] } = modifiers;
 
   return {
     family: generateStack(system, font),
@@ -433,25 +433,25 @@ function generateStack(fallback, font = null) {
 }
 
 function generateWeights(weights) {
-  return weights.reduce((acc, weight) => {
-    const key = fontWeights(weight);
+  return weights.reduce((acc, key) => {
+    const value = fontWeights(key);
 
-    return { ...acc, [key]: weight };
+    return { ...acc, [key]: value };
   }, {});
 }
 
-function fontWeights(weight) {
+function fontWeights(key) {
   return new Map([
-    [100, "thin"],
-    [200, "extralight"],
-    [300, "light"],
-    [400, "regular"],
-    [500, "medium"],
-    [600, "semibold"],
-    [700, "bold"],
-    [800, "extrabold"],
-    [900, "black"],
-  ]).get(weight);
+    ["thin", 100],
+    ["extralight", 200],
+    ["light", 300],
+    ["regular", 400],
+    ["medium", 500],
+    ["semibold", 600],
+    ["bold", 700],
+    ["extrabold", 800],
+    ["black", 900],
+  ]).get(key);
 }
 // Text Family:1 ends here
 
