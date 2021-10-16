@@ -21,12 +21,19 @@ import { ms_create } from "./utilities.js";
 
 // [[file:Mod.org::*Quarks System Dictionary Typedefs][Quarks System Dictionary Typedefs:1]]
 /**
+ * @typedef {object} QSDMetadata - Quarks System Dictionary general metadata (can be project or category local)
+ * @property {string} description - category description (can be multiline)
+ * @property {string} comments - supplementary information (can be multiline)
+ */
+
+/**
  * @typedef {object} QSDProject - Quarks System Dictionary project metadata (required by token exporters)
  * @property {string} name - project name (e.g. "Your Project Name")
  * @property {string} author - project author (e.g. "Ed N. Bacon", "Compucorp")
  * @property {string} version - project version (e.g. "0.0.0")
  * @property {"major" | "minor" | "patch" | "pre" | "build" } [bump] - optional autoversioning
  * @property {string} license - project license (e.g. "Unlicense")
+ * @property {QSDMetadata} [metadata] - optional project metadata
  */
 
 /**
@@ -42,7 +49,7 @@ import { ms_create } from "./utilities.js";
  */
 
 /**
- * @typedef {{[index: string]: QSDValue | QSDScale | QSDSubcategory | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
+ * @typedef {{[index: string]: QSDValue | QSDScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
  */
 
 /**
