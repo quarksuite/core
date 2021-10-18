@@ -591,20 +591,89 @@ export function TextUnits(ms) {
 }
 // Text Spacing:1 ends here
 
+// [[file:Mod.org::*Layout Formula Typedefs][Layout Formula Typedefs:1]]
+/** @typedef {{
+  x: {
+    base: number,
+    [columns: string]: number
+  },
+  "-x": {
+    base: number,
+    [columns: string]: number
+  },
+  y: {
+    base: number,
+    [columns: string]: number
+  },
+  "-y": {
+    base: number,
+    [columns: string]: number
+  },
+}} QSGridDimensions - grid cell tokens structure */
+
+/** @typedef {"w" | "h" | "min" | "max"} QSViewportDimensions - available viewport subcategories */
+
+/** @typedef {QSViewportDimensions[]} QSViewportContext - viewport token subcategory keywords */
+// Layout Formula Typedefs:1 ends here
+
 // [[file:Mod.org::*Grid Formulas][Grid Formulas:1]]
+/**
+ * A layout formual for generation grid fractional values.
+
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ *
+ * @remarks
+ * This formula outputs values as `fr` units following the spec.
+ *
+ * @see
+ * {@link Subcategory} for the general formula you can use if you need a less
+ * opinionated dataset
+ */
 export function GridFractions(ms) {
   return Subcategory({ unit: "fr" }, ms);
 }
 
+/**
+ * A layout formula for generation grid track tokens.
+ *
+ * @param {number} columns - the number of columns to generate
+ * @param {number} [rows] - the number of rows to generate (rows = columns by default)
+ *
+ * @returns {QSGridDimensions}
+ *
+ * @remarks
+ * This formula outputs values as `ex` units so that the browser derives spacing
+ * from the (approximate) attributes of the text itself.
+ */
 export function GridDimensions(columns, rows = columns) {
   const xs = spanCalculation(columns);
   const ys = spanCalculation(rows);
 
   return {
-    x: xs[0],
-    ...generateUnidirectional("x", xs),
-    y: ys[0],
-    ...generateUnidirectional("y", ys),
+    x: {
+      base: xs[0],
+      ...generateUnidirectional("x", xs),
+    },
+    "-x": {
+      base: -xs[0],
+      ...generateUnidirectional(
+        "-x",
+        ms_modify((x) => -x, xs),
+      ),
+    },
+    y: {
+      base: ys[0],
+      ...generateUnidirectional("y", ys),
+    },
+    "-y": {
+      base: -ys[0],
+      ...generateUnidirectional(
+        "-y",
+        ms_modify((y) => -y, ys),
+      ),
+    },
   };
 }
 
@@ -616,6 +685,14 @@ function spanCalculation(xs) {
 // Grid Formulas:1 ends here
 
 // [[file:Mod.org::*Global Scale Formula][Global Scale Formula:1]]
+/**
+ * A layout formula for generating raw modular scale figures for calculation
+ * and on-the-fly adjustment.
+ *
+ * @param {number[]} ms - the modular scale
+ *
+ * @returns {object}
+ */
 export function FigureCalculations(ms) {
   return Object.entries(
     SubcategoryUnidirectional({ unit: "", variant: "x" }, ms),
@@ -624,10 +701,34 @@ export function FigureCalculations(ms) {
 // Global Scale Formula:1 ends here
 
 // [[file:Mod.org::*Viewport Formula][Viewport Formula:1]]
-export function Viewport(
-  { threshold = 5, full = 100, context = ["w", "h", "min", "max"] },
-  ms,
-) {
+/**
+ * A layout formula for generating viewport tokens.
+ *
+ * @param {object} modifiers - text leading modifiers
+ * @param {number} [modifiers.threshold] - minimum viewport value
+ * @param {number} [modifiers.full] - maximum viewport value
+ * @param {QSViewportContext} [modifiers.context] - the viewport dimensions to generate
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ *
+ * @remarks
+ * The value units correspond to the contexts defined.
+ *
+ * + `vw` for `"w"`
+ * + `vh` for `"h"`
+ * + `vmin` for `"min"`
+ * + `vmax` for `"max"`
+ */
+export function Viewport(modifiers, ms) {
+  // Set default modifiers
+  const {
+    threshold = 5,
+    full = 100,
+    context = ["w", "h", "min", "max"],
+  } = modifiers;
+
   return context.reduce((acc, target) => {
     const [key, unit] = viewportTargets(target);
 

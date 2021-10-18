@@ -45,25 +45,19 @@ const testGridDimensions = [
   [
     "setting columns",
     data(GridDimensions(4), {
-      x: 1,
-      x2: 2,
-      x3: 3,
-      x4: 4,
-      y: 1,
-      y2: 2,
-      y3: 3,
-      y4: 4,
+      x: { base: 1, x2: 2, x3: 3, x4: 4 },
+      "-x": { base: -1, "-x2": -2, "-x3": -3, "-x4": -4 },
+      y: { base: 1, y2: 2, y3: 3, y4: 4 },
+      "-y": { base: -1, "-y2": -2, "-y3": -3, "-y4": -4 },
     }),
   ],
   [
     "setting columns and rows",
     data(GridDimensions(4, 2), {
-      x: 1,
-      x2: 2,
-      x3: 3,
-      x4: 4,
-      y: 1,
-      y2: 2,
+      x: { base: 1, x2: 2, x3: 3, x4: 4 },
+      "-x": { base: -1, "-x2": -2, "-x3": -3, "-x4": -4 },
+      y: { base: 1, y2: 2 },
+      "-y": { base: -1, "-y2": -2 },
     }),
   ],
 ];
