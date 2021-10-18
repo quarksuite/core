@@ -413,16 +413,34 @@ function alphabeticalCategories(index) {
 // Palette Setup:1 ends here
 
 // [[file:Mod.org::*Typography Formula Typedefs][Typography Formula Typedefs:1]]
+/** @typedef {"sans" | "serif" | "monospace"} QSTextFamilySystem - available system font stacks */
+/** @typedef {"thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black"} QSTextFamilyStyle - available font styles */
+/** @typedef {QSTextFamilyStyle[]} QSTextFamilyWeights - font weights to emit with font family */
 
+/**
+ * @typedef {{family: string, [weight: string]: string}} QSTextFamily - text family token structure
+ */
 // Typography Formula Typedefs:1 ends here
 
 // [[file:Mod.org::*Text Family][Text Family:1]]
+/**
+ * A typography formula for generating font family tokens.
+ *
+ * @param {object} modifiers - font family settings
+ * @param {QSTextFamilySystem} [modifiers.system] - system font stack to use
+ * @param {QSTextFamilyWeights} [modifiers.weights] - font weights to generate (as keywords)
+ *
+ * @param {string} font - custom font family to prepend to system stack
+ *
+ * @returns {QSTextFamily}
+ */
 export function TextFamily(modifiers, font = null) {
+  // Set default modifiers
   const { system = "sans", weights = ["regular", "bold"] } = modifiers;
 
   return {
     family: generateStack(system, font),
-    weight: generateWeights(weights),
+    ...generateWeights(weights),
   };
 }
 
@@ -456,14 +474,47 @@ function fontWeights(key) {
 // Text Family:1 ends here
 
 // [[file:Mod.org::*Text Sizing][Text Sizing:1]]
+/**
+ * A text formula for generating text size tokens.
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ *
+ * @remarks
+ * This formula outputs text sizes in `rem` units for larger, `em` for smaller
+ *
+ * @see
+ * {@link Subcategory} for the general formula you can use if you need a less
+ * opinionated dataset
+ */
 export function TextSize(ms) {
   return Subcategory({ unit: "rem", inversionUnit: "em" }, ms);
 }
 // Text Sizing:1 ends here
 
 // [[file:Mod.org::*Text Attributes][Text Attributes:1]]
-export function TextLeading({ normal = 1.5, tight = 1.25 }, ms) {
-  const [base, ratio] = Array.from(ms);
+/**
+ * A text formula for generating text leading/line height tokens.
+ *
+ * @param {object} modifiers - text leading modifiers
+ * @param {number} [modifiers.normal] - the default line height
+ * @param {number} [modifiers.tight] - the mininmum line height
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ *
+ * @remarks
+ * This formula fits convention and outputs unitless values
+ *
+ * @see
+ * {@link SubcategoryRange} for the general formula you can use if you need a less
+ * opinionated dataset
+ */
+export function TextLeading(modifiers, ms) {
+  // Set default modifiers
+  const { normal = 1.5, tight = 1.125 } = modifiers;
 
   return Object.entries(
     SubcategoryRange(
@@ -483,7 +534,29 @@ export function TextLeading({ normal = 1.5, tight = 1.25 }, ms) {
   }, {});
 }
 
-export function TextMeasure({ min = 45, max = 75 }, ms) {
+/**
+ * A text formula for generating text measure/line length tokens.
+ *
+ * @param {object} modifiers - text leading modifiers
+ * @param {number} [modifiers.min] - the minimum line length
+ * @param {number} [modifiers.max] - the maximum line length
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ *
+ * @remarks
+ * This formula outputs values as `ch` units so that the browser derives measure
+ * from the (approximate) attributes of the text itself.
+ *
+ * @see
+ * {@link SubcategoryRange} for the general formula you can use if you need a less
+ * opinionated dataset
+ */
+export function TextMeasure(modifiers, ms) {
+  // Set default modifiers
+  const { min = 45, max = 75 } = modifiers;
+
   return SubcategoryRange(
     {
       min,
@@ -498,6 +571,21 @@ export function TextMeasure({ min = 45, max = 75 }, ms) {
 // Text Attributes:1 ends here
 
 // [[file:Mod.org::*Text Spacing][Text Spacing:1]]
+/**
+ * A text formula for generating text unit/spacing tokens.
+
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ *
+ * @remarks
+ * This formula outputs values as `ex` units so that the browser derives spacing
+ * from the (approximate) attributes of the text itself.
+ *
+ * @see
+ * {@link Subcategory} for the general formula you can use if you need a less
+ * opinionated dataset
+ */
 export function TextUnits(ms) {
   return Subcategory({ unit: "ex" }, ms);
 }
@@ -561,13 +649,9 @@ export function Viewport(
 
 function viewportTargets(target) {
   return new Map([
-    ["width", ["width", "vw"]],
     ["w", ["width", "vw"]],
-    ["height", ["height", "vh"]],
     ["h", ["height", "vh"]],
-    ["minimum", ["min", "vmin"]],
     ["min", ["min", "vmin"]],
-    ["maximum", ["max", "vmax"]],
     ["max", ["max", "vmax"]],
   ]).get(target);
 }

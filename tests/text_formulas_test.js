@@ -16,7 +16,8 @@ const testTextFamily = [
     data(TextFamily({}), {
       family:
         "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-      weight: { regular: 400, bold: 700 },
+      regular: 400,
+      bold: 700,
     }),
   ],
   [
@@ -24,7 +25,8 @@ const testTextFamily = [
     data(TextFamily({ system: "serif" }), {
       family:
         "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-      weight: { regular: 400, bold: 700 },
+      regular: 400,
+      bold: 700,
     }),
   ],
   [
@@ -46,17 +48,15 @@ const testTextFamily = [
       {
         family:
           "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-        weight: {
-          thin: 100,
-          extralight: 200,
-          light: 300,
-          regular: 400,
-          medium: 500,
-          semibold: 600,
-          bold: 700,
-          extrabold: 800,
-          black: 900,
-        },
+        thin: 100,
+        extralight: 200,
+        light: 300,
+        regular: 400,
+        medium: 500,
+        semibold: 600,
+        bold: 700,
+        extrabold: 800,
+        black: 900,
       },
     ),
   ],
@@ -105,8 +105,8 @@ const testTextLeading = [
     "with the default scale",
     data(TextLeading({}, ms_create({}, 1)), {
       base: 1.5,
-      narrow: [1.4167, 1.3861, 1.3504, 1.3136, 1.2821, 1.2615],
-      tight: 1.25,
+      narrow: [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423],
+      tight: 1.125,
     }),
   ],
   [
@@ -121,8 +121,8 @@ const testTextLeading = [
     "with a custom scale",
     data(TextLeading({}, ms_create({ values: 4, ratio: 2 }, 1)), {
       base: 1.5,
-      narrow: [1.375, 1.3125, 1.2656, 1.251],
-      tight: 1.25,
+      narrow: [1.3125, 1.2188, 1.1484, 1.1265],
+      tight: 1.125,
     }),
   ],
 ];

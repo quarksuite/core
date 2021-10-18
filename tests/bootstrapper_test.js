@@ -24,17 +24,20 @@ const testQuarks = [
         primary: {
           family:
             "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-          weight: { regular: 400, bold: 700 },
+          regular: 400,
+          bold: 700,
         },
         secondary: {
           family:
             "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-          weight: { regular: 400, bold: 700 },
+          regular: 400,
+          bold: 700,
         },
         source: {
           family:
             "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-          weight: { regular: 400, bold: 700 },
+          regular: 400,
+          bold: 700,
         },
         size: {
           base: "1rem",
@@ -196,17 +199,20 @@ const testQuarks = [
         primary: {
           family:
             "Zilla Slab, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-          weight: { regular: 400, bold: 700 },
+          regular: 400,
+          bold: 700,
         },
         secondary: {
           family:
             "Rubik, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-          weight: { regular: 400, bold: 700 },
+          regular: 400,
+          bold: 700,
         },
         source: {
           family:
             "Space Mono, Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-          weight: { regular: 400, bold: 700 },
+          regular: 400,
+          bold: 700,
         },
         size: {
           base: "1rem",
