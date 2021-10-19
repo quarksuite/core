@@ -759,23 +759,48 @@ function viewportTargets(target) {
 // Viewport Formula:1 ends here
 
 // [[file:Mod.org::*Animation Formulas][Animation Formulas:1]]
-export function AnimationDuration({ fastest = 250, slowest = 1000 }, ms) {
-  const [base, ratio] = Array.from(ms);
+/**
+ * An animation formula for generating duration tokens.
+ *
+ * @param {object} modifiers - duration modifiers
+ * @param {number} [modifiers.fastest] - fastest duration (in milliseconds)
+ * @param {number} [modifiers.slowest] - slowest duration (in milliseconds)
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ */
+export function AnimationDuration(modifiers, ms) {
+  // Set default modifiers
+  const { fastest = 250, slowest = 1000 } = modifiers;
+
   return SubcategoryRange(
     {
       min: fastest,
       max: slowest,
       unit: "ms",
       keys: ["interval", "fastest"],
-      calc: (n) => fastest + (slowest - fastest) / (base * ratio ** n),
     },
     ms,
   );
 }
 
-export function AnimationCubicBezier({ floor = 0, ceiling = 1 }, ms) {
+/**
+ * An animation formula for generating `cubic-bezier()` timing values.
+ *
+ * @param {object} modifiers - duration modifiers
+ * @param {number} [modifiers.floor] - minimum `y` value
+ * @param {number} [modifiers.ceiling] - maximum `y` value
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {object}
+ */
+export function AnimationCubicBezier(modifiers, ms) {
   const [base, ratio] = Array.from(ms);
   const [maximum] = ms.slice(-1);
+
+  const { floor = 0, ceiling = 1 } = modifiers;
 
   const ABSCISSAS = new Set(
     ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1),
