@@ -479,7 +479,7 @@ function fontWeights(key) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {object}
+ * @returns {QSGeneralSubcategory}
  *
  * @remarks
  * This formula outputs text sizes in `rem` units for larger, `em` for smaller
@@ -503,7 +503,7 @@ export function TextSize(ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {object}
+ * @returns {QSGeneralSubcategoryRange}
  *
  * @remarks
  * This formula fits convention and outputs unitless values
@@ -516,22 +516,14 @@ export function TextLeading(modifiers, ms) {
   // Set default modifiers
   const { normal = 1.5, tight = 1.125 } = modifiers;
 
-  return Object.entries(
-    SubcategoryRange(
-      {
-        min: tight,
-        max: normal,
-        unit: "",
-        keys: ["narrow", "tight"],
-      },
-      ms,
-    ),
-  ).reduce((acc, [key, value]) => {
-    if (Array.isArray(value)) {
-      return { ...acc, [key]: value.map((n) => Number(n)) };
-    }
-    return { ...acc, [key]: Number(value) };
-  }, {});
+  return SubcategoryRange(
+    {
+      min: tight,
+      max: normal,
+      keys: ["narrow", "tight"],
+    },
+    ms,
+  );
 }
 
 /**
@@ -543,7 +535,7 @@ export function TextLeading(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {object}
+ * @returns {QSGeneralSubcategoryRange}
  *
  * @remarks
  * This formula outputs values as `ch` units so that the browser derives measure
@@ -572,20 +564,20 @@ export function TextMeasure(modifiers, ms) {
 
 // [[file:Mod.org::*Text Spacing][Text Spacing:1]]
 /**
- * A text formula for generating text unit/spacing tokens.
+   * A text formula for generating text unit/spacing tokens.
 
- * @param {number[]} ms - the modular scale to generate values from
- *
- * @returns {object}
- *
- * @remarks
- * This formula outputs values as `ex` units so that the browser derives spacing
- * from the (approximate) attributes of the text itself.
- *
- * @see
- * {@link Subcategory} for the general formula you can use if you need a less
- * opinionated dataset
- */
+   * @param {number[]} ms - the modular scale to generate values from
+   *
+   * @returns {QSGeneralSubcategory}
+   *
+   * @remarks
+   * This formula outputs values as `ex` units so that the browser derives spacing
+   * from the (approximate) attributes of the text itself.
+   *
+   * @see
+   * {@link Subcategory} for the general formula you can use if you need a less
+   * opinionated dataset
+   */
 export function TextUnits(ms) {
   return Subcategory({ unit: "ex" }, ms);
 }
@@ -593,44 +585,37 @@ export function TextUnits(ms) {
 
 // [[file:Mod.org::*Layout Formula Typedefs][Layout Formula Typedefs:1]]
 /** @typedef {{
-  x: {
-    base: number,
-    [columns: string]: number
-  },
-  "-x": {
-    base: number,
-    [columns: string]: number
-  },
-  y: {
-    base: number,
-    [columns: string]: number
-  },
-  "-y": {
-    base: number,
-    [columns: string]: number
-  },
+  col: { [column: string]: number },
+  row: { [row: string]: number }
 }} QSGridDimensions - grid cell tokens structure */
 
 /** @typedef {"w" | "h" | "min" | "max"} QSViewportDimensions - available viewport subcategories */
 
 /** @typedef {QSViewportDimensions[]} QSViewportContext - viewport token subcategory keywords */
+
+/** @typedef {{
+      width?: { base: string, [value: string]: string },
+      height?: { base: string, [value: string]: string },
+      min?: { base: string, [value: string]: string },
+      max?: { base: string, [value: string]: string },
+      }} QSViewport - viewport token structure */
 // Layout Formula Typedefs:1 ends here
 
 // [[file:Mod.org::*Grid Formulas][Grid Formulas:1]]
 /**
- * A layout formual for generation grid fractional values.
+   * A layout formual for generation grid fractional values.
 
- * @param {number[]} ms - the modular scale to generate values from
- *
- * @returns {object}
- *
- * @remarks
- * This formula outputs values as `fr` units following the spec.
- *
- * @see
- * {@link Subcategory} for the general formula you can use if you need a less
- * opinionated dataset
- */
+   * @param {number[]} ms - the modular scale to generate values from
+   *
+   * @returns {QSGeneralSubcategory}
+   *
+   * @remarks
+   * This formula outputs values as `fr` units following the spec.
+   *
+   * @see
+   * {@link Subcategory} for the general formula you can use if you need a less
+   * opinionated dataset
+   */
 export function GridFractions(ms) {
   return Subcategory({ unit: "fr" }, ms);
 }
@@ -651,28 +636,17 @@ export function GridDimensions(columns, rows = columns) {
   const xs = spanCalculation(columns);
   const ys = spanCalculation(rows);
 
+  const mirror = (values) =>
+    values.reduce((acc, v) => ({ ...acc, [v]: v }), {});
+
   return {
-    x: {
-      base: xs[0],
-      ...generateUnidirectional("x", xs),
+    col: {
+      ...mirror(xs),
+      ...mirror(ms_modify((x) => -x, xs)),
     },
-    "-x": {
-      base: -xs[0],
-      ...generateUnidirectional(
-        "-x",
-        ms_modify((x) => -x, xs),
-      ),
-    },
-    y: {
-      base: ys[0],
-      ...generateUnidirectional("y", ys),
-    },
-    "-y": {
-      base: -ys[0],
-      ...generateUnidirectional(
-        "-y",
-        ms_modify((y) => -y, ys),
-      ),
+    row: {
+      ...mirror(ys),
+      ...mirror(ms_modify((y) => -y, ys)),
     },
   };
 }
@@ -691,12 +665,10 @@ function spanCalculation(xs) {
  *
  * @param {number[]} ms - the modular scale
  *
- * @returns {object}
+ * @returns {QSGeneralSubcategory}
  */
 export function FigureCalculations(ms) {
-  return Object.entries(
-    SubcategoryUnidirectional({ unit: "", variant: "x" }, ms),
-  ).reduce((acc, [k, v]) => ({ ...acc, [k]: Number(v) }), {});
+  return SubcategoryUnidirectional({}, ms);
 }
 // Global Scale Formula:1 ends here
 
@@ -711,7 +683,7 @@ export function FigureCalculations(ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {object}
+ * @returns {QSViewport}
  *
  * @remarks
  * The value units correspond to the contexts defined.
@@ -758,7 +730,14 @@ function viewportTargets(target) {
 }
 // Viewport Formula:1 ends here
 
-// [[file:Mod.org::*Animation Formulas][Animation Formulas:1]]
+// [[file:Mod.org::*Animation Formula Typedefs][Animation Formula Typedefs:1]]
+/** @typedef {{
+  x: number[],
+  y: number[]
+}} QSAnimationCubicBezier - cubic bezier token structure */
+// Animation Formula Typedefs:1 ends here
+
+// [[file:Mod.org::*Animation Duration][Animation Duration:1]]
 /**
  * An animation formula for generating duration tokens.
  *
@@ -768,7 +747,7 @@ function viewportTargets(target) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {object}
+ * @returns {QSGeneralSubcategoryRange}
  */
 export function AnimationDuration(modifiers, ms) {
   // Set default modifiers
@@ -784,7 +763,9 @@ export function AnimationDuration(modifiers, ms) {
     ms,
   );
 }
+// Animation Duration:1 ends here
 
+// [[file:Mod.org::*Animation Timing (Cubic Bezier)][Animation Timing (Cubic Bezier):1]]
 /**
  * An animation formula for generating `cubic-bezier()` timing values.
  *
@@ -794,7 +775,7 @@ export function AnimationDuration(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {object}
+ * @returns {QSAnimationCubicBezier}
  */
 export function AnimationCubicBezier(modifiers, ms) {
   const [base, ratio] = Array.from(ms);
@@ -818,23 +799,57 @@ export function AnimationCubicBezier(modifiers, ms) {
     y: Array.from([floor, ...Array.from(ORDINATES).reverse(), ceiling]),
   };
 }
-// Animation Formulas:1 ends here
+// Animation Timing (Cubic Bezier):1 ends here
+
+// [[file:Mod.org::*General Formula Typedefs][General Formula Typedefs:1]]
+/** @typedef {{
+  base: string,
+  [value: string]: string
+}} QSGeneralSubcategory - general subcategory structure */
+
+/** @typedef {{
+  base: string,
+  [value: string]: (string | number)[]
+}} QSGeneralSubcategoryRange - general subcategory range structure */
+// General Formula Typedefs:1 ends here
 
 // [[file:Mod.org::*Base Subcategory (Bidirectional)][Base Subcategory (Bidirectional):1]]
-export function Subcategory({ unit = "rem", inversionUnit = undefined }, ms) {
+/**
+ * A formula for generating arbitrary subcategories.
+ *
+ * @param {object} modifiers - general subcategory modifiers
+ * @param {string} [modifiers.unit] - output value units (unitless by default)
+ * @param {string} [modifiers.inversionUnit] - output inversion units
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {QSGeneralSubcategory}
+ *
+ * @remarks
+ * The output contains a `base` value with variants prefixed with `x` and `"-x"`.
+ * `x` values are larger, `"-x"` values are inversions (smaller)
+ */
+export function Subcategory(modifiers, ms) {
   const [base] = Array.from(ms);
   const values = Array.from(ms);
 
+  // Set default modifiers
+  const { unit = undefined, inversionUnit = undefined } = modifiers;
+
   return {
-    base: utility_pipe([base], utility_curry(ms_units)(unit)).toString(),
+    base: unit
+      ? utility_pipe([base], utility_curry(ms_units)(unit)).toString()
+      : base,
     ...generateScale(
-      ["x", "d"],
+      ["x", "-x"],
       [
-        ms_units(unit, values),
+        unit ? ms_units(unit, values) : values,
         utility_pipe(
           values,
           utility_curry(ms_modify)((n) => precision(base / n)),
-          utility_curry(ms_units)(inversionUnit ? inversionUnit : unit),
+          unit
+            ? utility_curry(ms_units)(inversionUnit ? inversionUnit : unit)
+            : (values) => values,
         ),
       ],
     ),
@@ -843,38 +858,79 @@ export function Subcategory({ unit = "rem", inversionUnit = undefined }, ms) {
 // Base Subcategory (Bidirectional):1 ends here
 
 // [[file:Mod.org::*Unidirectional Subcategory][Unidirectional Subcategory:1]]
-export function SubcategoryUnidirectional({ unit = "rem", variant = "x" }, ms) {
+/**
+ * A formula for generating arbitrary subcategories (unidirectional).
+ *
+ * @param {object} modifiers - general subcategory modifiers
+ * @param {string} [modifiers.unit] - output value units (unitless by default)
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {QSGeneralSubcategory}
+ *
+ * @remarks
+ * The output contains a `base` value with variants prefixed with `x`.
+ */
+export function SubcategoryUnidirectional(modifiers, ms) {
   const [base] = Array.from(ms);
   const values = Array.from(ms);
+
+  // Set default modifiers
+  const { unit = undefined } = modifiers;
 
   const output = utility_curry(ms_units)(unit);
 
   return {
-    base: output([base]).toString(),
+    base: unit ? output([base]).toString() : base,
     ...generateUnidirectional(
-      variant,
-      utility_pipe(values, (values) => values.map((n) => precision(n)), output),
+      "x",
+      utility_pipe(
+        values,
+        (values) => values.map((n) => precision(n)),
+        unit ? output : (values) => values,
+      ),
     ),
   };
 }
 // Unidirectional Subcategory:1 ends here
 
 // [[file:Mod.org::*Ranged Subcategory][Ranged Subcategory:1]]
-export function SubcategoryRange(
-  {
-    min = 1,
-    max = 10,
-    unit = "rem",
-    keys = ["segment", "minimum"],
-    trunc = false,
-  },
-  ms,
-) {
+/**
+ * A formula for generating arbitrary subcategories (ranged).
+ *
+ * @param {object} modifiers - general subcategory modifiers
+ * @param {number} [modifiers.min] - minimum output value
+ * @param {number} [modifiers.max] - maximum output value
+ * @param {string} [modifiers.unit] - unit to attach to values
+ * @param {[string, string]} [modifiers.keys] - a tuple defining the range property and minimum value key
+ * @param {boolean} [modifiers.trunc] - generate values as integers?
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {QSGeneralSubcategory}
+ *
+ * @remarks
+ * The output contains a `base` value which is the maximum, a range scale calculated
+ * from the input scale, and a minimum value.
+ *
+ * If you don't define keys, the properties will be `base`, `segment` for the range,
+ * and `minimum` for the cutoff
+ */
+export function SubcategoryRange(modifiers, ms) {
   const [base, ratio] = Array.from(ms);
   const output = utility_curry(ms_units)(unit);
 
+  // Set default modifiers
+  const {
+    min = 1,
+    max = 10,
+    unit = undefined,
+    keys = ["segment", "minimum"],
+    trunc = false,
+  } = modifiers;
+
   return generateRange(keys, [
-    output([max]).toString(),
+    unit ? output([max]).toString() : max,
     utility_pipe(
       Array.from(
         new Set(
@@ -886,9 +942,9 @@ export function SubcategoryRange(
       ),
       (ms) => ms.map((n) => precision(n)),
       (ms) => ms.filter((n) => n > min && n < max),
-      output,
+      unit ? output : (ms) => ms,
     ),
-    output([min]).toString(),
+    unit ? output([min]).toString() : min,
   ]);
 }
 // Ranged Subcategory:1 ends here
@@ -929,6 +985,21 @@ function generateVariants(key, [, ...values]) {
 // General Formula Structure:1 ends here
 
 // [[file:Mod.org::*Color Scale][Color Scale:1]]
+/**
+ * A formula for generating arbitrary numeric color tokens.
+
+ * @param {string[]} palette - the palette to generate the tokens from
+ *
+ * @returns {QSGeneralSubcategory}
+ *
+ * @remarks
+ * The color tokens are output as a range of `100-`. There is no cutoff,
+ * because I don't want to make assumptions about how many colors you need.
+ *
+ * That said, if you use a palette generated from the included color variant utilities,
+ * they all output a scale where the first (`100`) has the least contrast from the
+ * input color and the last value has the greatest.
+ */
 export function NumericColorScale(palette) {
   return palette.reduce(
     (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
