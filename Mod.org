@@ -4,17 +4,10 @@
 
 * Table of Contents :TOC@3:
 - [[#introduction][Introduction]]
-- [[#entry-point][Entry Point]]
-- [[#overview-of-system-design][Overview of System Design]]
+- [[#overview][Overview]]
   - [[#rules][Rules]]
 - [[#quarks-system-dictionary][Quarks System Dictionary]]
-  - [[#structure][Structure]]
-    - [[#partial-and-complete-schemas][Partial and Complete Schemas]]
-    - [[#values][Values]]
-    - [[#scales][Scales]]
-    - [[#subcategories][Subcategories]]
-    - [[#categories][Categories]]
-    - [[#metadata][Metadata]]
+- [[#entry-point][Entry Point]]
 - [[#bootstrapper][Bootstrapper]]
   - [[#importing-the-bootstrapper-helpers][Importing the Bootstrapper Helpers]]
   - [[#quarks-system-dictionary-typedefs][Quarks System Dictionary Typedefs]]
@@ -80,49 +73,38 @@
 * Introduction
 
 #+BEGIN_QUOTE
-This document provides a conceptual overview of Quarks System Core intended for developers looking
-to extend the library. If you're new or don't care about the technical bits, head to the user
-guide. If you just need to know what tools are provided and their options, you'll want to read the
-API documentation instead.
+This document provides a conceptual overview of Quarks System Core for developers looking to learn
+about or extend the library.
+
+If you're new or don't care about the technical bits, head to the user guide. If you just need to
+know what tools are provided and what they do, you'll want to read the API documentation instead.
 #+END_QUOTE
 
-Quarks System Core written in a literate programming style. The main reason I opted to write this
-way is that, as of v1, QSC now explicitly builds off layers of abstraction and very /specific/ kinds
-of functional composition.
+ As of v1, QSC now provides a set of higher level interfaces built on top of the core kit. These
+abstractions aim to define and direct basic workflows while reducing friction and complexity. The
+baremetal functionality is still exposed for custom workflows.
 
-Hopefully these decisions make the right workflows easier to accomplish and errors harder to come
-by. I invite you to submit an issue if you hit a bump.
+Hopefully these decisions make the process simpler and errors harder to come by. I invite you to
+submit an issue if you hit a bump.
 
-I would *highly recommend* that you read the source in the order laid out below. It'll give you a
-better idea of how the parts all fit together and why.
+* Overview
 
-* Entry Point
-:PROPERTIES:
-:header-args:js: :tangle "./mod.js" :comments link
-:END:
+Quarks System Core aims to account for three distinct kinds of workflows:
 
-The entry point of the entire library is =mod.js=. It provides the entire kit to play with and opens
-up any approach to using it.
++ Basic: five minute token setups in the browser for temporary/experimental projects
++ Intermediate: customized build and detach token setups for longer-term standard projects
++ Custom: unencumbered control of every aspect of token creation for your particular needs
 
-#+BEGIN_SRC js
-export * from "./bootstrapper.js";
-export * from "./formulas.js";
-export * from "./utilities.js";
-#+END_SRC
+And the tools provided reflect these workflows.
 
-* Overview of System Design
-
-The system design of this library would be best described as top-down. It progresses from the
-highest to lowest layer of abstraction. I'll give a short description of each layer below.
-
-+ Bootstrapper: a turn-key QSD generator
-+ Formulas: generating full datasets across common categories
-+ Utilities: baremetal toolkit for generating and transforming data
++ Bootstrapper (Basic): a turn-key token schema generator
++ Formulas (Intermediate): data generators to fill in manual token schemas
++ Utilities (Custom): baremetal kit for direct data generation and output
 
 ** Rules
 
-The system design also lays down a set of ground rules intended to aid understanding and define
-clear limits for all these moving parts.
+The system design lays down a set of ground rules intended to aid understanding and define clear
+limits for all these moving parts.
 
 1) Utilities are always =snake_case=
 2) Utilities are always named by their inputs (=color_to_hex=, =ms_create=, =tokens_to_css=)
@@ -142,48 +124,21 @@ The details of the spec are essentially a combination of the [[https://styled-sy
 design token specs. Generating data as values and scales derives from Styled System; allowing
 flexible token hierarchies and freeform structure derives from Style Dictionary.
 
-** Structure
+For examples, see the user guide. For now, it's only important to know that there /is/ a spec.
 
-First, a Quarks System Dictionary is nothing but an ordinary JavaScript object. The schema is more
-like packaging than anything. It wraps data for consumption by the various formatters. And that's
-all it really needs to do.
+* Entry Point
+:PROPERTIES:
+:header-args:js: :tangle "./mod.js" :comments link
+:END:
 
-That said, for /correct/ data consumption, there are some important bits to know.
+The entry point of the entire library is =mod.js=. It provides the entire kit to play with and opens
+up any approach to using it.
 
-*** Partial and Complete Schemas
-
-As a rule, formatters will refuse to process QSDs that don't begin with =project= metadata. This is
-to prevent unintentional design token builds while developing your data. The presence of project
-metadata indicates that the schema is ready for production and exporting.
-
-*** Values
-
-Every design token is represented by a value. It's a singular piece of data (such as a color or a
-particular font size). Some examples:
-
-*** Scales
-
-Scales are arrays of values. For consistency, Quarks System Core treats color palettes as scales
-along with numeric and modular scales. The library provides a ton of utilities focused around
-generating scales from values, so you'll rarely write them manually.
-
-Scale values are accessed by their index.
-
-*** Subcategories
-
-Subcategories are special. They always have a =base= value and any values or scales defined
-within are treated as variants. The significance of this won't be evident until defining formatters,
-so let's continue on.
-
-*** Categories
-
-Categories are purely for organization and have many uses. Besides token categories, you can namespace
-your project by assigning the dictionary itself a key.
-
-*** Metadata
-
-As of v1, QSDs now support a =metadata= object. This allows you to add supplementary information
-about your data that the formatters will use if supported. Multiline metadata is allowed.
+#+BEGIN_SRC js
+export * from "./bootstrapper.js";
+export * from "./formulas.js";
+export * from "./utilities.js";
+#+END_SRC
 
 * Bootstrapper
 :PROPERTIES:
