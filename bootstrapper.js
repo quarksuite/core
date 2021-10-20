@@ -19,44 +19,6 @@ import {
 import { ms_create } from "./utilities.js";
 // Importing the Bootstrapper Helpers:1 ends here
 
-// [[file:Mod.org::*Quarks System Dictionary Typedefs][Quarks System Dictionary Typedefs:1]]
-/**
- * @typedef {object} QSDMetadata - Quarks System Dictionary general metadata (can be project or category local)
- * @property {string} description - category description (can be multiline)
- * @property {string} comments - supplementary information (can be multiline)
- */
-
-/**
- * @typedef {object} QSDProject - Quarks System Dictionary project metadata (required by token exporters)
- * @property {string} name - project name (e.g. "Your Project Name")
- * @property {string} author - project author (e.g. "Ed N. Bacon", "Compucorp")
- * @property {string} version - project version (e.g. "0.0.0")
- * @property {"major" | "minor" | "patch" | "pre" | "build" } [bump] - optional autoversioning
- * @property {string} license - project license (e.g. "Unlicense")
- * @property {QSDMetadata} [metadata] - optional project metadata
- */
-
-/**
- * @typedef {string | number} QSDValue - token value
- */
-
-/**
- * @typedef {QSDValue[]} QSDScale - array of token values
- */
-
-/**
- * @typedef {{base: QSDValue, [index: string]: QSDValue | QSDScale | QSDSubcategory }} QSDSubcategory - token subcategory (base represents default, any other properties are variants)
- */
-
-/**
- * @typedef {{[index: string]: QSDValue | QSDScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
- */
-
-/**
- * @typedef {{project?: QSDProject, [index: string]: QSDTokens }} QSD - Quarks System Dictionary design token spec
- */
-// Quarks System Dictionary Typedefs:1 ends here
-
 // [[file:Mod.org::*Bootstrapper Implementation][Bootstrapper Implementation:1]]
 /**
  * A bootstrapper for quickly generating a Quarks System Dictionary. You will

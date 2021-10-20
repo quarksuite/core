@@ -10,7 +10,6 @@
 - [[#entry-point][Entry Point]]
 - [[#bootstrapper][Bootstrapper]]
   - [[#importing-the-bootstrapper-helpers][Importing the Bootstrapper Helpers]]
-  - [[#quarks-system-dictionary-typedefs][Quarks System Dictionary Typedefs]]
   - [[#quarks-bootstrapper][Quarks Bootstrapper]]
     - [[#bootstrapper-implementation][Bootstrapper Implementation]]
     - [[#bootstrapper-palette-types][Bootstrapper Palette Types]]
@@ -48,6 +47,7 @@
     - [[#scale-modification][Scale Modification]]
     - [[#attaching-units][Attaching Units]]
   - [[#design-tokens][Design Tokens]]
+    - [[#quarks-system-dictionary-typedefs][Quarks System Dictionary Typedefs]]
     - [[#css][CSS]]
     - [[#data-exports][Data Exports]]
     - [[#desktop-support][Desktop Support]]
@@ -108,7 +108,7 @@ limits for all these moving parts.
 
 1) Utilities are always =snake_case=
 2) Utilities are always named by their inputs (=color_to_hex=, =ms_create=, =tokens_to_css=)
-3) The bootstrapper and formulas are always =PascalCase=
+3) The Bootstrapper and Formulas are always =PascalCase=
 
 * Quarks System Dictionary
 
@@ -176,46 +176,6 @@ import {
   Viewport,
 } from "./formulas.js";
 import { ms_create } from "./utilities.js";
-#+END_SRC
-
-** Quarks System Dictionary Typedefs
-
-#+BEGIN_SRC js
-/**
- * @typedef {object} QSDMetadata - Quarks System Dictionary general metadata (can be project or category local)
- * @property {string} description - category description (can be multiline)
- * @property {string} comments - supplementary information (can be multiline)
- */
-
-/**
- * @typedef {object} QSDProject - Quarks System Dictionary project metadata (required by token exporters)
- * @property {string} name - project name (e.g. "Your Project Name")
- * @property {string} author - project author (e.g. "Ed N. Bacon", "Compucorp")
- * @property {string} version - project version (e.g. "0.0.0")
- * @property {"major" | "minor" | "patch" | "pre" | "build" } [bump] - optional autoversioning
- * @property {string} license - project license (e.g. "Unlicense")
- * @property {QSDMetadata} [metadata] - optional project metadata
- */
-
-/**
- * @typedef {string | number} QSDValue - token value
- */
-
-/**
- * @typedef {QSDValue[]} QSDScale - array of token values
- */
-
-/**
- * @typedef {{base: QSDValue, [index: string]: QSDValue | QSDScale | QSDSubcategory }} QSDSubcategory - token subcategory (base represents default, any other properties are variants)
- */
-
-/**
- * @typedef {{[index: string]: QSDValue | QSDScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
- */
-
-/**
- * @typedef {{project?: QSDProject, [index: string]: QSDTokens }} QSD - Quarks System Dictionary design token spec
- */
 #+END_SRC
 
 ** Quarks Bootstrapper
@@ -2129,6 +2089,46 @@ export function ms_units(unit, ms) {
 #+END_SRC
 
 ** Design Tokens
+
+*** Quarks System Dictionary Typedefs
+
+#+BEGIN_SRC js
+/**
+ * @typedef {object} QSDMetadata - Quarks System Dictionary general metadata (can be project or category local)
+ * @property {string} description - category description (can be multiline)
+ * @property {string} comments - supplementary information (can be multiline)
+ */
+
+/**
+ * @typedef {object} QSDProject - Quarks System Dictionary project metadata (required by token exporters)
+ * @property {string} name - project name (e.g. "Your Project Name")
+ * @property {string} author - project author (e.g. "Ed N. Bacon", "Compucorp")
+ * @property {string} version - project version (e.g. "0.0.0")
+ * @property {"major" | "minor" | "patch" | "pre" | "build" } [bump] - optional autoversioning
+ * @property {string} license - project license (e.g. "Unlicense")
+ * @property {QSDMetadata} [metadata] - optional project metadata
+ */
+
+/**
+ * @typedef {string | number} QSDValue - token value
+ */
+
+/**
+ * @typedef {QSDValue[]} QSDScale - array of token values
+ */
+
+/**
+ * @typedef {{base: QSDValue, [index: string]: QSDValue | QSDScale | QSDSubcategory }} QSDSubcategory - token subcategory (base represents default, any other properties are variants)
+ */
+
+/**
+ * @typedef {{[index: string]: QSDValue | QSDScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
+ */
+
+/**
+ * @typedef {{project?: QSDProject, [index: string]: QSDTokens }} QSD - Quarks System Dictionary design token spec
+ */
+#+END_SRC
 
 *** CSS
 
