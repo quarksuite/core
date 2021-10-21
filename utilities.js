@@ -1,4 +1,4 @@
-// [[file:Mod.org::*Utilities][Utilities:1]]
+// [[file:Mod.org::*Importing Utility Helpers][Importing Utility Helpers:1]]
 import { compose, curry, pipe } from "./lib/utilities/fp.js";
 import {
   convert,
@@ -28,14 +28,20 @@ import {
 } from "./lib/formatters/index.js";
 import { QSCError } from "./lib/error.js";
 import { A11Y_PALETTE, SYSTEM_FONT_STACKS } from "./lib/data.js";
-// Utilities:1 ends here
+// Importing Utility Helpers:1 ends here
 
 // [[file:Mod.org::*Functional Programming][Functional Programming:1]]
-export {
-  compose as utility_compose,
-  curry as utility_curry,
-  pipe as utility_pipe,
-} from "./lib/utilities/fp.js";
+export function utility_compose(...fns) {
+  return compose(...fns);
+}
+
+export function utility_curry(fn) {
+  return curry(fn);
+}
+
+export function utility_pipe(x, ...fns) {
+  return pipe(x, ...fns);
+}
 // Functional Programming:1 ends here
 
 // [[file:Mod.org::*Color Conversion][Color Conversion:1]]
@@ -739,8 +745,8 @@ export function tokens_to_gpl(dict) {
       }
 
       return str.concat(
-          gimpPaletteSwatch(value),
-          "\t",
+        gimpPaletteSwatch(value),
+        "\t",
         tokenStringIdentifier(head, KEY, " "),
         ` (${color_to_hex(value)})`,
         "\n",
@@ -770,16 +776,11 @@ ${assemble("", palette)}
 }
 
 function gimpPaletteSwatch(color) {
-  return pipe(
-    color,
-    color_to_rgb,
-    extractor,
-    ([, components]) =>
-      components
-        .map((C) => C.padStart(3, " "))
-        .slice(0, 3)
-        .join("\t"),
-  );
+  return pipe(color, color_to_rgb, extractor, ([, components]) =>
+    components
+      .map((C) => C.padStart(3, " "))
+      .slice(0, 3)
+      .join("\t"));
 }
 // GIMP/Inkscape:1 ends here
 
@@ -822,17 +823,12 @@ export function tokens_to_sketchpalette(dict) {
 }
 
 function sketchSwatch(color) {
-  return pipe(
-    color,
-    color_to_rgb,
-    parser,
-    ([, [red, green, blue, alpha]]) => ({
-      red,
-      green,
-      blue,
-      alpha,
-    }),
-  );
+  return pipe(color, color_to_rgb, parser, ([, [red, green, blue, alpha]]) => ({
+    red,
+    green,
+    blue,
+    alpha,
+  }));
 }
 // Sketch:1 ends here
 

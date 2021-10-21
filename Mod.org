@@ -14,13 +14,35 @@
     - [[#bootstrapper-implementation][Bootstrapper Implementation]]
     - [[#bootstrapper-palette-types][Bootstrapper Palette Types]]
 - [[#formulas][Formulas]]
-    - [[#importing-formula-helpers][Importing Formula Helpers]]
-    - [[#palette-formulas][Palette Formulas]]
-    - [[#typography-formulas][Typography Formulas]]
-    - [[#layout-formulas][Layout Formulas]]
-    - [[#animation-formulas][Animation Formulas]]
-    - [[#general-formulas][General Formulas]]
+  - [[#importing-formula-helpers][Importing Formula Helpers]]
+  - [[#palette-formulas][Palette Formulas]]
+    - [[#palette-formula-typedefs][Palette Formula Typedefs]]
+    - [[#material-palette][Material Palette]]
+    - [[#artistic-palette][Artistic Palette]]
+    - [[#interpolated-palette][Interpolated Palette]]
+    - [[#blended-palette][Blended Palette]]
+    - [[#palette-setup][Palette Setup]]
+  - [[#typography-formulas][Typography Formulas]]
+    - [[#typography-formula-typedefs][Typography Formula Typedefs]]
+    - [[#text-family][Text Family]]
+    - [[#text-sizing][Text Sizing]]
+    - [[#text-attributes][Text Attributes]]
+    - [[#text-spacing][Text Spacing]]
+  - [[#layout-formulas][Layout Formulas]]
+    - [[#layout-formula-typedefs][Layout Formula Typedefs]]
+    - [[#grid-formulas][Grid Formulas]]
+    - [[#global-scale-formula][Global Scale Formula]]
+    - [[#viewport-formula][Viewport Formula]]
+  - [[#animation-formulas][Animation Formulas]]
+    - [[#animation-formula-typedefs][Animation Formula Typedefs]]
+    - [[#animation-duration][Animation Duration]]
+    - [[#animation-timing-cubic-bezier][Animation Timing (Cubic Bezier)]]
+  - [[#general-formulas][General Formulas]]
+    - [[#general-formula-typedefs][General Formula Typedefs]]
+    - [[#subcategory-formulas][Subcategory Formulas]]
+    - [[#scale-formulas][Scale Formulas]]
 - [[#utilities][Utilities]]
+  - [[#importing-utility-helpers][Importing Utility Helpers]]
   - [[#functional-programming][Functional Programming]]
   - [[#color][Color]]
     - [[#color-conversion][Color Conversion]]
@@ -81,19 +103,19 @@ know what tools are provided and what they do, you'll want to read the API docum
 #+END_QUOTE
 
  As of v1, QSC now provides a set of higher level interfaces built on top of the core kit. These
-abstractions aim to define and direct basic workflows while reducing friction and complexity. The
-baremetal functionality is still exposed for custom workflows.
+abstractions aim to direct basic workflows while reducing complexity. The baremetal functionality is
+still exposed for custom workflows.
 
 Hopefully these decisions make the process simpler and errors harder to come by. I invite you to
 submit an issue if you hit a bump.
 
 * Overview
 
-Quarks System Core aims to account for three distinct kinds of workflows:
+Quarks System Core aims to account for three distinct workflows:
 
-+ Basic: five minute token setups in the browser for temporary/experimental projects
-+ Intermediate: customized build and detach token setups for longer-term standard projects
-+ Custom: unencumbered control of every aspect of token creation for your particular needs
++ Basic: settings-driven token generation in the browser for temporary/experimental projects
++ Intermediate: customized "build and export" token setups for longer-term standard projects
++ Custom: unencumbered control of every aspect of token creation for your particular requirements
 
 And the tools provided reflect these workflows.
 
@@ -104,7 +126,7 @@ And the tools provided reflect these workflows.
 ** Rules
 
 The system design lays down a set of ground rules intended to aid understanding and define clear
-limits for all these moving parts.
+roles for all these moving parts.
 
 1) Utilities are always =snake_case=
 2) Utilities are always named by their inputs (=color_to_hex=, =ms_create=, =tokens_to_css=)
@@ -116,9 +138,8 @@ As of v1, I've formalized the design token data schema as Quarks System Dictiona
 the spec has several advantages:
 
 + Predictable
-+ Scriptable
++ Programmable
 + Portable
-+ Conventional
 
 The details of the spec are essentially a combination of the [[https://styled-system.com/theme-specification/][Styled System]] and [[https://amzn.github.io/style-dictionary/#/tokens][Style Dictionary]]
 design token specs. Generating data as values and scales derives from Styled System; allowing
@@ -145,12 +166,14 @@ export * from "./utilities.js";
 :header-args:js: :tangle "./bootstrapper.js" :comments link
 :END:
 
-The bootstrapper is a new v1 feature that arose after I realized I provided a lot of low level
-utilities for generating tokens but almost no options for those of you who want to grab your data
-and go to work (which includes myself rather often).
+The bootstrapper was born from a realization that the library provided a wealth of tools for lower
+level design token authorship but did not provide any methods of quick, simple usage.
 
-Its purpose is to allow robust data generation from a sensible baseline. I made it to solve the
-blank canvas problem I ran into while using the library. It's a five-minute-setup solution.
+The lack of a standard, basic workflow also contributed to a blank canvas problem which came from
+not really having anything to play with until you manually build it.
+
+The bootstrapper allows you to generate a collections of essential design tokens that you can filter or extend
+at will. Essentially, it's the five-minute setup process.
 
 ** Importing the Bootstrapper Helpers
 
@@ -180,7 +203,7 @@ import { ms_create } from "./utilities.js";
 
 ** Quarks Bootstrapper
 
-The default bootstrapper has a structure that's largely informed by the way I build web
+The built-in bootstrapper has a structure that's largely informed by the way I build web
 projects. From a configuration object, it generates a "standard" schema for design tokens that I use
 for most of my work. It may not suit your work, which is why I also provide the raw materials.
 
@@ -397,12 +420,12 @@ export function Quarks(config = {}) {
 *** Bootstrapper Palette Types
 
 Since I want keep the bootstrapper self-contained, I needed to ensure that palettes could be
-generated from specially recognized keys. The other approache would be to pass the formulas as a
-type directly, but that means extra imports when I want to modify anything.
+generated from specially recognized keys. The other approach would be to pass the formulas as a
+type directly, but that means extra resources when I want to modify anything.
 
-By mapping the =color.type= and =color.scheme= options instead to keywords, the bootstrapper
-configuration object asks nothing extra of the user. This did make it a bit slower (=~60-90ms=
-instead of =~30-50ms=) but it was worthwhile for ease of use.
+By mapping the =color.type= option instead to a keyword, the bootstrapper configuration object asks
+nothing extra of the user. This did make it a bit slower (=~60-90ms= instead of =~30-50ms=) but it
+was worthwhile for ease of use.
 
 #+BEGIN_SRC js
 function paletteFromType(base, type, modifiers = {}) {
@@ -432,9 +455,9 @@ This will become more important as we reach the baremetal.
 
 Formulas are best explained as embedded data expectations. A formula relies on both the type of
 value being processed and the shape of its output. Quarks System Core includes some built-in
-formulas you can use, but you're encouraged to create your own.
+formulas you can use, but you're encouraged to create your own as needed.
 
-*** Importing Formula Helpers
+** Importing Formula Helpers
 
 #+BEGIN_SRC js
 import { precision } from "./lib/utilities/color/index.js";
@@ -472,12 +495,9 @@ import {
 } from "./utilities.js";
 #+END_SRC
 
-*** Palette Formulas
+** Palette Formulas
 
-Colors are hard. These formulas attempt to simplify palette generation. The two main palette
-generators output a material color palette or an artistic palette.
-
-**** Palette Formula Typedefs
+*** Palette Formula Typedefs
 
 #+BEGIN_SRC js
 /** @typedef {"dyadic" | "complementary" | "analgous" | "split" | "triadic" | "clash" | "tetradic" | "square" | "star" | "hexagon"} QSPaletteScheme - built-in color schemes for palette formulas */
@@ -485,7 +505,7 @@ generators output a material color palette or an artistic palette.
 /** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab"} QSPaletteFormat - built-in color formats for palette formulas */
 
 /** @typedef {{
-  [index: string]: {
+  [category: string]: {
     50: string,
     100: string,
     200: string,
@@ -500,7 +520,8 @@ generators output a material color palette or an artistic palette.
   }} QSPaletteMaterial - material palette color token structure */
 
 /** @typedef {{
-  [index: string]: {
+  [category: string]: {
+    base: string,
     light?: {
       [index: string | number]: string
     },
@@ -514,10 +535,7 @@ generators output a material color palette or an artistic palette.
 }} QSPaletteArtistic - artistic palette color tokens structure  */
 #+END_SRC
 
-**** Material Palette
-
-This formula generates color data with a Material Design-esque =50-900= numeric color scale. Keep in
-mind that the implementation is inexact, but works well enough for most use cases.
+*** Material Palette
 
 #+BEGIN_SRC js
 /**
@@ -555,7 +573,7 @@ export function MaterialPalette(modifiers, color) {
 }
 #+END_SRC
 
-**** Artistic Palette
+*** Artistic Palette
 
 #+BEGIN_SRC js
 /**
@@ -603,7 +621,7 @@ export function ArtisticPalette(modifiers, color) {
 }
 #+END_SRC
 
-**** Interpolated Palette
+*** Interpolated Palette
 
 #+BEGIN_SRC js
 /**
@@ -621,9 +639,9 @@ export function ArtisticPalette(modifiers, color) {
  * @param {number} [modifiers.tones] - the number of tones to create for each subcategory (artistic)
  * @param {number} [modifiers.shades] - the number of shades to create for each subcategory (artistic)
  *
- * @param {boolean} [modifiers.material] - use material palette configuration
- * @param {number} [modifiers.light] - adjust the overall light contrast of the palette (material)
- * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
+ * @param {boolean} [modifiers.material] - use material palette configuration?
+ * @param {number} [modifiers.light] - overall light contrast of the palette (material)
+ * @param {number} [modifiers.dark] - overall dark contrast of the palette (material)
  *
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
  *
@@ -632,11 +650,13 @@ export function ArtisticPalette(modifiers, color) {
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
  * @remarks
- * The `values` you can generate are theoretically infinite, but the formula will only return
+ * The colors you can generate are theoretically infinite, but the formula will only return
  * *unique* colors. There is no internal mechanism checking for similar colors, so it's up to you
- * to ensure your palette is distinct.
+ * to ensure your palette is distinct. The alphabetical index for color categories runs from `a-z`,
+ * and it is derived from `values` which defines the **interpolation steps**.
  *
- * If you're unsure how to do that, @see {@link MaterialPalette} and @see {@link ArtisticPalette}.
+ * If you're unsure you need this level of control, @see {@link MaterialPalette}
+ * and @see {@link ArtisticPalette}.
  *
  * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
  * stripped from the palette.
@@ -682,7 +702,7 @@ export function InterpolatedPalette(modifiers, color) {
 }
 #+END_SRC
 
-**** Blended Palette
+*** Blended Palette
 
 #+BEGIN_SRC js
 /**
@@ -709,6 +729,14 @@ export function InterpolatedPalette(modifiers, color) {
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
  * @remarks
+ * The colors you can generate are theoretically infinite, but the formula will only return
+ * *unique* colors. There is no internal mechanism checking for similar colors, so it's up to you
+ * to ensure your palette is distinct. The alphabetical index for color categories runs from `a-z`,
+ * and it is derived from `values` which defines the **mixture steps**.
+ *
+ * If you're unsure you need this level of control, @see {@link MaterialPalette}
+ * and @see {@link ArtisticPalette}.
+ *
  * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
  * stripped from the palette.
  *
@@ -779,7 +807,7 @@ function generateMaterialPalette({ light, dark }, palette) {
       }, {}),
   );
 }
-**** Palette Setup
+*** Palette Setup
 
 #+BEGIN_SRC js
 function paletteSettings({ scheme, format }, color) {
@@ -900,11 +928,9 @@ function alphabeticalCategories(index) {
 }
 #+END_SRC
 
-*** Typography Formulas
+** Typography Formulas
 
-The following formulas allow simple generation of typography data.
-
-**** Typography Formula Typedefs
+*** Typography Formula Typedefs
 
 #+BEGIN_SRC js
 /** @typedef {"sans" | "serif" | "monospace"} QSTextFamilySystem - available system font stacks */
@@ -916,7 +942,7 @@ The following formulas allow simple generation of typography data.
  */
 #+END_SRC
 
-**** Text Family
+*** Text Family
 
 #+BEGIN_SRC js
 /**
@@ -969,7 +995,7 @@ function fontWeights(key) {
 }
 #+END_SRC
 
-**** Text Sizing
+*** Text Sizing
 
 #+BEGIN_SRC js
 /**
@@ -991,7 +1017,7 @@ export function TextSize(ms) {
 }
 #+END_SRC
 
-**** Text Attributes
+*** Text Attributes
 
 #+BEGIN_SRC js
 /**
@@ -1062,7 +1088,7 @@ export function TextMeasure(modifiers, ms) {
 }
 #+END_SRC
 
-**** Text Spacing
+*** Text Spacing
 
 #+BEGIN_SRC js
 /**
@@ -1085,11 +1111,9 @@ export function TextUnits(ms) {
 }
 #+END_SRC
 
-*** Layout Formulas
+** Layout Formulas
 
-The next set of formulas generate data for layout.
-
-**** Layout Formula Typedefs
+*** Layout Formula Typedefs
 
 #+BEGIN_SRC js
 /** @typedef {{
@@ -1102,14 +1126,14 @@ The next set of formulas generate data for layout.
 /** @typedef {QSViewportDimensions[]} QSViewportContext - viewport token subcategory keywords */
 
 /** @typedef {{
-      width?: { base: string, [value: string]: string },
-      height?: { base: string, [value: string]: string },
-      min?: { base: string, [value: string]: string },
-      max?: { base: string, [value: string]: string },
-      }} QSViewport - viewport token structure */
+  width?: { base: string, [value: string]: string },
+  height?: { base: string, [value: string]: string },
+  min?: { base: string, [value: string]: string },
+  max?: { base: string, [value: string]: string },
+}} QSViewport - viewport token structure */
 #+END_SRC
 
-**** Grid Formulas
+*** Grid Formulas
 
 #+BEGIN_SRC js
 /**
@@ -1168,7 +1192,7 @@ function spanCalculation(xs) {
 }
 #+END_SRC
 
-**** Global Scale Formula
+*** Global Scale Formula
 
 #+BEGIN_SRC js
 /**
@@ -1184,7 +1208,7 @@ export function FigureCalculations(ms) {
 }
 #+END_SRC
 
-**** Viewport Formula
+*** Viewport Formula
 
 #+BEGIN_SRC js
 /**
@@ -1244,9 +1268,9 @@ function viewportTargets(target) {
 }
 #+END_SRC
 
-*** Animation Formulas
+** Animation Formulas
 
-**** Animation Formula Typedefs
+*** Animation Formula Typedefs
 
 #+BEGIN_SRC js
 /** @typedef {{
@@ -1255,7 +1279,7 @@ function viewportTargets(target) {
 }} QSAnimationCubicBezier - cubic bezier token structure */
 #+END_SRC
 
-**** Animation Duration
+*** Animation Duration
 
 #+BEGIN_SRC js
 /**
@@ -1285,7 +1309,7 @@ export function AnimationDuration(modifiers, ms) {
 }
 #+END_SRC
 
-**** Animation Timing (Cubic Bezier)
+*** Animation Timing (Cubic Bezier)
 
 #+BEGIN_SRC js
 /**
@@ -1323,11 +1347,9 @@ export function AnimationCubicBezier(modifiers, ms) {
 }
 #+END_SRC
 
-*** General Formulas
+** General Formulas
 
-The following formulas allow simple generation of general data categories and structure.
-
-**** General Formula Typedefs
+*** General Formula Typedefs
 
 #+BEGIN_SRC js
 /** @typedef {{
@@ -1341,9 +1363,9 @@ The following formulas allow simple generation of general data categories and st
 }} QSGeneralSubcategoryRange - general subcategory range structure */
 #+END_SRC
 
-**** Subcategory Formulas
+*** Subcategory Formulas
 
-***** Base Subcategory (Bidirectional)
+**** Base Subcategory (Bidirectional)
 
 #+BEGIN_SRC js
 /**
@@ -1389,7 +1411,7 @@ export function Subcategory(modifiers, ms) {
 }
 #+END_SRC
 
-***** Unidirectional Subcategory
+**** Unidirectional Subcategory
 
 #+BEGIN_SRC js
 /**
@@ -1428,7 +1450,7 @@ export function SubcategoryUnidirectional(modifiers, ms) {
 }
 #+END_SRC
 
-***** Ranged Subcategory
+**** Ranged Subcategory
 
 #+BEGIN_SRC js
 /**
@@ -1485,7 +1507,7 @@ export function SubcategoryRange(modifiers, ms) {
 }
 #+END_SRC
 
-***** General Formula Structure
+**** General Formula Structure
 
 #+BEGIN_SRC js
 function generateScale([x, d] = ["x", "d"], ms) {
@@ -1522,14 +1544,14 @@ function generateVariants(key, [, ...values]) {
 }
 #+END_SRC
 
-**** Scale Formulas
+*** Scale Formulas
 
-***** Color Scale
+**** Color Scale
 
 #+BEGIN_SRC js
 /**
  * A formula for generating arbitrary numeric color tokens.
-
+ *
  * @param {string[]} palette - the palette to generate the tokens from
  *
  * @returns {QSGeneralSubcategory}
@@ -1554,6 +1576,8 @@ export function NumericColorScale(palette) {
 :PROPERTIES:
 :header-args:js: :tangle "./utilities.js" :comments link
 :END:
+
+** Importing Utility Helpers
 
 #+BEGIN_SRC js
 import { compose, curry, pipe } from "./lib/utilities/fp.js";
@@ -1590,11 +1614,17 @@ import { A11Y_PALETTE, SYSTEM_FONT_STACKS } from "./lib/data.js";
 ** Functional Programming
 
 #+BEGIN_SRC js
-export {
-  compose as utility_compose,
-  curry as utility_curry,
-  pipe as utility_pipe,
-} from "./lib/utilities/fp.js";
+export function utility_compose(...fns) {
+  return compose(...fns);
+}
+
+export function utility_curry(fn) {
+  return curry(fn);
+}
+
+export function utility_pipe(x, ...fns) {
+  return pipe(x, ...fns);
+}
 #+END_SRC
 
 ** Color
@@ -2387,8 +2417,8 @@ export function tokens_to_gpl(dict) {
       }
 
       return str.concat(
-          gimpPaletteSwatch(value),
-          "\t",
+        gimpPaletteSwatch(value),
+        "\t",
         tokenStringIdentifier(head, KEY, " "),
         ` (${color_to_hex(value)})`,
         "\n",
@@ -2418,16 +2448,11 @@ ${assemble("", palette)}
 }
 
 function gimpPaletteSwatch(color) {
-  return pipe(
-    color,
-    color_to_rgb,
-    extractor,
-    ([, components]) =>
-      components
-        .map((C) => C.padStart(3, " "))
-        .slice(0, 3)
-        .join("\t"),
-  );
+  return pipe(color, color_to_rgb, extractor, ([, components]) =>
+    components
+      .map((C) => C.padStart(3, " "))
+      .slice(0, 3)
+      .join("\t"));
 }
 #+END_SRC
 
@@ -2472,17 +2497,12 @@ export function tokens_to_sketchpalette(dict) {
 }
 
 function sketchSwatch(color) {
-  return pipe(
-    color,
-    color_to_rgb,
-    parser,
-    ([, [red, green, blue, alpha]]) => ({
-      red,
-      green,
-      blue,
-      alpha,
-    }),
-  );
+  return pipe(color, color_to_rgb, parser, ([, [red, green, blue, alpha]]) => ({
+    red,
+    green,
+    blue,
+    alpha,
+  }));
 }
 #+END_SRC
 

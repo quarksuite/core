@@ -40,7 +40,7 @@ import {
 /** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab"} QSPaletteFormat - built-in color formats for palette formulas */
 
 /** @typedef {{
-  [index: string]: {
+  [category: string]: {
     50: string,
     100: string,
     200: string,
@@ -55,7 +55,8 @@ import {
   }} QSPaletteMaterial - material palette color token structure */
 
 /** @typedef {{
-  [index: string]: {
+  [category: string]: {
+    base: string,
     light?: {
       [index: string | number]: string
     },
@@ -167,9 +168,9 @@ export function ArtisticPalette(modifiers, color) {
  * @param {number} [modifiers.tones] - the number of tones to create for each subcategory (artistic)
  * @param {number} [modifiers.shades] - the number of shades to create for each subcategory (artistic)
  *
- * @param {boolean} [modifiers.material] - use material palette configuration
- * @param {number} [modifiers.light] - adjust the overall light contrast of the palette (material)
- * @param {number} [modifiers.dark] - adjust the overall dark contrast of the palette (material)
+ * @param {boolean} [modifiers.material] - use material palette configuration?
+ * @param {number} [modifiers.light] - overall light contrast of the palette (material)
+ * @param {number} [modifiers.dark] - overall dark contrast of the palette (material)
  *
  * @param {QSPaletteFormat} [modifiers.format] - set the palette color format
  *
@@ -178,11 +179,13 @@ export function ArtisticPalette(modifiers, color) {
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
  * @remarks
- * The `values` you can generate are theoretically infinite, but the formula will only return
+ * The colors you can generate are theoretically infinite, but the formula will only return
  * *unique* colors. There is no internal mechanism checking for similar colors, so it's up to you
- * to ensure your palette is distinct.
+ * to ensure your palette is distinct. The alphabetical index for color categories runs from `a-z`,
+ * and it is derived from `values` which defines the **interpolation steps**.
  *
- * If you're unsure how to do that, @see {@link MaterialPalette} and @see {@link ArtisticPalette}.
+ * If you're unsure you need this level of control, @see {@link MaterialPalette}
+ * and @see {@link ArtisticPalette}.
  *
  * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
  * stripped from the palette.
@@ -253,6 +256,14 @@ export function InterpolatedPalette(modifiers, color) {
  * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
  *
  * @remarks
+ * The colors you can generate are theoretically infinite, but the formula will only return
+ * *unique* colors. There is no internal mechanism checking for similar colors, so it's up to you
+ * to ensure your palette is distinct. The alphabetical index for color categories runs from `a-z`,
+ * and it is derived from `values` which defines the **mixture steps**.
+ *
+ * If you're unsure you need this level of control, @see {@link MaterialPalette}
+ * and @see {@link ArtisticPalette}.
+ *
  * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
  * stripped from the palette.
  *
@@ -594,11 +605,11 @@ export function TextUnits(ms) {
 /** @typedef {QSViewportDimensions[]} QSViewportContext - viewport token subcategory keywords */
 
 /** @typedef {{
-      width?: { base: string, [value: string]: string },
-      height?: { base: string, [value: string]: string },
-      min?: { base: string, [value: string]: string },
-      max?: { base: string, [value: string]: string },
-      }} QSViewport - viewport token structure */
+  width?: { base: string, [value: string]: string },
+  height?: { base: string, [value: string]: string },
+  min?: { base: string, [value: string]: string },
+  max?: { base: string, [value: string]: string },
+}} QSViewport - viewport token structure */
 // Layout Formula Typedefs:1 ends here
 
 // [[file:Mod.org::*Grid Formulas][Grid Formulas:1]]
@@ -987,7 +998,7 @@ function generateVariants(key, [, ...values]) {
 // [[file:Mod.org::*Color Scale][Color Scale:1]]
 /**
  * A formula for generating arbitrary numeric color tokens.
-
+ *
  * @param {string[]} palette - the palette to generate the tokens from
  *
  * @returns {QSGeneralSubcategory}
