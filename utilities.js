@@ -172,6 +172,13 @@ export function color_to_oklab(color) {
 // Color Conversion:1 ends here
 
 // [[file:Mod.org::*Color Format Comparison][Color Format Comparison:1]]
+/**
+ * A utility that allows you to compare possible output formats of a color.
+ *
+ * @param {((color: string) => string)[]} formats - array of target color formats
+ * @param {string} color - the color to compare
+ * @returns {{original: string, [formats: string]: string}}
+ */
 export function color_format_compare(formats, color) {
   return formats.reduce(
     (acc, format) => ({
@@ -185,10 +192,22 @@ export function color_format_compare(formats, color) {
 // Color Format Comparison:1 ends here
 
 // [[file:Mod.org::*Color Property Adjustment][Color Property Adjustment:1]]
-export function color_adjust(
-  { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  color,
-) {
+/**
+ * A utility that allows you to adjust the properties of any valid CSS color.
+ *
+ * @param {object} properties - the properties to adjust
+ * @param {number} [properties.lightness] - adjust the color lightness/luminance
+ * @param {number} [properties.chroma] - adjust the color chroma/intensity
+ * @param {number} [properties.hue] - adjust the hue
+ * @param {number} [properties.alpha] - adjust the alpha transparency
+ *
+ * @param {string} color - the color to adjust
+ * @returns {string}
+ */
+export function color_adjust(properties, color) {
+  // Initialize properties
+  const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = properties;
+
   return pipe(
     color_to_oklab(color),
     extractor,
@@ -223,6 +242,16 @@ function revert(color, output) {
 // Color Property Adjustment:1 ends here
 
 // [[file:Mod.org::*Color Mixture][Color Mixture:1]]
+/**
+ * A utility for mixing any valid CSS color with a target color.
+ *
+ * @param {object} modifiers - mixture options
+ * @param {number} [modifiers.amount] - amount to mix with target
+ * @param {string} [modifiers.target] - the target color to mix
+ *
+ * @param {string} color - the color to mix
+ * @returns {string}
+ */
 export function color_mix({ amount = 50, target = "black" }, color) {
   return pipe(
     calculateMix(color, target, numberFromPercent(amount)),
@@ -399,7 +428,7 @@ export function color_shades({ amount = 80, values = 3 }, color) {
 }
 // Variants:1 ends here
 
-// [[file:Mod.org::*Palette Shifting][Palette Shifting:1]]
+// [[file:Mod.org::*Shifting][Shifting:1]]
 export function palette_shift(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
   palette,
@@ -412,9 +441,9 @@ export function palette_shift(
     ),
   );
 }
-// Palette Shifting:1 ends here
+// Shifting:1 ends here
 
-// [[file:Mod.org::*Palette Sorting][Palette Sorting:1]]
+// [[file:Mod.org::*Sorting][Sorting:1]]
 export function palette_sort({ by, order = "asc" }, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
@@ -459,9 +488,9 @@ function paletteFromOklab(input, palette) {
     Array.from,
   );
 }
-// Palette Sorting:1 ends here
+// Sorting:1 ends here
 
-// [[file:Mod.org::*Palette Filtering][Palette Filtering:1]]
+// [[file:Mod.org::*Filtering][Filtering:1]]
 export function palette_filter({ by, min, max }, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
@@ -492,7 +521,7 @@ function parseFlushCondition({ by, min, max }) {
 
   return matchProperty(by);
 }
-// Palette Filtering:1 ends here
+// Filtering:1 ends here
 
 // [[file:Mod.org::*Colors Project Web Defaults][Colors Project Web Defaults:1]]
 export function data_clrs(color) {
