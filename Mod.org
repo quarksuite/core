@@ -1701,34 +1701,86 @@ export function utility_pipe(x, ...fns) {
 *** Color Conversion
 
 #+BEGIN_SRC js
+/**
+ * A utility to convert a valid CSS color to its hexadecimal equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ */
 export function color_to_hex(color) {
   return compose(curry(convert)("hex"), passthrough)(color);
 }
 
+/**
+ * A utility to convert a valid CSS color to its `rgb()` equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ */
 export function color_to_rgb(color) {
   return compose(curry(convert)("rgb"), passthrough)(color);
 }
 
+/**
+ * A utility to convert a valid CSS color to its `hsl()` equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ */
 export function color_to_hsl(color) {
   return compose(curry(convert)("hsl"), passthrough)(color);
 }
 
+/**
+ * A utility to convert a valid CSS color to its `device-cmyk()` equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ */
 export function color_to_cmyk(color) {
   return compose(curry(convert)("cmyk"), passthrough)(color);
 }
 
+/**
+ * A utility to convert a valid CSS color to its `hwb()` equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ */
 export function color_to_hwb(color) {
   return compose(curry(convert)("hwb"), passthrough)(color);
 }
 
+/**
+ * A utility to convert a valid CSS color to its `lab()` equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ */
 export function color_to_cielab(color) {
   return compose(curry(convert)("cielab"), passthrough)(color);
 }
 
+/**
+ * A utility to convert a valid CSS color to its `lch()` equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ */
 export function color_to_cielch(color) {
   return compose(curry(convert)("cielch"), passthrough)(color);
 }
 
+/**
+ * A utility to convert a valid CSS color to its Oklab (LCh) equivalent.
+ *
+ * @param {string} color - the color to convert
+ * @returns {string}
+ *
+ * @remarks
+ * Oklab is non-standard and has no browser support, so convert any Oklab
+ * colors to a standard format before using them.
+ */
 export function color_to_oklab(color) {
   return compose(curry(convert)("oklab"), passthrough)(color);
 }
