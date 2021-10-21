@@ -30,19 +30,60 @@ import { QSCError } from "./lib/error.js";
 import { A11Y_PALETTE, SYSTEM_FONT_STACKS } from "./lib/data.js";
 // Importing Utility Helpers:1 ends here
 
-// [[file:Mod.org::*Functional Programming][Functional Programming:1]]
+// [[file:Mod.org::*Compose][Compose:1]]
+/**
+ * A utility for combining the behavior of other utilities.
+ *
+ * @template X, FX
+ * @template R, Result
+ * @template {(x: FX) => R} UnaryFn
+ * @template {UnaryFn[]} Pipeline
+ * @template {(x : X) => Result} Fn
+ *
+ * @param {Pipeline} fns - utilities to combine
+ * @returns {Fn}
+ */
 export function utility_compose(...fns) {
   return compose(...fns);
 }
+// Compose:1 ends here
 
-export function utility_curry(fn) {
-  return curry(fn);
+// [[file:Mod.org::*Curry][Curry:1]]
+/**
+ * A utility for preloading the modifiers of a binary utility.
+ *
+ * @template Y, FY
+ * @template X, FX
+ * @template R, Result
+ * @template {(y: FY, x: FX) => R} BinaryFn
+ * @template {(x : X) => Result} Fn
+ *
+ * @param {BinaryFn} fn - utility to transform
+ * @param {Y} modifiers - output settings
+ * @returns {Fn}
+ */
+export function utility_curry(fn, modifiers) {
+  return curry(fn)(modifiers);
 }
+// Curry:1 ends here
 
+// [[file:Mod.org::*Pipe][Pipe:1]]
+/**
+ * A utility for constructing data pipelines.
+ *
+ * @template X, FX
+ * @template R, Result
+ * @template {(x: FX) => R} UnaryFn
+ * @template {UnaryFn[]} Pipeline
+ *
+ * @param {X} x - data to pipe
+ * @param {Pipeline} fns - pipeline operations
+ * @returns {Result}
+ */
 export function utility_pipe(x, ...fns) {
   return pipe(x, ...fns);
 }
-// Functional Programming:1 ends here
+// Pipe:1 ends here
 
 // [[file:Mod.org::*Color Conversion][Color Conversion:1]]
 export function color_to_hex(color) {
@@ -584,19 +625,19 @@ export function ms_units(unit, ms) {
  */
 
 /**
- * @typedef {string | number} QSDValue - token value
+ * @typedef {string | number} QSValue - value
  */
 
 /**
- * @typedef {QSDValue[]} QSDScale - array of token values
+ * @typedef {QSValue[]} QSScale - array of values
  */
 
 /**
- * @typedef {{base: QSDValue, [index: string]: QSDValue | QSDScale | QSDSubcategory }} QSDSubcategory - token subcategory (base represents default, any other properties are variants)
+ * @typedef {{base: QSValue, [index: string]: QSValue | QSScale | QSDSubcategory }} QSDSubcategory - token subcategory (base represents default, any other properties are variants)
  */
 
 /**
- * @typedef {{[index: string]: QSDValue | QSDScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
+ * @typedef {{[index: string]: QSValue | QSScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
  */
 
 /**

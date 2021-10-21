@@ -100,8 +100,8 @@ export function MaterialPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format, scheme }),
-    utility_curry(generateMaterialPalette)({ light, dark }),
+    utility_curry(paletteSettings, { format, scheme }),
+    utility_curry(generateMaterialPalette, { light, dark }),
   );
 }
 // Material Palette:1 ends here
@@ -143,8 +143,8 @@ export function ArtisticPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format, scheme }),
-    utility_curry(generateArtisticPalette)({
+    utility_curry(paletteSettings, { format, scheme }),
+    utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
     }),
@@ -213,7 +213,7 @@ export function InterpolatedPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format }),
+    utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
       ...(values === 1 ? [] : color_interpolation(
@@ -222,8 +222,8 @@ export function InterpolatedPalette(modifiers, color) {
       )),
     ],
     material
-      ? utility_curry(generateMaterialPalette)({ light, dark })
-      : utility_curry(generateArtisticPalette)({
+      ? utility_curry(generateMaterialPalette, { light, dark })
+      : utility_curry(generateArtisticPalette, {
         contrast,
         values: { tints, tones, shades },
       }),
@@ -288,15 +288,15 @@ export function BlendedPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format }),
+    utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
       ...(values === 1
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material ? utility_curry(generateMaterialPalette)({ light, dark })
-    : utility_curry(generateArtisticPalette)({
+    material ? utility_curry(generateMaterialPalette, { light, dark })
+    : utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
     }),
@@ -849,7 +849,7 @@ export function Subcategory(modifiers, ms) {
 
   return {
     base: unit
-      ? utility_pipe([base], utility_curry(ms_units)(unit)).toString()
+      ? utility_pipe([base], utility_curry(ms_units, unit)).toString()
       : base,
     ...generateScale(
       ["x", "-x"],
@@ -857,9 +857,9 @@ export function Subcategory(modifiers, ms) {
         unit ? ms_units(unit, values) : values,
         utility_pipe(
           values,
-          utility_curry(ms_modify)((n) => precision(base / n)),
+          utility_curry(ms_modify, (n) => precision(base / n)),
           unit
-            ? utility_curry(ms_units)(inversionUnit ? inversionUnit : unit)
+            ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
             : (values) => values,
         ),
       ],
@@ -889,7 +889,7 @@ export function SubcategoryUnidirectional(modifiers, ms) {
   // Set default modifiers
   const { unit = undefined } = modifiers;
 
-  const output = utility_curry(ms_units)(unit);
+  const output = utility_curry(ms_units, unit);
 
   return {
     base: unit ? output([base]).toString() : base,
@@ -928,9 +928,6 @@ export function SubcategoryUnidirectional(modifiers, ms) {
  * and `minimum` for the cutoff
  */
 export function SubcategoryRange(modifiers, ms) {
-  const [base, ratio] = Array.from(ms);
-  const output = utility_curry(ms_units)(unit);
-
   // Set default modifiers
   const {
     min = 1,
@@ -939,6 +936,9 @@ export function SubcategoryRange(modifiers, ms) {
     keys = ["segment", "minimum"],
     trunc = false,
   } = modifiers;
+
+  const [base, ratio] = Array.from(ms);
+  const output = utility_curry(ms_units, unit);
 
   return generateRange(keys, [
     unit ? output([max]).toString() : max,

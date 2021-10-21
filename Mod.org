@@ -44,6 +44,9 @@
 - [[#utilities][Utilities]]
   - [[#importing-utility-helpers][Importing Utility Helpers]]
   - [[#functional-programming][Functional Programming]]
+    - [[#compose][Compose]]
+    - [[#curry][Curry]]
+    - [[#pipe][Pipe]]
   - [[#color][Color]]
     - [[#color-conversion][Color Conversion]]
     - [[#color-format-comparison][Color Format Comparison]]
@@ -567,8 +570,8 @@ export function MaterialPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format, scheme }),
-    utility_curry(generateMaterialPalette)({ light, dark }),
+    utility_curry(paletteSettings, { format, scheme }),
+    utility_curry(generateMaterialPalette, { light, dark }),
   );
 }
 #+END_SRC
@@ -612,8 +615,8 @@ export function ArtisticPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format, scheme }),
-    utility_curry(generateArtisticPalette)({
+    utility_curry(paletteSettings, { format, scheme }),
+    utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
     }),
@@ -684,7 +687,7 @@ export function InterpolatedPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format }),
+    utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
       ...(values === 1 ? [] : color_interpolation(
@@ -693,8 +696,8 @@ export function InterpolatedPalette(modifiers, color) {
       )),
     ],
     material
-      ? utility_curry(generateMaterialPalette)({ light, dark })
-      : utility_curry(generateArtisticPalette)({
+      ? utility_curry(generateMaterialPalette, { light, dark })
+      : utility_curry(generateArtisticPalette, {
         contrast,
         values: { tints, tones, shades },
       }),
@@ -761,15 +764,15 @@ export function BlendedPalette(modifiers, color) {
 
   return utility_pipe(
     color,
-    utility_curry(paletteSettings)({ format }),
+    utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
       ...(values === 1
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material ? utility_curry(generateMaterialPalette)({ light, dark })
-    : utility_curry(generateArtisticPalette)({
+    material ? utility_curry(generateMaterialPalette, { light, dark })
+    : utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
     }),
@@ -1392,7 +1395,7 @@ export function Subcategory(modifiers, ms) {
 
   return {
     base: unit
-      ? utility_pipe([base], utility_curry(ms_units)(unit)).toString()
+      ? utility_pipe([base], utility_curry(ms_units, unit)).toString()
       : base,
     ...generateScale(
       ["x", "-x"],
@@ -1400,9 +1403,9 @@ export function Subcategory(modifiers, ms) {
         unit ? ms_units(unit, values) : values,
         utility_pipe(
           values,
-          utility_curry(ms_modify)((n) => precision(base / n)),
+          utility_curry(ms_modify, (n) => precision(base / n)),
           unit
-            ? utility_curry(ms_units)(inversionUnit ? inversionUnit : unit)
+            ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
             : (values) => values,
         ),
       ],
@@ -1434,7 +1437,7 @@ export function SubcategoryUnidirectional(modifiers, ms) {
   // Set default modifiers
   const { unit = undefined } = modifiers;
 
-  const output = utility_curry(ms_units)(unit);
+  const output = utility_curry(ms_units, unit);
 
   return {
     base: unit ? output([base]).toString() : base,
@@ -1475,9 +1478,6 @@ export function SubcategoryUnidirectional(modifiers, ms) {
  * and `minimum` for the cutoff
  */
 export function SubcategoryRange(modifiers, ms) {
-  const [base, ratio] = Array.from(ms);
-  const output = utility_curry(ms_units)(unit);
-
   // Set default modifiers
   const {
     min = 1,
@@ -1486,6 +1486,9 @@ export function SubcategoryRange(modifiers, ms) {
     keys = ["segment", "minimum"],
     trunc = false,
   } = modifiers;
+
+  const [base, ratio] = Array.from(ms);
+  const output = utility_curry(ms_units, unit);
 
   return generateRange(keys, [
     unit ? output([max]).toString() : max,
@@ -1577,6 +1580,13 @@ export function NumericColorScale(palette) {
 :header-args:js: :tangle "./utilities.js" :comments link
 :END:
 
+Utilities are the baremetal toolkit that allows you to create and generate data without worrying
+about its structure. They're ideal for when you want to control every aspect of how you create and
+use your design tokens.
+
+They also include special functions for exporting your complete Quarks System Dictionary for
+different environments, applications, and tools.
+
 ** Importing Utility Helpers
 
 #+BEGIN_SRC js
@@ -1613,15 +1623,74 @@ import { A11Y_PALETTE, SYSTEM_FONT_STACKS } from "./lib/data.js";
 
 ** Functional Programming
 
+As I briefly touched on in Formulas, Quarks System Core relies heavily on a data-last functional
+architecture meant to exploit and encourage functional composition and data pipelining patterns.
+
+I made this decision based on the insight that every function in the kit either consumes,
+transforms, or outputs /specific/ kinds of data.
+
+For v1, I focused the design so that /every/ utility is either unary =fn(x)= or binary =fn(y, x)=
+where:
+
++ =y=: output modifiers, may be a value or a configuration object
++ =x=: the data to transform
+
+*** Compose
+
 #+BEGIN_SRC js
+/**
+ * A utility for combining the behavior of other utilities.
+ *
+ * @template X, FX
+ * @template R, Result
+ * @template {(x: FX) => R} UnaryFn
+ * @template {UnaryFn[]} Pipeline
+ * @template {(x : X) => Result} Fn
+ *
+ * @param {Pipeline} fns - utilities to combine
+ * @returns {Fn}
+ */
 export function utility_compose(...fns) {
   return compose(...fns);
 }
+#+END_SRC
 
-export function utility_curry(fn) {
-  return curry(fn);
+*** Curry
+
+#+BEGIN_SRC js
+/**
+ * A utility for preloading the modifiers of a binary utility.
+ *
+ * @template Y, FY
+ * @template X, FX
+ * @template R, Result
+ * @template {(y: FY, x: FX) => R} BinaryFn
+ * @template {(x : X) => Result} Fn
+ *
+ * @param {BinaryFn} fn - utility to transform
+ * @param {Y} modifiers - output settings
+ * @returns {Fn}
+ */
+export function utility_curry(fn, modifiers) {
+  return curry(fn)(modifiers);
 }
+#+END_SRC
 
+*** Pipe
+
+#+BEGIN_SRC js
+/**
+ * A utility for constructing data pipelines.
+ *
+ * @template X, FX
+ * @template R, Result
+ * @template {(x: FX) => R} UnaryFn
+ * @template {UnaryFn[]} Pipeline
+ *
+ * @param {X} x - data to pipe
+ * @param {Pipeline} fns - pipeline operations
+ * @returns {Result}
+ */
 export function utility_pipe(x, ...fns) {
   return pipe(x, ...fns);
 }
@@ -2219,19 +2288,19 @@ export function ms_units(unit, ms) {
  */
 
 /**
- * @typedef {string | number} QSDValue - token value
+ * @typedef {string | number} QSValue - value
  */
 
 /**
- * @typedef {QSDValue[]} QSDScale - array of token values
+ * @typedef {QSValue[]} QSScale - array of values
  */
 
 /**
- * @typedef {{base: QSDValue, [index: string]: QSDValue | QSDScale | QSDSubcategory }} QSDSubcategory - token subcategory (base represents default, any other properties are variants)
+ * @typedef {{base: QSValue, [index: string]: QSValue | QSScale | QSDSubcategory }} QSDSubcategory - token subcategory (base represents default, any other properties are variants)
  */
 
 /**
- * @typedef {{[index: string]: QSDValue | QSDScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
+ * @typedef {{[index: string]: QSValue | QSScale | QSDSubcategory| QSDMetadata | object | QSDTokens }} QSDTokens - design tokens (consumed recursively by token exporters)
  */
 
 /**
