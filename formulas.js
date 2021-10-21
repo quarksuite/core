@@ -375,19 +375,19 @@ function generateArtisticPalette({ contrast, values }, palette) {
         const light = color_tints(
           {
             values: values.tints,
-            amount: contrast,
+            contrast,
           },
           color,
         );
         const muted = color_tones(
           {
             values: values.tones,
-            amount: contrast / ADJUSTMENT_VALUE,
+            contrast: contrast / ADJUSTMENT_VALUE,
           },
           color,
         );
         const dark = color_shades(
-          { values: values.shades, amount: contrast / ADJUSTMENT_VALUE },
+          { values: values.shades, contrast: contrast / ADJUSTMENT_VALUE },
           color,
         );
 

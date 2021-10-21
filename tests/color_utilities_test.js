@@ -596,7 +596,11 @@ const testColorVariants = [
   [
     "tints",
     data(color_tints({}, color), ["#74b6ff", "#b5d8ff", "#f5faff"]),
-    data(color_tints({ amount: 75 }, color), ["#65aeff", "#9acaff", "#cde5ff"]),
+    data(color_tints({ contrast: 75 }, color), [
+      "#65aeff",
+      "#9acaff",
+      "#cde5ff",
+    ]),
     data(color_tints({ values: 6 }, color), [
       "#4fa3ff",
       "#74b6ff",
@@ -605,7 +609,7 @@ const testColorVariants = [
       "#d5e9ff",
       "#f5faff",
     ]),
-    data(color_tints({ amount: 85, values: 9 }, color), [
+    data(color_tints({ contrast: 85, values: 9 }, color), [
       "#3f9cff",
       "#57a7ff",
       "#6cb2ff",
@@ -620,7 +624,11 @@ const testColorVariants = [
   [
     "tones",
     data(color_tones({}, color), ["#4b8ed9", "#6589b4", "#7a838d"]),
-    data(color_tones({ amount: 75 }, color), ["#468ee0", "#5e8bc0", "#7086a0"]),
+    data(color_tones({ contrast: 75 }, color), [
+      "#468ee0",
+      "#5e8bc0",
+      "#7086a0",
+    ]),
     data(color_tones({ values: 6 }, color), [
       "#398fec",
       "#4b8ed9",
@@ -629,7 +637,7 @@ const testColorVariants = [
       "#7086a0",
       "#7a838d",
     ]),
-    data(color_tones({ amount: 85, values: 9 }, color), [
+    data(color_tones({ contrast: 85, values: 9 }, color), [
       "#318ff3",
       "#3e8fe7",
       "#498edb",
@@ -644,7 +652,7 @@ const testColorVariants = [
   [
     "shades",
     data(color_shades({}, color), ["#105da9", "#042f5a", "#000716"]),
-    data(color_shades({ amount: 75 }, color), [
+    data(color_shades({ contrast: 75 }, color), [
       "#1160ae",
       "#053463",
       "#010e22",
@@ -657,7 +665,7 @@ const testColorVariants = [
       "#021a36",
       "#000716",
     ]),
-    data(color_shades({ amount: 85, values: 9 }, color), [
+    data(color_shades({ contrast: 85, values: 9 }, color), [
       "#197ee0",
       "#146cc1",
       "#0f5aa3",

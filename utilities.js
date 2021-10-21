@@ -290,10 +290,29 @@ function calculateMix(original, target, amount) {
 // Color Mixture:1 ends here
 
 // [[file:Mod.org::*Interpolation][Interpolation:1]]
-export function color_interpolation(
-  { lightness = 0, chroma = 0, hue = 0, alpha = 0, values = 10 },
-  color,
-) {
+/**
+ * A utility to create an interpolated color scale from any valid CSS color.
+ *
+ * @param {object} modifiers - color interpolation options
+ * @param {number} [modifiers.lightness] - adjust the color lightness/luminance
+ * @param {number} [modifiers.chroma] - adjust the color chroma/intensity
+ * @param {number} [modifiers.hue] - adjust the hue
+ * @param {number} [modifiers.alpha] - adjust the alpha transparency
+ * @param {number} [modifiers.values] - the number of output values (interpolation steps)
+ *
+ * @param {string} color - the color to interpolate
+ * @returns {string[]}
+ */
+export function color_interpolation(modifiers, color) {
+  // Set default modifiers
+  const {
+    lightness = 0,
+    chroma = 0,
+    hue = 0,
+    alpha = 0,
+    values = 10,
+  } = modifiers;
+
   const calculateProperty = (property, pos) =>
     property - (property / values) * pos;
 
@@ -315,10 +334,21 @@ export function color_interpolation(
 // Interpolation:1 ends here
 
 // [[file:Mod.org::*Blending][Blending:1]]
-export function color_blend(
-  { amount = 100, target = "black", values = 10 },
-  color,
-) {
+/**
+ * A utility to create a blended color scale from any valid CSS color.
+ *
+ * @param {object} modifiers - color blending options
+ * @param {number} [modifiers.amount] - total amount of mixture with target
+ * @param {string} [modifiers.target] - the blend target
+ * @param {number} [modifiers.values] - the number of output values (blend steps)
+ *
+ * @param {string} color - the color to interpolate
+ * @returns {string[]}
+ */
+export function color_blend(modifiers, color) {
+  // Set default modifiers
+  const { amount = 100, target = "black", values = 10 } = modifiers;
+
   return [
     ...new Set(
       Array.from(
@@ -335,9 +365,22 @@ export function color_blend(
 // Blending:1 ends here
 
 // [[file:Mod.org::*Material][Material:1]]
-export function color_material({ light = 95, dark = 80 }, color) {
+/**
+ * A utility to create a material-esque color scale from any valid CSS color.
+ *
+ * @param {object} modifiers - color interpolation options
+ * @param {number} [modifiers.light] - overall light color contrast
+ * @param {number} [modifiers.dark] - overall dark color contrast
+ *
+ * @param {string} color - the color to generate from
+ * @returns {string[]}
+ */
+export function color_material(modifiers, color) {
+  // Set default modifiers
+  const { light = 95, dark = 80 } = modifiers;
+
   return [
-    ...color_tints({ amount: light, values: 5 }, color).reverse(),
+    ...color_tints({ contrast: light, values: 5 }, color).reverse(),
     color_mix(
       {
         amount: dark,
@@ -348,24 +391,48 @@ export function color_material({ light = 95, dark = 80 }, color) {
       },
       color,
     ),
-    ...color_shades({ amount: dark, values: 4 }, color),
+    ...color_shades({ contrast: dark, values: 4 }, color),
   ];
 }
 // Material:1 ends here
 
 // [[file:Mod.org::*Color Schemes][Color Schemes:1]]
+/**
+ * A utility to generate a dyadic color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string] `[a, b]` where `a = color`, `b = 90deg clockwise from a`
+ */
 export function color_to_scheme_dyadic(color) {
   return generateUniformScheme({ count: 2, arc: 90 }, color);
 }
 
+/**
+ * A utility to generate a complementary color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string] `[a, b]` where `a = color`, `b = 180deg from a`
+ */
 export function color_to_scheme_complementary(color) {
   return generateUniformScheme({ count: 2, arc: 180 }, color);
 }
 
+/**
+ * A utility to generate an analogous color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string] `[a, b, c]` where `a = color`, `b,c = 45deg spread from a`
+ */
 export function color_to_scheme_analogous(color) {
   return generateUniformScheme({ count: 3, arc: 45 }, color);
 }
 
+/**
+ * A utility to generate an split-complementary color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string] `[a, b, c]` where `a = color`, `b = 30deg left of opposite`, `c = 30deg right of opposite`
+ */
 export function color_to_scheme_split_complementary(color) {
   const [origin, complement] = Array.from(color_to_scheme_complementary(color));
   return [
@@ -375,15 +442,33 @@ export function color_to_scheme_split_complementary(color) {
   ];
 }
 
+/**
+ * A utility to generate a triadic color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string] `[a, b, c]` where `a = color`, `b,c = 120deg spread from a`
+ */
 export function color_to_scheme_triadic(color) {
   return generateUniformScheme({ count: 3, arc: 120 }, color);
 }
 
+/**
+ * A utility to generate a triadic color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string] `[a, b, c]` where `a = color`, `b = 90deg right of a`, `c = 90deg left of a`
+ */
 export function color_to_scheme_clash(color) {
   const [origin, right, , left] = Array.from(color_to_scheme_square(color));
   return [origin, right, left];
 }
 
+/**
+ * A utility to generate a tetradic color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string, string] `[a, b, c, d]` where `a = color`, `b = 45deg right of a`, `c = 180deg from a`, `d = 45deg right of c`
+ */
 export function color_to_scheme_tetradic(color) {
   const [origin, opposite] = Array.from(color_to_scheme_complementary(color));
   return [
@@ -394,14 +479,32 @@ export function color_to_scheme_tetradic(color) {
   ];
 }
 
+/**
+ * A utility to generate a square color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string, string] `[a, b, c, d]` where `a = color`, `b,c,d = 90deg spread from a`
+ */
 export function color_to_scheme_square(color) {
   return generateUniformScheme({ count: 4, arc: 90 }, color);
 }
 
+/**
+ * A utility to generate a five color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string, string, string] `[a, b, c, d, e]` where `a = color`, `b,c,d,e = 72deg spread from a`
+ */
 export function color_to_scheme_star(color) {
   return generateUniformScheme({ count: 5, arc: 72 }, color);
 }
 
+/**
+ * A utility to generate a six color scale from any valid CSS color.
+ *
+ * @param {string} color - the input color
+ * @returns [string, string, string, string, string, string] `[a, b, c, d, e, f]` where `a = color`, `b,c,d,e,f = 60deg spread from a`
+ */
 export function color_to_scheme_hexagon(color) {
   return generateUniformScheme({ count: 6, arc: 60 }, color);
 }
@@ -415,16 +518,54 @@ function generateUniformScheme({ count, arc }, color) {
 // Color Schemes:1 ends here
 
 // [[file:Mod.org::*Variants][Variants:1]]
-export function color_tints({ amount = 95, values = 3 }, color) {
-  return color_blend({ amount, values, target: "white" }, color);
+/**
+ * A utility to generate tints of any valid CSS color.
+ *
+ * @param {object} modifiers - tint options
+ * @param {number} [modifiers.contrast] - percentage of contrast between tints
+ * @param {number} [modifiers.values] - number of tints to generate
+ *
+ * @param color - the input color
+ * @param {string[]}
+ */
+export function color_tints(modifiers, color) {
+  // Set default modifiers
+  const { contrast = 95, values = 3 } = modifiers;
+
+  return color_blend({ amount: contrast, values, target: "white" }, color);
 }
 
-export function color_tones({ amount = 90, values = 3 }, color) {
-  return color_blend({ amount, values, target: "gray" }, color);
-}
+/**
+ * A utility to generate tones of any valid CSS color.
+ *
+ * @param {object} modifiers - tone options
+ * @param {number} [modifiers.contrast] - percentage of contrast between tones
+ * @param {number} [modifiers.values] - number of tones to generate
+ *
+ * @param color - the input color
+ * @param {string[]}
+ */
+export function color_tones(modifiers, color) {
+  // Set default modifiers
+  const { contrast = 90, values = 3 } = modifiers;
 
-export function color_shades({ amount = 80, values = 3 }, color) {
-  return color_blend({ amount, values, target: "black" }, color);
+  return color_blend({ amount: contrast, values, target: "gray" }, color);
+}
+/**
+ * A utility to generate shades of any valid CSS color.
+ *
+ * @param {object} modifiers - shade options
+ * @param {number} [modifiers.contrast] - percentage of contrast between shades
+ * @param {number} [modifiers.values] - number of shades to generate
+ *
+ * @param color - the input color
+ * @param {string[]}
+ */
+export function color_shades(modifiers, color) {
+  // Set default modifiers
+  const { contrast = 80, values = 3 } = modifiers;
+
+  return color_blend({ amount: contrast, values, target: "black" }, color);
 }
 // Variants:1 ends here
 
