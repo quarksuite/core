@@ -2204,10 +2204,26 @@ export function color_shades(modifiers, color) {
 *** Shifting
 
 #+BEGIN_SRC js
-export function palette_shift(
-  { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  palette,
-) {
+/**
+ * A utility to update a generated color scale by a given set of properties.
+ *
+ * @param {object} modifiers - palette shifting options
+ * @param {number} [modifiers.lightness] - shift the palette lightness/luminance
+ * @param {number} [modifiers.chroma] - shift the palette chroma/intensity
+ * @param {number} [modifiers.hue] - shift the palette hue
+ * @param {number} [modifiers.alpha] - shift the palette alpha transparency
+ *
+ * @param {string[]} palette - the palette to modify
+ * @returns {string[]}
+ *
+ * @remarks
+ * A color scale is just a plain array, generated or not. So you can also use this
+ * utility to batch adjust arbitrary colors by a defined set of constraints.
+ */
+export function palette_shift(modifiers, palette) {
+  // Set default modifiers
+  const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = modifiers;
+
   return Array.from(
     new Set(
       palette.map((color) =>
@@ -2221,12 +2237,30 @@ export function palette_shift(
 *** Sorting
 
 #+BEGIN_SRC js
-export function palette_sort({ by, order = "asc" }, palette) {
+/**
+ * A utility to conditionally sort a generated color scale by a given property.
+ *
+ * @param {object} condition - palette sorting conditions
+ * @param {"lightness" | "chroma" | "hue" | "alpha"} condition.property - the property to sort by
+ * @param {"asc" | "desc"} [condition.order] - the sorting order
+ *
+ * @param {string[]} palette - the palette to modify
+ * @returns {string[]}
+ *
+ * @remarks
+ * This utility is geared for perceptually accurate sorting, so the format
+ * doesn't necessarily matter. That said, it will coerce all colors in the
+ * scale to the format of the *first* color to ensure uniform output.
+ */
+export function palette_sort(condition, palette) {
+  // Set default sort conditions
+  const { property, order = "asc" } = condition;
+
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
     paletteToOklabValues,
-    curry(sortPalette)({ by, order }),
+    curry(sortPalette)({ by: property, order }),
     curry(paletteFromOklab)(color),
   );
 }
@@ -2270,12 +2304,36 @@ function paletteFromOklab(input, palette) {
 *** Filtering
 
 #+BEGIN_SRC js
-export function palette_filter({ by, min, max }, palette) {
+/**
+ * A utility to conditionally filter a generated color scale by a given property.
+ *
+ * @param {object} condition - palette filtering conditions
+ * @param {"lightness" | "chroma" | "hue" | "alpha"} condition.property - the filtering target
+ * @param {number} condition.min - the threshold value
+ * @param {number} [condition.max] - the optional gate value
+ *
+ * @param {string[]} palette - the palette to modify
+ * @returns {string[]}
+ *
+ * @remarks
+ * This utility is geared for perceptually accurate filtering, so the format
+ * doesn't necessarily matter. That said, it will coerce all colors in the
+ * scale to the format of the *first* color to ensure uniform output.
+ *
+ * Also be aware that filtering is absolute. The minimum and maximum will
+ * ruthlessly cut out any colors that fall outside your defined range.
+ *
+ * Even if that means all of them. So be careful.
+ */
+export function palette_filter(condition, palette) {
+  // Set default filtering conditions
+  const { property, min, max = 0 } = condition;
+
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
     paletteToOklabValues,
-    curry(flushPalette)({ by, min, max }),
+    curry(flushPalette)({ by: property, min, max }),
     curry(paletteFromOklab)(color),
   );
 }
@@ -2307,6 +2365,12 @@ function parseFlushCondition({ by, min, max }) {
 *** Colors Project Web Defaults
 
 #+BEGIN_SRC js
+/**
+ * A data utility for using colors from the Colors (https://clrs.cc) project.
+ *
+ * @param {"navy" | "blue" | "aqua" | "teal" | "lime" | "olive" | "green" | "lime" | "yellow" | "maroon" | "fuchsia" | "purple" | "black" | "gray" | "grey" | "silver" | "white"} color - defined color keys
+ * @returns {string}
+ */
 export function data_clrs(color) {
   return A11Y_PALETTE[color] || UndefinedInA11yPaletteError();
 }
@@ -2328,7 +2392,7 @@ Valid colors in the Colors (https://clrs.cc) project:
 +--------------------------------------+
 | maroon | fuschia   | purple | black  |
 +--------------------------------------+
-| black  | gray/grey | silver | white  |
+| gray/grey | silver | white  |        |
 +--------------------------------------+
 `,
   });
@@ -2338,10 +2402,24 @@ Valid colors in the Colors (https://clrs.cc) project:
 *** Color Contrast Ratio
 
 #+BEGIN_SRC js
-export function palette_contrast(
-  { rating = "AA", enhanced = false, background = "white" },
-  palette,
-) {
+/**
+ * A utility that filters a generated color scale by WCAG contrast ratio recommendations.
+ *
+ * @param {object} condition - contrast ratio options
+ * @param {"AA" | "AAA"} [condition.rating] - the target contrast grade
+ * @param {boolean} [condition.enhanced] - use the enhanced grading?
+ * @param {string} [condition.background] - the background color to compare against
+ *
+ * @param {string[]} palette - the palette to filter
+ * @returns {string[]}
+ *
+ * @remarks
+ * "AA" rating is set by default. The background color is "white" by default
+ */
+export function palette_contrast(condition, palette) {
+  // Set default modifiers
+  const { rating = "AA", enhanced = false, background = "white" } = condition;
+
   return palette.filter((foreground) => {
     const CONTRAST_RATIO = calculateWCAGContrastRatio(background, foreground);
     return contrastCriteria(CONTRAST_RATIO, enhanced).get(rating);

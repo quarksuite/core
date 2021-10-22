@@ -762,10 +762,13 @@ const testPaletteShift = [
 
 const testPaletteSort = [
   "Sorting",
-  ["reject invalid colors", exception(palette_sort, {}, [color, "invalid"])],
+  [
+    "reject invalid colors",
+    exception(palette_sort, { property: "lightness" }, [color, "invalid"]),
+  ],
   [
     "sort by lightness",
-    data(palette_sort({ by: "lightness" }, palette), [
+    data(palette_sort({ property: "lightness" }, palette), [
       "#9075fa",
       "#24ac3b",
       "#e75188",
@@ -777,7 +780,7 @@ const testPaletteSort = [
       "#00a7da",
       "#00b297",
     ]),
-    data(palette_sort({ by: "lightness", order: "desc" }, palette), [
+    data(palette_sort({ property: "lightness", order: "desc" }, palette), [
       "#00b297",
       "#00a7da",
       "#d37700",
@@ -792,7 +795,7 @@ const testPaletteSort = [
   ],
   [
     "sort by chroma",
-    data(palette_sort({ by: "chroma" }, palette), [
+    data(palette_sort({ property: "chroma" }, palette), [
       "#00b297",
       "#00a7da",
       "#9a9600",
@@ -804,7 +807,7 @@ const testPaletteSort = [
       "#9075fa",
       "#ec592b",
     ]),
-    data(palette_sort({ by: "chroma", order: "desc" }, palette), [
+    data(palette_sort({ property: "chroma", order: "desc" }, palette), [
       "#ec592b",
       "#9075fa",
       "#e75188",
@@ -819,7 +822,7 @@ const testPaletteSort = [
   ],
   [
     "sort by hue",
-    data(palette_sort({ by: "hue" }, palette), [
+    data(palette_sort({ property: "hue" }, palette), [
       "#e75188",
       "#ec592b",
       "#d37700",
@@ -831,7 +834,7 @@ const testPaletteSort = [
       "#9075fa",
       "#c75fce",
     ]),
-    data(palette_sort({ by: "hue", order: "desc" }, palette), [
+    data(palette_sort({ property: "hue", order: "desc" }, palette), [
       "#c75fce",
       "#9075fa",
       "#1e90ff",
@@ -848,7 +851,7 @@ const testPaletteSort = [
     "sort by alpha",
     data(
       palette_sort(
-        { by: "alpha" },
+        { property: "alpha" },
         color_interpolation({ alpha: -50, hue: 195 }, color),
       ),
       [
@@ -866,7 +869,7 @@ const testPaletteSort = [
     ),
     data(
       palette_sort(
-        { by: "alpha", order: "desc" },
+        { property: "alpha", order: "desc" },
         color_interpolation({ alpha: -50, hue: 195 }, color),
       ),
       [
@@ -889,23 +892,20 @@ const testPaletteFilter = [
   "Filtering",
   [
     "reject invalid colors",
-    exception(palette_filter, { by: "hue", min: 20, max: 50 }, [
-      color,
-      "invalid",
-    ]),
+    exception(palette_filter, { property: "hue", min: 20 }, [color, "invalid"]),
   ],
   [
     "filter by lightness",
     data(
       palette_filter(
-        { by: "lightness", min: 75 },
+        { property: "lightness", min: 75 },
         color_interpolation({ lightness: 30 }, color),
       ),
       ["#59c1ff", "#63cbff", "#6dd5ff", "#77dfff", "#82e9ff", "#8cf4ff"],
     ),
     data(
       palette_filter(
-        { by: "lightness", min: 75, max: 80 },
+        { property: "lightness", min: 75, max: 80 },
         color_interpolation({ lightness: 30 }, color),
       ),
       ["#59c1ff"],
@@ -915,14 +915,14 @@ const testPaletteFilter = [
     "filter by chroma",
     data(
       palette_filter(
-        { by: "chroma", min: 22 },
+        { property: "chroma", min: 22 },
         color_interpolation({ chroma: 40 }, color),
       ),
       ["#006dff", "#005cff", "#0044ff", "#0000ff"],
     ),
     data(
       palette_filter(
-        { by: "chroma", min: 22, max: 24 },
+        { property: "chroma", min: 22, max: 24 },
         color_interpolation({ chroma: 40 }, color),
       ),
       ["#006dff"],
@@ -932,7 +932,7 @@ const testPaletteFilter = [
     "filter by hue",
     data(
       palette_filter(
-        { by: "hue", min: 90 },
+        { property: "hue", min: 90 },
         color_interpolation({ hue: 360 }, color),
       ),
       [
@@ -947,7 +947,7 @@ const testPaletteFilter = [
     ),
     data(
       palette_filter(
-        { by: "hue", min: 90, max: 120 },
+        { property: "hue", min: 90, max: 120 },
         color_interpolation({ hue: 360 }, color),
       ),
       ["#9a9600"],
@@ -957,7 +957,7 @@ const testPaletteFilter = [
     "filter by alpha",
     data(
       palette_filter(
-        { by: "alpha", min: 60 },
+        { property: "alpha", min: 60 },
         color_interpolation({ alpha: -64 }, color),
       ),
       [
@@ -971,7 +971,7 @@ const testPaletteFilter = [
     ),
     data(
       palette_filter(
-        { by: "alpha", min: 60, max: 62 },
+        { property: "alpha", min: 60, max: 62 },
         color_interpolation({ alpha: -64 }, color),
       ),
       ["#1e90ff9d"],
@@ -1107,7 +1107,7 @@ benchmark(
 
 benchmark(
   palette_filter,
-  { by: "hue", min: 30, max: 120 },
+  { property: "hue", min: 30, max: 120 },
   color_interpolation({ hue: 360, values: 26 }, color),
 );
 
