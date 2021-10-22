@@ -810,6 +810,12 @@ function calculateRelativeLuminance(color) {
 // Color Contrast Ratio:1 ends here
 
 // [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
+/**
+ * A data formula for using system font stacks (https://systemfontstack.com).
+ *
+ * @param {"sans" | "serif" | "monospace"} family - the stack to use
+ * @returns {string}
+ */
 export function data_systemfonts(family) {
   return SYSTEM_FONT_STACKS[family] || NotASystemFontFamilyError();
 }
@@ -832,7 +838,28 @@ monospace
 // System Font Stacks:1 ends here
 
 // [[file:Mod.org::*Scale Creation][Scale Creation:1]]
-export function ms_create({ values = 6, ratio = 1.5 }, base) {
+/**
+ * A utility for creating modular scales from a base value.
+ *
+ * @param {object} modifiers - modular scale options
+ * @param {number} [modifiers.ratio] - the ratio to calculate the scale
+ * @param {number} [modifiers.values] - the total number of values to generate
+ *
+ * @param {number} base - the base value to generate from
+ * @returns {number[]}
+ *
+ * @remarks
+ * This utility is the starting point for using modular scales in Quarks System
+ * Core. Once generated, you can modify it with the other modular scale utilities.
+ *
+ * @see {@link ms_modify} for updating modular scales
+ * @see {@link ms_split} for partitioning larger scales
+ * @see {@link ms_units} for attaching CSS units
+ */
+export function ms_create(modifiers, base) {
+  // Set default modifiers
+  const { values = 6, ratio = 1.5 } = modifiers;
+
   return Array.isArray(ratio)
     ? Array.from(
       new Set(
@@ -856,6 +883,21 @@ export function ms_create({ values = 6, ratio = 1.5 }, base) {
 // Scale Creation:1 ends here
 
 // [[file:Mod.org::*Scale Modification][Scale Modification:1]]
+/**
+ * A utility for modifying a modular scale.
+ *
+ * @param {(n: number) => number} calc - the calculation that will modify each scale value
+ * @param {number[]} ms - the scale to modify
+ * @returns {number[]}
+ *
+ * @remarks
+ * This utility will refuse to process anything that isn't a raw modular scale.
+ *
+ * The `n` parameter of the calc function represents existing scale values. So
+ * `(n) => n / 2` means "divide each scale value by 2".
+ *
+ * @see {@link ms_create} for creating a modular scale
+ */
 export function ms_modify(calc, ms) {
   return unlessMS(
     ms.map((n) => calc(n)),
@@ -863,10 +905,28 @@ export function ms_modify(calc, ms) {
   );
 }
 
-export function ms_split(partitions, ms) {
+/**
+ * A utility for splitting a modular scale into an array of partitions.
+ *
+ * @param {number} partitionSize - the number of values in each partition
+ * @param {number[]} ms - the scale to partition
+ * @returns {number[][]}
+ *
+ * @remarks
+ * This utility will refuse to process anything that isn't a raw modular scale.
+ *
+ * The scale values will fill partitions evenly. If the scale doesn't have enough
+ * values to fill the last partition, it'll be filled with the remaining values.
+ *
+ * So a 25 value scale with a partition size of 3 will have the remainder (1) in
+ * its last partition.
+ *
+ * @see {@link ms_create} for creating a modular scale
+ */
+export function ms_split(partitionSize, ms) {
   return unlessMS(
     Array.from(ms).reduceRight(
-      (acc, _n, _index, array) => [...acc, array.splice(0, partitions)],
+      (acc, _n, _index, array) => [...acc, array.splice(0, partitionSize)],
       [],
     ),
     ms,
@@ -899,6 +959,31 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 // Scale Modification:1 ends here
 
 // [[file:Mod.org::*Attaching Units][Attaching Units:1]]
+
+// Define unit typedefs
+/**
+ * @typedef {"cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px"} CSSAbsoluteUnits
+ * @typedef {"em" | "ex" | "ch" | "rem" | "lh" | "vw" | "vh" | "vmin" | "vmax"} CSSRelativeUnits
+ * @typedef {CSSRelativeUnits | CSSAbsoluteUnits | "%"} CSSUnits
+ */
+
+/**
+ * A utility for attaching CSS relative/absolute units to a modular scale.
+ *
+ * @param {CSSUnits} unit  - the number of values in each partition
+ * @param {number[]} ms - the scale to transform
+ * @returns {string[]}
+ *
+ * @remarks
+ * This utility will refuse to process anything that isn't a raw modular scale.
+ *
+ * Important to note: this utility doesn't do any calculation. Its only purpose is to
+ * attach your units and limit the precision of scale values. I've found 5 decimal
+ * places is a good balance for accuracy and usability.
+ *
+ * @see {@link ms_create} for creating a modular scale
+ * @see {@link ms_modify} for performing calculations on raw scales
+ */
 export function ms_units(unit, ms) {
   return unlessMS(
     ms.map((n) => `${precision(n)}${unit}`, ms),

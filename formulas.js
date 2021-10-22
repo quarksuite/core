@@ -813,6 +813,10 @@ export function AnimationCubicBezier(modifiers, ms) {
 // Animation Timing (Cubic Bezier):1 ends here
 
 // [[file:Mod.org::*General Formula Typedefs][General Formula Typedefs:1]]
+
+// Reuse CSSUnits from utilities
+/** @typedef {import("./utilities.js").CSSUnits} CSSUnits */
+
 /** @typedef {{
   base: string | number,
   [value: string]: string | number
@@ -829,7 +833,7 @@ export function AnimationCubicBezier(modifiers, ms) {
  * A formula for generating arbitrary subcategories.
  *
  * @param {object} modifiers - general subcategory modifiers
- * @param {string} [modifiers.unit] - output value units (unitless by default)
+ * @param {CSSUnits} [modifiers.unit] - output value units (unitless by default)
  * @param {string} [modifiers.inversionUnit] - output inversion units
  *
  * @param {number[]} ms - the modular scale to generate values from
@@ -873,7 +877,7 @@ export function Subcategory(modifiers, ms) {
  * A formula for generating arbitrary subcategories (unidirectional).
  *
  * @param {object} modifiers - general subcategory modifiers
- * @param {string} [modifiers.unit] - output value units (unitless by default)
+ * @param {CSSUnits} [modifiers.unit] - output value units (unitless by default)
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
@@ -912,7 +916,7 @@ export function SubcategoryUnidirectional(modifiers, ms) {
  * @param {object} modifiers - general subcategory modifiers
  * @param {number} [modifiers.min] - minimum output value
  * @param {number} [modifiers.max] - maximum output value
- * @param {string} [modifiers.unit] - unit to attach to values
+ * @param {CSSUnits} [modifiers.unit] - unit to attach to values
  * @param {[string, string]} [modifiers.keys] - a tuple defining the range property and minimum value key
  * @param {boolean} [modifiers.trunc] - generate values as integers?
  *
