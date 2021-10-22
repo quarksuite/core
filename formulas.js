@@ -814,13 +814,13 @@ export function AnimationCubicBezier(modifiers, ms) {
 
 // [[file:Mod.org::*General Formula Typedefs][General Formula Typedefs:1]]
 /** @typedef {{
-  base: string,
-  [value: string]: string
-}} QSGeneralSubcategory - general subcategory structure */
+  base: string | number,
+  [value: string]: string | number
+  }} QSGeneralSubcategory - general subcategory structure */
 
 /** @typedef {{
-  base: string,
-  [value: string]: (string | number)[]
+    base: string | number,
+    [value: string]: string | number | (string | number)[]
 }} QSGeneralSubcategoryRange - general subcategory range structure */
 // General Formula Typedefs:1 ends here
 

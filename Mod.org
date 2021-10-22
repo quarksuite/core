@@ -212,6 +212,51 @@ for most of my work. It may not suit your work, which is why I also provide the 
 *** Bootstrapper Implementation
 
 #+BEGIN_SRC js
+
+// Reuse the formula typedefs
+/**
+ * @typedef {import("./formulas.js").QSTextFamilySystem} QSTextFamilySystem
+ * @typedef {import("./formulas.js").QSTextFamilyStyle} QSTextFamilyStyle
+ * @typedef {import("./formulas.js").QSViewportDimensions} QSViewportDimensions
+ *
+ * @typedef {import("./formulas.js").QSPaletteMaterial} QSPaletteMaterial
+ * @typedef {import("./formulas.js").QSPaletteArtistic} QSPaletteArtistic
+ * @typedef {import("./formulas.js").QSTextFamily} QSTextFamily
+ * @typedef {import("./formulas.js").QSGridDimensions} QSGridDimensions
+ * @typedef {import("./formulas.js").QSViewport} QSViewport
+ * @typedef {import("./formulas.js").QSAnimationCubicBezier} QSAnimationCubicBezier
+ *
+ * @typedef {import("./formulas.js").QSGeneralSubcategory} QSGeneralSubcategory
+ * @typedef {import("./formulas.js").QSGeneralSubcategoryRange} QSGeneralSubcategoryRange
+ */
+
+// Define the specific output shape
+/** @typedef {{
+  color: QSPaletteMaterial | QSPaletteArtistic
+  text: {
+    primary: QSTextFamily,
+    secondary: QSTextFamily,
+    source: QSTextFamily,
+    size: QSGeneralSubcategory,
+    measure: QSGeneralSubcategoryRange,
+    leading: QSGeneralSubcategoryRange,
+    unit: QSGeneralSubcategory
+  },
+  grid: {
+    columns: number,
+    rows: number,
+    fr: QSGeneralSubcategory,
+    col: Pick<QSGridDimensions, "col">,
+    row: Pick<QSGridDimensions, "row">
+  },
+  viewport: QSViewport,
+  animation: {
+    duration: QSGeneralSubcategoryRange,
+    easing: QSAnimationCubicBezier
+  },
+  ms: QSGeneralSubcategory
+}} QSBootstrapperTokens */
+
 /**
  * A bootstrapper for quickly generating a Quarks System Dictionary. You will
  * still need to attach the project metadata before using the token exporters.
@@ -231,18 +276,18 @@ for most of my work. It may not suit your work, which is why I also provide the 
  *
  * @param {object} [config.text.primary] - settings for the primary font
  * @param {string | null} [config.text.primary.family] - the primary font family (if null, only system stack is used)
- * @param {"sans" | "serif" | "monospace"} [config.text.primary.system] - the system font stack (appended to primary font if defined)
- * @param {("thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black")[]} [config.text.primary.weights] - the font weights to define
+ * @param {QSTextFamilySystem} [config.text.primary.system] - the system font stack (appended to primary font if defined)
+ * @param {QSTextFamilyStyle[]} [config.text.primary.weights] - the font weights to define
  *
  * @param {object} [config.text.secondary] - settings for the secondary font
  * @param {string | null} [config.text.secondary.family] - the secondary font family (if null, only system stack is used)
- * @param {"sans" | "serif" | "monospace"} [config.text.secondary.system] - the system font stack (appended to secondary font if defined)
- * @param {("thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black")[]} [config.text.secondary.weights] - the font weights to define
+ * @param {QSTextFamilySystem} [config.text.secondary.system] - the system font stack (appended to secondary font if defined)
+ * @param {QSTextFamilyStyle[]} [config.text.secondary.weights] - the font weights to define
  *
  * @param {object} [config.text.source] - settings for the source font
  * @param {string | null} [config.text.source.family] - the source font family (if null, only system stack is used)
- * @param {"sans" | "serif" | "monospace"} [config.text.source.system] - the system font stack (appended to source font if defined)
- * @param {("thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black")[]} [config.text.source.weights] - the font weights to define
+ * @param {QSTextFamilySystem} [config.text.source.system] - the system font stack (appended to source font if defined)
+ * @param {QSTextFamilyStyle[]} [config.text.source.weights] - the font weights to define
  *
  * @param {object} [config.text.measure] - settings for the measure (line length)
  * @param {number} [config.text.measure.min] - the minimum measure
@@ -261,7 +306,7 @@ for most of my work. It may not suit your work, which is why I also provide the 
  * @param {object} [config.viewport] - customize the viewport tokens
  * @param {number} [config.viewport.threshold] - the minimum viewport value
  * @param {number} [config.viewport.full] - the maximum viewport value
- * @param {("w" | "h" | "min" | "max")[]} [config.viewport.context] - the viewport context to generate
+ * @param {QSViewportDimensions[]} [config.viewport.context] - the viewport context to generate
  * @param {number} [config.viewport.values] - set an individual limit for generated viewport values
  *
  * @param {object} [config.animation] - customize the animation tokens
@@ -276,7 +321,7 @@ for most of my work. It may not suit your work, which is why I also provide the 
  *
  * @param {number} [config.animation.values] - set an individual limit for generated animation values
  *
- * @returns {QSDTokens} - Quarks System Dictionary tokens
+ * @returns {QSBootstrapperTokens} - Quarks System Dictionary tokens
  *
  * @remarks
  * `color.type` corresponds with a built-in palette formula. You can pass in
@@ -1355,13 +1400,13 @@ export function AnimationCubicBezier(modifiers, ms) {
 
 #+BEGIN_SRC js
 /** @typedef {{
-  base: string,
-  [value: string]: string
+  base: string | number,
+  [value: string]: string | number
 }} QSGeneralSubcategory - general subcategory structure */
 
 /** @typedef {{
-  base: string,
-  [value: string]: (string | number)[]
+  base: string | number,
+  [value: string]: string | number | (string | number)[]
 }} QSGeneralSubcategoryRange - general subcategory range structure */
 #+END_SRC
 
