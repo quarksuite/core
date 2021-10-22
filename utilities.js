@@ -1031,12 +1031,41 @@ export function ms_units(unit, ms) {
 // Quarks System Dictionary Typedefs:1 ends here
 
 // [[file:Mod.org::*Custom Properties][Custom Properties:1]]
+/**
+ * A utility for exporting a complete Quarks System Dictionary as CSS custom properties.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ *
+ * The tokens are always wrapped in a `:root` selector.
+ */
 export function tokens_to_css(dict) {
   return cssFormatStructure({}, dict);
 }
 // Custom Properties:1 ends here
 
 // [[file:Mod.org::*Sass][Sass:1]]
+/**
+ * A utility for exporting a complete Quarks System Dictionary as Sass variables.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ *
+ * The tokens are basic Sass variables. No mapping.
+ *
+ * @see {@link tokens_to_style_dictionary} for exporting tokens to Style Dictionary,
+ * which does allow output as Sass maps
+ */
 export function tokens_to_scss(dict) {
   return cssFormatStructure(
     {
@@ -1051,6 +1080,19 @@ export function tokens_to_scss(dict) {
 // Sass:1 ends here
 
 // [[file:Mod.org::*Less][Less:1]]
+/**
+ * A utility for exporting a complete Quarks System Dictionary as Less variables.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ *
+ * The tokens are basic Less variables.
+ */
 export function tokens_to_less(dict) {
   return cssFormatStructure(
     {
@@ -1065,6 +1107,19 @@ export function tokens_to_less(dict) {
 // Less:1 ends here
 
 // [[file:Mod.org::*Stylus][Stylus:1]]
+/**
+ * A utility for exporting a complete Quarks System Dictionary as Stylus variables.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ *
+ * The tokens are basic Stylus variables.
+ */
 export function tokens_to_styl(dict) {
   return cssFormatStructure(
     {
@@ -1079,6 +1134,17 @@ export function tokens_to_styl(dict) {
 // Stylus:1 ends here
 
 // [[file:Mod.org::*JSON][JSON:1]]
+/**
+ * A utility for exporting a complete Quarks System Dictionary as JSON data.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ */
 export function tokens_to_json(dict) {
   const { project, ...tokens } = dict;
   const { bump = "manual" } = project || MissingProjectMetadataError();
@@ -1096,6 +1162,17 @@ export function tokens_to_json(dict) {
 // JSON:1 ends here
 
 // [[file:Mod.org::*YAML][YAML:1]]
+/**
+ * A utility for exporting a complete Quarks System Dictionary as YAML data.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ */
 export function tokens_to_yaml(dict) {
   const { project, ...tokens } = dict;
   const { bump = "manual" } = project || MissingProjectMetadataError();
@@ -1139,6 +1216,17 @@ ${
 // YAML:1 ends here
 
 // [[file:Mod.org::*GIMP/Inkscape][GIMP/Inkscape:1]]
+/**
+ * A utility for exporting Quarks System Dictionary colors as a GIMP/Inkscape palette.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ */
 export function tokens_to_gpl(dict) {
   const {
     project,
@@ -1211,6 +1299,17 @@ function gimpPaletteSwatch(color) {
 // GIMP/Inkscape:1 ends here
 
 // [[file:Mod.org::*Sketch][Sketch:1]]
+/**
+ * A utility for exporting Quarks System Dictionary colors as a Sketch palette.
+ *
+ * @param {QSD} dict - the tokens to export
+ * @returns {string}
+ *
+ * @remarks
+ * By design, token exporters do *not* assume read/write access to your machine.
+ * The output is a file-ready formatted string that you can output to a file using the
+ * filesystem API of your choice.
+ */
 export function tokens_to_sketchpalette(dict) {
   const {
     project,
@@ -1259,6 +1358,12 @@ function sketchSwatch(color) {
 // Sketch:1 ends here
 
 // [[file:Mod.org::*TailwindCSS][TailwindCSS:1]]
+/**
+ * A utility for exporting a Quarks System Dictionary as TailwindCSS theme data.
+ *
+ * @param {QSD} dict - the tokens to transform
+ * @returns {object}
+ */
 export function tokens_to_tailwindcss(dict) {
   const { project, ...tokens } = dict;
 
@@ -1281,6 +1386,12 @@ export function tokens_to_tailwindcss(dict) {
 // TailwindCSS:1 ends here
 
 // [[file:Mod.org::*Style Dictionary][Style Dictionary:1]]
+/**
+ * A utility for exporting a Quarks System Dictionary as Style Dictionary tokens.
+ *
+ * @param {QSD} dict - the tokens to transform
+ * @returns {object}
+ */
 export function tokens_to_style_dictionary(dict) {
   const { project, ...tokens } = dict;
 
