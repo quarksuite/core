@@ -1,9 +1,9 @@
 {
-  "$schema": "https://x.nest.land/eggs@0.3.4/src/schema.json",
+  "$schema": "https://x.nest.land/eggs@0.3.9/src/schema.json",
   "name": "quarksuite:core",
   "description": "QuarkSuite is a toolkit for creating, assembling, and distributing digital design systems. Quarks System Core is the engine powering it.",
   "homepage": "https://github.com/quarksuite/core",
-  "version": "1.0.0-6",
+  "version": "1.0.0-7",
   "releaseType": "pre",
   "unlisted": true,
   "entry": "./mod.js",
