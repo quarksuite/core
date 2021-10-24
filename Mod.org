@@ -825,36 +825,6 @@ export function BlendedPalette(modifiers, color) {
 }
 #+END_SRC
 
-
-function paletteSettings({ scheme, format }, color) {
-  return utility_pipe(
-    color,
-    (color) => (format ? setFormat(format, color) : color_to_hex(color)),
-    (color) => (scheme ? setScheme(scheme, color) : [color]),
-  );
-}
-
-function generateMaterialPalette({ light, dark }, palette) {
-  return utility_pipe(
-    palette,
-    (palette) => palette.map((color) => color_material({ light, dark }, color)),
-    (palette) =>
-      palette.reduce((acc, value, index) => {
-        return {
-          ...acc,
-          [alphabeticalCategories(index)]: {
-            ...value.reduce(
-              (a, v, i) => ({
-                ...a,
-                ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
-              }),
-              {},
-            ),
-          },
-        };
-      }, {}),
-  );
-}
 *** Palette Setup
 
 #+BEGIN_SRC js
