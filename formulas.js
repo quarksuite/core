@@ -2,6 +2,7 @@
 import { precision } from "./lib/utilities/color/index.js";
 import {
   color_blend,
+  color_inspect,
   color_interpolation,
   color_material,
   color_shades,
@@ -308,22 +309,11 @@ export function BlendedPalette(modifiers, color) {
 function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
-    (color) => (format ? setFormat(format, color) : color_to_hex(color)),
+    (
+      color,
+    ) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
     (color) => (scheme ? setScheme(scheme, color) : [color]),
   );
-}
-
-function setFormat(format, color) {
-  return {
-    hex: color_to_hex(color),
-    rgb: color_to_rgb(color),
-    hsl: color_to_hsl(color),
-    cmyk: color_to_cmyk(color),
-    hwb: color_to_hwb(color),
-    cielab: color_to_cielab(color),
-    cielch: color_to_cielch(color),
-    oklab: color_to_oklab(color),
-  }[format];
 }
 
 function setScheme(scheme, color) {
@@ -813,7 +803,6 @@ export function AnimationCubicBezier(modifiers, ms) {
 // Animation Timing (Cubic Bezier):1 ends here
 
 // [[file:Mod.org::*General Formula Typedefs][General Formula Typedefs:1]]
-
 // Reuse CSSUnits from utilities
 /** @typedef {import("./utilities.js").CSSUnits} CSSUnits */
 

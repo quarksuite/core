@@ -49,7 +49,7 @@
     - [[#pipe][Pipe]]
   - [[#color][Color]]
     - [[#color-conversion][Color Conversion]]
-    - [[#color-format-comparison][Color Format Comparison]]
+    - [[#color-inspection][Color Inspection]]
     - [[#color-property-adjustment][Color Property Adjustment]]
     - [[#color-mixture][Color Mixture]]
   - [[#color-scales-palettes][Color Scales (Palettes)]]
@@ -510,6 +510,7 @@ formulas you can use, but you're encouraged to create your own as needed.
 import { precision } from "./lib/utilities/color/index.js";
 import {
   color_blend,
+  color_inspect,
   color_interpolation,
   color_material,
   color_shades,
@@ -860,22 +861,11 @@ function generateMaterialPalette({ light, dark }, palette) {
 function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
-    (color) => (format ? setFormat(format, color) : color_to_hex(color)),
+    (
+      color,
+    ) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
     (color) => (scheme ? setScheme(scheme, color) : [color]),
   );
-}
-
-function setFormat(format, color) {
-  return {
-    hex: color_to_hex(color),
-    rgb: color_to_rgb(color),
-    hsl: color_to_hsl(color),
-    cmyk: color_to_cmyk(color),
-    hwb: color_to_hwb(color),
-    cielab: color_to_cielab(color),
-    cielch: color_to_cielch(color),
-    oklab: color_to_oklab(color),
-  }[format];
 }
 
 function setScheme(scheme, color) {
@@ -1834,25 +1824,63 @@ export function color_to_oklab(color) {
 }
 #+END_SRC
 
-*** Color Format Comparison
+*** Color Inspection
 
 #+BEGIN_SRC js
 /**
- * A utility that allows you to compare possible output formats of a color.
+ * A utility that allows you to inspect useful data about a color.
  *
- * @param {((color: string) => string)[]} formats - array of target color formats
- * @param {string} color - the color to compare
- * @returns {{original: string, [formats: string]: string}}
+ * @param {string} color - the color to inspect
+ * @returns {{
+ *  original: string,
+ *  extracted: string[],
+ *  parsed: number[],
+ *  to: {
+ *    hex: string,
+ *    rgb: string,
+ *    hsl: string,
+ *    cmyk: string,
+ *    hwb: string,
+ *    cielab: string,
+ *    cielch: string,
+ *    oklab: string,
+ *  }
+ * }}
+ *
+ * @remarks
+ * `original` property is the unaltered valid color input.
+ *
+ * The `extracted` property of the returned object contains the color's raw components,
+ * while the `parsed` property contains its calculated values.
+ *
+ * + hex channels become rgb values
+ * + rgb channels are converted to the `0-1` range
+ * + degree values converted to radians
+ * + etc...
+ *
+ * `to` is an object containing all the valid color formats the inspected color can convert to.
  */
-export function color_format_compare(formats, color) {
-  return formats.reduce(
-    (acc, format) => ({
-      ...acc,
-      original: color,
-      [format.name.split("_")[2]]: format(color),
-    }),
-    {},
-  );
+export function color_inspect(color) {
+  const [format, _value] = validator(color);
+
+  // If validated as a named color, convert to hex
+  const value = format === "named" ? color_to_hex(_value) : _value;
+
+  return {
+    original: _value,
+    extracted: extractor(value)[1],
+    parsed: parser(value)[1],
+    to: {
+      hex: color_to_hex(color),
+      rgb: color_to_rgb(color),
+      hsl: color_to_hsl(color),
+      cmyk: color_to_cmyk(color),
+      hwb: color_to_hwb(color),
+      cielab: color_to_cielab(color),
+      cielch: color_to_cielch(color),
+      oklab: color_to_oklab(color),
+    },
+  };
 }
 #+END_SRC
 

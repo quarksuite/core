@@ -171,25 +171,63 @@ export function color_to_oklab(color) {
 }
 // Color Conversion:1 ends here
 
-// [[file:Mod.org::*Color Format Comparison][Color Format Comparison:1]]
+// [[file:Mod.org::*Color Inspection][Color Inspection:1]]
 /**
- * A utility that allows you to compare possible output formats of a color.
+ * A utility that allows you to inspect useful data about a color.
  *
- * @param {((color: string) => string)[]} formats - array of target color formats
- * @param {string} color - the color to compare
- * @returns {{original: string, [formats: string]: string}}
+ * @param {string} color - the color to inspect
+ * @returns {{
+ *  original: string,
+ *  extracted: string[],
+ *  parsed: number[],
+ *  to: {
+ *    hex: string,
+ *    rgb: string,
+ *    hsl: string,
+ *    cmyk: string,
+ *    hwb: string,
+ *    cielab: string,
+ *    cielch: string,
+ *    oklab: string,
+ *  }
+ * }}
+ *
+ * @remarks
+ * `original` property is the unaltered valid color input.
+ *
+ * The `extracted` property of the returned object contains the color's raw components,
+ * while the `parsed` property contains its calculated values.
+ *
+ * + hex channels become rgb values
+ * + rgb channels are converted to the `0-1` range
+ * + degree values converted to radians
+ * + etc...
+ *
+ * `to` is an object containing all the valid color formats the inspected color can convert to.
  */
-export function color_format_compare(formats, color) {
-  return formats.reduce(
-    (acc, format) => ({
-      ...acc,
-      original: color,
-      [format.name.split("_")[2]]: format(color),
-    }),
-    {},
-  );
+export function color_inspect(color) {
+  const [format, _value] = validator(color);
+
+  // If validated as a named color, convert to hex
+  const value = format === "named" ? color_to_hex(_value) : _value;
+
+  return {
+    original: _value,
+    extracted: extractor(value)[1],
+    parsed: parser(value)[1],
+    to: {
+      hex: color_to_hex(color),
+      rgb: color_to_rgb(color),
+      hsl: color_to_hsl(color),
+      cmyk: color_to_cmyk(color),
+      hwb: color_to_hwb(color),
+      cielab: color_to_cielab(color),
+      cielch: color_to_cielch(color),
+      oklab: color_to_oklab(color),
+    },
+  };
 }
-// Color Format Comparison:1 ends here
+// Color Inspection:1 ends here
 
 // [[file:Mod.org::*Color Property Adjustment][Color Property Adjustment:1]]
 /**
@@ -959,7 +997,6 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 // Scale Modification:1 ends here
 
 // [[file:Mod.org::*Attaching Units][Attaching Units:1]]
-
 // Define unit typedefs
 /**
  * @typedef {"cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px"} CSSAbsoluteUnits

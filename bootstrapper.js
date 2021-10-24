@@ -20,7 +20,6 @@ import { ms_create } from "./utilities.js";
 // Importing the Bootstrapper Helpers:1 ends here
 
 // [[file:Mod.org::*Bootstrapper Implementation][Bootstrapper Implementation:1]]
-
 // Reuse the formula typedefs
 /**
  * @typedef {import("./formulas.js").QSTextFamilySystem} QSTextFamilySystem

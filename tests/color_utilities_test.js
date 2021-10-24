@@ -1,7 +1,7 @@
 import {
   color_adjust,
   color_blend,
-  color_format_compare,
+  color_inspect,
   color_interpolation,
   color_material,
   color_mix,
@@ -42,6 +42,16 @@ import {
 
 const color = "dodgerblue";
 const formats = [
+  "hex",
+  "rgb",
+  "hsl",
+  "cmyk",
+  "hwb",
+  "cielab",
+  "cielch",
+  "oklab",
+];
+const formatFuncs = [
   color_to_hex,
   color_to_rgb,
   color_to_hsl,
@@ -78,11 +88,10 @@ const testColorFormats = [
   ["lab", string(color_to_cielab(color), "lab(58.362% 0.8897 -64.779)")],
   ["lch", string(color_to_cielch(color), "lch(58.362% 64.785 270.79)")],
   ["oklab", string(color_to_oklab(color), "oklab(65.201% 0.1901 253.21)")],
-  ["reject invalid color", formats.forEach((f) => exception(f, "invalid"))],
+  ["reject invalid color", formatFuncs.forEach((f) => exception(f, "invalid"))],
   [
     "valid with alpha component",
-    data(color_format_compare(formats, color_adjust({ alpha: -25 }, color)), {
-      original: "#1e90ffbf",
+    data(color_inspect(color_adjust({ alpha: -25 }, color)).to, {
       hex: "#1e90ffbf",
       rgb: "rgba(30, 144, 255, 0.74902)",
       hsl: "hsla(209.6, 100%, 55.882%, 0.74902)",
@@ -1078,7 +1087,10 @@ suite(
   testPaletteContrast,
 );
 
-formats.forEach((f) => benchmark(f, color));
+formatFuncs.forEach((f) => benchmark(f, color));
+
+benchmark(color_inspect, color);
+
 benchmark(
   color_adjust,
   { lightness: 30, chroma: 5, hue: 180, alpha: -20 },
