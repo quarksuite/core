@@ -102,7 +102,7 @@ export function MaterialPalette(modifiers, color) {
   return utility_pipe(
     color,
     utility_curry(paletteSettings, { format, scheme }),
-    utility_curry(generateMaterialPalette, { light, dark }),
+    utility_curry(generateMaterialPalette, { light, dark })
   );
 }
 // Material Palette:1 ends here
@@ -148,7 +148,7 @@ export function ArtisticPalette(modifiers, color) {
     utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
-    }),
+    })
   );
 }
 // Artistic Palette:1 ends here
@@ -200,7 +200,7 @@ export function InterpolatedPalette(modifiers, color) {
     lightness = 0,
     chroma = 0,
     hue = 0,
-    alpha = 100,
+    alpha = 0,
     values = 1,
     contrast = 95,
     tints = 3,
@@ -217,17 +217,19 @@ export function InterpolatedPalette(modifiers, color) {
     utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
-      ...(values === 1 ? [] : color_interpolation(
-        { lightness, chroma, hue, alpha, values: values - 1 },
-        color,
-      )),
+      ...(values === 1
+        ? []
+        : color_interpolation(
+            { lightness, chroma, hue, alpha, values: values - 1 },
+            color
+          )),
     ],
     material
       ? utility_curry(generateMaterialPalette, { light, dark })
       : utility_curry(generateArtisticPalette, {
-        contrast,
-        values: { tints, tones, shades },
-      }),
+          contrast,
+          values: { tints, tones, shades },
+        })
   );
 }
 // Interpolated Palette:1 ends here
@@ -296,11 +298,12 @@ export function BlendedPalette(modifiers, color) {
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material ? utility_curry(generateMaterialPalette, { light, dark })
-    : utility_curry(generateArtisticPalette, {
-      contrast,
-      values: { tints, tones, shades },
-    }),
+    material
+      ? utility_curry(generateMaterialPalette, { light, dark })
+      : utility_curry(generateArtisticPalette, {
+          contrast,
+          values: { tints, tones, shades },
+        })
   );
 }
 // Blended Palette:1 ends here
@@ -309,10 +312,8 @@ export function BlendedPalette(modifiers, color) {
 function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
-    (
-      color,
-    ) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
-    (color) => (scheme ? setScheme(scheme, color) : [color]),
+    (color) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
+    (color) => (scheme ? setScheme(scheme, color) : [color])
   );
 }
 
@@ -345,11 +346,11 @@ function generateMaterialPalette({ light, dark }, palette) {
                 ...a,
                 ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
               }),
-              {},
+              {}
             ),
           },
         };
-      }, {}),
+      }, {})
   );
 }
 
@@ -367,18 +368,18 @@ function generateArtisticPalette({ contrast, values }, palette) {
             values: values.tints,
             contrast,
           },
-          color,
+          color
         );
         const muted = color_tones(
           {
             values: values.tones,
             contrast: contrast / ADJUSTMENT_VALUE,
           },
-          color,
+          color
         );
         const dark = color_shades(
           { values: values.shades, contrast: contrast / ADJUSTMENT_VALUE },
-          color,
+          color
         );
 
         return [category, [color, light, muted, dark]];
@@ -397,7 +398,7 @@ function generateArtisticPalette({ contrast, values }, palette) {
             ...variants,
           },
         };
-      }, {}),
+      }, {})
   );
 }
 
@@ -523,7 +524,7 @@ export function TextLeading(modifiers, ms) {
       max: normal,
       keys: ["narrow", "tight"],
     },
-    ms,
+    ms
   );
 }
 
@@ -558,7 +559,7 @@ export function TextMeasure(modifiers, ms) {
       keys: ["segment", "minimum"],
       trunc: true,
     },
-    ms,
+    ms
   );
 }
 // Text Attributes:1 ends here
@@ -715,7 +716,7 @@ export function Viewport(modifiers, ms) {
           unit,
           trunc: true,
         },
-        ms,
+        ms
       ),
     };
   }, {});
@@ -761,7 +762,7 @@ export function AnimationDuration(modifiers, ms) {
       unit: "ms",
       keys: ["interval", "fastest"],
     },
-    ms,
+    ms
   );
 }
 // Animation Duration:1 ends here
@@ -785,14 +786,14 @@ export function AnimationCubicBezier(modifiers, ms) {
   const { floor = 0, ceiling = 1 } = modifiers;
 
   const ABSCISSAS = new Set(
-    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1),
+    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1)
   );
 
   const ORDINATES = new Set(
     ms_modify(
       (n) => precision(floor + (ceiling - floor) / (base * ratio ** n)),
-      ms,
-    ).filter((n) => n > floor && n < ceiling),
+      ms
+    ).filter((n) => n > floor && n < ceiling)
   );
 
   return {
@@ -853,9 +854,9 @@ export function Subcategory(modifiers, ms) {
           utility_curry(ms_modify, (n) => precision(base / n)),
           unit
             ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
-            : (values) => values,
+            : (values) => values
         ),
-      ],
+      ]
     ),
   };
 }
@@ -891,8 +892,8 @@ export function SubcategoryUnidirectional(modifiers, ms) {
       utility_pipe(
         values,
         (values) => values.map((n) => precision(n)),
-        unit ? output : (values) => values,
-      ),
+        unit ? output : (values) => values
+      )
     ),
   };
 }
@@ -941,12 +942,12 @@ export function SubcategoryRange(modifiers, ms) {
           ms_modify((n) => {
             const RANGE = min + (max - min) / (base * ratio ** n);
             return trunc ? Math.trunc(RANGE) : RANGE;
-          }, ms),
-        ),
+          }, ms)
+        )
       ),
       (ms) => ms.map((n) => precision(n)),
       (ms) => ms.filter((n) => n > min && n < max),
-      unit ? output : (ms) => ms,
+      unit ? output : (ms) => ms
     ),
     unit ? output([min]).toString() : min,
   ]);
@@ -968,7 +969,7 @@ function generateUnidirectional(x = "x", ms) {
 
 function generateRange(
   [rangeKey, floorKey] = ["fragment", "min"],
-  [base, range, min],
+  [base, range, min]
 ) {
   return {
     base,
@@ -983,7 +984,7 @@ function generateVariants(key, [, ...values]) {
       ...acc,
       [[key, index + 2].join("")]: value,
     }),
-    {},
+    {}
   );
 }
 // General Formula Structure:1 ends here
@@ -1007,7 +1008,7 @@ function generateVariants(key, [, ...values]) {
 export function NumericColorScale(palette) {
   return palette.reduce(
     (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {},
+    {}
   );
 }
 // Color Scale:1 ends here
