@@ -74,10 +74,10 @@ import { ms_create } from "./utilities.js";
  * @param {string} [config.color.base] - the base color to generate from
  * @param {"material" | "artistic" | "blended" | "interpolated"} [config.color.type] - color palette type ("material" by default)
  *
- * @param {object} [config.scale] - customize the global modular scale
- * @param {number} [config.scale.initial] - the initial value to genenerate from
- * @param {number} [config.scale.ratio] - the ratio to calculate each scale value
- * @param {number} [config.scale.limit] - the global maximum for generated values
+ * @param {object} [config.ms] - customize the global modular scale
+ * @param {number} [config.ms.initial] - the initial value to genenerate from
+ * @param {number} [config.ms.ratio] - the ratio to calculate each scale value
+ * @param {number} [config.ms.limit] - the global maximum for generated values
  *
  * @param {object} [config.text] - customize the text tokens
  *
@@ -172,7 +172,7 @@ export function Quarks(config = {}) {
   const { base = "gray", type = "material", ...modifiers } = config.color || {};
 
   // Set default global modular scale options
-  const { initial = 1, ratio = 1.5, limit = 6 } = config.scale || {};
+  const { initial = 1, ratio = 1.5, limit = 6 } = config.ms || {};
 
   // Set default text options
   const {

@@ -89,6 +89,30 @@ import {
  * @remarks
  * If `modifiers.scheme` is set, the colors are mapped to an alphabetical index.
  * Since the most complex scheme is `"hexagon"`, this means the range is `a-f`.
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * MaterialPalette({}, "dodgerblue");
+ * ```
+ *
+ * @example
+ * Adjust overall light/dark color contrast
+ * ```ts
+ * MaterialPalette({ light: 84, dark: 73 }, "dodgerblue");
+ * ```
+ *
+ * @example
+ * Set a color scheme to use
+ * ```ts
+ * MaterialPalette({ light: 84, dark: 73, scheme: "complementary" }, "dodgerblue");
+ * ```
+ *
+ * @example
+ * Set a palette format
+ * ```ts
+ * MaterialPalette({ light: 84, dark: 73, scheme: "complementary", format: "rgb" }, "dodgerblue");
+ * ```
  */
 export function MaterialPalette(modifiers, color) {
   // Set default modifiers
@@ -102,7 +126,7 @@ export function MaterialPalette(modifiers, color) {
   return utility_pipe(
     color,
     utility_curry(paletteSettings, { format, scheme }),
-    utility_curry(generateMaterialPalette, { light, dark })
+    utility_curry(generateMaterialPalette, { light, dark }),
   );
 }
 // Material Palette:1 ends here
@@ -130,6 +154,36 @@ export function MaterialPalette(modifiers, color) {
  *
  * If `tints`, `tones`, or `shades` is set to `0`, the corresponding variants are
  * stripped from the palette
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * ArtisticPalette({}, "crimson");
+ * ```
+ *
+ * @example
+ * Set the variant contrast
+ * ```ts
+ * ArtisticPalette({ contrast: 80 }, "crimson");
+ * ```
+ *
+ * @example
+ * Setting tints, tones and/or shades
+ * ```ts
+ * ArtisticPalette({ contrast: 80, tints: 4, tones: 1, shades: 4 }, "crimson");
+ * ```
+ *
+ * @example
+ * Set a color scheme to use
+ * ```ts
+ * ArtisticPalette({ contrast: 80, tints: 4, tones: 1, shades: 4, scheme: "complementary" }, "crimson");
+ * ```
+ *
+ * @example
+ * Set a palette format
+ * ```ts
+ * ArtisticPalette({ contrast: 80, tints: 4, tones: 1, shades: 4, scheme: "complementary", format: "rgb" }, "crimson");
+ * ```
  */
 export function ArtisticPalette(modifiers, color) {
   // Set default modifiers
@@ -148,7 +202,7 @@ export function ArtisticPalette(modifiers, color) {
     utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
-    })
+    }),
   );
 }
 // Artistic Palette:1 ends here
@@ -193,6 +247,36 @@ export function ArtisticPalette(modifiers, color) {
  *
  * If `modifiers.material` is true, the palette will use the material structure
  * and *its* modifiers instead of the artistic.
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * InterpolatedPalette({}, "chartreuse");
+ * ```
+ *
+ * @example
+ * Set interpolated properties and output values
+ * ```ts
+ * InterpolatedPalette({ lightness: 20, chroma: -0.16, values: 4 }, "chartreuse");
+ * ```
+ *
+ * @example
+ * Accepts the artistic configuration modifiers by default
+ * ```ts
+ * InterpolatedPalette({ lightness: 20, chroma: -0.16, values: 4, tints: 2, tones: 1, shades: 6 }, "chartreuse");
+ * ```
+ *
+ * @example
+ * Material configuration toggle (and its modifiers)
+ * ```ts
+ * InterpolatedPalette({ lightness: 20, chroma: -0.16, values: 4, material: true, light: 78 }, "chartreuse");
+ * ```
+ *
+ * @example
+ * Set the palette format
+ * ```ts
+ * InterpolatedPalette({ lightness: 20, chroma: -0.16, values: 4, material: true, light: 78, format: "hsl" }, "chartreuse");
+ * ```
  */
 export function InterpolatedPalette(modifiers, color) {
   // Set default modifiers
@@ -217,19 +301,17 @@ export function InterpolatedPalette(modifiers, color) {
     utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
-      ...(values === 1
-        ? []
-        : color_interpolation(
-            { lightness, chroma, hue, alpha, values: values - 1 },
-            color
-          )),
+      ...(values === 1 ? [] : color_interpolation(
+        { lightness, chroma, hue, alpha, values: values - 1 },
+        color,
+      )),
     ],
     material
       ? utility_curry(generateMaterialPalette, { light, dark })
       : utility_curry(generateArtisticPalette, {
-          contrast,
-          values: { tints, tones, shades },
-        })
+        contrast,
+        values: { tints, tones, shades },
+      }),
   );
 }
 // Interpolated Palette:1 ends here
@@ -272,6 +354,36 @@ export function InterpolatedPalette(modifiers, color) {
  *
  * If `modifiers.material` is true, the palette will use the material structure
  * and *its* modifiers instead of the artistic.
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * BlendedPalette({}, "rebeccapurple");
+ * ```
+ *
+ * @example
+ * Setting the blend target and amount of mixture with output values
+ * ```ts
+ * BlendedPalette({ target: "cornsilk", amount: 75, values: 5}, "rebeccapurple");
+ * ```
+ *
+ * @example
+ * Accepts artistic configuration modifiers by default
+ * ```ts
+ * BlendedPalette({ target: "cornsilk", amount: 75, values: 5, tints: 3, tones: 2, shades: 4, contrast: 90 }, "rebeccapurple");
+ * ```
+ *
+ * @example
+ * Material palette toggle (and its modifiers)
+ * ```ts
+ * BlendedPalette({ target: "cornsilk", amount: 75, values: 5, material: true, dark: 85 }, "rebeccapurple");
+ * ```
+ *
+ * @example
+ * Set the palette format
+ * ```ts
+ * BlendedPalette({ target: "cornsilk", amount: 75, values: 5, material: true, dark: 85, format: "rgb" }, "rebeccapurple");
+ * ```
  */
 export function BlendedPalette(modifiers, color) {
   // Set default modifiers
@@ -298,12 +410,11 @@ export function BlendedPalette(modifiers, color) {
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material
-      ? utility_curry(generateMaterialPalette, { light, dark })
-      : utility_curry(generateArtisticPalette, {
-          contrast,
-          values: { tints, tones, shades },
-        })
+    material ? utility_curry(generateMaterialPalette, { light, dark })
+    : utility_curry(generateArtisticPalette, {
+      contrast,
+      values: { tints, tones, shades },
+    }),
   );
 }
 // Blended Palette:1 ends here
@@ -313,7 +424,7 @@ function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
     (color) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
-    (color) => (scheme ? setScheme(scheme, color) : [color])
+    (color) => (scheme ? setScheme(scheme, color) : [color]),
   );
 }
 
@@ -346,11 +457,11 @@ function generateMaterialPalette({ light, dark }, palette) {
                 ...a,
                 ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
               }),
-              {}
+              {},
             ),
           },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -368,18 +479,18 @@ function generateArtisticPalette({ contrast, values }, palette) {
             values: values.tints,
             contrast,
           },
-          color
+          color,
         );
         const muted = color_tones(
           {
             values: values.tones,
             contrast: contrast / ADJUSTMENT_VALUE,
           },
-          color
+          color,
         );
         const dark = color_shades(
           { values: values.shades, contrast: contrast / ADJUSTMENT_VALUE },
-          color
+          color,
         );
 
         return [category, [color, light, muted, dark]];
@@ -398,7 +509,7 @@ function generateArtisticPalette({ contrast, values }, palette) {
             ...variants,
           },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -435,6 +546,43 @@ function alphabeticalCategories(index) {
  * @param {string} font - custom font family to prepend to system stack
  *
  * @returns {QSTextFamily}
+ *
+ * @remarks
+ * `weights` keywords match to the following values:
+ *
+ * + `"thin"` = `100`
+ * + `"extralight"` = `200`
+ * + `"light"` = `300`
+ * + `"regular"` = `400`
+ * + `"medium"` = `500`
+ * + `"semibold"` = `600`
+ * + `"bold"` = `700`
+ * + `"extrabold"` = `800`
+ * + `"black"` = `900`
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * TextFamily({})
+ * ```
+ *
+ * @example
+ * Set a custom family
+ * ```ts
+ * TextFamily({}, "Open Sans");
+ * ```
+ *
+ * @example
+ * Set the system stack
+ * ```ts
+ * TextFamily({ system: "serif" }, "Open Sans");
+ * ```
+ *
+ * @example
+ * Set the weights
+ * ```ts
+ * TextFamily({ system: "serif", weights: ["light", "regular", "bold", "black"] }, "Open Sans");
+ * ```
  */
 export function TextFamily(modifiers, font = null) {
   // Set default modifiers
@@ -489,6 +637,18 @@ function fontWeights(key) {
  * @see
  * {@link Subcategory} for the general formula you can use if you need a less
  * opinionated dataset
+ *
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Generating font sizes
+ * ```ts
+ * // Default modular scale
+ * TextSize(ms_create({}, 1))
+ *
+ * // Custom modular scale
+ * TextSize(ms_create({ ratio: 1.618 }, 1))
+ * ```
  */
 export function TextSize(ms) {
   return Subcategory({ unit: "rem", inversionUnit: "em" }, ms);
@@ -513,6 +673,20 @@ export function TextSize(ms) {
  * @see
  * {@link SubcategoryRange} for the general formula you can use if you need a less
  * opinionated dataset
+ *
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * TextLeading({}, ms_create({}, 1))
+ * ```
+ *
+ * @example
+ * Set normal and tightest line height
+ * ```ts
+ * TextLeading({ normal: 1.75, tight: 1.25 }, ms_create({}, 1))
+ * ```
  */
 export function TextLeading(modifiers, ms) {
   // Set default modifiers
@@ -524,7 +698,7 @@ export function TextLeading(modifiers, ms) {
       max: normal,
       keys: ["narrow", "tight"],
     },
-    ms
+    ms,
   );
 }
 
@@ -546,6 +720,20 @@ export function TextLeading(modifiers, ms) {
  * @see
  * {@link SubcategoryRange} for the general formula you can use if you need a less
  * opinionated dataset
+ *
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * TextMeasure({}, ms_create({}, 1))
+ * ```
+ *
+ * @example
+ * Set minimum and maximum line length
+ * ```ts
+ * TextMeasure({ min: 48, max: 75 }, ms_create({}, 1))
+ * ```
  */
 export function TextMeasure(modifiers, ms) {
   // Set default modifiers
@@ -559,27 +747,39 @@ export function TextMeasure(modifiers, ms) {
       keys: ["segment", "minimum"],
       trunc: true,
     },
-    ms
+    ms,
   );
 }
 // Text Attributes:1 ends here
 
 // [[file:Mod.org::*Text Spacing][Text Spacing:1]]
 /**
-   * A text formula for generating text unit/spacing tokens.
-
-   * @param {number[]} ms - the modular scale to generate values from
-   *
-   * @returns {QSGeneralSubcategory}
-   *
-   * @remarks
-   * This formula outputs values as `ex` units so that the browser derives spacing
-   * from the (approximate) attributes of the text itself.
-   *
-   * @see
-   * {@link Subcategory} for the general formula you can use if you need a less
-   * opinionated dataset
-   */
+ * A text formula for generating text unit/spacing tokens.
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {QSGeneralSubcategory}
+ *
+ * @remarks
+ * This formula outputs values as `ex` units so that the browser derives spacing
+ * from the (approximate) attributes of the text itself.
+ *
+ * @see
+ * {@link Subcategory} for the general formula you can use if you need a less
+ * opinionated dataset
+ *
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Generating spacing tokens
+ * ```ts
+ * // Default modular scale
+ * TextUnits(ms_create({}, 1))
+ *
+ * // Custom modular scale
+ * TextUnits(ms_create({ ratio: 1.618 }, 1))
+ * ```
+ */
 export function TextUnits(ms) {
   return Subcategory({ unit: "ex" }, ms);
 }
@@ -605,25 +805,37 @@ export function TextUnits(ms) {
 
 // [[file:Mod.org::*Grid Formulas][Grid Formulas:1]]
 /**
-   * A layout formual for generation grid fractional values.
-
-   * @param {number[]} ms - the modular scale to generate values from
-   *
-   * @returns {QSGeneralSubcategory}
-   *
-   * @remarks
-   * This formula outputs values as `fr` units following the spec.
-   *
-   * @see
-   * {@link Subcategory} for the general formula you can use if you need a less
-   * opinionated dataset
-   */
+ * A layout formual for generation grid fractional values.
+ *
+ * @param {number[]} ms - the modular scale to generate values from
+ *
+ * @returns {QSGeneralSubcategory}
+ *
+ * @remarks
+ * This formula outputs values as `fr` units following the spec.
+ *
+ * @see
+ * {@link Subcategory} for the general formula you can use if you need a less
+ * opinionated dataset
+ *
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Generating grid fractional values
+ * ```ts
+ * // Default modular scale
+ * GridFractions(ms_create({}, 1))
+ *
+ * // Custom modular scale
+ * GridFractions(ms_create({ ratio: 1.618 }, 1))
+ * ```
+ */
 export function GridFractions(ms) {
   return Subcategory({ unit: "fr" }, ms);
 }
 
 /**
- * A layout formula for generation grid track tokens.
+ * A layout formula for generating grid track tokens.
  *
  * @param {number} columns - the number of columns to generate
  * @param {number} [rows] - the number of rows to generate (rows = columns by default)
@@ -631,8 +843,18 @@ export function GridFractions(ms) {
  * @returns {QSGridDimensions}
  *
  * @remarks
- * This formula outputs values as `ex` units so that the browser derives spacing
- * from the (approximate) attributes of the text itself.
+ * This formula outputs row and column properties corresponding with the defined settings.
+ * Each token value is either `n` or `"-n"` where n is a track number.
+
+ * @example
+ * Generating grid track tokens
+ * ```ts
+ * // Single parameter sets columns AND rows
+ * GridDimensions(7)
+ *
+ * // Set custom rows
+ * GridDimensions(7, 4)
+ * ```
  */
 export function GridDimensions(columns, rows = columns) {
   const xs = spanCalculation(columns);
@@ -668,9 +890,22 @@ function spanCalculation(xs) {
  * @param {number[]} ms - the modular scale
  *
  * @returns {QSGeneralSubcategory}
+ *
+ * @see
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Generating raw scale values for calculation
+ * ```ts
+ * // Default modular scale
+ * FigureCalculations(ms_create({}, 1))
+ *
+ * // Custom modular scale
+ * FigureCalculations(ms_create({ ratio: 1.618 }, 1))
+ * ```
  */
 export function FigureCalculations(ms) {
-  return SubcategoryUnidirectional({}, ms);
+  return Subcategory({}, ms);
 }
 // Global Scale Formula:1 ends here
 
@@ -690,10 +925,31 @@ export function FigureCalculations(ms) {
  * @remarks
  * The value units correspond to the contexts defined.
  *
- * + `vw` for `"w"`
- * + `vh` for `"h"`
- * + `vmin` for `"min"`
- * + `vmax` for `"max"`
+ * + `"w"` = `vw`
+ * + `"h"` = `vh`
+ * + `"min"` = `vmin`
+ * + `"max"` = `vmax`
+ *
+ * @see
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * Viewport({}, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Setting the threshold and full view
+ * ```ts
+ * Viewport({ threshold: 25, full: 75 }, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Narrowing the context
+ * ```ts
+ * Viewport({ threshold: 25, full: 75, context: ["w", "h"] }, ms_create({}, 1));
+ * ```
  */
 export function Viewport(modifiers, ms) {
   // Set default modifiers
@@ -716,7 +972,7 @@ export function Viewport(modifiers, ms) {
           unit,
           trunc: true,
         },
-        ms
+        ms,
       ),
     };
   }, {});
@@ -750,6 +1006,25 @@ function viewportTargets(target) {
  * @param {number[]} ms - the modular scale to generate values from
  *
  * @returns {QSGeneralSubcategoryRange}
+ *
+ * @remarks
+ * This formula does no internal conversion, so you *will* have to pass in milliseconds.
+ * As such, the output units are also `ms`.
+ *
+ * @see
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * AnimationDuration({}, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Setting the fastest and slowest durations
+ * ```ts
+ * AnimationDuration({ fastest: 150, slowest: 700 }, ms_create({}, 1));
+ * ```
  */
 export function AnimationDuration(modifiers, ms) {
   // Set default modifiers
@@ -762,7 +1037,7 @@ export function AnimationDuration(modifiers, ms) {
       unit: "ms",
       keys: ["interval", "fastest"],
     },
-    ms
+    ms,
   );
 }
 // Animation Duration:1 ends here
@@ -778,6 +1053,26 @@ export function AnimationDuration(modifiers, ms) {
  * @param {number[]} ms - the modular scale to generate values from
  *
  * @returns {QSAnimationCubicBezier}
+ *
+ * @remarks
+ * This formula outputs `x` and `y` scales calculated from the input scale.
+ * `x` contains a `0-1` range of values defining the *bounds* of the bezier curve,
+ * while `y` contains a range calcuated from the floor and ceiling. `y` is unbound
+ *
+ * @see
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * AnimationCubicBezier({}, ms_create({}, 1))
+ * ```
+ *
+ * @example
+ * Setting a custom floor and ceiling for `y` values
+ * ```ts
+ * AnimationCubicBezier({}, ms_create({}, 1))
+ * ```
  */
 export function AnimationCubicBezier(modifiers, ms) {
   const [base, ratio] = Array.from(ms);
@@ -786,14 +1081,14 @@ export function AnimationCubicBezier(modifiers, ms) {
   const { floor = 0, ceiling = 1 } = modifiers;
 
   const ABSCISSAS = new Set(
-    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1)
+    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1),
   );
 
   const ORDINATES = new Set(
     ms_modify(
       (n) => precision(floor + (ceiling - floor) / (base * ratio ** n)),
-      ms
-    ).filter((n) => n > floor && n < ceiling)
+      ms,
+    ).filter((n) => n > floor && n < ceiling),
   );
 
   return {
@@ -833,6 +1128,27 @@ export function AnimationCubicBezier(modifiers, ms) {
  * @remarks
  * The output contains a `base` value with variants prefixed with `x` and `"-x"`.
  * `x` values are larger, `"-x"` values are inversions (smaller)
+ *
+ * @see
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * Subcategory({}, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Set an output unit
+ * ```ts
+ * Subcategory({ unit: "rem" }, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Set an inverse unit
+ * ```ts
+ * Subcategory({ unit: "rem", inversionUnit: "em" }, ms_create({}, 1));
+ * ```
  */
 export function Subcategory(modifiers, ms) {
   const [base] = Array.from(ms);
@@ -841,6 +1157,8 @@ export function Subcategory(modifiers, ms) {
   // Set default modifiers
   const { unit = undefined, inversionUnit = undefined } = modifiers;
 
+  const raw = (values) => values.map((n) => precision(n));
+
   return {
     base: unit
       ? utility_pipe([base], utility_curry(ms_units, unit)).toString()
@@ -848,15 +1166,15 @@ export function Subcategory(modifiers, ms) {
     ...generateScale(
       ["x", "-x"],
       [
-        unit ? ms_units(unit, values) : values,
+        unit ? ms_units(unit, values) : raw(values),
         utility_pipe(
           values,
-          utility_curry(ms_modify, (n) => precision(base / n)),
+          utility_curry(ms_modify, (n) => base / n),
           unit
             ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
-            : (values) => values
+            : raw,
         ),
-      ]
+      ],
     ),
   };
 }
@@ -875,6 +1193,21 @@ export function Subcategory(modifiers, ms) {
  *
  * @remarks
  * The output contains a `base` value with variants prefixed with `x`.
+ *
+ * @see
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * SubcategoryUnidirectional({}, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Set an output unit
+ * ```ts
+ * SubcategoryUnidirectional({ unit: "rem" }, ms_create({}, 1));
+ * ```
  */
 export function SubcategoryUnidirectional(modifiers, ms) {
   const [base] = Array.from(ms);
@@ -883,18 +1216,12 @@ export function SubcategoryUnidirectional(modifiers, ms) {
   // Set default modifiers
   const { unit = undefined } = modifiers;
 
+  const raw = (values) => values.map((n) => precision(n));
   const output = utility_curry(ms_units, unit);
 
   return {
     base: unit ? output([base]).toString() : base,
-    ...generateUnidirectional(
-      "x",
-      utility_pipe(
-        values,
-        (values) => values.map((n) => precision(n)),
-        unit ? output : (values) => values
-      )
-    ),
+    ...generateUnidirectional("x", utility_pipe(values, unit ? output : raw)),
   };
 }
 // Unidirectional Subcategory:1 ends here
@@ -920,6 +1247,39 @@ export function SubcategoryUnidirectional(modifiers, ms) {
  *
  * If you don't define keys, the properties will be `base`, `segment` for the range,
  * and `minimum` for the cutoff
+ *
+ * @see
+ * {@link ms_create} for generating a scale to pass in
+ *
+ * @example
+ * Empty object sets defaults
+ * ```ts
+ * SubcategoryRange({}, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Set minimum and maximum values
+ * ```ts
+ * SubcategoryRange({ min: 15, max: 90 }, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Set the output units
+ * ```ts
+ * SubcategoryRange({ min: 1, max: 100, unit: "%" }, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Redefine the range and minimum keys
+ * ```ts
+ * SubcategoryRange({ min: 1, max: 100, unit: "%", keys: ["portion", "minimal"] }, ms_create({}, 1));
+ * ```
+ *
+ * @example
+ * Truncate the output as integers
+ * ```ts
+ * SubcategoryRange({ min: 1, max: 100, unit: "%", keys: ["portion", "minimal"], trunc: true }, ms_create({}, 1));
+ * ```
  */
 export function SubcategoryRange(modifiers, ms) {
   // Set default modifiers
@@ -935,21 +1295,21 @@ export function SubcategoryRange(modifiers, ms) {
   const output = utility_curry(ms_units, unit);
 
   return generateRange(keys, [
-    unit ? output([max]).toString() : max,
+    unit ? output([max]).toString() : precision(max),
     utility_pipe(
       Array.from(
         new Set(
           ms_modify((n) => {
             const RANGE = min + (max - min) / (base * ratio ** n);
             return trunc ? Math.trunc(RANGE) : RANGE;
-          }, ms)
-        )
+          }, ms),
+        ),
       ),
       (ms) => ms.map((n) => precision(n)),
       (ms) => ms.filter((n) => n > min && n < max),
-      unit ? output : (ms) => ms
+      unit ? output : (ms) => ms,
     ),
-    unit ? output([min]).toString() : min,
+    unit ? output([min]).toString() : precision(min),
   ]);
 }
 // Ranged Subcategory:1 ends here
@@ -969,7 +1329,7 @@ function generateUnidirectional(x = "x", ms) {
 
 function generateRange(
   [rangeKey, floorKey] = ["fragment", "min"],
-  [base, range, min]
+  [base, range, min],
 ) {
   return {
     base,
@@ -984,7 +1344,7 @@ function generateVariants(key, [, ...values]) {
       ...acc,
       [[key, index + 2].join("")]: value,
     }),
-    {}
+    {},
   );
 }
 // General Formula Structure:1 ends here
@@ -1004,11 +1364,33 @@ function generateVariants(key, [, ...values]) {
  * That said, if you use a palette generated from the included color variant utilities,
  * they all output a scale where the first (`100`) has the least contrast from the
  * input color and the last value has the greatest.
+ *
+ * @see
+ * {@link color_material} for generating material-esque palettes
+ * {@link color_tints} for generating tint variants
+ * {@link color_tones} for generating tone variants
+ * {@link color_shades} for generating shade variants
+ *
+ * @example
+ * Generating numeric color scales from palettes
+ * ```ts
+ * // Custom material color scale
+ * NumericColorScale(color_material({}, "crimson"));
+ *
+ * // Tint color scale
+ * NumericColorScale(color_tints({}, "chartreuse"));
+ *
+ * // Tone color scale
+ * NumericColorScale(color_tones({ contrast: 75 }, "cornflower"));
+ *
+ * // Shade color scale
+ * NumericColorScale(color_tones({ values: 6 }, "cornsilk"))
+ * ```
  */
 export function NumericColorScale(palette) {
   return palette.reduce(
     (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {}
+    {},
   );
 }
 // Color Scale:1 ends here

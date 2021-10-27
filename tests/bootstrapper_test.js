@@ -147,7 +147,19 @@ const testQuarks = [
           y: [0, 0.046005, 0.12839, 0.2545, 0.4016, 0.54433, 0.66667, 1],
         },
       },
-      ms: { base: 1, x2: 1.5, x3: 2.25, x4: 3.375, x5: 5.0625, x6: 7.5938 },
+      ms: {
+        base: 1,
+        x2: 1.5,
+        x3: 2.25,
+        x4: 3.375,
+        x5: 5.0625,
+        x6: 7.5938,
+        "-x2": 0.66667,
+        "-x3": 0.44444,
+        "-x4": 0.2963,
+        "-x5": 0.19753,
+        "-x6": 0.13169,
+      },
     }),
   ],
   [
@@ -200,7 +212,7 @@ const testQuarks = [
     "setting text token configuration",
     data(
       Quarks({
-        scale: { limit: 4 },
+        ms: { limit: 4 },
         text: {
           primary: { family: "Zilla Slab" },
           secondary: { family: "Rubik" },
@@ -343,7 +355,7 @@ suite("Bootstrapper", testQuarks);
 
 benchmark(Quarks, {
   color: "coral",
-  scale: { limit: 100 },
+  ms: { limit: 100 },
   tokens: {
     color: {
       scheme: "analogous",
