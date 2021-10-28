@@ -2038,6 +2038,16 @@ where:
  *
  * @param {Pipeline} fns - utilities to combine
  * @returns {Fn}
+ *
+ * @remarks
+ * My implementation of `compose` internally is *technically* `composePipe`
+ * but I didn't want to write it in a way I'd never actually use it.
+ *
+ * Just be aware that a classical compose function applies its sequence
+ * **right to left**.
+ *
+ * @see
+ * {@link https://www.codementor.io/@michelre/use-function-composition-in-javascript-gkmxos5mj} for a brief explanation of function composition in JavaScript.
  */
 export function utility_compose(...fns) {
   return compose(...fns);
@@ -2057,11 +2067,19 @@ export function utility_compose(...fns) {
  * @template {(x : X) => Result} Fn
  *
  * @param {BinaryFn} fn - utility to transform
- * @param {Y} modifiers - output settings
+ * @param {Y} modifier - output modifier
  * @returns {Fn}
+ *
+ * @remarks
+ * The implementation of `utility_curry` is written especially for binary
+ * functions because of the explicit design of this library where a function
+ * will either have one argument (the data itself) or two (the output modifier, the data itself).
+ *
+ * @see
+ * {@link https://www.codementor.io/@michelre/currying-in-javascript-g6212s8qv} for a brief explanation of currying in JavaScript.
  */
-export function utility_curry(fn, modifiers) {
-  return curry(fn)(modifiers);
+export function utility_curry(fn, modifier) {
+  return curry(fn)(modifier);
 }
 #+END_SRC
 
@@ -2079,6 +2097,14 @@ export function utility_curry(fn, modifiers) {
  * @param {X} x - data to pipe
  * @param {Pipeline} fns - pipeline operations
  * @returns {Result}
+ *
+ * @remarks
+ * This implementation of pipe is not a classical implementation of pipe.
+ *
+ * Rather, it's built for the specific types of data that this library consumes.
+ * By setting the data to transform as the *first* argument, the pipeline will
+ * refuse to work if any of the functions in the sequence (or their output)
+ * does not return the expected type.
  */
 export function utility_pipe(x, ...fns) {
   return pipe(x, ...fns);
@@ -3043,7 +3069,6 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 *** Attaching Units
 
 #+BEGIN_SRC js
-
 // Define unit typedefs
 /**
  * @typedef {"cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px"} CSSAbsoluteUnits
