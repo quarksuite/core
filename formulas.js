@@ -1151,8 +1151,11 @@ export function AnimationCubicBezier(modifiers, ms) {
  * ```
  */
 export function Subcategory(modifiers, ms) {
-  const [base] = Array.from(ms);
   const values = Array.from(ms);
+  const [base] = values;
+
+  // Calculate the inverse
+  const inverse = ms_modify((n) => base ** 2 / n, values);
 
   // Set default modifiers
   const { unit = undefined, inversionUnit = undefined } = modifiers;
@@ -1168,8 +1171,7 @@ export function Subcategory(modifiers, ms) {
       [
         unit ? ms_units(unit, values) : raw(values),
         utility_pipe(
-          values,
-          utility_curry(ms_modify, (n) => base / n),
+          inverse,
           unit
             ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
             : raw,

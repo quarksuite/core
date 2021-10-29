@@ -132,7 +132,7 @@ roles for all these moving parts.
 
 1) Utilities are always =snake_case=
 2) Utilities are always named by their inputs (=color_to_hex=, =ms_create=, =tokens_to_css=)
-3) The Bootstrapper and Formulas are always =PascalCase=
+3) Bootstrappers and Formulas are always =PascalCase=
 
 * Quarks System Dictionary
 
@@ -1710,8 +1710,11 @@ export function AnimationCubicBezier(modifiers, ms) {
  * ```
  */
 export function Subcategory(modifiers, ms) {
-  const [base] = Array.from(ms);
   const values = Array.from(ms);
+  const [base] = values;
+
+  // Calculate the inverse
+  const inverse = ms_modify((n) => base ** 2 / n, values);
 
   // Set default modifiers
   const { unit = undefined, inversionUnit = undefined } = modifiers;
@@ -1727,8 +1730,7 @@ export function Subcategory(modifiers, ms) {
       [
         unit ? ms_units(unit, values) : raw(values),
         utility_pipe(
-          values,
-          utility_curry(ms_modify, (n) => base / n),
+          inverse,
           unit
             ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
             : raw,
