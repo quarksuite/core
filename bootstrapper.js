@@ -196,9 +196,13 @@ export function Quarks(config = {}) {
     values: TEXT_VALUES = limit,
   } = config.text || {};
 
-  // Set default grid options
-  const { columns: COLUMNS = limit, ratio: GRID_RATIO = ratio } = config.grid ||
-    {};
+  // Set default grid options (if ratio is multithreaded, the grid ratio is the average of the values)
+  const {
+    columns: COLUMNS = limit,
+    ratio: GRID_RATIO = Array.isArray(ratio)
+      ? ratio.reduce((acc, v) => acc + v, 0) / ratio.length
+      : ratio,
+  } = config.grid || {};
 
   // Set default viewport options
   const {
