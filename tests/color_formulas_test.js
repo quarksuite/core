@@ -1,10 +1,10 @@
 import {
   ArtisticPalette,
   BlendedPalette,
+  color_to_hex,
   InterpolatedPalette,
   MaterialPalette,
-} from "../formulas.js";
-import { color_to_hex } from "../utilities.js";
+} from "../mod.js";
 
 import { benchmark, data, exception, init, suite } from "./index.js";
 

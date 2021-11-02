@@ -7,14 +7,11 @@
 - [[#overview][Overview]]
   - [[#rules][Rules]]
 - [[#quarks-system-dictionary][Quarks System Dictionary]]
-- [[#entry-point][Entry Point]]
 - [[#bootstrapper][Bootstrapper]]
-  - [[#importing-the-bootstrapper-helpers][Importing the Bootstrapper Helpers]]
   - [[#quarks-bootstrapper][Quarks Bootstrapper]]
     - [[#bootstrapper-implementation][Bootstrapper Implementation]]
     - [[#bootstrapper-palette-types][Bootstrapper Palette Types]]
 - [[#formulas][Formulas]]
-  - [[#importing-formula-helpers][Importing Formula Helpers]]
   - [[#palette-formulas][Palette Formulas]]
     - [[#palette-formula-typedefs][Palette Formula Typedefs]]
     - [[#material-palette][Material Palette]]
@@ -42,7 +39,7 @@
     - [[#subcategory-formulas][Subcategory Formulas]]
     - [[#scale-formulas][Scale Formulas]]
 - [[#utilities][Utilities]]
-  - [[#importing-utility-helpers][Importing Utility Helpers]]
+  - [[#data][Data]]
   - [[#functional-programming][Functional Programming]]
     - [[#compose][Compose]]
     - [[#curry][Curry]]
@@ -77,7 +74,7 @@
     - [[#desktop-support][Desktop Support]]
     - [[#interop][Interop]]
 - [[#library][Library]]
-  - [[#formatter-helpers][Formatter Helpers]]
+  - [[#token-export-helpers][Token Export Helpers]]
     - [[#css-format-structure][CSS Format Structure]]
     - [[#undefined-project-metadata-error][Undefined Project Metadata Error]]
     - [[#metadata-emitter][Metadata Emitter]]
@@ -92,7 +89,6 @@
     - [[#functional-programming-1][Functional Programming]]
     - [[#color-1][Color]]
   - [[#error-handling][Error Handling]]
-  - [[#data][Data]]
 
 * Introduction
 
@@ -149,23 +145,9 @@ flexible token hierarchies and freeform structure derives from Style Dictionary.
 
 For examples, see the user guide. For now, it's only important to know that there /is/ a spec.
 
-* Entry Point
-:PROPERTIES:
-:header-args:js: :tangle "./mod.js" :comments link
-:END:
-
-The entry point of the entire library is =mod.js=. It provides the entire kit to play with and opens
-up any approach to using it.
-
-#+BEGIN_SRC js
-export * from "./bootstrapper.js";
-export * from "./formulas.js";
-export * from "./utilities.js";
-#+END_SRC
-
 * Bootstrapper
 :PROPERTIES:
-:header-args:js: :tangle "./bootstrapper.js" :comments link
+:header-args:js: :tangle "./mod.js" :comments link
 :END:
 
 The bootstrapper was born from a realization that the library provided a wealth of tools for lower
@@ -177,32 +159,6 @@ not really having anything to play with until you manually build it.
 The bootstrapper allows you to generate a collections of essential design tokens that you can filter or extend
 at will. Essentially, it's the five-minute setup process.
 
-** Importing the Bootstrapper Helpers
-
-The bootstrapper is composed almost entirely of formulas (see below). This means it's pretty
-straightforward to implement your own.
-
-#+BEGIN_SRC js
-import {
-  AnimationCubicBezier,
-  AnimationDuration,
-  ArtisticPalette,
-  BlendedPalette,
-  FigureCalculations,
-  GridDimensions,
-  GridFractions,
-  InterpolatedPalette,
-  MaterialPalette,
-  TextFamily,
-  TextLeading,
-  TextMeasure,
-  TextSize,
-  TextUnits,
-  Viewport,
-} from "./formulas.js";
-import { ms_create } from "./utilities.js";
-#+END_SRC
-
 ** Quarks Bootstrapper
 
 The built-in bootstrapper has a structure that's largely informed by the way I build web
@@ -212,23 +168,6 @@ for most of my work. It may not suit your work, which is why I also provide the 
 *** Bootstrapper Implementation
 
 #+BEGIN_SRC js
-// Reuse the formula typedefs
-/**
- * @typedef {import("./formulas.js").QSTextFamilySystem} QSTextFamilySystem
- * @typedef {import("./formulas.js").QSTextFamilyStyle} QSTextFamilyStyle
- * @typedef {import("./formulas.js").QSViewportDimensions} QSViewportDimensions
- *
- * @typedef {import("./formulas.js").QSPaletteMaterial} QSPaletteMaterial
- * @typedef {import("./formulas.js").QSPaletteArtistic} QSPaletteArtistic
- * @typedef {import("./formulas.js").QSTextFamily} QSTextFamily
- * @typedef {import("./formulas.js").QSGridDimensions} QSGridDimensions
- * @typedef {import("./formulas.js").QSViewport} QSViewport
- * @typedef {import("./formulas.js").QSAnimationCubicBezier} QSAnimationCubicBezier
- *
- * @typedef {import("./formulas.js").QSGeneralSubcategory} QSGeneralSubcategory
- * @typedef {import("./formulas.js").QSGeneralSubcategoryRange} QSGeneralSubcategoryRange
- */
-
 // Define the specific output shape
 /** @typedef {{
   color: QSPaletteMaterial | QSPaletteArtistic
@@ -356,8 +295,6 @@ for most of my work. It may not suit your work, which is why I also provide the 
  *   color: { base: "chartreuse", scheme: "complementary" }
  * }).color
  * ```
- *
- * @see {@link https://github.com/quarksuite/core/blob/main/api#quarks | Quarks() API documentation}
  */
 export function Quarks(config = {}) {
   // Set default color options
@@ -490,7 +427,7 @@ function paletteFromType(base, type, modifiers = {}) {
 
 * Formulas
 :PROPERTIES:
-:header-args:js: :tangle "./formulas.js" :comments link
+:header-args:js: :tangle "./mod.js" :comments link
 :END:
 
 In earlier iterations of the library, formulas were incidental patterns. As of Quarks System Core
@@ -506,45 +443,6 @@ This will become more important as we reach the baremetal.
 Formulas are best explained as embedded data expectations. A formula relies on both the type of
 value being processed and the shape of its output. Quarks System Core includes some built-in
 formulas you can use, but you're encouraged to create your own as needed.
-
-** Importing Formula Helpers
-
-#+BEGIN_SRC js
-import { precision } from "./lib/utilities/color/index.js";
-import {
-  color_blend,
-  color_inspect,
-  color_interpolation,
-  color_material,
-  color_shades,
-  color_tints,
-  color_to_cielab,
-  color_to_cielch,
-  color_to_cmyk,
-  color_to_hex,
-  color_to_hsl,
-  color_to_hwb,
-  color_to_oklab,
-  color_to_rgb,
-  color_to_scheme_analogous,
-  color_to_scheme_clash,
-  color_to_scheme_complementary,
-  color_to_scheme_dyadic,
-  color_to_scheme_hexagon,
-  color_to_scheme_split_complementary,
-  color_to_scheme_square,
-  color_to_scheme_star,
-  color_to_scheme_tetradic,
-  color_to_scheme_triadic,
-  color_tones,
-  data_systemfonts,
-  ms_create,
-  ms_modify,
-  ms_units,
-  utility_curry,
-  utility_pipe,
-} from "./utilities.js";
-#+END_SRC
 
 ** Palette Formulas
 
@@ -1972,7 +1870,7 @@ export function NumericColorScale(palette) {
 
 * Utilities
 :PROPERTIES:
-:header-args:js: :tangle "./utilities.js" :comments link
+:header-args:js: :tangle "./mod.js" :comments link
 :END:
 
 Utilities are the baremetal toolkit that allows you to create and generate data without worrying
@@ -1982,40 +1880,207 @@ use your design tokens.
 They also include special functions for exporting your complete Quarks System Dictionary for
 different environments, applications, and tools.
 
-** Importing Utility Helpers
+** Data
+
+**** Named Color Keywords
 
 #+BEGIN_SRC js
-import { compose, curry, pipe } from "./lib/utilities/fp.js";
-import {
-  convert,
-  extractor,
-  hueCorrection,
-  normalize,
-  numberFromPercent,
-  numberToPercent,
-  output,
-  parser,
-  passthrough,
-  precision,
-  radToDegrees,
-  rgbToLrgb,
-  validator,
-} from "./lib/utilities/color/index.js";
-import {
-  bumpVersion,
-  cssFormatStructure,
-  metadataEmitter,
-  MissingProjectMetadataError,
-  timestampEmitter,
-  tokenStringIdentifier,
-  yamlDictScale,
-  yamlDictSubcategory,
-  yamlDictValue,
-} from "./lib/formatters/index.js";
-import { QSCError } from "./lib/error.js";
-import { A11Y_PALETTE, SYSTEM_FONT_STACKS } from "./lib/data.js";
+export const NAMED_COLOR_KEYWORDS = {
+  aliceblue: "#f0f8ff",
+  antiquewhite: "#faebd7",
+  aqua: "#00ffff",
+  aquamarine: "#7fffd4",
+  azure: "#f0ffff",
+  beige: "#f5f5dc",
+  bisque: "#ffe4c4",
+  black: "#000000",
+  blanchedalmond: "#ffebcd",
+  blue: "#0000ff",
+  blueviolet: "#8a2be2",
+  brown: "#a52a2a",
+  burlywood: "#deb887",
+  cadetblue: "#5f9ea0",
+  chartreuse: "#7fff00",
+  chocolate: "#d2691e",
+  coral: "#ff7f50",
+  cornflower: "#6495ed",
+  cornflowerblue: "#6495ed",
+  cornsilk: "#fff8dc",
+  crimson: "#dc143c",
+  cyan: "#00ffff",
+  darkblue: "#00008b",
+  darkcyan: "#008b8b",
+  darkgoldenrod: "#b8860b",
+  darkgray: "#a9a9a9",
+  darkgreen: "#006400",
+  darkgrey: "#a9a9a9",
+  darkkhaki: "#bdb76b",
+  darkmagenta: "#8b008b",
+  darkolivegreen: "#556b2f",
+  darkorange: "#ff8c00",
+  darkorchid: "#9932cc",
+  darkred: "#8b0000",
+  darksalmon: "#e9967a",
+  darkseagreen: "#8fbc8f",
+  darkslateblue: "#483d8b",
+  darkslategray: "#2f4f4f",
+  darkslategrey: "#2f4f4f",
+  darkturquoise: "#00ced1",
+  darkviolet: "#9400d3",
+  deeppink: "#ff1493",
+  deepskyblue: "#00bfff",
+  dimgray: "#696969",
+  dimgrey: "#696969",
+  dodgerblue: "#1e90ff",
+  firebrick: "#b22222",
+  floralwhite: "#fffaf0",
+  forestgreen: "#228b22",
+  fuchsia: "#ff00ff",
+  gainsboro: "#dcdcdc",
+  ghostwhite: "#f8f8ff",
+  gold: "#ffd700",
+  goldenrod: "#daa520",
+  gray: "#808080",
+  green: "#008000",
+  greenyellow: "#adff2f",
+  grey: "#808080",
+  honeydew: "#f0fff0",
+  hotpink: "#ff69b4",
+  indianred: "#cd5c5c",
+  indigo: "#4b0082",
+  ivory: "#fffff0",
+  khaki: "#f0e68c",
+  laserlemon: "#ffff54",
+  lavender: "#e6e6fa",
+  lavenderblush: "#fff0f5",
+  lawngreen: "#7cfc00",
+  lemonchiffon: "#fffacd",
+  lightblue: "#add8e6",
+  lightcoral: "#f08080",
+  lightcyan: "#e0ffff",
+  lightgoldenrod: "#fafad2",
+  lightgoldenrodyellow: "#fafad2",
+  lightgray: "#d3d3d3",
+  lightgreen: "#90ee90",
+  lightgrey: "#d3d3d3",
+  lightpink: "#ffb6c1",
+  lightsalmon: "#ffa07a",
+  lightseagreen: "#20b2aa",
+  lightskyblue: "#87cefa",
+  lightslategray: "#778899",
+  lightslategrey: "#778899",
+  lightsteelblue: "#b0c4de",
+  lightyellow: "#ffffe0",
+  lime: "#00ff00",
+  limegreen: "#32cd32",
+  linen: "#faf0e6",
+  magenta: "#ff00ff",
+  maroon: "#800000",
+  maroon2: "#7f0000",
+  maroon3: "#b03060",
+  mediumaquamarine: "#66cdaa",
+  mediumblue: "#0000cd",
+  mediumorchid: "#ba55d3",
+  mediumpurple: "#9370db",
+  mediumseagreen: "#3cb371",
+  mediumslateblue: "#7b68ee",
+  mediumspringgreen: "#00fa9a",
+  mediumturquoise: "#48d1cc",
+  mediumvioletred: "#c71585",
+  midnightblue: "#191970",
+  mintcream: "#f5fffa",
+  mistyrose: "#ffe4e1",
+  moccasin: "#ffe4b5",
+  navajowhite: "#ffdead",
+  navy: "#000080",
+  oldlace: "#fdf5e6",
+  olive: "#808000",
+  olivedrab: "#6b8e23",
+  orange: "#ffa500",
+  orangered: "#ff4500",
+  orchid: "#da70d6",
+  palegoldenrod: "#eee8aa",
+  palegreen: "#98fb98",
+  paleturquoise: "#afeeee",
+  palevioletred: "#db7093",
+  papayawhip: "#ffefd5",
+  peachpuff: "#ffdab9",
+  peru: "#cd853f",
+  pink: "#ffc0cb",
+  plum: "#dda0dd",
+  powderblue: "#b0e0e6",
+  purple: "#800080",
+  purple2: "#7f007f",
+  purple3: "#a020f0",
+  rebeccapurple: "#663399",
+  red: "#ff0000",
+  rosybrown: "#bc8f8f",
+  royalblue: "#4169e1",
+  saddlebrown: "#8b4513",
+  salmon: "#fa8072",
+  sandybrown: "#f4a460",
+  seagreen: "#2e8b57",
+  seashell: "#fff5ee",
+  sienna: "#a0522d",
+  silver: "#c0c0c0",
+  skyblue: "#87ceeb",
+  slateblue: "#6a5acd",
+  slategray: "#708090",
+  slategrey: "#708090",
+  snow: "#fffafa",
+  springgreen: "#00ff7f",
+  steelblue: "#4682b4",
+  tan: "#d2b48c",
+  teal: "#008080",
+  thistle: "#d8bfd8",
+  tomato: "#ff6347",
+  turquoise: "#40e0d0",
+  violet: "#ee82ee",
+  wheat: "#f5deb3",
+  white: "#ffffff",
+  whitesmoke: "#f5f5f5",
+  yellow: "#ffff00",
+  yellowgreen: "#9acd32",
+};
 #+END_SRC
 
+**** Colors Project Web Defaults
+
+#+BEGIN_SRC js
+export const A11Y_PALETTE = {
+  navy: "#001f3f",
+  blue: "#0074d9",
+  aqua: "#7fdbff",
+  teal: "#39cccc",
+  olive: "#3d9970",
+  green: "#2ecc40",
+  lime: "#01ff70",
+  yellow: "#ffdc00",
+  orange: "#ff851b",
+  red: "#ff4136",
+  maroon: "#85144b",
+  fuchsia: "#f012be",
+  purple: "#b10dc9",
+  black: "#111111",
+  gray: "#aaaaaa",
+  grey: "#aaaaaa",
+  silver: "#dddddd",
+  white: "#ffffff",
+};
+#+END_SRC
+
+**** System Font Stacks
+
+#+BEGIN_SRC js
+export const SYSTEM_FONT_STACKS = {
+  sans:
+    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+  serif:
+    "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+  monospace:
+    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+};
+#+END_SRC
 ** Functional Programming
 
 As I briefly touched on in Formulas, Quarks System Core relies heavily on a data-last functional
@@ -3593,19 +3658,15 @@ export function tokens_to_style_dictionary(dict) {
 #+END_SRC
 
 * Library
-** Formatter Helpers
 :PROPERTIES:
-:header-args:js: :tangle "./lib/formatters/index.js" :comments link
+:header-args:js: :tangle "./mod.js" :comments link
 :END:
 
-#+BEGIN_SRC js
-import { QSCError } from "../error.js";
-#+END_SRC
-
+** Token Export Helpers
 *** CSS Format Structure
 
 #+BEGIN_SRC js
-export function cssFormatStructure(
+function cssFormatStructure(
   {
     doc: [DOC_OPEN, DOC_CLOSE] = ["\n/**", " **/\n"],
     metadata: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
@@ -3661,7 +3722,7 @@ ${
 *** Undefined Project Metadata Error
 
 #+BEGIN_SRC js
-export function MissingProjectMetadataError() {
+function MissingProjectMetadataError() {
   throw new QSCError({
     name: "Missing Project Metadata",
     reason: `
@@ -3700,7 +3761,7 @@ a description or comments with your project.
 *** Metadata Emitter
 
 #+BEGIN_SRC js
-export function metadataEmitter(
+function metadataEmitter(
   {
     commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
     str = "",
@@ -3795,7 +3856,7 @@ function cssTokenAssembler({
 *** Token String Identifier
 
 #+BEGIN_SRC js
-export function tokenStringIdentifier(collected, current, delimiter) {
+function tokenStringIdentifier(collected, current, delimiter) {
   return current === "base"
     ? collected
     : collected
@@ -3807,7 +3868,7 @@ export function tokenStringIdentifier(collected, current, delimiter) {
 *** Automatic Versioning
 
 #+BEGIN_SRC js
-export function bumpVersion(project) {
+function bumpVersion(project) {
   let [major, minor, patch, pre] = Array.from(
     project.version.split(/[.-]/g),
   ).map((n) => parseFloat(n));
@@ -3854,7 +3915,7 @@ export function bumpVersion(project) {
 *** Timestamp Emitter
 
 #+BEGIN_SRC js
-export function timestampEmitter() {
+function timestampEmitter() {
   const TIMESTAMP = new Date(Date.now());
   return `Updated on ${TIMESTAMP.toLocaleDateString()} at ${TIMESTAMP.toLocaleTimeString()}`;
 }
@@ -3863,14 +3924,14 @@ export function timestampEmitter() {
 *** YAML Assemblers
 
 #+BEGIN_SRC js
-export function yamlDictSubcategory(level, data) {
+function yamlDictSubcategory(level, data) {
   return Object.entries(data).reduce((str, [key, v]) => {
     if (Array.isArray(v)) return yamlDictScale(level, str, key, v);
     return yamlDictValue(level, str, key, v);
   }, "");
 }
 
-export function yamlDictValue(level, str, key, value) {
+function yamlDictValue(level, str, key, value) {
   const isMultiline = value.split("\n").length > 1;
   if (isMultiline) {
     return str.concat(
@@ -3884,7 +3945,7 @@ export function yamlDictValue(level, str, key, value) {
   return str.concat("".padStart(level), key, ": ", value, "\n");
 }
 
-export function yamlDictScale(level, str, key, value) {
+function yamlDictScale(level, str, key, value) {
   return str.concat(
     "".padStart(level),
     key,
@@ -3896,14 +3957,11 @@ export function yamlDictScale(level, str, key, value) {
 
 ** Utilities
 *** Functional Programming
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/fp.js" :comments link
-:END:
 
 **** Currying
 
 #+BEGIN_SRC js
-export function curry(fn) {
+function curry(fn) {
   return (...initial) =>
     initial.length >= fn.length
       ? fn.apply(this, initial)
@@ -3914,7 +3972,7 @@ export function curry(fn) {
 **** Composition
 
 #+BEGIN_SRC js
-export function compose(...fns) {
+function compose(...fns) {
   return (x) => fns.reduce((g, f) => f(g), x);
 }
 #+END_SRC
@@ -3922,55 +3980,17 @@ export function compose(...fns) {
 **** Pipelining
 
 #+BEGIN_SRC js
-export function pipe(x, ...fns) {
+function pipe(x, ...fns) {
   return compose(...fns)(x);
 }
 #+END_SRC
 
 *** Color
 :PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/index.js" :comments link
+:header-args:js: :tangle "./mod.js" :comments link
 :END:
-
-#+BEGIN_SRC js
-export { convert, passthrough } from "./converter/index.js";
-export { rgbToLrgb } from "./converter/color_from_rgb.js";
-export * from "./converter/math.js";
-export { validator } from "./validator/index.js";
-export { extractor } from "./extractor/index.js";
-export { output, parser } from "./parser/index.js";
-#+END_SRC
 
 **** Converter
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/converter/index.js" :comments link
-:END:
-
-#+BEGIN_SRC js
-import { compose, pipe } from "../../fp.js";
-import { validator } from "../validator/index.js";
-import {
-  cielabToRgb,
-  cmykToRgb,
-  hexToRgb,
-  hslToRgb,
-  hwbToRgb,
-  oklabToRgb,
-} from "./color_to_rgb.js";
-import {
-  cielabFromRgb,
-  cmykFromRgb,
-  hexFromRgb,
-  hslFromRgb,
-  hwbFromRgb,
-  oklabFromRgb,
-} from "./color_from_rgb.js";
-import {
-  cielabFromCielch,
-  cielabToCielch,
-  hexFromNamedColor,
-} from "./linkers.js";
-#+END_SRC
 
 #+BEGIN_SRC js
 const INPUT_TO_RGB = {
@@ -3996,11 +4016,11 @@ const OUTPUT_FROM_RGB = {
   oklab: oklabFromRgb,
 };
 
-export function passthrough([, color]) {
+function passthrough([, color]) {
   return color;
 }
 
-export function convert(output, color) {
+function convert(output, color) {
   const [input, value] = validator(color);
   return pipe(
     validator(color),
@@ -4010,22 +4030,94 @@ export function convert(output, color) {
 }
 #+END_SRC
 
-***** Color to RGB
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/converter/color_to_rgb.js" :comments link
-:END:
+***** Math
+
+****** Arithmetic
 
 #+BEGIN_SRC js
-import { curry, pipe } from "../../fp.js";
-import { validator } from "../validator/index.js";
-import { output, parser } from "../parser/index.js";
-import { normalize, numberToRgb } from "./math.js";
+const add = (y, x) => x + y;
+const multiply = (y, x) => x * y;
+const divide = (y, x) => x / y;
+const remainder = (y, x) => x % y;
 #+END_SRC
+
+****** Limiters
+
+#+BEGIN_SRC js
+const precision = (value) => +value.toPrecision(5);
+const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
+#+END_SRC
+
+****** Hexadecimal
+
+#+BEGIN_SRC js
+const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
+const hexFragmentFromRgb = (channel) =>
+  channel.toString(16).padStart(2, "0");
+#+END_SRC
+
+****** Percent Calculations
+
+#+BEGIN_SRC js
+const numberToPercent = (n) => multiply(100, n);
+const numberFromPercent = (percentage) => divide(100, percentage);
+#+END_SRC
+
+****** RGB Component Calculations
+
+#+BEGIN_SRC js
+const numberToRgb = (n) => multiply(255, n);
+const numberFromRgb = (channel) => divide(255, channel);
+const rgbFromPercent = compose(
+  numberFromPercent,
+  numberToRgb,
+  Math.round,
+);
+const hexFragmentFromNumber = compose(
+  numberToRgb,
+  Math.round,
+  hexFragmentFromRgb,
+);
+#+END_SRC
+
+****** Hue Calculations
+
+#+BEGIN_SRC js
+const radToDegrees = (radians) =>
+  compose(
+    () => divide(Math.PI, 180),
+    (result) => multiply(result, radians),
+    (degrees) => precision(degrees),
+  )();
+const radFromDegrees = (degrees) =>
+  compose(
+    () => divide(180, Math.PI),
+    (result) => multiply(result, degrees),
+    (radians) => precision(radians),
+  )();
+const gradToDegrees = (gradians) =>
+  compose(
+    () => divide(200, 180),
+    (result) => multiply(result, gradians),
+    (degrees) => precision(degrees),
+  )();
+const numberToDegrees = (n) => multiply(360, n);
+const hueCorrection = (hue) =>
+  normalize(
+    360,
+    -360,
+    Math.sign(hue) === -1 ? Math.abs(add(360, hue)) : hue > 360
+      ? remainder(360, hue)
+      : hue,
+  );
+#+END_SRC
+
+***** Color to RGB
 
 ****** Hex to RGB
 
 #+BEGIN_SRC js
-export function hexToRgb(color) {
+function hexToRgb(color) {
   const [, components] = parser(color);
   return pipe(output(["rgb", components]), validator);
 }
@@ -4034,7 +4126,7 @@ export function hexToRgb(color) {
 ****** HSL to RGB
 
 #+BEGIN_SRC js
-export function hslToRgb(color) {
+function hslToRgb(color) {
   const [, [H, S, L, A]] = parser(color);
 
   // Calculate chroma
@@ -4065,7 +4157,7 @@ function calculateRGB(C, X, H) {
 ****** CMYK to RGB
 
 #+BEGIN_SRC js
-export function cmykToRgb(color) {
+function cmykToRgb(color) {
   const [, [C, M, Y, K, A]] = parser(color);
 
   const [R, G, B] = [C, M, Y].map((V) =>
@@ -4079,7 +4171,7 @@ export function cmykToRgb(color) {
 ****** HWB to RGB
 
 #+BEGIN_SRC js
-export function hwbToRgb(color) {
+function hwbToRgb(color) {
   const [, [H, W, BLK, A]] = parser(color);
 
   // Achromacity
@@ -4115,7 +4207,7 @@ export function hwbToRgb(color) {
 ****** CIELAB to RGB
 
 #+BEGIN_SRC js
-export function cielabToRgb(color) {
+function cielabToRgb(color) {
   const [, [L, a, b, A]] = parser(color);
   const [X, Y, Z] = cielabToCiexyz([L, a, b]);
   const [LR, LG, LB] = ciexyzToLrgb([X, Y, Z]);
@@ -4181,7 +4273,7 @@ function lrgbToRgb([LR, LG, LB]) {
 ****** Oklab to RGB
 
 #+BEGIN_SRC js
-export function oklabToRgb(color) {
+function oklabToRgb(color) {
   const [, [L, a, b, A]] = parser(color);
   const [LR, LG, LB] = oklabToLrgb([L, a, b]);
 
@@ -4222,29 +4314,11 @@ function oklabToLrgb([L, a, b]) {
 #+END_SRC
 
 ***** Color from RGB
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/converter/color_from_rgb.js" :comments link
-:END:
-
-#+BEGIN_SRC js
-import { curry, pipe } from "../../fp.js";
-import { validator } from "../validator/index.js";
-import { output, parser } from "../parser/index.js";
-import {
-  hexFragmentFromRgb,
-  hueCorrection,
-  normalize,
-  numberToPercent,
-  numberToRgb,
-  precision,
-  radToDegrees,
-} from "./math.js";
-#+END_SRC
 
 ****** Hex from RGB
 
 #+BEGIN_SRC js
-export function hexFromRgb(color) {
+function hexFromRgb(color) {
   const [, components] = parser(color);
   return pipe(
     output([
@@ -4267,7 +4341,7 @@ export function hexFromRgb(color) {
 ****** HSL from RGB
 
 #+BEGIN_SRC js
-export function hslFromRgb(color) {
+function hslFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
 
   const MIN = Math.min(R, G, B);
@@ -4321,7 +4395,7 @@ function calculateSaturation(delta, L) {
 ****** CMYK from RGB
 
 #+BEGIN_SRC js
-export function cmykFromRgb(color) {
+function cmykFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
 
   const K = 1 - Math.max(R, G, B);
@@ -4347,7 +4421,7 @@ export function cmykFromRgb(color) {
 ****** HWB from RGB
 
 #+BEGIN_SRC js
-export function hwbFromRgb(color) {
+function hwbFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
 
   const MAX = Math.max(R, G, B);
@@ -4381,7 +4455,7 @@ export function hwbFromRgb(color) {
 ****** CIELAB from RGB
 
 #+BEGIN_SRC js
-export function cielabFromRgb(color) {
+function cielabFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
   const [X, Y, Z] = rgbToCieXYZ([R, G, B]);
   const [L, a, b] = ciexyzToCielab([X, Y, Z]);
@@ -4438,7 +4512,7 @@ function rgbToCieXYZ([R, G, B]) {
   return [X, Y, Z];
 }
 
-export function rgbToLrgb([R, G, B]) {
+function rgbToLrgb([R, G, B]) {
   return [R, G, B].map((V) =>
     V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4
   );
@@ -4448,7 +4522,7 @@ export function rgbToLrgb([R, G, B]) {
 ****** Oklab from RGB
 
 #+BEGIN_SRC js
-export function oklabFromRgb(color) {
+function oklabFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
   const [l, a, b] = lrgbToOklab([R, G, B]);
 
@@ -4488,27 +4562,11 @@ function lrgbToOklab([R, G, B]) {
 #+END_SRC
 
 ***** Linkers
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/converter/linkers.js" :comments link
-:END:
-
-#+BEGIN_SRC js
-import { NAMED_COLOR_KEYWORDS } from "../../../data.js";
-import { pipe } from "../../fp.js";
-import { validator } from "../validator/index.js";
-import { output, parser } from "../parser/index.js";
-import {
-  hueCorrection,
-  normalize,
-  radFromDegrees,
-  radToDegrees,
-} from "./math.js";
-#+END_SRC
 
 ****** Named Color to Hex
 
 #+BEGIN_SRC js
-export function hexFromNamedColor(color) {
+function hexFromNamedColor(color) {
   return validator(NAMED_COLOR_KEYWORDS[color]);
 }
 #+END_SRC
@@ -4516,7 +4574,7 @@ export function hexFromNamedColor(color) {
 ****** CIELAB to CIELCh(ab)
 
 #+BEGIN_SRC js
-export function cielabToCielch(color) {
+function cielabToCielch(color) {
   const [, [L, a, b, A]] = parser(color);
 
   const C = normalize(132, 0, Math.sqrt(a ** 2 + b ** 2));
@@ -4532,7 +4590,7 @@ export function cielabToCielch(color) {
 ****** CIELCh(ab) to CIELAB
 
 #+BEGIN_SRC js
-export function cielabFromCielch(color) {
+function cielabFromCielch(color) {
   const [, [L, C, H, A]] = parser(color);
 
   const [a, b] = [
@@ -4547,104 +4605,7 @@ export function cielabFromCielch(color) {
 }
 #+END_SRC
 
-***** Math
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/converter/math.js" :comments link
-:END:
-
-#+BEGIN_SRC js
-import { compose } from "../../fp.js";
-#+END_SRC
-
-****** Arithmetic
-
-#+BEGIN_SRC js
-const add = (y, x) => x + y;
-const multiply = (y, x) => x * y;
-const divide = (y, x) => x / y;
-const remainder = (y, x) => x % y;
-#+END_SRC
-
-****** Limiters
-
-#+BEGIN_SRC js
-export const precision = (value) => +value.toPrecision(5);
-export const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
-#+END_SRC
-
-****** Hexadecimal
-
-#+BEGIN_SRC js
-export const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
-export const hexFragmentFromRgb = (channel) =>
-  channel.toString(16).padStart(2, "0");
-#+END_SRC
-
-****** Percent Calculations
-
-#+BEGIN_SRC js
-export const numberToPercent = (n) => multiply(100, n);
-export const numberFromPercent = (percentage) => divide(100, percentage);
-#+END_SRC
-
-****** RGB Component Calculations
-
-#+BEGIN_SRC js
-export const numberToRgb = (n) => multiply(255, n);
-export const numberFromRgb = (channel) => divide(255, channel);
-export const rgbFromPercent = compose(
-  numberFromPercent,
-  numberToRgb,
-  Math.round,
-);
-export const hexFragmentFromNumber = compose(
-  numberToRgb,
-  Math.round,
-  hexFragmentFromRgb,
-);
-#+END_SRC
-
-****** Hue Calculations
-
-#+BEGIN_SRC js
-export const radToDegrees = (radians) =>
-  compose(
-    () => divide(Math.PI, 180),
-    (result) => multiply(result, radians),
-    (degrees) => precision(degrees),
-  )();
-export const radFromDegrees = (degrees) =>
-  compose(
-    () => divide(180, Math.PI),
-    (result) => multiply(result, degrees),
-    (radians) => precision(radians),
-  )();
-export const gradToDegrees = (gradians) =>
-  compose(
-    () => divide(200, 180),
-    (result) => multiply(result, gradians),
-    (degrees) => precision(degrees),
-  )();
-export const numberToDegrees = (n) => multiply(360, n);
-export const hueCorrection = (hue) =>
-  normalize(
-    360,
-    -360,
-    Math.sign(hue) === -1 ? Math.abs(add(360, hue)) : hue > 360
-      ? remainder(360, hue)
-      : hue,
-  );
-#+END_SRC
-
 **** Validator
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/validator/index.js" :comments link
-:END:
-
-#+BEGIN_SRC js
-import { QSCError } from "../../../error.js";
-import { NAMED_COLOR_KEYWORDS } from "../../../data.js";
-#+END_SRC
 
 Before a color can be converted, we must be sure it's in fact a color.
 
@@ -4893,19 +4854,11 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
 #+END_SRC
 
 **** Extractor
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/extractor/index.js" :comments link
-:END:
-
-#+BEGIN_SRC js
-import { compose } from "../../fp.js";
-import { validator } from "../validator/index.js";
-#+END_SRC
 
 Once we're sure have a valid color, we need to extract its components.
 
 #+BEGIN_SRC js
-export const extractor = compose(validator, ([format, color]) => [
+const extractor = compose(validator, ([format, color]) => [
   format,
   format === "hex" ? hexExtractor(color) : componentExtractor(color),
 ]);
@@ -4938,26 +4891,6 @@ function componentExtractor(color) {
 #+END_SRC
 
 **** Parser
-:PROPERTIES:
-:header-args:js: :tangle "./lib/utilities/color/parser/index.js" :comments link
-:END:
-
-#+BEGIN_SRC js
-import { compose, pipe } from "../../fp.js";
-import { validator } from "../validator/index.js";
-import { extractor } from "../extractor/index.js";
-import {
-  gradToDegrees,
-  hexFragmentToRgb,
-  hueCorrection,
-  numberFromPercent,
-  numberFromRgb,
-  numberToDegrees,
-  precision,
-  radFromDegrees,
-  radToDegrees,
-} from "../converter/math.js";
-#+END_SRC
 
 #+BEGIN_SRC js
 const FORMAT_PARSERS = {
@@ -4971,7 +4904,7 @@ const FORMAT_PARSERS = {
   oklab: parseOklab,
 };
 
-export const parser = compose(
+const parser = compose(
   validator,
   ([format, color]) => FORMAT_PARSERS[format](color),
 );
@@ -5189,7 +5122,7 @@ function parseCie(unique, color) {
 ***** Output
 
 #+BEGIN_SRC js
-export function output(data) {
+function output(data) {
   return pipe(
     data,
     ([format, components]) => COLOR_ASSEMBLER(components)[format],
@@ -5236,12 +5169,9 @@ function modernOutput(prefix, components) {
 #+END_SRC
 
 ** Error Handling
-:PROPERTIES:
-:header-args:js: :tangle "./lib/error.js" :comments link
-:END:
 
 #+BEGIN_SRC js
-export class QSCError extends Error {
+class QSCError extends Error {
   constructor({
     name = "Unknown Error",
     reason = "here's why",
@@ -5256,209 +5186,4 @@ ${"=".repeat(80)}
 `;
   }
 }
-#+END_SRC
-
-** Data
-:PROPERTIES:
-:header-args:js: :tangle "./lib/data.js" :comments link
-:END:
-
-**** Named Color Keywords
-
-#+BEGIN_SRC js
-export const NAMED_COLOR_KEYWORDS = {
-  aliceblue: "#f0f8ff",
-  antiquewhite: "#faebd7",
-  aqua: "#00ffff",
-  aquamarine: "#7fffd4",
-  azure: "#f0ffff",
-  beige: "#f5f5dc",
-  bisque: "#ffe4c4",
-  black: "#000000",
-  blanchedalmond: "#ffebcd",
-  blue: "#0000ff",
-  blueviolet: "#8a2be2",
-  brown: "#a52a2a",
-  burlywood: "#deb887",
-  cadetblue: "#5f9ea0",
-  chartreuse: "#7fff00",
-  chocolate: "#d2691e",
-  coral: "#ff7f50",
-  cornflower: "#6495ed",
-  cornflowerblue: "#6495ed",
-  cornsilk: "#fff8dc",
-  crimson: "#dc143c",
-  cyan: "#00ffff",
-  darkblue: "#00008b",
-  darkcyan: "#008b8b",
-  darkgoldenrod: "#b8860b",
-  darkgray: "#a9a9a9",
-  darkgreen: "#006400",
-  darkgrey: "#a9a9a9",
-  darkkhaki: "#bdb76b",
-  darkmagenta: "#8b008b",
-  darkolivegreen: "#556b2f",
-  darkorange: "#ff8c00",
-  darkorchid: "#9932cc",
-  darkred: "#8b0000",
-  darksalmon: "#e9967a",
-  darkseagreen: "#8fbc8f",
-  darkslateblue: "#483d8b",
-  darkslategray: "#2f4f4f",
-  darkslategrey: "#2f4f4f",
-  darkturquoise: "#00ced1",
-  darkviolet: "#9400d3",
-  deeppink: "#ff1493",
-  deepskyblue: "#00bfff",
-  dimgray: "#696969",
-  dimgrey: "#696969",
-  dodgerblue: "#1e90ff",
-  firebrick: "#b22222",
-  floralwhite: "#fffaf0",
-  forestgreen: "#228b22",
-  fuchsia: "#ff00ff",
-  gainsboro: "#dcdcdc",
-  ghostwhite: "#f8f8ff",
-  gold: "#ffd700",
-  goldenrod: "#daa520",
-  gray: "#808080",
-  green: "#008000",
-  greenyellow: "#adff2f",
-  grey: "#808080",
-  honeydew: "#f0fff0",
-  hotpink: "#ff69b4",
-  indianred: "#cd5c5c",
-  indigo: "#4b0082",
-  ivory: "#fffff0",
-  khaki: "#f0e68c",
-  laserlemon: "#ffff54",
-  lavender: "#e6e6fa",
-  lavenderblush: "#fff0f5",
-  lawngreen: "#7cfc00",
-  lemonchiffon: "#fffacd",
-  lightblue: "#add8e6",
-  lightcoral: "#f08080",
-  lightcyan: "#e0ffff",
-  lightgoldenrod: "#fafad2",
-  lightgoldenrodyellow: "#fafad2",
-  lightgray: "#d3d3d3",
-  lightgreen: "#90ee90",
-  lightgrey: "#d3d3d3",
-  lightpink: "#ffb6c1",
-  lightsalmon: "#ffa07a",
-  lightseagreen: "#20b2aa",
-  lightskyblue: "#87cefa",
-  lightslategray: "#778899",
-  lightslategrey: "#778899",
-  lightsteelblue: "#b0c4de",
-  lightyellow: "#ffffe0",
-  lime: "#00ff00",
-  limegreen: "#32cd32",
-  linen: "#faf0e6",
-  magenta: "#ff00ff",
-  maroon: "#800000",
-  maroon2: "#7f0000",
-  maroon3: "#b03060",
-  mediumaquamarine: "#66cdaa",
-  mediumblue: "#0000cd",
-  mediumorchid: "#ba55d3",
-  mediumpurple: "#9370db",
-  mediumseagreen: "#3cb371",
-  mediumslateblue: "#7b68ee",
-  mediumspringgreen: "#00fa9a",
-  mediumturquoise: "#48d1cc",
-  mediumvioletred: "#c71585",
-  midnightblue: "#191970",
-  mintcream: "#f5fffa",
-  mistyrose: "#ffe4e1",
-  moccasin: "#ffe4b5",
-  navajowhite: "#ffdead",
-  navy: "#000080",
-  oldlace: "#fdf5e6",
-  olive: "#808000",
-  olivedrab: "#6b8e23",
-  orange: "#ffa500",
-  orangered: "#ff4500",
-  orchid: "#da70d6",
-  palegoldenrod: "#eee8aa",
-  palegreen: "#98fb98",
-  paleturquoise: "#afeeee",
-  palevioletred: "#db7093",
-  papayawhip: "#ffefd5",
-  peachpuff: "#ffdab9",
-  peru: "#cd853f",
-  pink: "#ffc0cb",
-  plum: "#dda0dd",
-  powderblue: "#b0e0e6",
-  purple: "#800080",
-  purple2: "#7f007f",
-  purple3: "#a020f0",
-  rebeccapurple: "#663399",
-  red: "#ff0000",
-  rosybrown: "#bc8f8f",
-  royalblue: "#4169e1",
-  saddlebrown: "#8b4513",
-  salmon: "#fa8072",
-  sandybrown: "#f4a460",
-  seagreen: "#2e8b57",
-  seashell: "#fff5ee",
-  sienna: "#a0522d",
-  silver: "#c0c0c0",
-  skyblue: "#87ceeb",
-  slateblue: "#6a5acd",
-  slategray: "#708090",
-  slategrey: "#708090",
-  snow: "#fffafa",
-  springgreen: "#00ff7f",
-  steelblue: "#4682b4",
-  tan: "#d2b48c",
-  teal: "#008080",
-  thistle: "#d8bfd8",
-  tomato: "#ff6347",
-  turquoise: "#40e0d0",
-  violet: "#ee82ee",
-  wheat: "#f5deb3",
-  white: "#ffffff",
-  whitesmoke: "#f5f5f5",
-  yellow: "#ffff00",
-  yellowgreen: "#9acd32",
-};
-#+END_SRC
-
-**** Colors Project Web Defaults
-
-#+BEGIN_SRC js
-export const A11Y_PALETTE = {
-  navy: "#001f3f",
-  blue: "#0074d9",
-  aqua: "#7fdbff",
-  teal: "#39cccc",
-  olive: "#3d9970",
-  green: "#2ecc40",
-  lime: "#01ff70",
-  yellow: "#ffdc00",
-  orange: "#ff851b",
-  red: "#ff4136",
-  maroon: "#85144b",
-  fuchsia: "#f012be",
-  purple: "#b10dc9",
-  black: "#111111",
-  gray: "#aaaaaa",
-  grey: "#aaaaaa",
-  silver: "#dddddd",
-  white: "#ffffff",
-};
-#+END_SRC
-
-**** System Font Stacks
-
-#+BEGIN_SRC js
-export const SYSTEM_FONT_STACKS = {
-  sans:
-    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-  serif:
-    "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-  monospace:
-    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-};
 #+END_SRC

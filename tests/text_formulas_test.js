@@ -1,11 +1,11 @@
 import {
+  ms_create,
   TextFamily,
   TextLeading,
   TextMeasure,
   TextSize,
   TextUnits,
-} from "../formulas.js";
-import { ms_create } from "../utilities.js";
+} from "../mod.js";
 
 import { benchmark, data, init, suite } from "./index.js";
 

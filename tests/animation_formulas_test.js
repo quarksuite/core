@@ -1,5 +1,4 @@
-import { AnimationCubicBezier, AnimationDuration } from "../formulas.js";
-import { ms_create } from "../utilities.js";
+import { AnimationCubicBezier, AnimationDuration, ms_create } from "../mod.js";
 
 import { benchmark, data, init, suite } from "./index.js";
 

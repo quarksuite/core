@@ -1,9 +1,9 @@
 import {
+  ms_create,
   Subcategory,
   SubcategoryRange,
   SubcategoryUnidirectional,
-} from "../formulas.js";
-import { ms_create } from "../utilities.js";
+} from "../mod.js";
 
 import { benchmark, data, init, suite } from "./index.js";
 

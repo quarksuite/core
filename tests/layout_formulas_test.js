@@ -2,9 +2,9 @@ import {
   FigureCalculations,
   GridDimensions,
   GridFractions,
+  ms_create,
   Viewport,
-} from "../formulas.js";
-import { ms_create } from "../utilities.js";
+} from "../mod.js";
 
 import { benchmark, data, init, suite } from "./index.js";
 

@@ -30,7 +30,7 @@ import {
   palette_filter,
   palette_shift,
   palette_sort,
-} from "../utilities.js";
+} from "../mod.js";
 import {
   benchmark,
   data,

@@ -1,4 +1,4 @@
-import { Quarks } from "../bootstrapper.js";
+import { Quarks } from "../mod.js";
 import { benchmark, data, init, suite } from "./index.js";
 
 const testQuarks = [

@@ -1,5 +1,5 @@
-import { data_clrs, data_systemfonts } from "../utilities.js";
-import { benchmark, data, exception, init, string, suite } from "./index.js";
+import { data_clrs, data_systemfonts } from "../mod.js";
+import { benchmark, data, exception, init, suite } from "./index.js";
 
 const testOutputClrs = [
   "Colors (https://clrs.cc)",

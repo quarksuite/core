@@ -1,4 +1,5 @@
 import {
+  Quarks,
   tokens_to_css,
   tokens_to_gpl,
   tokens_to_json,
@@ -9,8 +10,8 @@ import {
   tokens_to_style_dictionary,
   tokens_to_tailwindcss,
   tokens_to_yaml,
-} from "../utilities.js";
-import { Quarks } from "../bootstrapper.js";
+} from "../mod.js";
+
 import { benchmark, data, exception, init, string, suite } from "./index.js";
 
 const formats = [
