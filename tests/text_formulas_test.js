@@ -105,7 +105,7 @@ const testTextLeading = [
     "with the default scale",
     data(TextLeading({}, ms_create({}, 1)), {
       base: 1.5,
-      narrow: [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423],
+      narrow: [1.375, 1.2917, 1.2361, 1.1991, 1.1744],
       tight: 1.125,
     }),
   ],
@@ -113,7 +113,7 @@ const testTextLeading = [
     "setting normal and tightest leading boundaries",
     data(TextLeading({ normal: 1.64, tight: 1.15 }, ms_create({}, 1)), {
       base: 1.64,
-      narrow: [1.4767, 1.4167, 1.3468, 1.2747, 1.2129, 1.1725],
+      narrow: [1.4767, 1.3678, 1.2952, 1.2468, 1.2145],
       tight: 1.15,
     }),
   ],
@@ -121,7 +121,7 @@ const testTextLeading = [
     "with a custom scale",
     data(TextLeading({}, ms_create({ values: 4, ratio: 2 }, 1)), {
       base: 1.5,
-      narrow: [1.3125, 1.2188, 1.1484, 1.1265],
+      narrow: [1.3125, 1.2188, 1.1719],
       tight: 1.125,
     }),
   ],
@@ -133,7 +133,7 @@ const testTextMeasure = [
     "with the default scale",
     data(TextMeasure({}, ms_create({}, 1)), {
       base: "75ch",
-      segment: ["65ch", "61ch", "57ch", "52ch", "48ch", "46ch"],
+      segment: ["65ch", "58ch", "53ch", "50ch", "48ch"],
       minimum: "45ch",
     }),
   ],
@@ -141,7 +141,7 @@ const testTextMeasure = [
     "setting minimum and maximum measure",
     data(TextMeasure({ min: 48, max: 72 }, ms_create({}, 1)), {
       base: "72ch",
-      segment: ["64ch", "61ch", "57ch", "54ch", "51ch", "49ch"],
+      segment: ["64ch", "58ch", "55ch", "52ch", "51ch"],
       minimum: "48ch",
     }),
   ],
@@ -149,7 +149,7 @@ const testTextMeasure = [
     "with a custom scale",
     data(TextMeasure({}, ms_create({ values: 4, ratio: 2 }, 1)), {
       base: "75ch",
-      segment: ["60ch", "52ch", "46ch"],
+      segment: ["60ch", "52ch", "48ch"],
       minimum: "45ch",
     }),
   ],

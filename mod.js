@@ -201,18 +201,18 @@ export function Quarks(config = {}) {
           system: PRIMARY_FALLBACK,
           weights: PRIMARY_WEIGHTS,
         },
-        PRIMARY,
+        PRIMARY
       ),
       secondary: TextFamily(
         { system: SEC_FALLBACK, weights: SEC_WEIGHTS },
-        SEC,
+        SEC
       ),
       source: TextFamily(
         {
           system: SRC_FALLBACK,
           weights: SRC_WEIGHTS,
         },
-        SRC,
+        SRC
       ),
       size: TextSize(TEXT),
       measure: TextMeasure({ min, max }, TEXT),
@@ -337,7 +337,7 @@ export function MaterialPalette(modifiers, color) {
   return utility_pipe(
     color,
     utility_curry(paletteSettings, { format, scheme }),
-    utility_curry(generateMaterialPalette, { light, dark }),
+    utility_curry(generateMaterialPalette, { light, dark })
   );
 }
 // Material Palette:1 ends here
@@ -413,7 +413,7 @@ export function ArtisticPalette(modifiers, color) {
     utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
-    }),
+    })
   );
 }
 // Artistic Palette:1 ends here
@@ -512,17 +512,19 @@ export function InterpolatedPalette(modifiers, color) {
     utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
-      ...(values === 1 ? [] : color_interpolation(
-        { lightness, chroma, hue, alpha, values: values - 1 },
-        color,
-      )),
+      ...(values === 1
+        ? []
+        : color_interpolation(
+            { lightness, chroma, hue, alpha, values: values - 1 },
+            color
+          )),
     ],
     material
       ? utility_curry(generateMaterialPalette, { light, dark })
       : utility_curry(generateArtisticPalette, {
-        contrast,
-        values: { tints, tones, shades },
-      }),
+          contrast,
+          values: { tints, tones, shades },
+        })
   );
 }
 // Interpolated Palette:1 ends here
@@ -621,11 +623,12 @@ export function BlendedPalette(modifiers, color) {
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material ? utility_curry(generateMaterialPalette, { light, dark })
-    : utility_curry(generateArtisticPalette, {
-      contrast,
-      values: { tints, tones, shades },
-    }),
+    material
+      ? utility_curry(generateMaterialPalette, { light, dark })
+      : utility_curry(generateArtisticPalette, {
+          contrast,
+          values: { tints, tones, shades },
+        })
   );
 }
 // Blended Palette:1 ends here
@@ -635,7 +638,7 @@ function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
     (color) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
-    (color) => (scheme ? setScheme(scheme, color) : [color]),
+    (color) => (scheme ? setScheme(scheme, color) : [color])
   );
 }
 
@@ -668,11 +671,11 @@ function generateMaterialPalette({ light, dark }, palette) {
                 ...a,
                 ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
               }),
-              {},
+              {}
             ),
           },
         };
-      }, {}),
+      }, {})
   );
 }
 
@@ -690,18 +693,18 @@ function generateArtisticPalette({ contrast, values }, palette) {
             values: values.tints,
             contrast,
           },
-          color,
+          color
         );
         const muted = color_tones(
           {
             values: values.tones,
             contrast: contrast / ADJUSTMENT_VALUE,
           },
-          color,
+          color
         );
         const dark = color_shades(
           { values: values.shades, contrast: contrast / ADJUSTMENT_VALUE },
-          color,
+          color
         );
 
         return [category, [color, light, muted, dark]];
@@ -720,7 +723,7 @@ function generateArtisticPalette({ contrast, values }, palette) {
             ...variants,
           },
         };
-      }, {}),
+      }, {})
   );
 }
 
@@ -909,7 +912,7 @@ export function TextLeading(modifiers, ms) {
       max: normal,
       keys: ["narrow", "tight"],
     },
-    ms,
+    ms
   );
 }
 
@@ -958,7 +961,7 @@ export function TextMeasure(modifiers, ms) {
       keys: ["segment", "minimum"],
       trunc: true,
     },
-    ms,
+    ms
   );
 }
 // Text Attributes:1 ends here
@@ -1183,7 +1186,7 @@ export function Viewport(modifiers, ms) {
           unit,
           trunc: true,
         },
-        ms,
+        ms
       ),
     };
   }, {});
@@ -1248,7 +1251,7 @@ export function AnimationDuration(modifiers, ms) {
       unit: "ms",
       keys: ["interval", "fastest"],
     },
-    ms,
+    ms
   );
 }
 // Animation Duration:1 ends here
@@ -1292,14 +1295,13 @@ export function AnimationCubicBezier(modifiers, ms) {
   const { floor = 0, ceiling = 1 } = modifiers;
 
   const ABSCISSAS = new Set(
-    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1),
+    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1)
   );
 
   const ORDINATES = new Set(
-    ms_modify(
-      (n) => precision(floor + (ceiling - floor) / (base * ratio ** n)),
-      ms,
-    ).filter((n) => n > floor && n < ceiling),
+    ms_modify((n) => precision(floor + (ceiling - floor) / n), ms).filter(
+      (n) => n > floor && n < ceiling
+    )
   );
 
   return {
@@ -1385,9 +1387,9 @@ export function Subcategory(modifiers, ms) {
           inverse,
           unit
             ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
-            : raw,
+            : raw
         ),
-      ],
+      ]
     ),
   };
 }
@@ -1513,14 +1515,14 @@ export function SubcategoryRange(modifiers, ms) {
       Array.from(
         new Set(
           ms_modify((n) => {
-            const RANGE = min + (max - min) / (base * ratio ** n);
+            const RANGE = min + (max - min) / n;
             return trunc ? Math.trunc(RANGE) : RANGE;
-          }, ms),
-        ),
+          }, ms)
+        )
       ),
       (ms) => ms.map((n) => precision(n)),
       (ms) => ms.filter((n) => n > min && n < max),
-      unit ? output : (ms) => ms,
+      unit ? output : (ms) => ms
     ),
     unit ? output([min]).toString() : precision(min),
   ]);
@@ -1542,7 +1544,7 @@ function generateUnidirectional(x = "x", ms) {
 
 function generateRange(
   [rangeKey, floorKey] = ["fragment", "min"],
-  [base, range, min],
+  [base, range, min]
 ) {
   return {
     base,
@@ -1557,7 +1559,7 @@ function generateVariants(key, [, ...values]) {
       ...acc,
       [[key, index + 2].join("")]: value,
     }),
-    {},
+    {}
   );
 }
 // General Formula Structure:1 ends here
@@ -1603,7 +1605,7 @@ function generateVariants(key, [, ...values]) {
 export function NumericColorScale(palette) {
   return palette.reduce(
     (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {},
+    {}
   );
 }
 // Color Scale:1 ends here
@@ -1793,8 +1795,7 @@ export const A11Y_PALETTE = {
 
 // [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
 export const SYSTEM_FONT_STACKS = {
-  sans:
-    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+  sans: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   serif:
     "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
   monospace:
@@ -2054,7 +2055,7 @@ export function color_adjust(properties, color) {
       parseFloat(A ?? 1) + numberFromPercent(alpha),
     ],
     ([L, C, H, A]) => output(["oklab", [String(L).concat("%"), C, H, A]]),
-    curry(revert)(color),
+    curry(revert)(color)
   );
 }
 
@@ -2064,15 +2065,10 @@ function revert(color, output) {
     validator,
     ([, output]) => [output, color],
     ([output, color]) =>
-      pipe(
-        color,
-        validator,
-        ([format]) =>
-          format === "named"
-            ? color_to_hex(output)
-            : convert(format, output)[1],
+      pipe(color, validator, ([format]) =>
+        format === "named" ? color_to_hex(output) : convert(format, output)[1]
       ),
-    (output) => validator(output)[1],
+    (output) => validator(output)[1]
   );
 }
 // Color Property Adjustment:1 ends here
@@ -2098,7 +2094,7 @@ export function color_mix({ amount = 50, target = "black" }, color) {
       A,
     ],
     (components) => output(["oklab", components]),
-    curry(revert)(color),
+    curry(revert)(color)
   );
 }
 
@@ -2107,13 +2103,13 @@ function calculateMix(original, target, amount) {
     original,
     color_to_oklab,
     parser,
-    ([, components]) => components,
+    ([, components]) => components
   );
   const [TL, Ta, Tb, TA] = pipe(
     target,
     color_to_oklab,
     parser,
-    ([, components]) => components,
+    ([, components]) => components
   );
 
   return [
@@ -2162,8 +2158,9 @@ export function color_interpolation(modifiers, color) {
             hue: calculateProperty(hue, pos),
             alpha: calculateProperty(alpha, pos),
           },
-          color,
-        )).reverse(),
+          color
+        )
+      ).reverse()
     ),
   ];
 }
@@ -2187,14 +2184,9 @@ export function color_blend(modifiers, color) {
 
   return [
     ...new Set(
-      Array.from(
-        { length: values },
-        (_, pos) =>
-          color_mix(
-            { amount: amount - (amount / values) * pos, target },
-            color,
-          ),
-      ).reverse(),
+      Array.from({ length: values }, (_, pos) =>
+        color_mix({ amount: amount - (amount / values) * pos, target }, color)
+      ).reverse()
     ),
   ];
 }
@@ -2222,10 +2214,10 @@ export function color_material(modifiers, color) {
         amount: dark,
         target: color_mix(
           { amount: light / 10 - dark / 10, target: "black" },
-          color,
+          color
         ),
       },
-      color,
+      color
     ),
     ...color_shades({ contrast: dark, values: 4 }, color),
   ];
@@ -2346,9 +2338,8 @@ export function color_to_scheme_hexagon(color) {
 }
 
 function generateUniformScheme({ count, arc }, color) {
-  return Array.from(
-    { length: count },
-    (_, pos) => color_adjust({ hue: arc * pos }, color),
+  return Array.from({ length: count }, (_, pos) =>
+    color_adjust({ hue: arc * pos }, color)
   );
 }
 // Color Schemes:1 ends here
@@ -2430,8 +2421,8 @@ export function palette_shift(modifiers, palette) {
     new Set(
       palette.map((color) =>
         color_adjust({ lightness, chroma, hue, alpha }, color)
-      ),
-    ),
+      )
+    )
   );
 }
 // Shifting:1 ends here
@@ -2461,7 +2452,7 @@ export function palette_sort(condition, palette) {
     palette,
     paletteToOklabValues,
     curry(sortPalette)({ by: property, order }),
-    curry(paletteFromOklab)(color),
+    curry(paletteFromOklab)(color)
   );
 }
 
@@ -2471,7 +2462,7 @@ function paletteToOklabValues(palette) {
     (palette) => palette.map((color) => color_to_oklab(color)),
     (palette) => palette.map((color) => extractor(color)),
     (palette) => palette.map(([, color]) => color),
-    (palette) => palette.map((color) => color.map((C) => parseFloat(C))),
+    (palette) => palette.map((color) => color.map((C) => parseFloat(C)))
   );
 }
 
@@ -2496,7 +2487,7 @@ function paletteFromOklab(input, palette) {
         output(["oklab", [L.toString().concat("%"), C, H, A ?? 1]])
       ),
     (palette) => new Set(palette.map((color) => revert(input, color))),
-    Array.from,
+    Array.from
   );
 }
 // Sorting:1 ends here
@@ -2532,7 +2523,7 @@ export function palette_filter(condition, palette) {
     palette,
     paletteToOklabValues,
     curry(flushPalette)({ by: property, min, max }),
-    curry(paletteFromOklab)(color),
+    curry(paletteFromOklab)(color)
   );
 }
 
@@ -2640,7 +2631,7 @@ function calculateRelativeLuminance(color) {
     parser,
     ([, [R, G, B]]) => [R, G, B],
     rgbToLrgb,
-    ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B,
+    ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B
   );
 }
 // Color Contrast Ratio:1 ends here
@@ -2698,23 +2689,23 @@ export function ms_create(modifiers, base) {
 
   return Array.isArray(ratio)
     ? Array.from(
-      new Set(
-        Array(values)
-          .fill(base)
-          .reduce(
-            (acc, base, index) => [
-              ...acc,
-              ...ratio.map((r) => base * r ** index),
-            ],
-            [],
-          ),
-      ),
-    )
-      .slice(0, values)
-      .sort((a, b) => a - b)
+        new Set(
+          Array(values)
+            .fill(base)
+            .reduce(
+              (acc, base, index) => [
+                ...acc,
+                ...ratio.map((r) => base * r ** index),
+              ],
+              []
+            )
+        )
+      )
+        .slice(0, values)
+        .sort((a, b) => a - b)
     : Array(values)
-      .fill(base)
-      .map((base, index) => base * ratio ** index);
+        .fill(base)
+        .map((base, index) => base * ratio ** index);
 }
 // Scale Creation:1 ends here
 
@@ -2737,7 +2728,7 @@ export function ms_create(modifiers, base) {
 export function ms_modify(calc, ms) {
   return unlessMS(
     ms.map((n) => calc(n)),
-    ms,
+    ms
   );
 }
 
@@ -2763,9 +2754,9 @@ export function ms_split(partitionSize, ms) {
   return unlessMS(
     Array.from(ms).reduceRight(
       (acc, _n, _index, array) => [...acc, array.splice(0, partitionSize)],
-      [],
+      []
     ),
-    ms,
+    ms
   );
 }
 
@@ -2799,7 +2790,8 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 /**
  * @typedef {"cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px"} CSSAbsoluteUnits
  * @typedef {"em" | "ex" | "ch" | "rem" | "lh" | "vw" | "vh" | "vmin" | "vmax"} CSSRelativeUnits
- * @typedef {CSSRelativeUnits | CSSAbsoluteUnits | "%"} CSSUnits
+ * @typedef {"ms" | "s"} CSSTimingUnits
+ * @typedef {CSSRelativeUnits | CSSAbsoluteUnits | CSSTimingUnits | "%"} CSSUnits
  */
 
 /**
@@ -2822,7 +2814,7 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 export function ms_units(unit, ms) {
   return unlessMS(
     ms.map((n) => `${precision(n)}${unit}`, ms),
-    ms,
+    ms
   );
 }
 // Attaching Units:1 ends here
@@ -2909,7 +2901,7 @@ export function tokens_to_scss(dict) {
       wrapper: ["", "\n"],
       opts: { padding: "", prefix: "$" },
     },
-    dict,
+    dict
   );
 }
 // Sass:1 ends here
@@ -2936,7 +2928,7 @@ export function tokens_to_less(dict) {
       wrapper: ["", "\n"],
       opts: { padding: "", prefix: "@" },
     },
-    dict,
+    dict
   );
 }
 // Less:1 ends here
@@ -2963,7 +2955,7 @@ export function tokens_to_styl(dict) {
       wrapper: ["", "\n"],
       opts: { padding: "", prefix: "", assignment: " = ", suffix: "" },
     },
-    dict,
+    dict
   );
 }
 // Stylus:1 ends here
@@ -2986,7 +2978,7 @@ export function tokens_to_json(dict) {
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
 
   // Then bump the version
@@ -3014,7 +3006,7 @@ export function tokens_to_yaml(dict) {
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
 
   // Then bump the version
@@ -3030,22 +3022,20 @@ export function tokens_to_yaml(dict) {
         "".padStart(level),
         key,
         ":\n",
-        assemble(level + 2, data),
+        assemble(level + 2, data)
       );
     }, "");
 
   return `
 # ${timestampEmitter()}
-${
-    Object.entries({ project, tokens })
-      .reduce((str, [key, data]) => {
-        if (typeof data === "string") return yamlDictValue(0, str, key, data);
-        if (Array.isArray(data)) return yamlDictScale(0, str, key, data);
-        if (key === "base") return yamlDictSubcategory(0, data);
-        return str.concat("\n", key, ":\n", assemble(2, data));
-      }, "")
-      .trimEnd()
-  }
+${Object.entries({ project, tokens })
+  .reduce((str, [key, data]) => {
+    if (typeof data === "string") return yamlDictValue(0, str, key, data);
+    if (Array.isArray(data)) return yamlDictScale(0, str, key, data);
+    if (key === "base") return yamlDictSubcategory(0, data);
+    return str.concat("\n", key, ":\n", assemble(2, data));
+  }, "")
+  .trimEnd()}
 `;
 }
 // YAML:1 ends here
@@ -3078,7 +3068,7 @@ export function tokens_to_gpl(dict) {
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
   // Then bump the version
   autobump && bumpVersion(project);
@@ -3089,7 +3079,7 @@ export function tokens_to_gpl(dict) {
 
       if (typeof value === "object") {
         return str.concat(
-          assemble(tokenStringIdentifier(head, KEY, " "), value),
+          assemble(tokenStringIdentifier(head, KEY, " "), value)
         );
       }
 
@@ -3098,7 +3088,7 @@ export function tokens_to_gpl(dict) {
         "\t",
         tokenStringIdentifier(head, KEY, " "),
         ` (${color_to_hex(value)})`,
-        "\n",
+        "\n"
       );
     }, "");
 
@@ -3108,15 +3098,13 @@ Name: ${name} (v${version})
 # Generator: Quarks System Core
 # Owned by ${author}
 # License: ${license}
-${
-    metadataEmitter(
-      { commentDelim: ["#", "# ", "\n#"] },
-      {
-        description,
-        comments,
-      },
-    )
+${metadataEmitter(
+  { commentDelim: ["#", "# ", "\n#"] },
+  {
+    description,
+    comments,
   }
+)}
 # ${timestampEmitter()}
 
 Columns: 6
@@ -3129,7 +3117,8 @@ function gimpPaletteSwatch(color) {
     components
       .map((C) => C.padStart(3, " "))
       .slice(0, 3)
-      .join("\t"));
+      .join("\t")
+  );
 }
 // GIMP/Inkscape:1 ends here
 
@@ -3253,7 +3242,7 @@ function cssFormatStructure(
     wrapper: [TOKENS_OPEN, TOKENS_CLOSE] = ["\n:root {", "\n}\n"],
     opts = { padding: "  " },
   } = {},
-  { project, ...tokens },
+  { project, ...tokens }
 ) {
   let {
     name,
@@ -3266,7 +3255,7 @@ function cssFormatStructure(
 
   // Attach a dynamic property initializing the autorelease version
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
 
   return "".concat(
@@ -3276,15 +3265,13 @@ function cssFormatStructure(
  * Owned by: ${author}
  * License: ${license}
  * ${"=".repeat(64)}
-${
-      metadataEmitter(
-        { commentDelim: [" *", " * ", ""] },
-        {
-          description,
-          comments,
-        },
-      )
-    }
+${metadataEmitter(
+  { commentDelim: [" *", " * ", ""] },
+  {
+    description,
+    comments,
+  }
+)}
  * ${"-".repeat(64)}
  * ${timestampEmitter()}
 `,
@@ -3292,9 +3279,9 @@ ${
     TOKENS_OPEN,
     tokenStringConstructor(
       { ...opts, commentDelim: [OPEN, DELIM, CLOSE] },
-      tokens,
+      tokens
     ),
-    TOKENS_CLOSE,
+    TOKENS_CLOSE
   );
 }
 // CSS Format Structure:1 ends here
@@ -3342,7 +3329,7 @@ function metadataEmitter(
     commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
     str = "",
   },
-  meta,
+  meta
 ) {
   return str.concat(
     [
@@ -3359,7 +3346,7 @@ function metadataEmitter(
               ":",
               "\n",
               DELIM.trimEnd(),
-              lines.join(`\n${DELIM}`),
+              lines.join(`\n${DELIM}`)
             )
             .trimEnd();
         }
@@ -3367,7 +3354,7 @@ function metadataEmitter(
         return str.concat("\n", DELIM, key.toUpperCase(), ": ", lines);
       }, ""),
       CLOSE,
-    ].join(""),
+    ].join("")
   );
 }
 // Metadata Emitter:1 ends here
@@ -3388,12 +3375,12 @@ function cssTokenEmitter(opts, head, node) {
         const format = cssTokenAssembler(opts);
         if (typeof value === "object") {
           return str.concat(
-            assemble(tokenStringIdentifier(head, key, "-"), value),
+            assemble(tokenStringIdentifier(head, key, "-"), value)
           );
         }
 
         return format(str, tokenStringIdentifier(head, key, "-"), value, "\n");
-      }, ""),
+      }, "")
     );
   }
 
@@ -3417,7 +3404,7 @@ function cssTokenAssembler({
       assignment,
       value,
       suffix,
-      terminator,
+      terminator
     );
   };
 }
@@ -3436,7 +3423,7 @@ function tokenStringIdentifier(collected, current, delimiter) {
 // [[file:Mod.org::*Automatic Versioning][Automatic Versioning:1]]
 function bumpVersion(project) {
   let [major, minor, patch, pre] = Array.from(
-    project.version.split(/[.-]/g),
+    project.version.split(/[.-]/g)
   ).map((n) => parseFloat(n));
 
   function next(keyword) {
@@ -3466,7 +3453,7 @@ function bumpVersion(project) {
             [release[3] ?? 0, release[4]].join("+"),
           ].join("-"),
         ],
-      ]),
+      ])
     )
       .filter(([condition]) => condition)
       .flatMap(([, release]) => release)
@@ -3501,7 +3488,7 @@ function yamlDictValue(level, str, key, value) {
       `${key}: |\n`,
       value
         .split("\n")
-        .reduce((s, line) => s.concat("".padStart(level + 2), line, "\n"), ""),
+        .reduce((s, line) => s.concat("".padStart(level + 2), line, "\n"), "")
     );
   }
   return str.concat("".padStart(level), key, ": ", value, "\n");
@@ -3512,7 +3499,7 @@ function yamlDictScale(level, str, key, value) {
     "".padStart(level),
     key,
     ":\n",
-    value.reduce((s, v) => s.concat("".padStart(level + 2), "- ", v, "\n"), ""),
+    value.reduce((s, v) => s.concat("".padStart(level + 2), "- ", v, "\n"), "")
   );
 }
 // YAML Assemblers:1 ends here
@@ -3571,7 +3558,7 @@ function convert(output, color) {
   return pipe(
     validator(color),
     ([input, color]) => INPUT_TO_RGB[input](color),
-    ([, color]) => OUTPUT_FROM_RGB[output](color),
+    ([, color]) => OUTPUT_FROM_RGB[output](color)
   );
 }
 // Converter:1 ends here
@@ -3590,8 +3577,7 @@ const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
 
 // [[file:Mod.org::*Hexadecimal][Hexadecimal:1]]
 const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
-const hexFragmentFromRgb = (channel) =>
-  channel.toString(16).padStart(2, "0");
+const hexFragmentFromRgb = (channel) => channel.toString(16).padStart(2, "0");
 // Hexadecimal:1 ends here
 
 // [[file:Mod.org::*Percent Calculations][Percent Calculations:1]]
@@ -3602,15 +3588,11 @@ const numberFromPercent = (percentage) => divide(100, percentage);
 // [[file:Mod.org::*RGB Component Calculations][RGB Component Calculations:1]]
 const numberToRgb = (n) => multiply(255, n);
 const numberFromRgb = (channel) => divide(255, channel);
-const rgbFromPercent = compose(
-  numberFromPercent,
-  numberToRgb,
-  Math.round,
-);
+const rgbFromPercent = compose(numberFromPercent, numberToRgb, Math.round);
 const hexFragmentFromNumber = compose(
   numberToRgb,
   Math.round,
-  hexFragmentFromRgb,
+  hexFragmentFromRgb
 );
 // RGB Component Calculations:1 ends here
 
@@ -3619,28 +3601,30 @@ const radToDegrees = (radians) =>
   compose(
     () => divide(Math.PI, 180),
     (result) => multiply(result, radians),
-    (degrees) => precision(degrees),
+    (degrees) => precision(degrees)
   )();
 const radFromDegrees = (degrees) =>
   compose(
     () => divide(180, Math.PI),
     (result) => multiply(result, degrees),
-    (radians) => precision(radians),
+    (radians) => precision(radians)
   )();
 const gradToDegrees = (gradians) =>
   compose(
     () => divide(200, 180),
     (result) => multiply(result, gradians),
-    (degrees) => precision(degrees),
+    (degrees) => precision(degrees)
   )();
 const numberToDegrees = (n) => multiply(360, n);
 const hueCorrection = (hue) =>
   normalize(
     360,
     -360,
-    Math.sign(hue) === -1 ? Math.abs(add(360, hue)) : hue > 360
+    Math.sign(hue) === -1
+      ? Math.abs(add(360, hue))
+      : hue > 360
       ? remainder(360, hue)
-      : hue,
+      : hue
   );
 // Hue Calculations:1 ends here
 
@@ -3702,7 +3686,7 @@ function hwbToRgb(color) {
       W / (W + BLK),
       numberToRgb,
       Math.round,
-      curry(normalize)(255, 0),
+      curry(normalize)(255, 0)
     );
 
     return pipe(output(["rgb", [Array(3).fill(GRAY), A]]), validator);
@@ -3712,13 +3696,13 @@ function hwbToRgb(color) {
     `hsl(${H}, 100%, 50%)`,
     hslToRgb,
     ([, color]) => parser(color),
-    ([, color]) => color,
+    ([, color]) => color
   ).map((V) =>
     pipe(
       V * (1 - W - BLK) + W,
       numberToRgb,
       Math.round,
-      curry(normalize)(255, 0),
+      curry(normalize)(255, 0)
     )
   );
 
@@ -3773,11 +3757,11 @@ const LINEAR_RGB_TRANSFORMATION_MATRIX = [
 
 function ciexyzToLrgb([X, Y, Z]) {
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3
   );
 
   const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
-    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3
   );
 
   return [LR, LG, LB];
@@ -3843,11 +3827,11 @@ function hexFromRgb(color) {
           numberToRgb,
           Math.round,
           curry(normalize)(255, 0),
-          hexFragmentFromRgb,
+          hexFragmentFromRgb
         )
       ),
     ]),
-    validator,
+    validator
   );
 }
 // Hex from RGB:1 ends here
@@ -3876,13 +3860,14 @@ function hslFromRgb(color) {
       [
         hueCorrection(H),
         ...[S, L].map((V) =>
-          pipe(V, numberToPercent, limitPercent, (value) => value.toString())
-            .concat("%")
+          pipe(V, numberToPercent, limitPercent, (value) =>
+            value.toString()
+          ).concat("%")
         ),
         A,
       ],
     ]),
-    validator,
+    validator
   );
 }
 
@@ -3923,7 +3908,7 @@ function cmykFromRgb(color) {
         A,
       ],
     ]),
-    validator,
+    validator
   );
 }
 // CMYK from RGB:1 ends here
@@ -3955,7 +3940,7 @@ function hwbFromRgb(color) {
         A,
       ],
     ]),
-    validator,
+    validator
   );
 }
 // HWB from RGB:1 ends here
@@ -3968,7 +3953,7 @@ function cielabFromRgb(color) {
 
   return pipe(
     output(["cielab", [precision(L).toString().concat("%"), a, b, A]]),
-    validator,
+    validator
   );
 }
 
@@ -4008,11 +3993,11 @@ function rgbToCieXYZ([R, G, B]) {
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
-    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3
   );
 
   const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3
   );
 
   return [X, Y, Z];
@@ -4054,7 +4039,7 @@ function lrgbToOklab([R, G, B]) {
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
-    ([L, M, S]) => L * LR + M * LG + S * LB,
+    ([L, M, S]) => L * LR + M * LG + S * LB
   ).map((V) => Math.cbrt(V));
 
   return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
@@ -4080,7 +4065,7 @@ function cielabToCielch(color) {
 
   return pipe(
     output(["cielch", [L.toString().concat("%"), C, H, A]]),
-    validator,
+    validator
   );
 }
 // CIELAB to CIELCh(ab):1 ends here
@@ -4096,7 +4081,7 @@ function cielabFromCielch(color) {
 
   return pipe(
     output(["cielab", [L.toString().concat("%"), a, b, A]]),
-    validator,
+    validator
   );
 }
 // CIELCh(ab) to CIELAB:1 ends here
@@ -4209,16 +4194,16 @@ const DELIMITER = /(?:[\s,]+)/;
 const ALPHA_DELIMITER = new RegExp(DELIMITER.source.replace(",", ",/"));
 const CSS4_DELIMITER = new RegExp(DELIMITER.source.replace(",", ""));
 const CSS4_ALPHA_DELIMITER = new RegExp(
-  ALPHA_DELIMITER.source.replace(",", ""),
+  ALPHA_DELIMITER.source.replace(",", "")
 );
 // Delimiters:1 ends here
 
 // [[file:Mod.org::*Components][Components:1]]
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENT_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
+  ["(?:", PERCENT_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join("")
 );
 const HUE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
 );
 // Components:1 ends here
 
@@ -4238,7 +4223,7 @@ function hexValidator(color) {
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
-    Array(3).fill(COMPONENT_TOKEN),
+    Array(3).fill(COMPONENT_TOKEN)
   ).test(color);
 }
 // RGB Validator:1 ends here
@@ -4256,7 +4241,7 @@ function hslValidator(color) {
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(COMPONENT_TOKEN),
+    Array(4).fill(COMPONENT_TOKEN)
   ).test(color);
 }
 // CMYK Validator:1 ends here
@@ -4311,8 +4296,8 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       VALUES.join(SEPARATOR),
-      `(?:${[ALPHA_SEPARATOR, COMPONENT_TOKEN.source].join("")})?\\))`,
-    ),
+      `(?:${[ALPHA_SEPARATOR, COMPONENT_TOKEN.source].join("")})?\\))`
+    )
   );
 }
 // Functional Formats:1 ends here
@@ -4358,9 +4343,8 @@ const FORMAT_PARSERS = {
   oklab: parseOklab,
 };
 
-const parser = compose(
-  validator,
-  ([format, color]) => FORMAT_PARSERS[format](color),
+const parser = compose(validator, ([format, color]) =>
+  FORMAT_PARSERS[format](color)
 );
 // Parser:1 ends here
 
@@ -4379,7 +4363,7 @@ function parseHex(color) {
           ? pipe(c, hexFragmentToRgb, numberFromRgb)
           : hexFragmentToRgb(c)
       ),
-    ],
+    ]
   );
 }
 // Hex Parser:1 ends here
@@ -4401,7 +4385,7 @@ function parseRGB(color) {
           ? parseNumber(c)
           : parseChannel(c)
       ),
-    ],
+    ]
   );
 }
 // RGB Parser:1 ends here
@@ -4420,10 +4404,12 @@ function parseHSL(color) {
         pos === 0
           ? parseHue(c)
           : pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          ? c.endsWith("%")
+            ? parsePercent(c)
+            : parseNumber(c)
           : parsePercent(c)
       ),
-    ],
+    ]
   );
 }
 // HSL Parser:1 ends here
@@ -4438,8 +4424,10 @@ function parseCMYK(color) {
     ],
     ([format, components]) => [
       format,
-      components.map((c) => c.endsWith("%") ? parsePercent(c) : parseNumber(c)),
-    ],
+      components.map((c) =>
+        c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+      ),
+    ]
   );
 }
 // CMYK Parser:1 ends here
@@ -4454,7 +4442,7 @@ function parseCielab(color) {
 function parseCielch(color) {
   return parseCie(
     (c, pos) => (pos === 2 ? parseHue(c) : parseNumber(c)),
-    color,
+    color
   );
 }
 // CIELCh(ab) Parser:1 ends here
@@ -4473,14 +4461,16 @@ function parseOklab(color) {
         pos === 0
           ? parsePercent(c)
           : pos === 1 || pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          ? c.endsWith("%")
+            ? parsePercent(c)
+            : parseNumber(c)
           : parseHueAsRadians(c)
       ),
     ],
     ([format, [L, C, H, A]]) => [
       format,
       [L, C * Math.cos(H), C * Math.sin(H), A],
-    ],
+    ]
   );
 }
 // Oklab Parser:1 ends here
@@ -4512,7 +4502,7 @@ function parseHue(hue) {
       ? radToDegrees(parseFloat(hue))
       : hue.endsWith("turn")
       ? numberToDegrees(parseFloat(hue))
-      : parseFloat(hue),
+      : parseFloat(hue)
   );
 }
 
@@ -4537,10 +4527,12 @@ function parseCie(unique, color) {
         pos === 0
           ? parseNumber(c)
           : pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
-          : unique(c, pos)
+          ? c.endsWith("%")
+          ? parsePercent(c)
+          : parseNumber(c)
+        : unique(c, pos)
       ),
-    ],
+    ]
   );
 }
 // CIE* Parser:1 ends here
@@ -4549,7 +4541,7 @@ function parseCie(unique, color) {
 function output(data) {
   return pipe(
     data,
-    ([format, components]) => COLOR_ASSEMBLER(components)[format],
+    ([format, components]) => COLOR_ASSEMBLER(components)[format]
   );
 }
 // Output:1 ends here
@@ -4575,9 +4567,9 @@ function hexOutput([R, G, B, A]) {
 function legacyOutput(prefix, [C1, C2, C3, A]) {
   return `${A === 1 ? prefix : prefix.concat("a")}(`.concat(
     (A === 1 ? [C1, C2, C3] : [C1, C2, C3, precision(parseFloat(A))]).join(
-      ", ",
+      ", "
     ),
-    ")",
+    ")"
   );
 }
 
@@ -4587,7 +4579,7 @@ function modernOutput(prefix, components) {
     components[components.length - 1] === 1
       ? ""
       : ` / ${precision(parseFloat(components.slice(-1)))}`,
-    ")",
+    ")"
   );
 }
 // Output:2 ends here

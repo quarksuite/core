@@ -96,7 +96,7 @@ const testSubcategoryRange = [
     "with default configuration",
     data(SubcategoryRange({}, ms_create({}, 1)), {
       base: 10,
-      segment: [7, 5.899, 4.6144, 3.2905, 2.1555, 1.414],
+      segment: [7, 5, 3.6667, 2.7778, 2.1852],
       minimum: 1,
     }),
   ],
@@ -104,14 +104,7 @@ const testSubcategoryRange = [
     "set unit",
     data(SubcategoryRange({ unit: "em" }, ms_create({}, 1)), {
       base: "10em",
-      segment: [
-        "7em",
-        "5.899em",
-        "4.6144em",
-        "3.2905em",
-        "2.1555em",
-        "1.414em",
-      ],
+      segment: ["7em", "5em", "3.6667em", "2.7778em", "2.1852em"],
       minimum: "1em",
     }),
   ],
@@ -119,7 +112,7 @@ const testSubcategoryRange = [
     "set minimum and maximum values",
     data(SubcategoryRange({ min: 2, max: 16 }, ms_create({}, 1)), {
       base: 16,
-      segment: [11.333, 9.6206, 7.6224, 5.563, 3.7975, 2.6441],
+      segment: [11.333, 8.2222, 6.1481, 4.7654, 3.8436],
       minimum: 2,
     }),
   ],
@@ -127,7 +120,7 @@ const testSubcategoryRange = [
     "set trunc",
     data(SubcategoryRange({ trunc: true }, ms_create({}, 1)), {
       base: 10,
-      segment: [7, 5, 4, 3, 2],
+      segment: [7, 5, 3, 2],
       minimum: 1,
     }),
   ],

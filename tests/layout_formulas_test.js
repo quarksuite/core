@@ -136,22 +136,22 @@ const testViewport = [
     data(Viewport({}, ms_create({}, 1)), {
       width: {
         base: "100vw",
-        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        segment: ["68vw", "47vw", "33vw", "23vw", "17vw"],
         threshold: "5vw",
       },
       height: {
         base: "100vh",
-        segment: ["68vh", "56vh", "43vh", "29vh", "17vh", "9vh"],
+        segment: ["68vh", "47vh", "33vh", "23vh", "17vh"],
         threshold: "5vh",
       },
       min: {
         base: "100vmin",
-        segment: ["68vmin", "56vmin", "43vmin", "29vmin", "17vmin", "9vmin"],
+        segment: ["68vmin", "47vmin", "33vmin", "23vmin", "17vmin"],
         threshold: "5vmin",
       },
       max: {
         base: "100vmax",
-        segment: ["68vmax", "56vmax", "43vmax", "29vmax", "17vmax", "9vmax"],
+        segment: ["68vmax", "47vmax", "33vmax", "23vmax", "17vmax"],
         threshold: "5vmax",
       },
     }),
@@ -161,22 +161,22 @@ const testViewport = [
     data(Viewport({ threshold: 36, full: 120 }, ms_create({}, 1)), {
       width: {
         base: "120vw",
-        segment: ["92vw", "81vw", "69vw", "57vw", "46vw", "39vw"],
+        segment: ["92vw", "73vw", "60vw", "52vw", "47vw"],
         threshold: "36vw",
       },
       height: {
         base: "120vh",
-        segment: ["92vh", "81vh", "69vh", "57vh", "46vh", "39vh"],
+        segment: ["92vh", "73vh", "60vh", "52vh", "47vh"],
         threshold: "36vh",
       },
       min: {
         base: "120vmin",
-        segment: ["92vmin", "81vmin", "69vmin", "57vmin", "46vmin", "39vmin"],
+        segment: ["92vmin", "73vmin", "60vmin", "52vmin", "47vmin"],
         threshold: "36vmin",
       },
       max: {
         base: "120vmax",
-        segment: ["92vmax", "81vmax", "69vmax", "57vmax", "46vmax", "39vmax"],
+        segment: ["92vmax", "73vmax", "60vmax", "52vmax", "47vmax"],
         threshold: "36vmax",
       },
     }),
@@ -186,19 +186,19 @@ const testViewport = [
     data(Viewport({ context: ["w"] }, ms_create({}, 1)), {
       width: {
         base: "100vw",
-        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        segment: ["68vw", "47vw", "33vw", "23vw", "17vw"],
         threshold: "5vw",
       },
     }),
     data(Viewport({ context: ["w", "min"] }, ms_create({}, 1)), {
       width: {
         base: "100vw",
-        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        segment: ["68vw", "47vw", "33vw", "23vw", "17vw"],
         threshold: "5vw",
       },
       min: {
         base: "100vmin",
-        segment: ["68vmin", "56vmin", "43vmin", "29vmin", "17vmin", "9vmin"],
+        segment: ["68vmin", "47vmin", "33vmin", "23vmin", "17vmin"],
         threshold: "5vmin",
       },
     }),
@@ -208,17 +208,17 @@ const testViewport = [
     data(Viewport({ context: ["h", "min", "w"] }, ms_create({}, 1)), {
       height: {
         base: "100vh",
-        segment: ["68vh", "56vh", "43vh", "29vh", "17vh", "9vh"],
+        segment: ["68vh", "47vh", "33vh", "23vh", "17vh"],
         threshold: "5vh",
       },
       min: {
         base: "100vmin",
-        segment: ["68vmin", "56vmin", "43vmin", "29vmin", "17vmin", "9vmin"],
+        segment: ["68vmin", "47vmin", "33vmin", "23vmin", "17vmin"],
         threshold: "5vmin",
       },
       width: {
         base: "100vw",
-        segment: ["68vw", "56vw", "43vw", "29vw", "17vw", "9vw"],
+        segment: ["68vw", "47vw", "33vw", "23vw", "17vw"],
         threshold: "5vw",
       },
     }),

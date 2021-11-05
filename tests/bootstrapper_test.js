@@ -54,12 +54,12 @@ const testQuarks = [
         },
         measure: {
           base: "75ch",
-          segment: ["65ch", "61ch", "57ch", "52ch", "48ch", "46ch"],
+          segment: ["65ch", "58ch", "53ch", "50ch", "48ch"],
           minimum: "45ch",
         },
         leading: {
           base: 1.5,
-          narrow: [1.375, 1.3291, 1.2756, 1.2204, 1.1731, 1.1423],
+          narrow: [1.375, 1.2917, 1.2361, 1.1991, 1.1744],
           tight: 1.125,
         },
         unit: {
@@ -120,31 +120,24 @@ const testQuarks = [
       viewport: {
         width: {
           base: "100vw",
-          segment: ["70vw", "58vw", "46vw", "32vw", "21vw", "14vw"],
+          segment: ["70vw", "50vw", "36vw", "27vw", "21vw"],
           threshold: "10vw",
         },
         height: {
           base: "100vh",
-          segment: ["70vh", "58vh", "46vh", "32vh", "21vh", "14vh"],
+          segment: ["70vh", "50vh", "36vh", "27vh", "21vh"],
           threshold: "10vh",
         },
       },
       animation: {
         duration: {
           base: "1000ms",
-          interval: [
-            "750ms",
-            "658.25ms",
-            "551.2ms",
-            "440.88ms",
-            "346.29ms",
-            "284.5ms",
-          ],
+          interval: ["750ms", "583.33ms", "472.22ms", "398.15ms", "348.77ms"],
           fastest: "250ms",
         },
         easing: {
           x: [0, 0.13169, 0.19753, 0.2963, 0.44444, 0.66667, 1],
-          y: [0, 0.046005, 0.12839, 0.2545, 0.4016, 0.54433, 0.66667, 1],
+          y: [0, 0.13169, 0.19753, 0.2963, 0.44444, 0.66667, 1],
         },
       },
       ms: {
@@ -251,14 +244,10 @@ const testQuarks = [
         },
         measure: {
           base: "64ch",
-          segment: ["53ch", "49ch", "44ch", "40ch"],
+          segment: ["53ch", "46ch", "41ch"],
           minimum: "32ch",
         },
-        leading: {
-          base: 1.5,
-          narrow: [1.4167, 1.3861, 1.3504, 1.3136],
-          tight: 1.25,
-        },
+        leading: { base: 1.5, narrow: [1.4167, 1.3611, 1.3241], tight: 1.25 },
         unit: {
           base: "1ex",
           x2: "1.5ex",
@@ -340,12 +329,12 @@ const testQuarks = [
       {
         width: {
           base: "100vw",
-          segment: ["75vw", "65vw", "55vw", "44vw", "34vw", "28vw"],
+          segment: ["75vw", "58vw", "47vw", "39vw", "34vw"],
           threshold: "25vw",
         },
         min: {
           base: "100vmin",
-          segment: ["75vmin", "65vmin", "55vmin", "44vmin", "34vmin", "28vmin"],
+          segment: ["75vmin", "58vmin", "47vmin", "39vmin", "34vmin"],
           threshold: "25vmin",
         },
       },
@@ -365,17 +354,16 @@ const testQuarks = [
           base: "500ms",
           interval: [
             "366.67ms",
-            "317.73ms",
-            "260.64ms",
-            "201.8ms",
-            "151.36ms",
-            "118.4ms",
+            "277.78ms",
+            "218.52ms",
+            "179.01ms",
+            "152.67ms",
           ],
           fastest: "100ms",
         },
         easing: {
           x: [0, 0.13169, 0.19753, 0.2963, 0.44444, 0.66667, 1],
-          y: [-1000, -907.99, -743.22, -491, -196.8, 88.662, 333.33, 1000],
+          y: [-1000, -736.63, -604.94, -407.41, -111.11, 333.33, 1000],
         },
       },
     ),
@@ -389,7 +377,7 @@ benchmark(Quarks, {
   ms: { limit: 100 },
   tokens: {
     color: {
-      scheme: "analogous",
+      scheme: "hexagon",
     },
   },
 });
