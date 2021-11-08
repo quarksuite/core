@@ -1887,7 +1887,7 @@ different environments, applications, and tools.
 **** Named Color Keywords
 
 #+BEGIN_SRC js
-export const NAMED_COLOR_KEYWORDS = {
+ const NAMED_COLOR_KEYWORDS = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
   aqua: "#00ffff",
@@ -2049,7 +2049,7 @@ export const NAMED_COLOR_KEYWORDS = {
 **** Colors Project Web Defaults
 
 #+BEGIN_SRC js
-export const A11Y_PALETTE = {
+ const A11Y_PALETTE = {
   navy: "#001f3f",
   blue: "#0074d9",
   aqua: "#7fdbff",
@@ -2074,7 +2074,7 @@ export const A11Y_PALETTE = {
 **** System Font Stacks
 
 #+BEGIN_SRC js
-export const SYSTEM_FONT_STACKS = {
+ const SYSTEM_FONT_STACKS = {
   sans: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   serif:
     "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
@@ -4614,7 +4614,7 @@ const SUPPORTED_FORMATS = {
   oklab: oklabValidator,
 };
 
-export function validator(color) {
+function validator(color) {
   return (
     Object.entries(SUPPORTED_FORMATS)
       .map(([format, fn]) => [format, fn(color) && color])
