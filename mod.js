@@ -201,18 +201,18 @@ export function Quarks(config = {}) {
           system: PRIMARY_FALLBACK,
           weights: PRIMARY_WEIGHTS,
         },
-        PRIMARY
+        PRIMARY,
       ),
       secondary: TextFamily(
         { system: SEC_FALLBACK, weights: SEC_WEIGHTS },
-        SEC
+        SEC,
       ),
       source: TextFamily(
         {
           system: SRC_FALLBACK,
           weights: SRC_WEIGHTS,
         },
-        SRC
+        SRC,
       ),
       size: TextSize(TEXT),
       measure: TextMeasure({ min, max }, TEXT),
@@ -337,7 +337,7 @@ export function MaterialPalette(modifiers, color) {
   return utility_pipe(
     color,
     utility_curry(paletteSettings, { format, scheme }),
-    utility_curry(generateMaterialPalette, { light, dark })
+    utility_curry(generateMaterialPalette, { light, dark }),
   );
 }
 // Material Palette:1 ends here
@@ -413,7 +413,7 @@ export function ArtisticPalette(modifiers, color) {
     utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
-    })
+    }),
   );
 }
 // Artistic Palette:1 ends here
@@ -512,19 +512,17 @@ export function InterpolatedPalette(modifiers, color) {
     utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
-      ...(values === 1
-        ? []
-        : color_interpolation(
-            { lightness, chroma, hue, alpha, values: values - 1 },
-            color
-          )),
+      ...(values === 1 ? [] : color_interpolation(
+        { lightness, chroma, hue, alpha, values: values - 1 },
+        color,
+      )),
     ],
     material
       ? utility_curry(generateMaterialPalette, { light, dark })
       : utility_curry(generateArtisticPalette, {
-          contrast,
-          values: { tints, tones, shades },
-        })
+        contrast,
+        values: { tints, tones, shades },
+      }),
   );
 }
 // Interpolated Palette:1 ends here
@@ -623,12 +621,11 @@ export function BlendedPalette(modifiers, color) {
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material
-      ? utility_curry(generateMaterialPalette, { light, dark })
-      : utility_curry(generateArtisticPalette, {
-          contrast,
-          values: { tints, tones, shades },
-        })
+    material ? utility_curry(generateMaterialPalette, { light, dark })
+    : utility_curry(generateArtisticPalette, {
+      contrast,
+      values: { tints, tones, shades },
+    }),
   );
 }
 // Blended Palette:1 ends here
@@ -638,7 +635,7 @@ function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
     (color) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
-    (color) => (scheme ? setScheme(scheme, color) : [color])
+    (color) => (scheme ? setScheme(scheme, color) : [color]),
   );
 }
 
@@ -671,11 +668,11 @@ function generateMaterialPalette({ light, dark }, palette) {
                 ...a,
                 ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
               }),
-              {}
+              {},
             ),
           },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -693,18 +690,18 @@ function generateArtisticPalette({ contrast, values }, palette) {
             values: values.tints,
             contrast,
           },
-          color
+          color,
         );
         const muted = color_tones(
           {
             values: values.tones,
             contrast: contrast / ADJUSTMENT_VALUE,
           },
-          color
+          color,
         );
         const dark = color_shades(
           { values: values.shades, contrast: contrast / ADJUSTMENT_VALUE },
-          color
+          color,
         );
 
         return [category, [color, light, muted, dark]];
@@ -723,7 +720,7 @@ function generateArtisticPalette({ contrast, values }, palette) {
             ...variants,
           },
         };
-      }, {})
+      }, {}),
   );
 }
 
@@ -912,7 +909,7 @@ export function TextLeading(modifiers, ms) {
       max: normal,
       keys: ["narrow", "tight"],
     },
-    ms
+    ms,
   );
 }
 
@@ -961,7 +958,7 @@ export function TextMeasure(modifiers, ms) {
       keys: ["segment", "minimum"],
       trunc: true,
     },
-    ms
+    ms,
   );
 }
 // Text Attributes:1 ends here
@@ -1186,7 +1183,7 @@ export function Viewport(modifiers, ms) {
           unit,
           trunc: true,
         },
-        ms
+        ms,
       ),
     };
   }, {});
@@ -1251,7 +1248,7 @@ export function AnimationDuration(modifiers, ms) {
       unit: "ms",
       keys: ["interval", "fastest"],
     },
-    ms
+    ms,
   );
 }
 // Animation Duration:1 ends here
@@ -1289,24 +1286,23 @@ export function AnimationDuration(modifiers, ms) {
  * ```
  */
 export function AnimationCubicBezier(modifiers, ms) {
-  const [base, ratio] = Array.from(ms);
   const [maximum] = ms.slice(-1);
 
   const { floor = 0, ceiling = 1 } = modifiers;
 
-  const ABSCISSAS = new Set(
-    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1)
+  const XS = new Set(
+    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1),
   );
 
-  const ORDINATES = new Set(
+  const YS = new Set(
     ms_modify((n) => precision(floor + (ceiling - floor) / n), ms).filter(
-      (n) => n > floor && n < ceiling
-    )
+      (n) => n > floor && n < ceiling,
+    ),
   );
 
   return {
-    x: Array.from([0, ...ABSCISSAS, 1]),
-    y: Array.from([floor, ...Array.from(ORDINATES).reverse(), ceiling]),
+    x: [0, ...XS, 1],
+    y: [floor, ...Array.from(YS).reverse(), ceiling],
   };
 }
 // Animation Timing (Cubic Bezier):1 ends here
@@ -1387,9 +1383,9 @@ export function Subcategory(modifiers, ms) {
           inverse,
           unit
             ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
-            : raw
+            : raw,
         ),
-      ]
+      ],
     ),
   };
 }
@@ -1506,7 +1502,6 @@ export function SubcategoryRange(modifiers, ms) {
     trunc = false,
   } = modifiers;
 
-  const [base, ratio] = Array.from(ms);
   const output = utility_curry(ms_units, unit);
 
   return generateRange(keys, [
@@ -1517,12 +1512,12 @@ export function SubcategoryRange(modifiers, ms) {
           ms_modify((n) => {
             const RANGE = min + (max - min) / n;
             return trunc ? Math.trunc(RANGE) : RANGE;
-          }, ms)
-        )
+          }, ms),
+        ),
       ),
       (ms) => ms.map((n) => precision(n)),
       (ms) => ms.filter((n) => n > min && n < max),
-      unit ? output : (ms) => ms
+      unit ? output : (ms) => ms,
     ),
     unit ? output([min]).toString() : precision(min),
   ]);
@@ -1544,7 +1539,7 @@ function generateUnidirectional(x = "x", ms) {
 
 function generateRange(
   [rangeKey, floorKey] = ["fragment", "min"],
-  [base, range, min]
+  [base, range, min],
 ) {
   return {
     base,
@@ -1559,7 +1554,7 @@ function generateVariants(key, [, ...values]) {
       ...acc,
       [[key, index + 2].join("")]: value,
     }),
-    {}
+    {},
   );
 }
 // General Formula Structure:1 ends here
@@ -1605,13 +1600,13 @@ function generateVariants(key, [, ...values]) {
 export function NumericColorScale(palette) {
   return palette.reduce(
     (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {}
+    {},
   );
 }
 // Color Scale:1 ends here
 
 // [[file:Mod.org::*Named Color Keywords][Named Color Keywords:1]]
- const NAMED_COLOR_KEYWORDS = {
+const NAMED_COLOR_KEYWORDS = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
   aqua: "#00ffff",
@@ -1771,7 +1766,7 @@ export function NumericColorScale(palette) {
 // Named Color Keywords:1 ends here
 
 // [[file:Mod.org::*Colors Project Web Defaults][Colors Project Web Defaults:1]]
- const A11Y_PALETTE = {
+const A11Y_PALETTE = {
   navy: "#001f3f",
   blue: "#0074d9",
   aqua: "#7fdbff",
@@ -1794,8 +1789,9 @@ export function NumericColorScale(palette) {
 // Colors Project Web Defaults:1 ends here
 
 // [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
- const SYSTEM_FONT_STACKS = {
-  sans: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+const SYSTEM_FONT_STACKS = {
+  sans:
+    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   serif:
     "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
   monospace:
@@ -2055,7 +2051,7 @@ export function color_adjust(properties, color) {
       parseFloat(A ?? 1) + numberFromPercent(alpha),
     ],
     ([L, C, H, A]) => output(["oklab", [String(L).concat("%"), C, H, A]]),
-    curry(revert)(color)
+    curry(revert)(color),
   );
 }
 
@@ -2065,10 +2061,15 @@ function revert(color, output) {
     validator,
     ([, output]) => [output, color],
     ([output, color]) =>
-      pipe(color, validator, ([format]) =>
-        format === "named" ? color_to_hex(output) : convert(format, output)[1]
+      pipe(
+        color,
+        validator,
+        ([format]) =>
+          format === "named"
+            ? color_to_hex(output)
+            : convert(format, output)[1],
       ),
-    (output) => validator(output)[1]
+    (output) => validator(output)[1],
   );
 }
 // Color Property Adjustment:1 ends here
@@ -2094,7 +2095,7 @@ export function color_mix({ amount = 50, target = "black" }, color) {
       A,
     ],
     (components) => output(["oklab", components]),
-    curry(revert)(color)
+    curry(revert)(color),
   );
 }
 
@@ -2103,13 +2104,13 @@ function calculateMix(original, target, amount) {
     original,
     color_to_oklab,
     parser,
-    ([, components]) => components
+    ([, components]) => components,
   );
   const [TL, Ta, Tb, TA] = pipe(
     target,
     color_to_oklab,
     parser,
-    ([, components]) => components
+    ([, components]) => components,
   );
 
   return [
@@ -2158,9 +2159,8 @@ export function color_interpolation(modifiers, color) {
             hue: calculateProperty(hue, pos),
             alpha: calculateProperty(alpha, pos),
           },
-          color
-        )
-      ).reverse()
+          color,
+        )).reverse(),
     ),
   ];
 }
@@ -2184,9 +2184,14 @@ export function color_blend(modifiers, color) {
 
   return [
     ...new Set(
-      Array.from({ length: values }, (_, pos) =>
-        color_mix({ amount: amount - (amount / values) * pos, target }, color)
-      ).reverse()
+      Array.from(
+        { length: values },
+        (_, pos) =>
+          color_mix(
+            { amount: amount - (amount / values) * pos, target },
+            color,
+          ),
+      ).reverse(),
     ),
   ];
 }
@@ -2214,10 +2219,10 @@ export function color_material(modifiers, color) {
         amount: dark,
         target: color_mix(
           { amount: light / 10 - dark / 10, target: "black" },
-          color
+          color,
         ),
       },
-      color
+      color,
     ),
     ...color_shades({ contrast: dark, values: 4 }, color),
   ];
@@ -2338,8 +2343,9 @@ export function color_to_scheme_hexagon(color) {
 }
 
 function generateUniformScheme({ count, arc }, color) {
-  return Array.from({ length: count }, (_, pos) =>
-    color_adjust({ hue: arc * pos }, color)
+  return Array.from(
+    { length: count },
+    (_, pos) => color_adjust({ hue: arc * pos }, color),
   );
 }
 // Color Schemes:1 ends here
@@ -2421,8 +2427,8 @@ export function palette_shift(modifiers, palette) {
     new Set(
       palette.map((color) =>
         color_adjust({ lightness, chroma, hue, alpha }, color)
-      )
-    )
+      ),
+    ),
   );
 }
 // Shifting:1 ends here
@@ -2452,7 +2458,7 @@ export function palette_sort(condition, palette) {
     palette,
     paletteToOklabValues,
     curry(sortPalette)({ by: property, order }),
-    curry(paletteFromOklab)(color)
+    curry(paletteFromOklab)(color),
   );
 }
 
@@ -2462,7 +2468,7 @@ function paletteToOklabValues(palette) {
     (palette) => palette.map((color) => color_to_oklab(color)),
     (palette) => palette.map((color) => extractor(color)),
     (palette) => palette.map(([, color]) => color),
-    (palette) => palette.map((color) => color.map((C) => parseFloat(C)))
+    (palette) => palette.map((color) => color.map((C) => parseFloat(C))),
   );
 }
 
@@ -2487,7 +2493,7 @@ function paletteFromOklab(input, palette) {
         output(["oklab", [L.toString().concat("%"), C, H, A ?? 1]])
       ),
     (palette) => new Set(palette.map((color) => revert(input, color))),
-    Array.from
+    Array.from,
   );
 }
 // Sorting:1 ends here
@@ -2523,7 +2529,7 @@ export function palette_filter(condition, palette) {
     palette,
     paletteToOklabValues,
     curry(flushPalette)({ by: property, min, max }),
-    curry(paletteFromOklab)(color)
+    curry(paletteFromOklab)(color),
   );
 }
 
@@ -2785,19 +2791,16 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 }
 // Scale Modification:1 ends here
 
-// [[file:Mod.org::*Attaching Units][Attaching Units:1]]
-// Define unit typedefs
-/**
- * @typedef {"cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px"} CSSAbsoluteUnits
- * @typedef {"em" | "ex" | "ch" | "rem" | "lh" | "vw" | "vh" | "vmin" | "vmax"} CSSRelativeUnits
- * @typedef {"ms" | "s"} CSSTimingUnits
- * @typedef {CSSRelativeUnits | CSSAbsoluteUnits | CSSTimingUnits | "%"} CSSUnits
- */
+// [[file:Mod.org::*Scale Units][Scale Units:1]]
+/** @typedef {"cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px"} CSSAbsoluteUnits - supported CSS absolute units */
+/** @typedef {"em" | "ex" | "ch" | "rem" | "lh" | "vw" | "vh" | "vmin" | "vmax"} CSSRelativeUnits - supported CSS relative units */
+/** @typedef {"ms" | "s"} CSSTimingUnits - supported CSS timing units */
+/** @typedef {CSSRelativeUnits | CSSAbsoluteUnits | CSSTimingUnits | "%"} CSSUnits - supported CSS units */
 
 /**
  * A utility for attaching CSS relative/absolute units to a modular scale.
  *
- * @param {CSSUnits} unit  - the number of values in each partition
+ * @param {CSSUnits} unit - the target unit to attach to each value in the scale
  * @param {number[]} ms - the scale to transform
  * @returns {string[]}
  *
@@ -2817,7 +2820,7 @@ export function ms_units(unit, ms) {
     ms,
   );
 }
-// Attaching Units:1 ends here
+// Scale Units:1 ends here
 
 // [[file:Mod.org::*Quarks System Dictionary Typedefs][Quarks System Dictionary Typedefs:1]]
 /**
@@ -3582,8 +3585,7 @@ const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
 
 // [[file:Mod.org::*Hexadecimal][Hexadecimal:1]]
 const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
-const hexFragmentFromRgb = (channel) =>
-  channel.toString(16).padStart(2, "0");
+const hexFragmentFromRgb = (channel) => channel.toString(16).padStart(2, "0");
 // Hexadecimal:1 ends here
 
 // [[file:Mod.org::*Percent Calculations][Percent Calculations:1]]
@@ -3594,11 +3596,7 @@ const numberFromPercent = (percentage) => divide(100, percentage);
 // [[file:Mod.org::*RGB Component Calculations][RGB Component Calculations:1]]
 const numberToRgb = (n) => multiply(255, n);
 const numberFromRgb = (channel) => divide(255, channel);
-const rgbFromPercent = compose(
-  numberFromPercent,
-  numberToRgb,
-  Math.round,
-);
+const rgbFromPercent = compose(numberFromPercent, numberToRgb, Math.round);
 const hexFragmentFromNumber = compose(
   numberToRgb,
   Math.round,
