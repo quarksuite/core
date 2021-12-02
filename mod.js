@@ -2817,7 +2817,7 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 export function ms_units(unit, ms) {
   return unlessMS(
     ms.map((n) => `${precision(n)}${unit}`, ms),
-    ms,
+    ms
   );
 }
 // Scale Units:1 ends here
@@ -3058,11 +3058,9 @@ ${
  * filesystem API of your choice.
  */
 export function tokens_to_gpl(dict) {
+  const { project, color } = dict;
+
   const {
-    project,
-    color: { metadata, ...palette },
-  } = dict;
-  let {
     name,
     author,
     version,
@@ -3082,12 +3080,16 @@ export function tokens_to_gpl(dict) {
     Object.entries(node).reduce((str, [key, value]) => {
       const KEY = key.toUpperCase();
 
+      // Ignore metadata
+      if (key === "metadata") {
+        return str;
+      }
+
       if (typeof value === "object") {
         return str.concat(
           assemble(tokenStringIdentifier(head, KEY, " "), value),
         );
       }
-
       return str.concat(
         gimpPaletteSwatch(value),
         "\t",
@@ -3115,7 +3117,7 @@ ${
 # ${timestampEmitter()}
 
 Columns: 6
-${assemble("", palette)}
+${assemble("", color)}
 `.trimStart();
 }
 
@@ -3141,12 +3143,9 @@ function gimpPaletteSwatch(color) {
  * filesystem API of your choice.
  */
 export function tokens_to_sketchpalette(dict) {
-  const {
-    project,
-    color: { metadata, ...palette },
-  } = dict;
+  const { project, color } = dict;
 
-  let {
+  const {
     name,
     author,
     version,
@@ -3156,14 +3155,18 @@ export function tokens_to_sketchpalette(dict) {
   } = project || MissingProjectMetadataError();
 
   const assemble = (tree) =>
-    Object.values(tree)
-      .map((data) => {
-        if (Array.isArray(data)) {
-          return data.map((color) => sketchSwatch(color)).flat();
+    Object.entries(tree)
+      .map(([key, data]) => {
+        if (key === "metadata") {
+          return assemble(data);
         }
 
         if (typeof data === "object") {
           return assemble(data);
+        }
+
+        if (Array.isArray(data)) {
+          return data.map((color) => sketchSwatch(color)).flat();
         }
 
         return sketchSwatch(data);
@@ -3171,7 +3174,7 @@ export function tokens_to_sketchpalette(dict) {
       .flat();
 
   return JSON.stringify({
-    colors: assemble(palette),
+    colors: assemble(color),
     pluginVersion: "1.4",
     compatibleVersion: "1.4",
   });
@@ -3585,7 +3588,8 @@ const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
 
 // [[file:Mod.org::*Hexadecimal][Hexadecimal:1]]
 const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
-const hexFragmentFromRgb = (channel) => channel.toString(16).padStart(2, "0");
+const hexFragmentFromRgb = (channel) =>
+  channel.toString(16).padStart(2, "0");
 // Hexadecimal:1 ends here
 
 // [[file:Mod.org::*Percent Calculations][Percent Calculations:1]]
@@ -3596,7 +3600,11 @@ const numberFromPercent = (percentage) => divide(100, percentage);
 // [[file:Mod.org::*RGB Component Calculations][RGB Component Calculations:1]]
 const numberToRgb = (n) => multiply(255, n);
 const numberFromRgb = (channel) => divide(255, channel);
-const rgbFromPercent = compose(numberFromPercent, numberToRgb, Math.round);
+const rgbFromPercent = compose(
+  numberFromPercent,
+  numberToRgb,
+  Math.round,
+);
 const hexFragmentFromNumber = compose(
   numberToRgb,
   Math.round,
