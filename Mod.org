@@ -3543,23 +3543,20 @@ export function tokens_to_sketchpalette(dict) {
   } = project || MissingProjectMetadataError();
 
   const assemble = (tree) =>
-    Object.entries(tree)
-      .map(([key, data]) => {
-        if (key === "metadata") {
-          return assemble(data);
-        }
+    Object.entries(tree).reduce((acc, [key, data]) => {
+      // Ignore metadata
+      if (key === "metadata") return acc;
 
-        if (typeof data === "object") {
-          return assemble(data);
-        }
+      if (typeof data === "object") {
+        return acc.concat(assemble(data));
+      }
 
-        if (Array.isArray(data)) {
-          return data.map((color) => sketchSwatch(color)).flat();
-        }
+      if (Array.isArray(data)) {
+        return acc.concat(data.map((color) => sketchSwatch(color)).flat());
+      }
 
-        return sketchSwatch(data);
-      })
-      .flat();
+      return acc.concat(sketchSwatch(data));
+    }, []);
 
   return JSON.stringify({
     colors: assemble(color),
@@ -4695,7 +4692,9 @@ lch(56.551 77.38 2rad / 0.6892)
 Oklab (LCh)
 -----------
 NOTE: This format is non-standard. If you use it, be sure to
-convert to a standard CSS format. Example: hex("oklab(0% 0 0)")
+convert to a standard CSS format.
+
+Example: color_to_hex("oklab(0% 0 0)")
 
 oklab(59.4% 0.33 150)
 oklab(33% 64% 0.2turn)
