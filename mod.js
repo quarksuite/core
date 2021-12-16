@@ -7,6 +7,14 @@
 // A library for creating, assembling, and distributing foundational design
 // tokens for web projects.
 
+// Notes:
+// The source code follows a naming style with the following rules.
+//
+// - Higher level token spec assemblers use PascalCase
+// - Lower level data generators/token exporters use snake_case
+// - Internals use conventional camelCase
+//
+
 /** @typedef {{
     color: QSPaletteMaterial | QSPaletteArtistic
     text: {
