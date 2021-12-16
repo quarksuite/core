@@ -5,74 +5,48 @@
 * Table of Contents :TOC@4:
 - [[#introduction][Introduction]]
 - [[#features][Features]]
-  - [[#general-setup][General Setup]]
-  - [[#developer-experience][Developer Experience]]
-  - [[#design-tokens][Design Tokens]]
-    - [[#output][Output]]
-    - [[#color][Color]]
-    - [[#typography][Typography]]
-    - [[#modular-scales][Modular Scales]]
 - [[#getting-started][Getting Started]]
   - [[#just-looking-around][Just Looking Around]]
   - [[#setup][Setup]]
     - [[#offline][Offline]]
     - [[#what-about-node][What About Node?]]
+- [[#documentation][Documentation]]
+  - [[#user-guide][User Guide]]
+  - [[#api][API]]
+- [[#contributing][Contributing]]
+- [[#concept][Concept]]
+- [[#project-objectives][Project Objectives]]
+  - [[#availability][Availability]]
+  - [[#adaptability][Adaptability]]
+  - [[#invisibility][Invisibility]]
+  - [[#interoperability][Interoperability]]
+  - [[#stability][Stability]]
+- [[#credit][Credit]]
 
 * Introduction
 
-Quarks System Core is a workflow for creating, assembling, and distributing design tokens for and on
+Quarks System Core is a library for creating, assembling, and distributing [[https://css-tricks.com/what-are-design-tokens/][design tokens]] for and on
 the web.
 
-It's part of a growing toolkit called QuarkSuite which focuses on using modern web technologies to
-spin up portable, reproducible baselines for web projects.
+It's part of the emerging QuarkSuite toolkit which focuses on using modern web technologies to spin
+up reproducible baselines for web projects.
 
 Think of it like a UI boilerplate generator you can use right in your browser.
 
 Enhancements to the workflow include Quarks System UI (/WIP/): a tiny collection of web components
 for visual development and documentation of Quarks System Dictionaries.
 
-Future enhancements may appear based on community feedback or my own needs.
+Future enhancements may appear based on user feedback or my own needs.
 
-Quarks System Core is written in web standard JavaScript (ES2015+).
+Quarks System Core is written in web standard JavaScript (ES2017+).
 
 * Features
 
-** General Setup
-
-+ Nothing to install
-+ Universal but web focused
-
-** Developer Experience
-
-+ Get started immediately with a single function
-+ Power tools available as needed
-
-** Design Tokens
-
-*** Output
-
-+ CSS custom properties
-+ Preprocessor variables
-+ General data exporting
-+ Desktop app support (currently GIMP/Inkscape and Sketch)
-+ Integration with TailwindCSS and Style Dictionary
-
-*** Color
-
-+ Robust premade palette configurations
-+ Full support for current and emerging CSS formats
-+ Wield color like a color scientist
-+ Built-in Colors project defaults for rapid prototyping
-
-*** Typography
-
-+ System font stacks provided for native OS typography or just to have better fallbacks
-
-*** Modular Scales
-
-+ Enforce consistency in your values
-+ Merge, modify, and chunk scales according to your needs
-+ Attach units when you're ready to roll
++ Quick setup
++ Lightweight
++ Flexible workflows
++ Simple schema
++ Portable data
 
 * Getting Started
 
@@ -100,12 +74,13 @@ That's all you need in native ES Module environments.
 
 *** Offline
 
-For an offline workflow, you can clone the repo. Quarks System Core has no build steps or bundling,
-so the source code is also the package code.
+For an offline workflow, you can =curl= the [[https://raw.githubusercontent.com/quarksuite/core/main/mod.js][raw source code]].
 
 #+BEGIN_SRC shell
-git clone https://github.com/quarksuite/core.git quarksuite:core
+curl https://raw.githubusercontent.com/quarksuite/core/main/mod.js -o qsc.js
 #+END_SRC
+
+You can also visit that link and copy/paste the contents to a new file.
 
 *** What About Node?
 
@@ -115,3 +90,92 @@ support ES Module importing from URLs.
 That said, plenty of modern build tools and dev environments in the Node ecosystem /do/. I highly
 recommend native ESM dev servers ([[https://www.snowpack.dev/ ][Snowpack]], [[https://vitejs.dev/][Vite]], [[https://kit.svelte.dev/][SvelteKit]], [[https://modern-web.dev/docs/dev-server/overview/][Web Dev Server]], [[https://github.com/preactjs/wmr][WMR]]) when using QSC in
 a Node environment.
+
+* Documentation
+
+** User Guide
+
+I'm rewriting the Quarks System Core user guide for v1, so I'll drop a link here when it's ready.
+
+** API
+
+I rewrote the [[https://observablehq.com/@cr-jr/qsc-api-1-0-0][Quarks System Core API]] documentation as an Observable notebook. This means it's now a
+living document with interactive examples that remain in sync with the latest stable version of the
+library.
+
+* Contributing
+
+First, clone the repo to your local machine.
+
+#+BEGIN_SRC shell
+git clone https://github.com/quarksuite/core.git
+#+END_SRC
+
+Then make sure you [[https://github.com/quarksuite/core/blob/main/CONTRIBUTING.md][read the contribution guidelines]].
+
+* Concept
+
+Quarks System Core is built around the idea that authoring design tokens shouldn't require a
+particular framework or stack. You can crack open the console in a modern browser and build your
+foundation now.
+
+The library is designed to work for three major workflows:
+
++ Basic: automatic token generation via bootstrappers
++ Intermediate: manual token generation via formulas
++ Advanced: granular token generation via utilities
+
+* Project Objectives
+
+The following objectives guide the ongoing development of Quarks System Core.
+
+** Availability
+
+This project focuses on the overall availability of web technologies over the popularity of
+particular web stacks. Its single point of entry, relatively small size, and simple output all work
+to make the kit extremely portable.
+
+** Adaptability
+
+Quarks System Core aims to grow or shrink according to your needs. Its functional nature makes it
+straightforward to use and extend as you see fit.
+
+** Invisibility
+
+This project is a means to an end: creating design tokens. I don't want its processes to call
+attention to themselves or its design to get in your way. Use what you need and leave the rest.
+
+** Interoperability
+
+Quarks System Core is built to work with what already exists in the design token and UI theming
+space. It can be used on its own, but its schema is nothing but a plain object.
+
+This makes it particularly suited for integration with design tools that use their /own/ schemas
+(such as [[https://tailwindcss.com/][TailwindCSS]] and Style Dictionary).
+
+** Stability
+
+Where applicable, this project aims to adhere as closely as possible to current and emerging web
+standards. From its use of standard CSS color formats to its avoidance of bleeding-edge JavaScript
+features with spotty support.
+
+Quarks System Core is distributed via [[https://nest.land/][Nest.land]]. While billed as being especially for Deno modules,
+it also works quite well for ES Modules in general. It preserves the *exact state* of the codebase
+upon publication with no known possibility for malicious upstream changes.
+
+It also encourages explicit versioning where rolling back from an update misfire is as simple as
+changing the URL to the last stable version and refreshing your dev environment.
+
+* Credit
+
++ Color conversion math and formulas
+  - hex, rgb, hsl: [[https://www.rapidtables.com/convert/color/index.html][RapidTables]]
+  - cmyk, hwb: [[https://drafts.csswg.org/css-color-4/][W3C CSS Color Module 4]] (though, as of this writing, =device-cmyk()= is bumped to
+    Color Module 5)
+  - lab, lch: [[http://www.brucelindbloom.com/index.html?Math.html][Bruce Lindbloom]]
+  - oklab (oklch): [[https://bottosson.github.io/posts/oklab/][Björn Ottosson]] (the creator of the Oklab color space)
++ Built-in datasets:
+  - Named colors: [[https://www.w3.org/wiki/CSS/Properties/color/keywords][W3C Wiki]]
+  - System font stacks: [[https://systemfontstack.com][System Font Stack]]
+  - Accessible default colors: [[https://clrs.cc][Colors]]
++ design token schema: [[https://styled-system.com/theme-specification/][Styled System]] and [[https://amzn.github.io/style-dictionary/#/tokens][Style Dictionary]]

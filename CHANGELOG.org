@@ -5,11 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
+  - [[#added][Added]]
+    - [[#revamped-workflow][revamped workflow]]
+    - [[#explicit-naming-conventions][explicit naming conventions]]
+    - [[#overhauled-api][overhauled API]]
 - [[#v021---2020-06-07][v0.2.1 - 2020-06-07]]
   - [[#fixed][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
-  - [[#added][Added]]
+  - [[#added-1][Added]]
     - [[#color-conversion][color conversion]]
   - [[#changed][Changed]]
     - [[#color-adjustment-1][color adjustment]]
@@ -20,7 +25,7 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#changed-1][Changed]]
     - [[#color-conversion-1][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
-  - [[#added-1][Added]]
+  - [[#added-2][Added]]
     - [[#functional-utilities][functional utilities]]
     - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
@@ -30,6 +35,30 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v1.0.0 - 2021-12-16
+
+Quarks System Core v1 is here and it's another major rewrite. To begin, the workflow is a completely
+different beast. The naming conventions are more deliberate, the design token spec is more or less
+settled, and I've reinforced the library's web focus.
+
+** Added
+
+*** revamped workflow
+
++ Basic: automatic token generation via bootstrapper
++ Intermediate: manual token generation via formulas
++ Advanced: granular token generation via utilities
+
+*** explicit naming conventions
+
++ =PascalCase= for bootstrapper/formulas
++ =snake_case= for utilities/exporters
++ conventional =camelCase= for internal functionality
+
+*** overhauled API
+
++ too much to list, recommend [[https://observablehq.com/@cr-jr/qsc-api-1-0-0][reading it]]
 
 * v0.2.1 - 2020-06-07
 
