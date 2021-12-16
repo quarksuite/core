@@ -1,8 +1,15 @@
-// [[file:Mod.org::*Bootstrapper Implementation][Bootstrapper Implementation:1]]
-// Define the specific output shape
+// Project: Quarks System Core (v1.0.0)
+// Author: Chatman R. Jr <crjr.code@protonmail.com>
+// Repository: https://github.com/quarksuite/core
+// License: Unlicense
+
+// Summary:
+// A library for creating, assembling, and distributing foundational design
+// tokens for web projects.
+
 /** @typedef {{
-  color: QSPaletteMaterial | QSPaletteArtistic
-  text: {
+    color: QSPaletteMaterial | QSPaletteArtistic
+    text: {
     primary: QSTextFamily,
     secondary: QSTextFamily,
     source: QSTextFamily,
@@ -10,20 +17,20 @@
     measure: QSGeneralSubcategoryRange,
     leading: QSGeneralSubcategoryRange,
     unit: QSGeneralSubcategory
-  },
-  grid: {
+    },
+    grid: {
     columns: number,
     rows: number,
     fr: QSGeneralSubcategory,
     col: Pick<QSGridDimensions, "col">,
     row: Pick<QSGridDimensions, "row">
-  },
-  viewport: QSViewport,
-  animation: {
+    },
+    viewport: QSViewport,
+    animation: {
     duration: QSGeneralSubcategoryRange,
     easing: QSAnimationCubicBezier
-  },
-  ms: QSGeneralSubcategory
+    },
+    ms: QSGeneralSubcategory
 }} QSBootstrapperTokens */
 
 /**
@@ -233,9 +240,7 @@ export function Quarks(config = {}) {
     ms: FigureCalculations(SCALE),
   };
 }
-// Bootstrapper Implementation:1 ends here
 
-// [[file:Mod.org::*Bootstrapper Palette Types][Bootstrapper Palette Types:1]]
 function paletteFromType(base, type, modifiers = {}) {
   return {
     material: MaterialPalette(modifiers, base),
@@ -244,9 +249,7 @@ function paletteFromType(base, type, modifiers = {}) {
     interpolated: InterpolatedPalette(modifiers, base),
   }[type];
 }
-// Bootstrapper Palette Types:1 ends here
 
-// [[file:Mod.org::*Palette Formula Typedefs][Palette Formula Typedefs:1]]
 /** @typedef {"dyadic" | "complementary" | "analgous" | "split" | "triadic" | "clash" | "tetradic" | "square" | "star" | "hexagon"} QSPaletteScheme - built-in color schemes for palette formulas */
 
 /** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab"} QSPaletteFormat - built-in color formats for palette formulas */
@@ -280,9 +283,7 @@ function paletteFromType(base, type, modifiers = {}) {
     },
   }
 }} QSPaletteArtistic - artistic palette color tokens structure  */
-// Palette Formula Typedefs:1 ends here
 
-// [[file:Mod.org::*Material Palette][Material Palette:1]]
 /**
  * A palette formula to generate `50-900` material-esque color tokens.
  *
@@ -340,9 +341,7 @@ export function MaterialPalette(modifiers, color) {
     utility_curry(generateMaterialPalette, { light, dark }),
   );
 }
-// Material Palette:1 ends here
 
-// [[file:Mod.org::*Artistic Palette][Artistic Palette:1]]
 /**
  * A palette formula to generate a standard artistic color palette.
  *
@@ -416,9 +415,7 @@ export function ArtisticPalette(modifiers, color) {
     }),
   );
 }
-// Artistic Palette:1 ends here
 
-// [[file:Mod.org::*Interpolated Palette][Interpolated Palette:1]]
 /**
  * An advanced palette formula to generate a color palette from interpolation.
  *
@@ -525,9 +522,7 @@ export function InterpolatedPalette(modifiers, color) {
       }),
   );
 }
-// Interpolated Palette:1 ends here
 
-// [[file:Mod.org::*Blended Palette][Blended Palette:1]]
 /**
  * An advanced palette formula to generate a color palette from color blending.
  *
@@ -628,9 +623,7 @@ export function BlendedPalette(modifiers, color) {
     }),
   );
 }
-// Blended Palette:1 ends here
 
-// [[file:Mod.org::*Palette Setup][Palette Setup:1]]
 function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
@@ -734,9 +727,7 @@ function alphabeticalCategories(index) {
       }),
   ]).get(index);
 }
-// Palette Setup:1 ends here
 
-// [[file:Mod.org::*Typography Formula Typedefs][Typography Formula Typedefs:1]]
 /** @typedef {"sans" | "serif" | "monospace"} QSTextFamilySystem - available system font stacks */
 /** @typedef {"thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black"} QSTextFamilyStyle - available font styles */
 /** @typedef {QSTextFamilyStyle[]} QSTextFamilyWeights - font weights to emit with font family */
@@ -744,9 +735,7 @@ function alphabeticalCategories(index) {
 /**
  * @typedef {{family: string, [weight: string]: string}} QSTextFamily - text family token structure
  */
-// Typography Formula Typedefs:1 ends here
 
-// [[file:Mod.org::*Text Family][Text Family:1]]
 /**
  * A typography formula for generating font family tokens.
  *
@@ -832,9 +821,7 @@ function fontWeights(key) {
     ["black", 900],
   ]).get(key);
 }
-// Text Family:1 ends here
 
-// [[file:Mod.org::*Text Sizing][Text Sizing:1]]
 /**
  * A text formula for generating text size tokens.
  *
@@ -864,9 +851,7 @@ function fontWeights(key) {
 export function TextSize(ms) {
   return Subcategory({ unit: "rem", inversionUnit: "em" }, ms);
 }
-// Text Sizing:1 ends here
 
-// [[file:Mod.org::*Text Attributes][Text Attributes:1]]
 /**
  * A text formula for generating text leading/line height tokens.
  *
@@ -961,9 +946,7 @@ export function TextMeasure(modifiers, ms) {
     ms,
   );
 }
-// Text Attributes:1 ends here
 
-// [[file:Mod.org::*Text Spacing][Text Spacing:1]]
 /**
  * A text formula for generating text unit/spacing tokens.
  *
@@ -994,9 +977,7 @@ export function TextMeasure(modifiers, ms) {
 export function TextUnits(ms) {
   return Subcategory({ unit: "ex" }, ms);
 }
-// Text Spacing:1 ends here
 
-// [[file:Mod.org::*Layout Formula Typedefs][Layout Formula Typedefs:1]]
 /** @typedef {{
   col: { [column: string]: number },
   row: { [row: string]: number }
@@ -1012,9 +993,7 @@ export function TextUnits(ms) {
   min?: { base: string, [value: string]: string },
   max?: { base: string, [value: string]: string },
 }} QSViewport - viewport token structure */
-// Layout Formula Typedefs:1 ends here
 
-// [[file:Mod.org::*Grid Formulas][Grid Formulas:1]]
 /**
  * A layout formual for generation grid fractional values.
  *
@@ -1091,9 +1070,7 @@ function spanCalculation(xs) {
     .fill(1)
     .map((x, pos) => x + pos);
 }
-// Grid Formulas:1 ends here
 
-// [[file:Mod.org::*Global Scale Formula][Global Scale Formula:1]]
 /**
  * A layout formula for generating raw modular scale figures for calculation
  * and on-the-fly adjustment.
@@ -1118,9 +1095,7 @@ function spanCalculation(xs) {
 export function FigureCalculations(ms) {
   return Subcategory({}, ms);
 }
-// Global Scale Formula:1 ends here
 
-// [[file:Mod.org::*Viewport Formula][Viewport Formula:1]]
 /**
  * A layout formula for generating viewport tokens.
  *
@@ -1197,16 +1172,12 @@ function viewportTargets(target) {
     ["max", ["max", "vmax"]],
   ]).get(target);
 }
-// Viewport Formula:1 ends here
 
-// [[file:Mod.org::*Animation Formula Typedefs][Animation Formula Typedefs:1]]
 /** @typedef {{
   x: number[],
   y: number[]
 }} QSAnimationCubicBezier - cubic bezier token structure */
-// Animation Formula Typedefs:1 ends here
 
-// [[file:Mod.org::*Animation Duration][Animation Duration:1]]
 /**
  * An animation formula for generating duration tokens.
  *
@@ -1251,9 +1222,7 @@ export function AnimationDuration(modifiers, ms) {
     ms,
   );
 }
-// Animation Duration:1 ends here
 
-// [[file:Mod.org::*Animation Timing (Cubic Bezier)][Animation Timing (Cubic Bezier):1]]
 /**
  * An animation formula for generating `cubic-bezier()` timing values.
  *
@@ -1305,11 +1274,6 @@ export function AnimationCubicBezier(modifiers, ms) {
     y: [floor, ...Array.from(YS).reverse(), ceiling],
   };
 }
-// Animation Timing (Cubic Bezier):1 ends here
-
-// [[file:Mod.org::*General Formula Typedefs][General Formula Typedefs:1]]
-// Reuse CSSUnits from utilities
-/** @typedef {import("./utilities.js").CSSUnits} CSSUnits */
 
 /** @typedef {{
   base: string | number,
@@ -1320,9 +1284,7 @@ export function AnimationCubicBezier(modifiers, ms) {
     base: string | number,
     [value: string]: string | number | (string | number)[]
 }} QSGeneralSubcategoryRange - general subcategory range structure */
-// General Formula Typedefs:1 ends here
 
-// [[file:Mod.org::*Base Subcategory (Bidirectional)][Base Subcategory (Bidirectional):1]]
 /**
  * A formula for generating arbitrary subcategories.
  *
@@ -1389,9 +1351,7 @@ export function Subcategory(modifiers, ms) {
     ),
   };
 }
-// Base Subcategory (Bidirectional):1 ends here
 
-// [[file:Mod.org::*Unidirectional Subcategory][Unidirectional Subcategory:1]]
 /**
  * A formula for generating arbitrary subcategories (unidirectional).
  *
@@ -1435,9 +1395,7 @@ export function SubcategoryUnidirectional(modifiers, ms) {
     ...generateUnidirectional("x", utility_pipe(values, unit ? output : raw)),
   };
 }
-// Unidirectional Subcategory:1 ends here
 
-// [[file:Mod.org::*Ranged Subcategory][Ranged Subcategory:1]]
 /**
  * A formula for generating arbitrary subcategories (ranged).
  *
@@ -1522,9 +1480,7 @@ export function SubcategoryRange(modifiers, ms) {
     unit ? output([min]).toString() : precision(min),
   ]);
 }
-// Ranged Subcategory:1 ends here
 
-// [[file:Mod.org::*General Formula Structure][General Formula Structure:1]]
 function generateScale([x, d] = ["x", "d"], ms) {
   const [multiply, divide] = Array.from(ms);
   return {
@@ -1557,9 +1513,7 @@ function generateVariants(key, [, ...values]) {
     {},
   );
 }
-// General Formula Structure:1 ends here
 
-// [[file:Mod.org::*Color Scale][Color Scale:1]]
 /**
  * A formula for generating arbitrary numeric color tokens.
  *
@@ -1576,7 +1530,6 @@ function generateVariants(key, [, ...values]) {
  * input color and the last value has the greatest.
  *
  * @see
- * {@link color_material} for generating material-esque palettes
  * {@link color_tints} for generating tint variants
  * {@link color_tones} for generating tone variants
  * {@link color_shades} for generating shade variants
@@ -1603,9 +1556,7 @@ export function NumericColorScale(palette) {
     {},
   );
 }
-// Color Scale:1 ends here
 
-// [[file:Mod.org::*Named Color Keywords][Named Color Keywords:1]]
 const NAMED_COLOR_KEYWORDS = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
@@ -1763,10 +1714,8 @@ const NAMED_COLOR_KEYWORDS = {
   yellow: "#ffff00",
   yellowgreen: "#9acd32",
 };
-// Named Color Keywords:1 ends here
 
-// [[file:Mod.org::*Colors Project Web Defaults][Colors Project Web Defaults:1]]
-const A11Y_PALETTE = {
+const CLRS = {
   navy: "#001f3f",
   blue: "#0074d9",
   aqua: "#7fdbff",
@@ -1786,9 +1735,7 @@ const A11Y_PALETTE = {
   silver: "#dddddd",
   white: "#ffffff",
 };
-// Colors Project Web Defaults:1 ends here
 
-// [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
 const SYSTEM_FONT_STACKS = {
   sans:
     "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
@@ -1797,9 +1744,7 @@ const SYSTEM_FONT_STACKS = {
   monospace:
     "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
 };
-// System Font Stacks:1 ends here
 
-// [[file:Mod.org::*Compose][Compose:1]]
 /**
  * A utility for combining the behavior of other utilities.
  *
@@ -1825,9 +1770,7 @@ const SYSTEM_FONT_STACKS = {
 export function utility_compose(...fns) {
   return compose(...fns);
 }
-// Compose:1 ends here
 
-// [[file:Mod.org::*Curry][Curry:1]]
 /**
  * A utility for preloading the modifiers of a binary utility.
  *
@@ -1852,9 +1795,7 @@ export function utility_compose(...fns) {
 export function utility_curry(fn, modifier) {
   return curry(fn)(modifier);
 }
-// Curry:1 ends here
 
-// [[file:Mod.org::*Pipe][Pipe:1]]
 /**
  * A utility for constructing data pipelines.
  *
@@ -1878,9 +1819,7 @@ export function utility_curry(fn, modifier) {
 export function utility_pipe(x, ...fns) {
   return pipe(x, ...fns);
 }
-// Pipe:1 ends here
 
-// [[file:Mod.org::*Color Conversion][Color Conversion:1]]
 /**
  * A utility to convert a valid CSS color to its hexadecimal equivalent.
  *
@@ -1964,9 +1903,7 @@ export function color_to_cielch(color) {
 export function color_to_oklab(color) {
   return compose(curry(convert)("oklab"), passthrough)(color);
 }
-// Color Conversion:1 ends here
 
-// [[file:Mod.org::*Color Inspection][Color Inspection:1]]
 /**
  * A utility that allows you to inspect useful data about a color.
  *
@@ -2022,9 +1959,7 @@ export function color_inspect(color) {
     },
   };
 }
-// Color Inspection:1 ends here
 
-// [[file:Mod.org::*Color Property Adjustment][Color Property Adjustment:1]]
 /**
  * A utility that allows you to adjust the properties of any valid CSS color.
  *
@@ -2072,9 +2007,7 @@ function revert(color, output) {
     (output) => validator(output)[1],
   );
 }
-// Color Property Adjustment:1 ends here
 
-// [[file:Mod.org::*Color Mixture][Color Mixture:1]]
 /**
  * A utility for mixing any valid CSS color with a target color.
  *
@@ -2120,9 +2053,7 @@ function calculateMix(original, target, amount) {
     [OA, TA],
   ].map(([X, Y]) => X + (Y - X) * amount);
 }
-// Color Mixture:1 ends here
 
-// [[file:Mod.org::*Interpolation][Interpolation:1]]
 /**
  * A utility to create an interpolated color scale from any valid CSS color.
  *
@@ -2164,9 +2095,7 @@ export function color_interpolation(modifiers, color) {
     ),
   ];
 }
-// Interpolation:1 ends here
 
-// [[file:Mod.org::*Blending][Blending:1]]
 /**
  * A utility to create a blended color scale from any valid CSS color.
  *
@@ -2195,9 +2124,7 @@ export function color_blend(modifiers, color) {
     ),
   ];
 }
-// Blending:1 ends here
 
-// [[file:Mod.org::*Material][Material:1]]
 /**
  * A utility to create a material-esque color scale from any valid CSS color.
  *
@@ -2227,9 +2154,7 @@ export function color_material(modifiers, color) {
     ...color_shades({ contrast: dark, values: 4 }, color),
   ];
 }
-// Material:1 ends here
 
-// [[file:Mod.org::*Color Schemes][Color Schemes:1]]
 /**
  * A utility to generate a dyadic color scale from any valid CSS color.
  *
@@ -2348,9 +2273,7 @@ function generateUniformScheme({ count, arc }, color) {
     (_, pos) => color_adjust({ hue: arc * pos }, color),
   );
 }
-// Color Schemes:1 ends here
 
-// [[file:Mod.org::*Variants][Variants:1]]
 /**
  * A utility to generate tints of any valid CSS color.
  *
@@ -2400,9 +2323,7 @@ export function color_shades(modifiers, color) {
 
   return color_blend({ amount: contrast, values, target: "black" }, color);
 }
-// Variants:1 ends here
 
-// [[file:Mod.org::*Shifting][Shifting:1]]
 /**
  * A utility to update a generated color scale by a given set of properties.
  *
@@ -2417,7 +2338,7 @@ export function color_shades(modifiers, color) {
  *
  * @remarks
  * A color scale is just a plain array, generated or not. So you can also use this
- * utility to batch adjust arbitrary colors by a defined set of constraints.
+ * utility to batch adjust arbitrary colors (so long as they're valid).
  */
 export function palette_shift(modifiers, palette) {
   // Set default modifiers
@@ -2431,9 +2352,7 @@ export function palette_shift(modifiers, palette) {
     ),
   );
 }
-// Shifting:1 ends here
 
-// [[file:Mod.org::*Sorting][Sorting:1]]
 /**
  * A utility to conditionally sort a generated color scale by a given property.
  *
@@ -2474,7 +2393,7 @@ function paletteToOklabValues(palette) {
 
 function sortPalette({ by, order }, palette) {
   const evalCondition = (a, b) => (order === "desc" ? b - a : a - b);
-  const sortingConditions = (property, order) =>
+  const sortingConditions = (property) =>
     new Map([
       ["lightness", ([A], [B]) => evalCondition(A, B)],
       ["chroma", ([, A], [, B]) => evalCondition(A, B)],
@@ -2482,7 +2401,7 @@ function sortPalette({ by, order }, palette) {
       ["alpha", ([, , , A], [, , , B]) => evalCondition(A, B)],
     ]).get(property);
 
-  return palette.sort(sortingConditions(by, order));
+  return palette.sort(sortingConditions(by));
 }
 
 function paletteFromOklab(input, palette) {
@@ -2492,13 +2411,11 @@ function paletteFromOklab(input, palette) {
       palette.map(([L, C, H, A]) =>
         output(["oklab", [L.toString().concat("%"), C, H, A ?? 1]])
       ),
-    (palette) => new Set(palette.map((color) => revert(input, color))),
-    Array.from,
+    (palette) =>
+      Array.from(new Set(palette.map((color) => revert(input, color)))),
   );
 }
-// Sorting:1 ends here
 
-// [[file:Mod.org::*Filtering][Filtering:1]]
 /**
  * A utility to conditionally filter a generated color scale by a given property.
  *
@@ -2515,10 +2432,7 @@ function paletteFromOklab(input, palette) {
  * doesn't necessarily matter. That said, it will coerce all colors in the
  * scale to the format of the *first* color to ensure uniform output.
  *
- * Also be aware that filtering is absolute. The minimum and maximum will
- * ruthlessly cut out any colors that fall outside your defined range.
- *
- * Even if that means all of them. So be careful.
+ * Also be aware that filtering is inclusive.
  */
 export function palette_filter(condition, palette) {
   // Set default filtering conditions
@@ -2538,7 +2452,7 @@ function flushPalette({ by, min, max }, palette) {
 }
 
 function parseFlushCondition({ by, min, max }) {
-  const filterCondition = (v) => (max ? v > min && v < max : v > min);
+  const filterCondition = (v) => (max ? v >= min && v <= max : v > min);
   const filterConditionAsNumber = (v) =>
     max
       ? v > numberFromPercent(min) && v < numberFromPercent(max)
@@ -2553,25 +2467,23 @@ function parseFlushCondition({ by, min, max }) {
 
   return matchProperty(by);
 }
-// Filtering:1 ends here
 
-// [[file:Mod.org::*Colors Project Web Defaults][Colors Project Web Defaults:1]]
 /**
  * A data utility for using colors from the Colors (https://clrs.cc) project.
  *
- * @param {"navy" | "blue" | "aqua" | "teal" | "lime" | "olive" | "green" | "lime" | "yellow" | "maroon" | "fuchsia" | "purple" | "black" | "gray" | "grey" | "silver" | "white"} color - defined color keys
+ * @param {"navy" | "blue" | "aqua" | "teal" | "lime" | "olive" | "green" | "lime" | "yellow" | "maroon" | "fuchsia" | "purple" | "black" | "gray" | "grey" | "silver" | "white"} keyword - defined color keywords
  * @returns {string}
  */
-export function data_clrs(color) {
-  return A11Y_PALETTE[color] || UndefinedInA11yPaletteError();
+export function data_clrs(keyword) {
+  return CLRS[keyword] || UndefinedInClrsError();
 }
 
-function UndefinedInA11yPaletteError() {
+function UndefinedInClrsError() {
   throw new QSCError({
-    name: "No Matching Keyword in A11y Palette",
+    name: "No Matching Keyword in Colors",
     reason: `
 This error throws when the input doesn't match any defined
-colors in the Colors project.
+keywords in the Colors project.
 `,
     suggestion: `
 Valid colors in the Colors (https://clrs.cc) project:
@@ -2588,9 +2500,7 @@ Valid colors in the Colors (https://clrs.cc) project:
 `,
   });
 }
-// Colors Project Web Defaults:1 ends here
 
-// [[file:Mod.org::*Color Contrast Ratio][Color Contrast Ratio:1]]
 /**
  * A utility that filters a generated color scale by WCAG contrast ratio recommendations.
  *
@@ -2640,9 +2550,7 @@ function calculateRelativeLuminance(color) {
     ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B,
   );
 }
-// Color Contrast Ratio:1 ends here
 
-// [[file:Mod.org::*System Font Stacks][System Font Stacks:1]]
 /**
  * A data formula for using system font stacks (https://systemfontstack.com).
  *
@@ -2668,9 +2576,7 @@ monospace
 `,
   });
 }
-// System Font Stacks:1 ends here
 
-// [[file:Mod.org::*Scale Creation][Scale Creation:1]]
 /**
  * A utility for creating modular scales from a base value.
  *
@@ -2713,9 +2619,7 @@ export function ms_create(modifiers, base) {
       .fill(base)
       .map((base, index) => base * ratio ** index);
 }
-// Scale Creation:1 ends here
 
-// [[file:Mod.org::*Scale Modification][Scale Modification:1]]
 /**
  * A utility for modifying a modular scale.
  *
@@ -2774,10 +2678,10 @@ function unlessMS(body, data) {
 
 function NotARawMSError() {
   throw new QSCError({
-    name: "Input Must Be Raw Modular Scale",
+    name: "Not a Raw Modular Scale",
     reason: `
-You've called a modular scale function with something other than a modular
-scale. So the function cannot work.
+You've called a modular scale utility with something other than a modular
+scale.
 `,
     suggestion: `
 Remember that scale modification functions only work on a scale of raw values.
@@ -2789,9 +2693,7 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 `,
   });
 }
-// Scale Modification:1 ends here
 
-// [[file:Mod.org::*Scale Units][Scale Units:1]]
 /** @typedef {"cm" | "mm" | "Q" | "in" | "pc" | "pt" | "px"} CSSAbsoluteUnits - supported CSS absolute units */
 /** @typedef {"em" | "ex" | "ch" | "rem" | "lh" | "vw" | "vh" | "vmin" | "vmax"} CSSRelativeUnits - supported CSS relative units */
 /** @typedef {"ms" | "s"} CSSTimingUnits - supported CSS timing units */
@@ -2817,12 +2719,10 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 export function ms_units(unit, ms) {
   return unlessMS(
     ms.map((n) => `${precision(n)}${unit}`, ms),
-    ms
+    ms,
   );
 }
-// Scale Units:1 ends here
 
-// [[file:Mod.org::*Quarks System Dictionary Typedefs][Quarks System Dictionary Typedefs:1]]
 /**
  * @typedef {object} QSDMetadata - Quarks System Dictionary general metadata (can be project or category local)
  * @property {string} description - category description (can be multiline)
@@ -2858,9 +2758,7 @@ export function ms_units(unit, ms) {
 /**
  * @typedef {{project?: QSDProject, [index: string]: QSDTokens }} QSD - Quarks System Dictionary design token spec
  */
-// Quarks System Dictionary Typedefs:1 ends here
 
-// [[file:Mod.org::*Custom Properties][Custom Properties:1]]
 /**
  * A utility for exporting a complete Quarks System Dictionary as CSS custom properties.
  *
@@ -2877,9 +2775,7 @@ export function ms_units(unit, ms) {
 export function tokens_to_css(dict) {
   return cssFormatStructure({}, dict);
 }
-// Custom Properties:1 ends here
 
-// [[file:Mod.org::*Sass][Sass:1]]
 /**
  * A utility for exporting a complete Quarks System Dictionary as Sass variables.
  *
@@ -2907,9 +2803,7 @@ export function tokens_to_scss(dict) {
     dict,
   );
 }
-// Sass:1 ends here
 
-// [[file:Mod.org::*Less][Less:1]]
 /**
  * A utility for exporting a complete Quarks System Dictionary as Less variables.
  *
@@ -2934,9 +2828,7 @@ export function tokens_to_less(dict) {
     dict,
   );
 }
-// Less:1 ends here
 
-// [[file:Mod.org::*Stylus][Stylus:1]]
 /**
  * A utility for exporting a complete Quarks System Dictionary as Stylus variables.
  *
@@ -2961,9 +2853,7 @@ export function tokens_to_styl(dict) {
     dict,
   );
 }
-// Stylus:1 ends here
 
-// [[file:Mod.org::*JSON][JSON:1]]
 /**
  * A utility for exporting a complete Quarks System Dictionary as JSON data.
  *
@@ -2989,9 +2879,7 @@ export function tokens_to_json(dict) {
 
   return JSON.stringify({ project, tokens }, null, 2);
 }
-// JSON:1 ends here
 
-// [[file:Mod.org::*YAML][YAML:1]]
 /**
  * A utility for exporting a complete Quarks System Dictionary as YAML data.
  *
@@ -3043,9 +2931,7 @@ ${
   }
 `;
 }
-// YAML:1 ends here
 
-// [[file:Mod.org::*GIMP/Inkscape][GIMP/Inkscape:1]]
 /**
  * A utility for exporting Quarks System Dictionary colors as a GIMP/Inkscape palette.
  *
@@ -3128,9 +3014,7 @@ function gimpPaletteSwatch(color) {
       .slice(0, 3)
       .join("\t"));
 }
-// GIMP/Inkscape:1 ends here
 
-// [[file:Mod.org::*Sketch][Sketch:1]]
 /**
  * A utility for exporting Quarks System Dictionary colors as a Sketch palette.
  *
@@ -3185,9 +3069,7 @@ function sketchSwatch(color) {
     alpha,
   }));
 }
-// Sketch:1 ends here
 
-// [[file:Mod.org::*TailwindCSS][TailwindCSS:1]]
 /**
  * A utility for exporting a Quarks System Dictionary as TailwindCSS theme data.
  *
@@ -3213,9 +3095,7 @@ export function tokens_to_tailwindcss(dict) {
 
   return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
-// TailwindCSS:1 ends here
 
-// [[file:Mod.org::*Style Dictionary][Style Dictionary:1]]
 /**
  * A utility for exporting a Quarks System Dictionary as Style Dictionary tokens.
  *
@@ -3238,9 +3118,7 @@ export function tokens_to_style_dictionary(dict) {
 
   return (project && assemble(tokens)) || MissingProjectMetadataError();
 }
-// Style Dictionary:1 ends here
 
-// [[file:Mod.org::*CSS Format Structure][CSS Format Structure:1]]
 function cssFormatStructure(
   {
     doc: [DOC_OPEN, DOC_CLOSE] = ["\n/**", " **/\n"],
@@ -3292,9 +3170,7 @@ ${
     TOKENS_CLOSE,
   );
 }
-// CSS Format Structure:1 ends here
 
-// [[file:Mod.org::*Undefined Project Metadata Error][Undefined Project Metadata Error:1]]
 function MissingProjectMetadataError() {
   throw new QSCError({
     name: "Missing Project Metadata",
@@ -3329,9 +3205,7 @@ a description or comments with your project.
 `,
   });
 }
-// Undefined Project Metadata Error:1 ends here
 
-// [[file:Mod.org::*Metadata Emitter][Metadata Emitter:1]]
 function metadataEmitter(
   {
     commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
@@ -3365,15 +3239,11 @@ function metadataEmitter(
     ].join(""),
   );
 }
-// Metadata Emitter:1 ends here
 
-// [[file:Mod.org::*Token String Constructor][Token String Constructor:1]]
 function tokenStringConstructor(opts, dict) {
   return "".concat("\n", cssTokenEmitter(opts, "", dict));
 }
-// Token String Constructor:1 ends here
 
-// [[file:Mod.org::*CSS Token Emitter][CSS Token Emitter:1]]
 function cssTokenEmitter(opts, head, node) {
   function assemble(head, node) {
     const { metadata, ...tokens } = node;
@@ -3394,9 +3264,7 @@ function cssTokenEmitter(opts, head, node) {
 
   return assemble(head, node);
 }
-// CSS Token Emitter:1 ends here
 
-// [[file:Mod.org::*CSS Token Assembler][CSS Token Assembler:1]]
 function cssTokenAssembler({
   padding = "",
   prefix = "--",
@@ -3416,9 +3284,7 @@ function cssTokenAssembler({
     );
   };
 }
-// CSS Token Assembler:1 ends here
 
-// [[file:Mod.org::*Token String Identifier][Token String Identifier:1]]
 function tokenStringIdentifier(collected, current, delimiter) {
   return current === "base"
     ? collected
@@ -3426,9 +3292,7 @@ function tokenStringIdentifier(collected, current, delimiter) {
     ? [collected, current].join(delimiter)
     : current;
 }
-// Token String Identifier:1 ends here
 
-// [[file:Mod.org::*Automatic Versioning][Automatic Versioning:1]]
 function bumpVersion(project) {
   let [major, minor, patch, pre] = Array.from(
     project.version.split(/[.-]/g),
@@ -3471,16 +3335,12 @@ function bumpVersion(project) {
 
   return project.version;
 }
-// Automatic Versioning:1 ends here
 
-// [[file:Mod.org::*Timestamp Emitter][Timestamp Emitter:1]]
 function timestampEmitter() {
   const TIMESTAMP = new Date(Date.now());
   return `Updated on ${TIMESTAMP.toLocaleDateString()} at ${TIMESTAMP.toLocaleTimeString()}`;
 }
-// Timestamp Emitter:1 ends here
 
-// [[file:Mod.org::*YAML Assemblers][YAML Assemblers:1]]
 function yamlDictSubcategory(level, data) {
   return Object.entries(data).reduce((str, [key, v]) => {
     if (Array.isArray(v)) return yamlDictScale(level, str, key, v);
@@ -3510,30 +3370,22 @@ function yamlDictScale(level, str, key, value) {
     value.reduce((s, v) => s.concat("".padStart(level + 2), "- ", v, "\n"), ""),
   );
 }
-// YAML Assemblers:1 ends here
 
-// [[file:Mod.org::*Currying][Currying:1]]
 function curry(fn) {
   return (...initial) =>
     initial.length >= fn.length
       ? fn.apply(this, initial)
       : (...remaining) => fn.apply(this, initial.concat(remaining));
 }
-// Currying:1 ends here
 
-// [[file:Mod.org::*Composition][Composition:1]]
 function compose(...fns) {
   return (x) => fns.reduce((g, f) => f(g), x);
 }
-// Composition:1 ends here
 
-// [[file:Mod.org::*Pipelining][Pipelining:1]]
 function pipe(x, ...fns) {
   return compose(...fns)(x);
 }
-// Pipelining:1 ends here
 
-// [[file:Mod.org::*Converter][Converter:1]]
 const INPUT_TO_RGB = {
   named: compose(hexFromNamedColor, passthrough, hexToRgb),
   hex: hexToRgb,
@@ -3569,47 +3421,30 @@ function convert(output, color) {
     ([, color]) => OUTPUT_FROM_RGB[output](color),
   );
 }
-// Converter:1 ends here
 
-// [[file:Mod.org::*Arithmetic][Arithmetic:1]]
 const add = (y, x) => x + y;
 const multiply = (y, x) => x * y;
 const divide = (y, x) => x / y;
 const remainder = (y, x) => x % y;
-// Arithmetic:1 ends here
 
-// [[file:Mod.org::*Limiters][Limiters:1]]
 const precision = (value) => +value.toPrecision(5);
 const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
-// Limiters:1 ends here
 
-// [[file:Mod.org::*Hexadecimal][Hexadecimal:1]]
 const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
-const hexFragmentFromRgb = (channel) =>
-  channel.toString(16).padStart(2, "0");
-// Hexadecimal:1 ends here
+const hexFragmentFromRgb = (channel) => channel.toString(16).padStart(2, "0");
 
-// [[file:Mod.org::*Percent Calculations][Percent Calculations:1]]
 const numberToPercent = (n) => multiply(100, n);
 const numberFromPercent = (percentage) => divide(100, percentage);
-// Percent Calculations:1 ends here
 
-// [[file:Mod.org::*RGB Component Calculations][RGB Component Calculations:1]]
 const numberToRgb = (n) => multiply(255, n);
 const numberFromRgb = (channel) => divide(255, channel);
-const rgbFromPercent = compose(
-  numberFromPercent,
-  numberToRgb,
-  Math.round,
-);
+const rgbFromPercent = compose(numberFromPercent, numberToRgb, Math.round);
 const hexFragmentFromNumber = compose(
   numberToRgb,
   Math.round,
   hexFragmentFromRgb,
 );
-// RGB Component Calculations:1 ends here
 
-// [[file:Mod.org::*Hue Calculations][Hue Calculations:1]]
 const radToDegrees = (radians) =>
   compose(
     () => divide(Math.PI, 180),
@@ -3637,16 +3472,12 @@ const hueCorrection = (hue) =>
       ? remainder(360, hue)
       : hue,
   );
-// Hue Calculations:1 ends here
 
-// [[file:Mod.org::*Hex to RGB][Hex to RGB:1]]
 function hexToRgb(color) {
   const [, components] = parser(color);
   return pipe(output(["rgb", components]), validator);
 }
-// Hex to RGB:1 ends here
 
-// [[file:Mod.org::*HSL to RGB][HSL to RGB:1]]
 function hslToRgb(color) {
   const [, [H, S, L, A]] = parser(color);
 
@@ -3673,9 +3504,7 @@ function calculateRGB(C, X, H) {
     [[C, 0, X], 300 <= H && H < 360],
   ]);
 }
-// HSL to RGB:1 ends here
 
-// [[file:Mod.org::*CMYK to RGB][CMYK to RGB:1]]
 function cmykToRgb(color) {
   const [, [C, M, Y, K, A]] = parser(color);
 
@@ -3685,9 +3514,7 @@ function cmykToRgb(color) {
 
   return pipe(output(["rgb", [R, G, B, A]]), validator);
 }
-// CMYK to RGB:1 ends here
 
-// [[file:Mod.org::*HWB to RGB][HWB to RGB:1]]
 function hwbToRgb(color) {
   const [, [H, W, BLK, A]] = parser(color);
 
@@ -3719,9 +3546,7 @@ function hwbToRgb(color) {
 
   return pipe(output(["rgb", [R, G, B, A]]), validator);
 }
-// HWB to RGB:1 ends here
 
-// [[file:Mod.org::*CIELAB to RGB][CIELAB to RGB:1]]
 function cielabToRgb(color) {
   const [, [L, a, b, A]] = parser(color);
   const [X, Y, Z] = cielabToCiexyz([L, a, b]);
@@ -3783,9 +3608,7 @@ function lrgbToRgb([LR, LG, LB]) {
     V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055
   );
 }
-// CIELAB to RGB:1 ends here
 
-// [[file:Mod.org::*Oklab to RGB][Oklab to RGB:1]]
 function oklabToRgb(color) {
   const [, [L, a, b, A]] = parser(color);
   const [LR, LG, LB] = oklabToLrgb([L, a, b]);
@@ -3824,9 +3647,7 @@ function oklabToLrgb([L, a, b]) {
 
   return [LR, LG, LB];
 }
-// Oklab to RGB:1 ends here
 
-// [[file:Mod.org::*Hex from RGB][Hex from RGB:1]]
 function hexFromRgb(color) {
   const [, components] = parser(color);
   return pipe(
@@ -3845,9 +3666,7 @@ function hexFromRgb(color) {
     validator,
   );
 }
-// Hex from RGB:1 ends here
 
-// [[file:Mod.org::*HSL from RGB][HSL from RGB:1]]
 function hslFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
 
@@ -3897,9 +3716,7 @@ function calculateHue(R, G, B, cmax, delta) {
 function calculateSaturation(delta, L) {
   return delta === 0 ? 0 : delta / (1 - Math.abs(2 * L - 1));
 }
-// HSL from RGB:1 ends here
 
-// [[file:Mod.org::*CMYK from RGB][CMYK from RGB:1]]
 function cmykFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
 
@@ -3921,9 +3738,7 @@ function cmykFromRgb(color) {
     validator,
   );
 }
-// CMYK from RGB:1 ends here
 
-// [[file:Mod.org::*HWB from RGB][HWB from RGB:1]]
 function hwbFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
 
@@ -3953,9 +3768,7 @@ function hwbFromRgb(color) {
     validator,
   );
 }
-// HWB from RGB:1 ends here
 
-// [[file:Mod.org::*CIELAB from RGB][CIELAB from RGB:1]]
 function cielabFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
   const [X, Y, Z] = rgbToCieXYZ([R, G, B]);
@@ -4018,9 +3831,7 @@ function rgbToLrgb([R, G, B]) {
     V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4
   );
 }
-// CIELAB from RGB:1 ends here
 
-// [[file:Mod.org::*Oklab from RGB][Oklab from RGB:1]]
 function oklabFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
   const [l, a, b] = lrgbToOklab([R, G, B]);
@@ -4058,15 +3869,11 @@ function lrgbToOklab([R, G, B]) {
     return V1 * L + V2 * M - V3 * S;
   });
 }
-// Oklab from RGB:1 ends here
 
-// [[file:Mod.org::*Named Color to Hex][Named Color to Hex:1]]
 function hexFromNamedColor(color) {
   return validator(NAMED_COLOR_KEYWORDS[color]);
 }
-// Named Color to Hex:1 ends here
 
-// [[file:Mod.org::*CIELAB to CIELCh(ab)][CIELAB to CIELCh(ab):1]]
 function cielabToCielch(color) {
   const [, [L, a, b, A]] = parser(color);
 
@@ -4078,9 +3885,7 @@ function cielabToCielch(color) {
     validator,
   );
 }
-// CIELAB to CIELCh(ab):1 ends here
 
-// [[file:Mod.org::*CIELCh(ab) to CIELAB][CIELCh(ab) to CIELAB:1]]
 function cielabFromCielch(color) {
   const [, [L, C, H, A]] = parser(color);
 
@@ -4094,9 +3899,7 @@ function cielabFromCielch(color) {
     validator,
   );
 }
-// CIELCh(ab) to CIELAB:1 ends here
 
-// [[file:Mod.org::*Validator][Validator:1]]
 const SUPPORTED_FORMATS = {
   named: namedValidator,
   hex: hexValidator,
@@ -4194,89 +3997,67 @@ oklab(68.332% 0.16 1.778rad)
 `,
   });
 }
-// Validator:1 ends here
 
-// [[file:Mod.org::*Primitives][Primitives:1]]
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENT_TOKEN = new RegExp(["(?:", NUMBER_TOKEN.source, "%)"].join(""));
-// Primitives:1 ends here
 
-// [[file:Mod.org::*Delimiters][Delimiters:1]]
 const DELIMITER = /(?:[\s,]+)/;
 const ALPHA_DELIMITER = new RegExp(DELIMITER.source.replace(",", ",/"));
 const CSS4_DELIMITER = new RegExp(DELIMITER.source.replace(",", ""));
 const CSS4_ALPHA_DELIMITER = new RegExp(
   ALPHA_DELIMITER.source.replace(",", ""),
 );
-// Delimiters:1 ends here
 
-// [[file:Mod.org::*Components][Components:1]]
 const COMPONENT_TOKEN = new RegExp(
   ["(?:", PERCENT_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
 );
 const HUE_TOKEN = new RegExp(
   ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
 );
-// Components:1 ends here
 
-// [[file:Mod.org::*Named Color Validator][Named Color Validator:1]]
 function namedValidator(color) {
   return !!NAMED_COLOR_KEYWORDS[color];
 }
-// Named Color Validator:1 ends here
 
-// [[file:Mod.org::*Hex Validator][Hex Validator:1]]
 function hexValidator(color) {
   return /^#([\da-f]{3,4}){1,2}$/i.test(color);
 }
-// Hex Validator:1 ends here
 
-// [[file:Mod.org::*RGB Validator][RGB Validator:1]]
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
     Array(3).fill(COMPONENT_TOKEN),
   ).test(color);
 }
-// RGB Validator:1 ends here
 
-// [[file:Mod.org::*HSL Validator][HSL Validator:1]]
 function hslValidator(color) {
   return matchFunctionalFormat({ prefix: "hsla?" }, [
     HUE_TOKEN,
     ...Array(2).fill(PERCENT_TOKEN),
   ]).test(color);
 }
-// HSL Validator:1 ends here
 
-// [[file:Mod.org::*CMYK Validator][CMYK Validator:1]]
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
     Array(4).fill(COMPONENT_TOKEN),
   ).test(color);
 }
-// CMYK Validator:1 ends here
 
-// [[file:Mod.org::*HWB Validator][HWB Validator:1]]
 function hwbValidator(color) {
   return matchFunctionalFormat({ prefix: "hwb", legacy: false }, [
     HUE_TOKEN,
     ...Array(2).fill(PERCENT_TOKEN),
   ]).test(color);
 }
-// HWB Validator:1 ends here
 
-// [[file:Mod.org::*CIELAB Validator][CIELAB Validator:1]]
 function cielabValidator(color) {
   return matchFunctionalFormat({ prefix: "lab", legacy: false }, [
     PERCENT_TOKEN,
     ...Array(2).fill(NUMBER_TOKEN),
   ]).test(color);
 }
-// CIELAB Validator:1 ends here
 
-// [[file:Mod.org::*CIELCh(ab) Validator][CIELCh(ab) Validator:1]]
 function cielchValidator(color) {
   return matchFunctionalFormat({ prefix: "lch", legacy: false }, [
     PERCENT_TOKEN,
@@ -4284,9 +4065,7 @@ function cielchValidator(color) {
     HUE_TOKEN,
   ]).test(color);
 }
-// CIELCh(ab) Validator:1 ends here
 
-// [[file:Mod.org::*Oklab Validator][Oklab Validator:1]]
 function oklabValidator(color) {
   return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
     PERCENT_TOKEN,
@@ -4294,9 +4073,7 @@ function oklabValidator(color) {
     HUE_TOKEN,
   ]).test(color);
 }
-// Oklab Validator:1 ends here
 
-// [[file:Mod.org::*Functional Formats][Functional Formats:1]]
 function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   const VALUES = tokens.map((token) => token.source);
 
@@ -4312,16 +4089,12 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
     ),
   );
 }
-// Functional Formats:1 ends here
 
-// [[file:Mod.org::*Extractor][Extractor:1]]
 const extractor = compose(validator, ([format, color]) => [
   format,
   format === "hex" ? hexExtractor(color) : componentExtractor(color),
 ]);
-// Extractor:1 ends here
 
-// [[file:Mod.org::*Hex Extractor][Hex Extractor:1]]
 function hexExtractor(color) {
   return expandHex(color).match(/[\da-f]{2}/gi);
 }
@@ -4335,15 +4108,11 @@ function expandHex(color) {
 
   return color;
 }
-// Hex Extractor:1 ends here
 
-// [[file:Mod.org::*Component Extractor][Component Extractor:1]]
 function componentExtractor(color) {
   return color.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 }
-// Component Extractor:1 ends here
 
-// [[file:Mod.org::*Parser][Parser:1]]
 const FORMAT_PARSERS = {
   hex: parseHex,
   rgb: parseRGB,
@@ -4359,9 +4128,7 @@ const parser = compose(
   validator,
   ([format, color]) => FORMAT_PARSERS[format](color),
 );
-// Parser:1 ends here
 
-// [[file:Mod.org::*Hex Parser][Hex Parser:1]]
 function parseHex(color) {
   return pipe(
     extractor(color),
@@ -4379,9 +4146,7 @@ function parseHex(color) {
     ],
   );
 }
-// Hex Parser:1 ends here
 
-// [[file:Mod.org::*RGB Parser][RGB Parser:1]]
 function parseRGB(color) {
   return pipe(
     extractor(color),
@@ -4401,9 +4166,7 @@ function parseRGB(color) {
     ],
   );
 }
-// RGB Parser:1 ends here
 
-// [[file:Mod.org::*HSL Parser][HSL Parser:1]]
 function parseHSL(color) {
   return pipe(
     extractor(color),
@@ -4423,9 +4186,7 @@ function parseHSL(color) {
     ],
   );
 }
-// HSL Parser:1 ends here
 
-// [[file:Mod.org::*CMYK Parser][CMYK Parser:1]]
 function parseCMYK(color) {
   return pipe(
     extractor(color),
@@ -4439,24 +4200,18 @@ function parseCMYK(color) {
     ],
   );
 }
-// CMYK Parser:1 ends here
 
-// [[file:Mod.org::*CIELAB Parser][CIELAB Parser:1]]
 function parseCielab(color) {
   return parseCie((ab) => parseNumber(ab), color);
 }
-// CIELAB Parser:1 ends here
 
-// [[file:Mod.org::*CIELCh(ab) Parser][CIELCh(ab) Parser:1]]
 function parseCielch(color) {
   return parseCie(
     (c, pos) => (pos === 2 ? parseHue(c) : parseNumber(c)),
     color,
   );
 }
-// CIELCh(ab) Parser:1 ends here
 
-// [[file:Mod.org::*Oklab Parser][Oklab Parser:1]]
 function parseOklab(color) {
   return pipe(
     extractor(color),
@@ -4480,27 +4235,19 @@ function parseOklab(color) {
     ],
   );
 }
-// Oklab Parser:1 ends here
 
-// [[file:Mod.org::*Number Parser][Number Parser:1]]
 function parseNumber(n) {
   return pipe(n, parseFloat, precision);
 }
-// Number Parser:1 ends here
 
-// [[file:Mod.org::*Percent Parser][Percent Parser:1]]
 function parsePercent(percentage) {
   return pipe(percentage, parseFloat, numberFromPercent);
 }
-// Percent Parser:1 ends here
 
-// [[file:Mod.org::*RGB Channel Parser][RGB Channel Parser:1]]
 function parseChannel(channel) {
   return pipe(channel, parseFloat, numberFromRgb);
 }
-// RGB Channel Parser:1 ends here
 
-// [[file:Mod.org::*Hue Parsers][Hue Parsers:1]]
 function parseHue(hue) {
   return hueCorrection(
     hue.endsWith("grad")
@@ -4518,9 +4265,7 @@ function parseHueAsRadians(hue) {
     ? parseNumber(hue)
     : pipe(hue, parseHue, radFromDegrees);
 }
-// Hue Parsers:1 ends here
 
-// [[file:Mod.org::*CIE* Parser][CIE* Parser:1]]
 function parseCie(unique, color) {
   return pipe(
     extractor(color),
@@ -4540,18 +4285,14 @@ function parseCie(unique, color) {
     ],
   );
 }
-// CIE* Parser:1 ends here
 
-// [[file:Mod.org::*Output][Output:1]]
 function output(data) {
   return pipe(
     data,
     ([format, components]) => COLOR_ASSEMBLER(components)[format],
   );
 }
-// Output:1 ends here
 
-// [[file:Mod.org::*Output][Output:2]]
 function COLOR_ASSEMBLER(components) {
   return {
     hex: hexOutput(components),
@@ -4587,9 +4328,7 @@ function modernOutput(prefix, components) {
     ")",
   );
 }
-// Output:2 ends here
 
-// [[file:Mod.org::*Error Handling][Error Handling:1]]
 class QSCError extends Error {
   constructor({
     name = "Unknown Error",
@@ -4605,4 +4344,3 @@ ${"=".repeat(80)}
 `;
   }
 }
-// Error Handling:1 ends here
