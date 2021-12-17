@@ -1,4 +1,4 @@
-// Project: Quarks System Core (v1.0.0)
+// Project: Quarks System Core (v1.0.1)
 // Author: Chatman R. Jr <crjr.code@protonmail.com>
 // Repository: https://github.com/quarksuite/core
 // License: Unlicense
@@ -105,7 +105,7 @@
  *
  * @param {number} [config.animation.values] - set an individual limit for generated animation values
  *
- * @returns {QSBootstrapperTokens} - Quarks System Dictionary tokens
+ * @returns {QSBootstrapperTokens} Quarks System Dictionary tokens
  *
  * @remarks
  * `color.type` corresponds with a built-in palette formula. You can pass in
@@ -118,7 +118,7 @@
  * @see {@link MaterialPalette} for color.type "material" options
  * @see {@link ArtisticPalette} for color.type "artistic" options
  * @see {@link InterpolatedPalette} for color.type "interpolated" options
- * @see {@link BlendedPalette} for color.type blended options
+ * @see {@link BlendedPalette} for color.type "blended" options
  *
  * @example
  * Generating the full collection of defaults.
@@ -216,18 +216,18 @@ export function Quarks(config = {}) {
           system: PRIMARY_FALLBACK,
           weights: PRIMARY_WEIGHTS,
         },
-        PRIMARY,
+        PRIMARY
       ),
       secondary: TextFamily(
         { system: SEC_FALLBACK, weights: SEC_WEIGHTS },
-        SEC,
+        SEC
       ),
       source: TextFamily(
         {
           system: SRC_FALLBACK,
           weights: SRC_WEIGHTS,
         },
-        SRC,
+        SRC
       ),
       size: TextSize(TEXT),
       measure: TextMeasure({ min, max }, TEXT),
@@ -304,7 +304,7 @@ function paletteFromType(base, type, modifiers = {}) {
  *
  * @param {string} color - the base color to generate from
  *
- * @returns {QSPaletteMaterial} output palette
+ * @returns {QSPaletteMaterial} Material color palette
  *
  * @remarks
  * If `modifiers.scheme` is set, the colors are mapped to an alphabetical index.
@@ -346,7 +346,7 @@ export function MaterialPalette(modifiers, color) {
   return utility_pipe(
     color,
     utility_curry(paletteSettings, { format, scheme }),
-    utility_curry(generateMaterialPalette, { light, dark }),
+    utility_curry(generateMaterialPalette, { light, dark })
   );
 }
 
@@ -364,7 +364,7 @@ export function MaterialPalette(modifiers, color) {
  *
  * @param {string} color - the base color to generate from
  *
- * @returns {QSPaletteArtistic} output palette
+ * @returns {QSPaletteArtistic} Artistic color palette
  *
  * @remarks
  * If `modifiers.scheme` is set, the colors are mapped to an alphabetical index.
@@ -420,7 +420,7 @@ export function ArtisticPalette(modifiers, color) {
     utility_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
-    }),
+    })
   );
 }
 
@@ -447,7 +447,7 @@ export function ArtisticPalette(modifiers, color) {
  *
  * @param {string} color - the base color to generate from
  *
- * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
+ * @returns {QSPaletteArtistic | QSPaletteMaterial} Color palette from interpolation
  *
  * @remarks
  * The colors you can generate are theoretically infinite, but the formula will only return
@@ -517,17 +517,19 @@ export function InterpolatedPalette(modifiers, color) {
     utility_curry(paletteSettings, { format }),
     ([color]) => [
       color,
-      ...(values === 1 ? [] : color_interpolation(
-        { lightness, chroma, hue, alpha, values: values - 1 },
-        color,
-      )),
+      ...(values === 1
+        ? []
+        : color_interpolation(
+            { lightness, chroma, hue, alpha, values: values - 1 },
+            color
+          )),
     ],
     material
       ? utility_curry(generateMaterialPalette, { light, dark })
       : utility_curry(generateArtisticPalette, {
-        contrast,
-        values: { tints, tones, shades },
-      }),
+          contrast,
+          values: { tints, tones, shades },
+        })
   );
 }
 
@@ -552,7 +554,7 @@ export function InterpolatedPalette(modifiers, color) {
  *
  * @param {string} color - the base color to generate from
  *
- * @returns {QSPaletteArtistic | QSPaletteMaterial} output palette
+ * @returns {QSPaletteArtistic | QSPaletteMaterial} Color palette from blending
  *
  * @remarks
  * The colors you can generate are theoretically infinite, but the formula will only return
@@ -624,11 +626,12 @@ export function BlendedPalette(modifiers, color) {
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material ? utility_curry(generateMaterialPalette, { light, dark })
-    : utility_curry(generateArtisticPalette, {
-      contrast,
-      values: { tints, tones, shades },
-    }),
+    material
+      ? utility_curry(generateMaterialPalette, { light, dark })
+      : utility_curry(generateArtisticPalette, {
+          contrast,
+          values: { tints, tones, shades },
+        })
   );
 }
 
@@ -636,7 +639,7 @@ function paletteSettings({ scheme, format }, color) {
   return utility_pipe(
     color,
     (color) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
-    (color) => (scheme ? setScheme(scheme, color) : [color]),
+    (color) => (scheme ? setScheme(scheme, color) : [color])
   );
 }
 
@@ -669,11 +672,11 @@ function generateMaterialPalette({ light, dark }, palette) {
                 ...a,
                 ...(i === 0 ? { 50: v } : { [`${i}`.padEnd(3, "0")]: v }),
               }),
-              {},
+              {}
             ),
           },
         };
-      }, {}),
+      }, {})
   );
 }
 
@@ -691,18 +694,18 @@ function generateArtisticPalette({ contrast, values }, palette) {
             values: values.tints,
             contrast,
           },
-          color,
+          color
         );
         const muted = color_tones(
           {
             values: values.tones,
             contrast: contrast / ADJUSTMENT_VALUE,
           },
-          color,
+          color
         );
         const dark = color_shades(
           { values: values.shades, contrast: contrast / ADJUSTMENT_VALUE },
-          color,
+          color
         );
 
         return [category, [color, light, muted, dark]];
@@ -721,7 +724,7 @@ function generateArtisticPalette({ contrast, values }, palette) {
             ...variants,
           },
         };
-      }, {}),
+      }, {})
   );
 }
 
@@ -753,7 +756,7 @@ function alphabeticalCategories(index) {
  *
  * @param {string} font - custom font family to prepend to system stack
  *
- * @returns {QSTextFamily}
+ * @returns {QSTextFamily} Text family tokens
  *
  * @remarks
  * `weights` keywords match to the following values:
@@ -835,7 +838,7 @@ function fontWeights(key) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {QSGeneralSubcategory} Text size tokens
  *
  * @remarks
  * This formula outputs text sizes in `rem` units for larger, `em` for smaller
@@ -869,7 +872,7 @@ export function TextSize(ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategoryRange}
+ * @returns {QSGeneralSubcategoryRange} Text leading tokens
  *
  * @remarks
  * This formula fits convention and outputs unitless values
@@ -902,7 +905,7 @@ export function TextLeading(modifiers, ms) {
       max: normal,
       keys: ["narrow", "tight"],
     },
-    ms,
+    ms
   );
 }
 
@@ -915,7 +918,7 @@ export function TextLeading(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategoryRange}
+ * @returns {QSGeneralSubcategoryRange} Text measure tokens
  *
  * @remarks
  * This formula outputs values as `ch` units so that the browser derives measure
@@ -951,7 +954,7 @@ export function TextMeasure(modifiers, ms) {
       keys: ["segment", "minimum"],
       trunc: true,
     },
-    ms,
+    ms
   );
 }
 
@@ -960,7 +963,7 @@ export function TextMeasure(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {QSGeneralSubcategory} Text unit tokens
  *
  * @remarks
  * This formula outputs values as `ex` units so that the browser derives spacing
@@ -1007,7 +1010,7 @@ export function TextUnits(ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {QSGeneralSubcategory} Grid layout tokens
  *
  * @remarks
  * This formula outputs values as `fr` units following the spec.
@@ -1038,7 +1041,7 @@ export function GridFractions(ms) {
  * @param {number} columns - the number of columns to generate
  * @param {number} [rows] - the number of rows to generate (rows = columns by default)
  *
- * @returns {QSGridDimensions}
+ * @returns {QSGridDimensions} Grid dimensional tokens
  *
  * @remarks
  * This formula outputs row and column properties corresponding with the defined settings.
@@ -1085,7 +1088,7 @@ function spanCalculation(xs) {
  *
  * @param {number[]} ms - the modular scale
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {QSGeneralSubcategory} Raw scale calculation tokens
  *
  * @see
  * {@link ms_create} for generating a scale to pass in
@@ -1114,7 +1117,7 @@ export function FigureCalculations(ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSViewport}
+ * @returns {QSViewport} Viewport tokens
  *
  * @remarks
  * The value units correspond to the contexts defined.
@@ -1166,7 +1169,7 @@ export function Viewport(modifiers, ms) {
           unit,
           trunc: true,
         },
-        ms,
+        ms
       ),
     };
   }, {});
@@ -1195,7 +1198,7 @@ function viewportTargets(target) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategoryRange}
+ * @returns {QSGeneralSubcategoryRange} Animation duration tokens
  *
  * @remarks
  * This formula does no internal conversion, so you *will* have to pass in milliseconds.
@@ -1227,7 +1230,7 @@ export function AnimationDuration(modifiers, ms) {
       unit: "ms",
       keys: ["interval", "fastest"],
     },
-    ms,
+    ms
   );
 }
 
@@ -1240,7 +1243,7 @@ export function AnimationDuration(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSAnimationCubicBezier}
+ * @returns {QSAnimationCubicBezier} Cubic bezier easing tokens
  *
  * @remarks
  * This formula outputs `x` and `y` scales calculated from the input scale.
@@ -1268,13 +1271,13 @@ export function AnimationCubicBezier(modifiers, ms) {
   const { floor = 0, ceiling = 1 } = modifiers;
 
   const XS = new Set(
-    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1),
+    ms_modify((n) => precision(n / maximum), ms).filter((n) => n > 0 && n < 1)
   );
 
   const YS = new Set(
     ms_modify((n) => precision(floor + (ceiling - floor) / n), ms).filter(
-      (n) => n > floor && n < ceiling,
-    ),
+      (n) => n > floor && n < ceiling
+    )
   );
 
   return {
@@ -1302,7 +1305,7 @@ export function AnimationCubicBezier(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {QSGeneralSubcategory} Custom general subcategory
  *
  * @remarks
  * The output contains a `base` value with variants prefixed with `x` and `"-x"`.
@@ -1353,9 +1356,9 @@ export function Subcategory(modifiers, ms) {
           inverse,
           unit
             ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
-            : raw,
+            : raw
         ),
-      ],
+      ]
     ),
   };
 }
@@ -1368,7 +1371,7 @@ export function Subcategory(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {QSGeneralSubcategory} Custom unidirectional subcategory
  *
  * @remarks
  * The output contains a `base` value with variants prefixed with `x`.
@@ -1416,7 +1419,7 @@ export function SubcategoryUnidirectional(modifiers, ms) {
  *
  * @param {number[]} ms - the modular scale to generate values from
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {QSGeneralSubcategory} Custom ranged subcategory
  *
  * @remarks
  * The output contains a `base` value which is the maximum, a range scale calculated
@@ -1478,12 +1481,12 @@ export function SubcategoryRange(modifiers, ms) {
           ms_modify((n) => {
             const RANGE = min + (max - min) / n;
             return trunc ? Math.trunc(RANGE) : RANGE;
-          }, ms),
-        ),
+          }, ms)
+        )
       ),
       (ms) => ms.map((n) => precision(n)),
       (ms) => ms.filter((n) => n > min && n < max),
-      unit ? output : (ms) => ms,
+      unit ? output : (ms) => ms
     ),
     unit ? output([min]).toString() : precision(min),
   ]);
@@ -1503,7 +1506,7 @@ function generateUnidirectional(x = "x", ms) {
 
 function generateRange(
   [rangeKey, floorKey] = ["fragment", "min"],
-  [base, range, min],
+  [base, range, min]
 ) {
   return {
     base,
@@ -1518,7 +1521,7 @@ function generateVariants(key, [, ...values]) {
       ...acc,
       [[key, index + 2].join("")]: value,
     }),
-    {},
+    {}
   );
 }
 
@@ -1527,7 +1530,7 @@ function generateVariants(key, [, ...values]) {
  *
  * @param {string[]} palette - the palette to generate the tokens from
  *
- * @returns {QSGeneralSubcategory}
+ * @returns {{ [index: string | number]: string }} Numeric color scale tokens
  *
  * @remarks
  * The color tokens are output as a range of `100-`. There is no cutoff,
@@ -1555,13 +1558,13 @@ function generateVariants(key, [, ...values]) {
  * NumericColorScale(color_tones({ contrast: 75 }, "cornflower"));
  *
  * // Shade color scale
- * NumericColorScale(color_tones({ values: 6 }, "cornsilk"))
+ * NumericColorScale(color_shades({ values: 6 }, "cornsilk"))
  * ```
  */
 export function NumericColorScale(palette) {
   return palette.reduce(
     (acc, value, index) => ({ ...acc, [`${++index}`.padEnd(3, "0")]: value }),
-    {},
+    {}
   );
 }
 
@@ -1745,8 +1748,7 @@ const CLRS = {
 };
 
 const SYSTEM_FONT_STACKS = {
-  sans:
-    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+  sans: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
   serif:
     "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
   monospace:
@@ -1763,7 +1765,7 @@ const SYSTEM_FONT_STACKS = {
  * @template {(x : X) => Result} Fn
  *
  * @param {Pipeline} fns - utilities to combine
- * @returns {Fn}
+ * @returns {Fn} Combined function waiting for data
  *
  * @remarks
  * My implementation of `compose` internally is *technically* `composePipe`
@@ -1774,6 +1776,19 @@ const SYSTEM_FONT_STACKS = {
  *
  * @see
  * {@link https://www.codementor.io/@michelre/use-function-composition-in-javascript-gkmxos5mj} for a brief explanation of function composition in JavaScript.
+ *
+ * @example
+ * Extract RGB values from any valid CSS color
+ * ```ts
+ * const extract_rgb = utility_compose(
+ *   color_to_rgb,
+ *   color_inspect,
+ *   (data) => data.parsed,
+ *   ([r, g, b, a]) => ({ r, g, b, a })
+ * );
+ *
+ * extract_rgb("crimson");
+ * ```
  */
 export function utility_compose(...fns) {
   return compose(...fns);
@@ -1790,7 +1805,7 @@ export function utility_compose(...fns) {
  *
  * @param {BinaryFn} fn - utility to transform
  * @param {Y} modifier - output modifier
- * @returns {Fn}
+ * @returns {Fn} Pending data operation
  *
  * @remarks
  * The implementation of `utility_curry` is written especially for binary
@@ -1799,6 +1814,14 @@ export function utility_compose(...fns) {
  *
  * @see
  * {@link https://www.codementor.io/@michelre/currying-in-javascript-g6212s8qv} for a brief explanation of currying in JavaScript.
+ *
+ * @example
+ * Desaturating and brightening any valid color
+ * ```ts
+ * const baseColorAdjustment = utility_curry(color_adjust, { lightness: 30, chroma: -25 });
+ *
+ * baseColorAdjustment("coral");
+ * ```
  */
 export function utility_curry(fn, modifier) {
   return curry(fn)(modifier);
@@ -1814,7 +1837,7 @@ export function utility_curry(fn, modifier) {
  *
  * @param {X} x - data to pipe
  * @param {Pipeline} fns - pipeline operations
- * @returns {Result}
+ * @returns {Result} Pipeline output
  *
  * @remarks
  * This implementation of pipe is not a classical implementation of pipe.
@@ -1823,6 +1846,26 @@ export function utility_curry(fn, modifier) {
  * By setting the data to transform as the *first* argument, the pipeline will
  * refuse to work if any of the functions in the sequence (or their output)
  * does not return the expected type.
+ *
+ * @example
+ * Color to palette CSS pipeline
+ * ```ts
+ * utility_pipe(
+ *   "chartreuse",
+ *   utility_curry(MaterialPalette, { scheme: "triadic" }),
+ *   (color) => ({ color }),
+ *   (tokens) => ({
+       project: {
+         name: "Sample Color Palette",
+         author: "Ed N. Bacon",
+         version: "0.1.0",
+         license: "Unlicense"
+       },
+       tok: tokens
+     }),
+     tokens_to_css
+ * )
+ * ```
  */
 export function utility_pipe(x, ...fns) {
   return pipe(x, ...fns);
@@ -1994,7 +2037,7 @@ export function color_adjust(properties, color) {
       parseFloat(A ?? 1) + numberFromPercent(alpha),
     ],
     ([L, C, H, A]) => output(["oklab", [String(L).concat("%"), C, H, A]]),
-    curry(revert)(color),
+    curry(revert)(color)
   );
 }
 
@@ -2004,15 +2047,10 @@ function revert(color, output) {
     validator,
     ([, output]) => [output, color],
     ([output, color]) =>
-      pipe(
-        color,
-        validator,
-        ([format]) =>
-          format === "named"
-            ? color_to_hex(output)
-            : convert(format, output)[1],
+      pipe(color, validator, ([format]) =>
+        format === "named" ? color_to_hex(output) : convert(format, output)[1]
       ),
-    (output) => validator(output)[1],
+    (output) => validator(output)[1]
   );
 }
 
@@ -2026,7 +2064,10 @@ function revert(color, output) {
  * @param {string} color - the color to mix
  * @returns {string}
  */
-export function color_mix({ amount = 50, target = "black" }, color) {
+export function color_mix(modifiers, color) {
+  // set default modifiers
+  const { amount = 50, target = "black" } = modifiers;
+
   return pipe(
     calculateMix(color, target, numberFromPercent(amount)),
     ([L, a, b, A]) => [
@@ -2036,7 +2077,7 @@ export function color_mix({ amount = 50, target = "black" }, color) {
       A,
     ],
     (components) => output(["oklab", components]),
-    curry(revert)(color),
+    curry(revert)(color)
   );
 }
 
@@ -2045,13 +2086,13 @@ function calculateMix(original, target, amount) {
     original,
     color_to_oklab,
     parser,
-    ([, components]) => components,
+    ([, components]) => components
   );
   const [TL, Ta, Tb, TA] = pipe(
     target,
     color_to_oklab,
     parser,
-    ([, components]) => components,
+    ([, components]) => components
   );
 
   return [
@@ -2098,8 +2139,9 @@ export function color_interpolation(modifiers, color) {
             hue: calculateProperty(hue, pos),
             alpha: calculateProperty(alpha, pos),
           },
-          color,
-        )).reverse(),
+          color
+        )
+      ).reverse()
     ),
   ];
 }
@@ -2121,14 +2163,9 @@ export function color_blend(modifiers, color) {
 
   return [
     ...new Set(
-      Array.from(
-        { length: values },
-        (_, pos) =>
-          color_mix(
-            { amount: amount - (amount / values) * pos, target },
-            color,
-          ),
-      ).reverse(),
+      Array.from({ length: values }, (_, pos) =>
+        color_mix({ amount: amount - (amount / values) * pos, target }, color)
+      ).reverse()
     ),
   ];
 }
@@ -2154,10 +2191,10 @@ export function color_material(modifiers, color) {
         amount: dark,
         target: color_mix(
           { amount: light / 10 - dark / 10, target: "black" },
-          color,
+          color
         ),
       },
-      color,
+      color
     ),
     ...color_shades({ contrast: dark, values: 4 }, color),
   ];
@@ -2167,7 +2204,7 @@ export function color_material(modifiers, color) {
  * A utility to generate a dyadic color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string] `[a, b]` where `a = color`, `b = 90deg clockwise from a`
+ * @returns {[string, string]} `[a, b]` where `a = color`, `b = 90deg clockwise from a`
  */
 export function color_to_scheme_dyadic(color) {
   return generateUniformScheme({ count: 2, arc: 90 }, color);
@@ -2177,7 +2214,7 @@ export function color_to_scheme_dyadic(color) {
  * A utility to generate a complementary color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string] `[a, b]` where `a = color`, `b = 180deg from a`
+ * @returns {[string, string]} `[a, b]` where `a = color`, `b = 180deg from a`
  */
 export function color_to_scheme_complementary(color) {
   return generateUniformScheme({ count: 2, arc: 180 }, color);
@@ -2187,7 +2224,7 @@ export function color_to_scheme_complementary(color) {
  * A utility to generate an analogous color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string] `[a, b, c]` where `a = color`, `b,c = 45deg spread from a`
+ * @returns {[string, string, string]} `[a, b, c]` where `a = color`, `b,c = 45deg spread from a`
  */
 export function color_to_scheme_analogous(color) {
   return generateUniformScheme({ count: 3, arc: 45 }, color);
@@ -2197,7 +2234,7 @@ export function color_to_scheme_analogous(color) {
  * A utility to generate an split-complementary color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string] `[a, b, c]` where `a = color`, `b = 30deg left of opposite`, `c = 30deg right of opposite`
+ * @returns {[string, string, string]} `[a, b, c]` where `a = color`, `b = 30deg left of opposite`, `c = 30deg right of opposite`
  */
 export function color_to_scheme_split_complementary(color) {
   const [origin, complement] = Array.from(color_to_scheme_complementary(color));
@@ -2212,7 +2249,7 @@ export function color_to_scheme_split_complementary(color) {
  * A utility to generate a triadic color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string] `[a, b, c]` where `a = color`, `b,c = 120deg spread from a`
+ * @returns {[string, string, string]} `[a, b, c]` where `a = color`, `b,c = 120deg spread from a`
  */
 export function color_to_scheme_triadic(color) {
   return generateUniformScheme({ count: 3, arc: 120 }, color);
@@ -2222,7 +2259,7 @@ export function color_to_scheme_triadic(color) {
  * A utility to generate a triadic color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string] `[a, b, c]` where `a = color`, `b = 90deg right of a`, `c = 90deg left of a`
+ * @returns {[string, string, string]} `[a, b, c]` where `a = color`, `b = 90deg right of a`, `c = 90deg left of a`
  */
 export function color_to_scheme_clash(color) {
   const [origin, right, , left] = Array.from(color_to_scheme_square(color));
@@ -2233,7 +2270,7 @@ export function color_to_scheme_clash(color) {
  * A utility to generate a tetradic color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string, string] `[a, b, c, d]` where `a = color`, `b = 45deg right of a`, `c = 180deg from a`, `d = 45deg right of c`
+ * @returns {[string, string, string, string]} `[a, b, c, d]` where `a = color`, `b = 45deg right of a`, `c = 180deg from a`, `d = 45deg right of c`
  */
 export function color_to_scheme_tetradic(color) {
   const [origin, opposite] = Array.from(color_to_scheme_complementary(color));
@@ -2249,7 +2286,7 @@ export function color_to_scheme_tetradic(color) {
  * A utility to generate a square color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string, string] `[a, b, c, d]` where `a = color`, `b,c,d = 90deg spread from a`
+ * @returns {[string, string, string, string]} `[a, b, c, d]` where `a = color`, `b,c,d = 90deg spread from a`
  */
 export function color_to_scheme_square(color) {
   return generateUniformScheme({ count: 4, arc: 90 }, color);
@@ -2259,7 +2296,7 @@ export function color_to_scheme_square(color) {
  * A utility to generate a five color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string, string, string] `[a, b, c, d, e]` where `a = color`, `b,c,d,e = 72deg spread from a`
+ * @returns {[string, string, string, string, string]} `[a, b, c, d, e]` where `a = color`, `b,c,d,e = 72deg spread from a`
  */
 export function color_to_scheme_star(color) {
   return generateUniformScheme({ count: 5, arc: 72 }, color);
@@ -2269,16 +2306,15 @@ export function color_to_scheme_star(color) {
  * A utility to generate a six color scale from any valid CSS color.
  *
  * @param {string} color - the input color
- * @returns [string, string, string, string, string, string] `[a, b, c, d, e, f]` where `a = color`, `b,c,d,e,f = 60deg spread from a`
+ * @returns {[string, string, string, string, string, string]} `[a, b, c, d, e, f]` where `a = color`, `b,c,d,e,f = 60deg spread from a`
  */
 export function color_to_scheme_hexagon(color) {
   return generateUniformScheme({ count: 6, arc: 60 }, color);
 }
 
 function generateUniformScheme({ count, arc }, color) {
-  return Array.from(
-    { length: count },
-    (_, pos) => color_adjust({ hue: arc * pos }, color),
+  return Array.from({ length: count }, (_, pos) =>
+    color_adjust({ hue: arc * pos }, color)
   );
 }
 
@@ -2290,7 +2326,7 @@ function generateUniformScheme({ count, arc }, color) {
  * @param {number} [modifiers.values] - number of tints to generate
  *
  * @param color - the input color
- * @param {string[]}
+ * @returns {string[]} The output tints
  */
 export function color_tints(modifiers, color) {
   // Set default modifiers
@@ -2307,7 +2343,7 @@ export function color_tints(modifiers, color) {
  * @param {number} [modifiers.values] - number of tones to generate
  *
  * @param color - the input color
- * @param {string[]}
+ * @returns {string[]} The output tones
  */
 export function color_tones(modifiers, color) {
   // Set default modifiers
@@ -2323,7 +2359,7 @@ export function color_tones(modifiers, color) {
  * @param {number} [modifiers.values] - number of shades to generate
  *
  * @param color - the input color
- * @param {string[]}
+ * @returns {string[]} The output shades
  */
 export function color_shades(modifiers, color) {
   // Set default modifiers
@@ -2342,7 +2378,7 @@ export function color_shades(modifiers, color) {
  * @param {number} [modifiers.alpha] - shift the palette alpha transparency
  *
  * @param {string[]} palette - the palette to modify
- * @returns {string[]}
+ * @returns {string[]} New adjusted palette
  *
  * @remarks
  * A color scale is just a plain array, generated or not. So you can also use this
@@ -2356,8 +2392,8 @@ export function palette_shift(modifiers, palette) {
     new Set(
       palette.map((color) =>
         color_adjust({ lightness, chroma, hue, alpha }, color)
-      ),
-    ),
+      )
+    )
   );
 }
 
@@ -2368,8 +2404,8 @@ export function palette_shift(modifiers, palette) {
  * @param {"lightness" | "chroma" | "hue" | "alpha"} condition.property - the property to sort by
  * @param {"asc" | "desc"} [condition.order] - the sorting order
  *
- * @param {string[]} palette - the palette to modify
- * @returns {string[]}
+ * @param {string[]} palette - the palette to sort
+ * @returns {string[]} New sorted palette
  *
  * @remarks
  * This utility is geared for perceptually accurate sorting, so the format
@@ -2385,7 +2421,7 @@ export function palette_sort(condition, palette) {
     palette,
     paletteToOklabValues,
     curry(sortPalette)({ by: property, order }),
-    curry(paletteFromOklab)(color),
+    curry(paletteFromOklab)(color)
   );
 }
 
@@ -2395,7 +2431,7 @@ function paletteToOklabValues(palette) {
     (palette) => palette.map((color) => color_to_oklab(color)),
     (palette) => palette.map((color) => extractor(color)),
     (palette) => palette.map(([, color]) => color),
-    (palette) => palette.map((color) => color.map((C) => parseFloat(C))),
+    (palette) => palette.map((color) => color.map((C) => parseFloat(C)))
   );
 }
 
@@ -2420,7 +2456,7 @@ function paletteFromOklab(input, palette) {
         output(["oklab", [L.toString().concat("%"), C, H, A ?? 1]])
       ),
     (palette) =>
-      Array.from(new Set(palette.map((color) => revert(input, color)))),
+      Array.from(new Set(palette.map((color) => revert(input, color))))
   );
 }
 
@@ -2432,8 +2468,8 @@ function paletteFromOklab(input, palette) {
  * @param {number} condition.min - the threshold value
  * @param {number} [condition.max] - the optional gate value
  *
- * @param {string[]} palette - the palette to modify
- * @returns {string[]}
+ * @param {string[]} palette - the palette to filter
+ * @returns {string[]} New filtered palette
  *
  * @remarks
  * This utility is geared for perceptually accurate filtering, so the format
@@ -2451,7 +2487,7 @@ export function palette_filter(condition, palette) {
     palette,
     paletteToOklabValues,
     curry(flushPalette)({ by: property, min, max }),
-    curry(paletteFromOklab)(color),
+    curry(paletteFromOklab)(color)
   );
 }
 
@@ -2480,7 +2516,7 @@ function parseFlushCondition({ by, min, max }) {
  * A data utility for using colors from the Colors (https://clrs.cc) project.
  *
  * @param {"navy" | "blue" | "aqua" | "teal" | "lime" | "olive" | "green" | "lime" | "yellow" | "maroon" | "fuchsia" | "purple" | "black" | "gray" | "grey" | "silver" | "white"} keyword - defined color keywords
- * @returns {string}
+ * @returns {string} Value matching color keyword
  */
 export function data_clrs(keyword) {
   return CLRS[keyword] || UndefinedInClrsError();
@@ -2518,7 +2554,7 @@ Valid colors in the Colors (https://clrs.cc) project:
  * @param {string} [condition.background] - the background color to compare against
  *
  * @param {string[]} palette - the palette to filter
- * @returns {string[]}
+ * @returns {string[]} New filtered palette
  *
  * @remarks
  * "AA" rating is set by default. The background color is "white" by default
@@ -2555,7 +2591,7 @@ function calculateRelativeLuminance(color) {
     parser,
     ([, [R, G, B]]) => [R, G, B],
     rgbToLrgb,
-    ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B,
+    ([R, G, B]) => 0.2126 * R + 0.7152 * G + 0.0722 * B
   );
 }
 
@@ -2563,7 +2599,7 @@ function calculateRelativeLuminance(color) {
  * A data formula for using system font stacks (https://systemfontstack.com).
  *
  * @param {"sans" | "serif" | "monospace"} family - the stack to use
- * @returns {string}
+ * @returns {string} Font stack matching the family
  */
 export function data_systemfonts(family) {
   return SYSTEM_FONT_STACKS[family] || NotASystemFontFamilyError();
@@ -2593,7 +2629,7 @@ monospace
  * @param {number} [modifiers.values] - the total number of values to generate
  *
  * @param {number} base - the base value to generate from
- * @returns {number[]}
+ * @returns {number[]} A raw modular scale
  *
  * @remarks
  * This utility is the starting point for using modular scales in Quarks System
@@ -2609,23 +2645,23 @@ export function ms_create(modifiers, base) {
 
   return Array.isArray(ratio)
     ? Array.from(
-      new Set(
-        Array(values)
-          .fill(base)
-          .reduce(
-            (acc, base, index) => [
-              ...acc,
-              ...ratio.map((r) => base * r ** index),
-            ],
-            [],
-          ),
-      ),
-    )
-      .slice(0, values)
-      .sort((a, b) => a - b)
+        new Set(
+          Array(values)
+            .fill(base)
+            .reduce(
+              (acc, base, index) => [
+                ...acc,
+                ...ratio.map((r) => base * r ** index),
+              ],
+              []
+            )
+        )
+      )
+        .slice(0, values)
+        .sort((a, b) => a - b)
     : Array(values)
-      .fill(base)
-      .map((base, index) => base * ratio ** index);
+        .fill(base)
+        .map((base, index) => base * ratio ** index);
 }
 
 /**
@@ -2633,7 +2669,7 @@ export function ms_create(modifiers, base) {
  *
  * @param {(n: number) => number} calc - the calculation that will modify each scale value
  * @param {number[]} ms - the scale to modify
- * @returns {number[]}
+ * @returns {number[]} New scale of recalculated values
  *
  * @remarks
  * This utility will refuse to process anything that isn't a raw modular scale.
@@ -2646,7 +2682,7 @@ export function ms_create(modifiers, base) {
 export function ms_modify(calc, ms) {
   return unlessMS(
     ms.map((n) => calc(n)),
-    ms,
+    ms
   );
 }
 
@@ -2655,7 +2691,7 @@ export function ms_modify(calc, ms) {
  *
  * @param {number} partitionSize - the number of values in each partition
  * @param {number[]} ms - the scale to partition
- * @returns {number[][]}
+ * @returns {number[][]} New scale containing partitioned values
  *
  * @remarks
  * This utility will refuse to process anything that isn't a raw modular scale.
@@ -2672,9 +2708,9 @@ export function ms_split(partitionSize, ms) {
   return unlessMS(
     Array.from(ms).reduceRight(
       (acc, _n, _index, array) => [...acc, array.splice(0, partitionSize)],
-      [],
+      []
     ),
-    ms,
+    ms
   );
 }
 
@@ -2712,7 +2748,7 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
  *
  * @param {CSSUnits} unit - the target unit to attach to each value in the scale
  * @param {number[]} ms - the scale to transform
- * @returns {string[]}
+ * @returns {string[]} New scale with attached units
  *
  * @remarks
  * This utility will refuse to process anything that isn't a raw modular scale.
@@ -2727,7 +2763,7 @@ ms_create({ values: 8, ratio: 1.618 }, 1);
 export function ms_units(unit, ms) {
   return unlessMS(
     ms.map((n) => `${precision(n)}${unit}`, ms),
-    ms,
+    ms
   );
 }
 
@@ -2808,7 +2844,7 @@ export function tokens_to_scss(dict) {
       wrapper: ["", "\n"],
       opts: { padding: "", prefix: "$" },
     },
-    dict,
+    dict
   );
 }
 
@@ -2833,7 +2869,7 @@ export function tokens_to_less(dict) {
       wrapper: ["", "\n"],
       opts: { padding: "", prefix: "@" },
     },
-    dict,
+    dict
   );
 }
 
@@ -2858,7 +2894,7 @@ export function tokens_to_styl(dict) {
       wrapper: ["", "\n"],
       opts: { padding: "", prefix: "", assignment: " = ", suffix: "" },
     },
-    dict,
+    dict
   );
 }
 
@@ -2879,7 +2915,7 @@ export function tokens_to_json(dict) {
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
 
   // Then bump the version
@@ -2905,7 +2941,7 @@ export function tokens_to_yaml(dict) {
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
 
   // Then bump the version
@@ -2921,22 +2957,20 @@ export function tokens_to_yaml(dict) {
         "".padStart(level),
         key,
         ":\n",
-        assemble(level + 2, data),
+        assemble(level + 2, data)
       );
     }, "");
 
   return `
 # ${timestampEmitter()}
-${
-    Object.entries({ project, tokens })
-      .reduce((str, [key, data]) => {
-        if (typeof data === "string") return yamlDictValue(0, str, key, data);
-        if (Array.isArray(data)) return yamlDictScale(0, str, key, data);
-        if (key === "base") return yamlDictSubcategory(0, data);
-        return str.concat("\n", key, ":\n", assemble(2, data));
-      }, "")
-      .trimEnd()
-  }
+${Object.entries({ project, tokens })
+  .reduce((str, [key, data]) => {
+    if (typeof data === "string") return yamlDictValue(0, str, key, data);
+    if (Array.isArray(data)) return yamlDictScale(0, str, key, data);
+    if (key === "base") return yamlDictSubcategory(0, data);
+    return str.concat("\n", key, ":\n", assemble(2, data));
+  }, "")
+  .trimEnd()}
 `;
 }
 
@@ -2965,10 +2999,8 @@ export function tokens_to_gpl(dict) {
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
-  // Then bump the version
-  autobump && bumpVersion(project);
 
   const assemble = (head, node) =>
     Object.entries(node).reduce((str, [key, value]) => {
@@ -2981,7 +3013,7 @@ export function tokens_to_gpl(dict) {
 
       if (typeof value === "object") {
         return str.concat(
-          assemble(tokenStringIdentifier(head, KEY, " "), value),
+          assemble(tokenStringIdentifier(head, KEY, " "), value)
         );
       }
       return str.concat(
@@ -2989,25 +3021,23 @@ export function tokens_to_gpl(dict) {
         "\t",
         tokenStringIdentifier(head, KEY, " "),
         ` (${color_to_hex(value)})`,
-        "\n",
+        "\n"
       );
     }, "");
 
   return `
 GIMP Palette
-Name: ${name} (v${version})
+Name: ${name} (v${autobump ? bumpVersion(project) : version})
 # Generator: Quarks System Core
 # Owned by ${author}
 # License: ${license}
-${
-    metadataEmitter(
-      { commentDelim: ["#", "# ", "\n#"] },
-      {
-        description,
-        comments,
-      },
-    )
+${metadataEmitter(
+  { commentDelim: ["#", "# ", "\n#"] },
+  {
+    description,
+    comments,
   }
+)}
 # ${timestampEmitter()}
 
 Columns: 6
@@ -3020,7 +3050,8 @@ function gimpPaletteSwatch(color) {
     components
       .map((C) => C.padStart(3, " "))
       .slice(0, 3)
-      .join("\t"));
+      .join("\t")
+  );
 }
 
 /**
@@ -3134,7 +3165,7 @@ function cssFormatStructure(
     wrapper: [TOKENS_OPEN, TOKENS_CLOSE] = ["\n:root {", "\n}\n"],
     opts = { padding: "  " },
   } = {},
-  { project, ...tokens },
+  { project, ...tokens }
 ) {
   let {
     name,
@@ -3147,7 +3178,7 @@ function cssFormatStructure(
 
   // Attach a dynamic property initializing the autorelease version
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
 
   return "".concat(
@@ -3157,15 +3188,13 @@ function cssFormatStructure(
  * Owned by: ${author}
  * License: ${license}
  * ${"=".repeat(64)}
-${
-      metadataEmitter(
-        { commentDelim: [" *", " * ", ""] },
-        {
-          description,
-          comments,
-        },
-      )
-    }
+${metadataEmitter(
+  { commentDelim: [" *", " * ", ""] },
+  {
+    description,
+    comments,
+  }
+)}
  * ${"-".repeat(64)}
  * ${timestampEmitter()}
 `,
@@ -3173,9 +3202,9 @@ ${
     TOKENS_OPEN,
     tokenStringConstructor(
       { ...opts, commentDelim: [OPEN, DELIM, CLOSE] },
-      tokens,
+      tokens
     ),
-    TOKENS_CLOSE,
+    TOKENS_CLOSE
   );
 }
 
@@ -3219,7 +3248,7 @@ function metadataEmitter(
     commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
     str = "",
   },
-  meta,
+  meta
 ) {
   return str.concat(
     [
@@ -3236,7 +3265,7 @@ function metadataEmitter(
               ":",
               "\n",
               DELIM.trimEnd(),
-              lines.join(`\n${DELIM}`),
+              lines.join(`\n${DELIM}`)
             )
             .trimEnd();
         }
@@ -3244,7 +3273,7 @@ function metadataEmitter(
         return str.concat("\n", DELIM, key.toUpperCase(), ": ", lines);
       }, ""),
       CLOSE,
-    ].join(""),
+    ].join("")
   );
 }
 
@@ -3261,12 +3290,12 @@ function cssTokenEmitter(opts, head, node) {
         const format = cssTokenAssembler(opts);
         if (typeof value === "object") {
           return str.concat(
-            assemble(tokenStringIdentifier(head, key, "-"), value),
+            assemble(tokenStringIdentifier(head, key, "-"), value)
           );
         }
 
         return format(str, tokenStringIdentifier(head, key, "-"), value, "\n");
-      }, ""),
+      }, "")
     );
   }
 
@@ -3288,7 +3317,7 @@ function cssTokenAssembler({
       assignment,
       value,
       suffix,
-      terminator,
+      terminator
     );
   };
 }
@@ -3303,7 +3332,7 @@ function tokenStringIdentifier(collected, current, delimiter) {
 
 function bumpVersion(project) {
   let [major, minor, patch, pre] = Array.from(
-    project.version.split(/[.-]/g),
+    project.version.split(/[.-]/g)
   ).map((n) => parseFloat(n));
 
   function next(keyword) {
@@ -3333,7 +3362,7 @@ function bumpVersion(project) {
             [release[3] ?? 0, release[4]].join("+"),
           ].join("-"),
         ],
-      ]),
+      ])
     )
       .filter(([condition]) => condition)
       .flatMap(([, release]) => release)
@@ -3364,7 +3393,7 @@ function yamlDictValue(level, str, key, value) {
       `${key}: |\n`,
       value
         .split("\n")
-        .reduce((s, line) => s.concat("".padStart(level + 2), line, "\n"), ""),
+        .reduce((s, line) => s.concat("".padStart(level + 2), line, "\n"), "")
     );
   }
   return str.concat("".padStart(level), key, ": ", value, "\n");
@@ -3375,7 +3404,7 @@ function yamlDictScale(level, str, key, value) {
     "".padStart(level),
     key,
     ":\n",
-    value.reduce((s, v) => s.concat("".padStart(level + 2), "- ", v, "\n"), ""),
+    value.reduce((s, v) => s.concat("".padStart(level + 2), "- ", v, "\n"), "")
   );
 }
 
@@ -3426,7 +3455,7 @@ function convert(output, color) {
   return pipe(
     validator(color),
     ([input, color]) => INPUT_TO_RGB[input](color),
-    ([, color]) => OUTPUT_FROM_RGB[output](color),
+    ([, color]) => OUTPUT_FROM_RGB[output](color)
   );
 }
 
@@ -3450,35 +3479,37 @@ const rgbFromPercent = compose(numberFromPercent, numberToRgb, Math.round);
 const hexFragmentFromNumber = compose(
   numberToRgb,
   Math.round,
-  hexFragmentFromRgb,
+  hexFragmentFromRgb
 );
 
 const radToDegrees = (radians) =>
   compose(
     () => divide(Math.PI, 180),
     (result) => multiply(result, radians),
-    (degrees) => precision(degrees),
+    (degrees) => precision(degrees)
   )();
 const radFromDegrees = (degrees) =>
   compose(
     () => divide(180, Math.PI),
     (result) => multiply(result, degrees),
-    (radians) => precision(radians),
+    (radians) => precision(radians)
   )();
 const gradToDegrees = (gradians) =>
   compose(
     () => divide(200, 180),
     (result) => multiply(result, gradians),
-    (degrees) => precision(degrees),
+    (degrees) => precision(degrees)
   )();
 const numberToDegrees = (n) => multiply(360, n);
 const hueCorrection = (hue) =>
   normalize(
     360,
     -360,
-    Math.sign(hue) === -1 ? Math.abs(add(360, hue)) : hue > 360
+    Math.sign(hue) === -1
+      ? Math.abs(add(360, hue))
+      : hue > 360
       ? remainder(360, hue)
-      : hue,
+      : hue
   );
 
 function hexToRgb(color) {
@@ -3532,7 +3563,7 @@ function hwbToRgb(color) {
       W / (W + BLK),
       numberToRgb,
       Math.round,
-      curry(normalize)(255, 0),
+      curry(normalize)(255, 0)
     );
 
     return pipe(output(["rgb", [Array(3).fill(GRAY), A]]), validator);
@@ -3542,13 +3573,13 @@ function hwbToRgb(color) {
     `hsl(${H}, 100%, 50%)`,
     hslToRgb,
     ([, color]) => parser(color),
-    ([, color]) => color,
+    ([, color]) => color
   ).map((V) =>
     pipe(
       V * (1 - W - BLK) + W,
       numberToRgb,
       Math.round,
-      curry(normalize)(255, 0),
+      curry(normalize)(255, 0)
     )
   );
 
@@ -3601,11 +3632,11 @@ const LINEAR_RGB_TRANSFORMATION_MATRIX = [
 
 function ciexyzToLrgb([X, Y, Z]) {
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3
   );
 
   const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
-    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3
   );
 
   return [LR, LG, LB];
@@ -3667,11 +3698,11 @@ function hexFromRgb(color) {
           numberToRgb,
           Math.round,
           curry(normalize)(255, 0),
-          hexFragmentFromRgb,
+          hexFragmentFromRgb
         )
       ),
     ]),
-    validator,
+    validator
   );
 }
 
@@ -3698,13 +3729,14 @@ function hslFromRgb(color) {
       [
         hueCorrection(H),
         ...[S, L].map((V) =>
-          pipe(V, numberToPercent, limitPercent, (value) => value.toString())
-            .concat("%")
+          pipe(V, numberToPercent, limitPercent, (value) =>
+            value.toString()
+          ).concat("%")
         ),
         A,
       ],
     ]),
-    validator,
+    validator
   );
 }
 
@@ -3743,7 +3775,7 @@ function cmykFromRgb(color) {
         A,
       ],
     ]),
-    validator,
+    validator
   );
 }
 
@@ -3773,7 +3805,7 @@ function hwbFromRgb(color) {
         A,
       ],
     ]),
-    validator,
+    validator
   );
 }
 
@@ -3784,7 +3816,7 @@ function cielabFromRgb(color) {
 
   return pipe(
     output(["cielab", [precision(L).toString().concat("%"), a, b, A]]),
-    validator,
+    validator
   );
 }
 
@@ -3824,11 +3856,11 @@ function rgbToCieXYZ([R, G, B]) {
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
-    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3
   );
 
   const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3
   );
 
   return [X, Y, Z];
@@ -3868,7 +3900,7 @@ function lrgbToOklab([R, G, B]) {
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
-    ([L, M, S]) => L * LR + M * LG + S * LB,
+    ([L, M, S]) => L * LR + M * LG + S * LB
   ).map((V) => Math.cbrt(V));
 
   return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
@@ -3890,7 +3922,7 @@ function cielabToCielch(color) {
 
   return pipe(
     output(["cielch", [L.toString().concat("%"), C, H, A]]),
-    validator,
+    validator
   );
 }
 
@@ -3904,7 +3936,7 @@ function cielabFromCielch(color) {
 
   return pipe(
     output(["cielab", [L.toString().concat("%"), a, b, A]]),
-    validator,
+    validator
   );
 }
 
@@ -4013,14 +4045,14 @@ const DELIMITER = /(?:[\s,]+)/;
 const ALPHA_DELIMITER = new RegExp(DELIMITER.source.replace(",", ",/"));
 const CSS4_DELIMITER = new RegExp(DELIMITER.source.replace(",", ""));
 const CSS4_ALPHA_DELIMITER = new RegExp(
-  ALPHA_DELIMITER.source.replace(",", ""),
+  ALPHA_DELIMITER.source.replace(",", "")
 );
 
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENT_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
+  ["(?:", PERCENT_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join("")
 );
 const HUE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
 );
 
 function namedValidator(color) {
@@ -4034,7 +4066,7 @@ function hexValidator(color) {
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
-    Array(3).fill(COMPONENT_TOKEN),
+    Array(3).fill(COMPONENT_TOKEN)
   ).test(color);
 }
 
@@ -4048,7 +4080,7 @@ function hslValidator(color) {
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(COMPONENT_TOKEN),
+    Array(4).fill(COMPONENT_TOKEN)
   ).test(color);
 }
 
@@ -4093,8 +4125,8 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       VALUES.join(SEPARATOR),
-      `(?:${[ALPHA_SEPARATOR, COMPONENT_TOKEN.source].join("")})?\\))`,
-    ),
+      `(?:${[ALPHA_SEPARATOR, COMPONENT_TOKEN.source].join("")})?\\))`
+    )
   );
 }
 
@@ -4132,9 +4164,8 @@ const FORMAT_PARSERS = {
   oklab: parseOklab,
 };
 
-const parser = compose(
-  validator,
-  ([format, color]) => FORMAT_PARSERS[format](color),
+const parser = compose(validator, ([format, color]) =>
+  FORMAT_PARSERS[format](color)
 );
 
 function parseHex(color) {
@@ -4151,7 +4182,7 @@ function parseHex(color) {
           ? pipe(c, hexFragmentToRgb, numberFromRgb)
           : hexFragmentToRgb(c)
       ),
-    ],
+    ]
   );
 }
 
@@ -4171,7 +4202,7 @@ function parseRGB(color) {
           ? parseNumber(c)
           : parseChannel(c)
       ),
-    ],
+    ]
   );
 }
 
@@ -4188,10 +4219,12 @@ function parseHSL(color) {
         pos === 0
           ? parseHue(c)
           : pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          ? c.endsWith("%")
+            ? parsePercent(c)
+            : parseNumber(c)
           : parsePercent(c)
       ),
-    ],
+    ]
   );
 }
 
@@ -4204,8 +4237,10 @@ function parseCMYK(color) {
     ],
     ([format, components]) => [
       format,
-      components.map((c) => c.endsWith("%") ? parsePercent(c) : parseNumber(c)),
-    ],
+      components.map((c) =>
+        c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+      ),
+    ]
   );
 }
 
@@ -4216,7 +4251,7 @@ function parseCielab(color) {
 function parseCielch(color) {
   return parseCie(
     (c, pos) => (pos === 2 ? parseHue(c) : parseNumber(c)),
-    color,
+    color
   );
 }
 
@@ -4233,14 +4268,16 @@ function parseOklab(color) {
         pos === 0
           ? parsePercent(c)
           : pos === 1 || pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          ? c.endsWith("%")
+            ? parsePercent(c)
+            : parseNumber(c)
           : parseHueAsRadians(c)
       ),
     ],
     ([format, [L, C, H, A]]) => [
       format,
       [L, C * Math.cos(H), C * Math.sin(H), A],
-    ],
+    ]
   );
 }
 
@@ -4264,7 +4301,7 @@ function parseHue(hue) {
       ? radToDegrees(parseFloat(hue))
       : hue.endsWith("turn")
       ? numberToDegrees(parseFloat(hue))
-      : parseFloat(hue),
+      : parseFloat(hue)
   );
 }
 
@@ -4287,17 +4324,19 @@ function parseCie(unique, color) {
         pos === 0
           ? parseNumber(c)
           : pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          ? c.endsWith("%")
+            ? parsePercent(c)
+            : parseNumber(c)
           : unique(c, pos)
       ),
-    ],
+    ]
   );
 }
 
 function output(data) {
   return pipe(
     data,
-    ([format, components]) => COLOR_ASSEMBLER(components)[format],
+    ([format, components]) => COLOR_ASSEMBLER(components)[format]
   );
 }
 
@@ -4321,9 +4360,9 @@ function hexOutput([R, G, B, A]) {
 function legacyOutput(prefix, [C1, C2, C3, A]) {
   return `${A === 1 ? prefix : prefix.concat("a")}(`.concat(
     (A === 1 ? [C1, C2, C3] : [C1, C2, C3, precision(parseFloat(A))]).join(
-      ", ",
+      ", "
     ),
-    ")",
+    ")"
   );
 }
 
@@ -4333,7 +4372,7 @@ function modernOutput(prefix, components) {
     components[components.length - 1] === 1
       ? ""
       : ` / ${precision(parseFloat(components.slice(-1)))}`,
-    ")",
+    ")"
   );
 }
 
