@@ -5,16 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
-- [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
+- [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
   - [[#added][Added]]
+  - [[#fixed][Fixed]]
+- [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
+  - [[#added-1][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
 - [[#v021---2020-06-07][v0.2.1 - 2020-06-07]]
-  - [[#fixed][Fixed]]
+  - [[#fixed-1][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
-  - [[#added-1][Added]]
+  - [[#added-2][Added]]
     - [[#color-conversion][color conversion]]
   - [[#changed][Changed]]
     - [[#color-adjustment-1][color adjustment]]
@@ -25,7 +28,7 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#changed-1][Changed]]
     - [[#color-conversion-1][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
-  - [[#added-2][Added]]
+  - [[#added-3][Added]]
     - [[#functional-utilities][functional utilities]]
     - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
@@ -35,6 +38,17 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v1.0.1 - 2021-12-17
+
+** Added
+
++ Examples for =utility_compose=, =utility_curry=, =utility_pipe=
+
+** Fixed
+
++ Malformed TSDoc typing
++ Function documentation typos
 
 * v1.0.0 - 2021-12-16
 

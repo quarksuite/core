@@ -56,7 +56,7 @@ If you just want to inspect what the library makes available and play around wit
 console in a modern browser or run a =deno repl= and paste:
 
 #+BEGIN_SRC js
-const QSC = await import("https://x.nest.land/quarksuite:core@1.0.0/mod.js");
+const QSC = await import("https://x.nest.land/quarksuite:core@1.0.1/mod.js");
 #+END_SRC
 
 ** Setup
@@ -65,7 +65,7 @@ When you're ready to start a real project with Quarks System Core, get situated 
 code.
 
 #+BEGIN_SRC js
-import { Quarks } from "https://x.nest.land/quarksuite:core@1.0.0/mod.js";
+import { Quarks } from "https://x.nest.land/quarksuite:core@1.0.1/mod.js";
 
 Quarks(); // generates default option tokens
 #+END_SRC
