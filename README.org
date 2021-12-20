@@ -33,11 +33,6 @@ up reproducible baselines for web projects.
 
 Think of it like a UI boilerplate generator you can use right in your browser.
 
-Enhancements to the workflow include Quarks System UI (/WIP/): a tiny collection of web components
-for visual development and documentation of Quarks System Dictionaries.
-
-Future enhancements may appear based on user feedback or my own needs.
-
 Quarks System Core is written in web standard JavaScript (ES2017+).
 
 * Features
