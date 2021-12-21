@@ -94,7 +94,7 @@ I'm rewriting the Quarks System Core user guide for v1, so I'll drop a link here
 
 ** API
 
-I rewrote the [[https://observablehq.com/@cr-jr/qsc-api-1-0-0][Quarks System Core API]] documentation as an Observable notebook. This means it's now a
+I rewrote the [[https://observablehq.com/@cr-jr/qsc-api][Quarks System Core API]] documentation as an Observable notebook. This means it's now a
 living document with interactive examples that remain in sync with the latest stable version of the
 library.
 
