@@ -5,11 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
-- [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
+- [[#unreleased][Unreleased]]
   - [[#added][Added]]
+  - [[#updated][Updated]]
+- [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
+  - [[#added-1][Added]]
   - [[#fixed][Fixed]]
 - [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
-  - [[#added-1][Added]]
+  - [[#added-2][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
@@ -17,7 +20,7 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#fixed-1][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
-  - [[#added-2][Added]]
+  - [[#added-3][Added]]
     - [[#color-conversion][color conversion]]
   - [[#changed][Changed]]
     - [[#color-adjustment-1][color adjustment]]
@@ -28,7 +31,7 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#changed-1][Changed]]
     - [[#color-conversion-1][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
-  - [[#added-3][Added]]
+  - [[#added-4][Added]]
     - [[#functional-utilities][functional utilities]]
     - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
@@ -38,6 +41,49 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* Unreleased
+
+This release adds support for a factory object workflow. It makes working with low level utilities a little easier by
+allowing you to bind them as methods on discrete data types. You can set up this workflow with a few extra lines of
+code:
+
+#+BEGIN_SRC js
+import * as qsc from "https://x.nest.land/quarksuite:core@1.1.0/mod.js";
+
+const { imports_to_module, module_to_factory } = qsc;
+
+// Prepare the module
+const color = imports_to_module("color", qsc);
+
+// Initialize the factory
+const ColorFactory = module_to_factory(color);
+
+// Create an instance
+const swatch = ColorFactory("lime");
+
+// do stuff with it
+
+swatch.rgb();
+swatch.rgb().triadic()
+
+// factory methods are shadowed by $-prefixed equivalents that transform data recursively.
+// e.g.: $material means ([a, b, c] -> [[50..900], [50..900], [50..900]])
+swatch.rgb().triadic().$material();
+#+END_SRC
+
+** Added
+
+Factory interface utilities
+
++ =imports_to_module(type, import)=
++ =module_to_factory(module)=
+
+** Updated
+
++ =utility= type renamed to =fn= (=fn_compose=, =fn_curry=, =fn_pipe=) as they're not exclusively used by utilities
++ =color_to_scheme_split_complementary= renamed to =color_to_scheme_split=
++ =tokens_to_style_dictionary= renamed to =tokens_to_styledict=
 
 * v1.0.1 - 2021-12-17
 
@@ -72,7 +118,7 @@ settled, and I've reinforced the library's web focus.
 
 *** overhauled API
 
-+ too much to list, recommend [[https://observablehq.com/@cr-jr/qsc-api-1-0-0][reading it]]
++ too much to list, recommend [[https://observablehq.com/@cr-jr/qsc-api][reading it]]
 
 * v0.2.1 - 2020-06-07
 

@@ -7,7 +7,7 @@ import {
   tokens_to_scss,
   tokens_to_sketchpalette,
   tokens_to_styl,
-  tokens_to_style_dictionary,
+  tokens_to_styledict,
   tokens_to_tailwindcss,
   tokens_to_yaml,
 } from "../mod.js";
@@ -24,7 +24,7 @@ const formats = [
   tokens_to_gpl,
   tokens_to_sketchpalette,
   tokens_to_tailwindcss,
-  tokens_to_style_dictionary,
+  tokens_to_styledict,
 ];
 
 const removeTimestamp = (format) =>
@@ -561,7 +561,7 @@ const testInterop = [
   ],
   [
     "Style Dictionary Tokens",
-    data(tokens_to_style_dictionary(dict), {
+    data(tokens_to_styledict(dict), {
       color: {
         bg: { value: "#f8f8f8" },
         fg: { value: "#0b0b0b" },

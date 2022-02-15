@@ -20,7 +20,7 @@ import {
   color_to_scheme_complementary,
   color_to_scheme_dyadic,
   color_to_scheme_hexagon,
-  color_to_scheme_split_complementary,
+  color_to_scheme_split,
   color_to_scheme_square,
   color_to_scheme_star,
   color_to_scheme_tetradic,
@@ -65,7 +65,7 @@ const schemes = [
   color_to_scheme_dyadic,
   color_to_scheme_analogous,
   color_to_scheme_complementary,
-  color_to_scheme_split_complementary,
+  color_to_scheme_split,
   color_to_scheme_triadic,
   color_to_scheme_clash,
   color_to_scheme_tetradic,
@@ -541,11 +541,7 @@ const testColorSchemes = [
   ],
   [
     "split complementary",
-    data(color_to_scheme_split_complementary(color), [
-      "#1e90ff",
-      "#df6855",
-      "#b58c00",
-    ]),
+    data(color_to_scheme_split(color), ["#1e90ff", "#df6855", "#b58c00"]),
   ],
   [
     "triadic",

@@ -343,10 +343,10 @@ export function MaterialPalette(modifiers, color) {
     format = undefined,
   } = modifiers;
 
-  return utility_pipe(
+  return fn_pipe(
     color,
-    utility_curry(paletteSettings, { format, scheme }),
-    utility_curry(generateMaterialPalette, { light, dark }),
+    fn_curry(paletteSettings, { format, scheme }),
+    fn_curry(generateMaterialPalette, { light, dark }),
   );
 }
 
@@ -414,10 +414,10 @@ export function ArtisticPalette(modifiers, color) {
     scheme = undefined,
   } = modifiers;
 
-  return utility_pipe(
+  return fn_pipe(
     color,
-    utility_curry(paletteSettings, { format, scheme }),
-    utility_curry(generateArtisticPalette, {
+    fn_curry(paletteSettings, { format, scheme }),
+    fn_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
     }),
@@ -512,9 +512,9 @@ export function InterpolatedPalette(modifiers, color) {
     format = undefined,
   } = modifiers;
 
-  return utility_pipe(
+  return fn_pipe(
     color,
-    utility_curry(paletteSettings, { format }),
+    fn_curry(paletteSettings, { format }),
     ([color]) => [
       color,
       ...(values === 1 ? [] : color_interpolation(
@@ -523,8 +523,8 @@ export function InterpolatedPalette(modifiers, color) {
       )),
     ],
     material
-      ? utility_curry(generateMaterialPalette, { light, dark })
-      : utility_curry(generateArtisticPalette, {
+      ? fn_curry(generateMaterialPalette, { light, dark })
+      : fn_curry(generateArtisticPalette, {
         contrast,
         values: { tints, tones, shades },
       }),
@@ -615,17 +615,17 @@ export function BlendedPalette(modifiers, color) {
     format = undefined,
   } = modifiers;
 
-  return utility_pipe(
+  return fn_pipe(
     color,
-    utility_curry(paletteSettings, { format }),
+    fn_curry(paletteSettings, { format }),
     ([color]) => [
       color,
       ...(values === 1
         ? []
         : color_blend({ target, amount, values: values - 1 }, color)),
     ],
-    material ? utility_curry(generateMaterialPalette, { light, dark })
-    : utility_curry(generateArtisticPalette, {
+    material ? fn_curry(generateMaterialPalette, { light, dark })
+    : fn_curry(generateArtisticPalette, {
       contrast,
       values: { tints, tones, shades },
     }),
@@ -633,7 +633,7 @@ export function BlendedPalette(modifiers, color) {
 }
 
 function paletteSettings({ scheme, format }, color) {
-  return utility_pipe(
+  return fn_pipe(
     color,
     (color) => (format ? color_inspect(color).to[format] : color_to_hex(color)),
     (color) => (scheme ? setScheme(scheme, color) : [color]),
@@ -645,7 +645,7 @@ function setScheme(scheme, color) {
     dyadic: color_to_scheme_dyadic(color),
     analogous: color_to_scheme_analogous(color),
     complementary: color_to_scheme_complementary(color),
-    split: color_to_scheme_split_complementary(color),
+    split: color_to_scheme_split(color),
     triadic: color_to_scheme_triadic(color),
     clash: color_to_scheme_clash(color),
     tetradic: color_to_scheme_tetradic(color),
@@ -656,7 +656,7 @@ function setScheme(scheme, color) {
 }
 
 function generateMaterialPalette({ light, dark }, palette) {
-  return utility_pipe(
+  return fn_pipe(
     palette,
     (palette) => palette.map((color) => color_material({ light, dark }, color)),
     (palette) =>
@@ -681,7 +681,7 @@ function generateArtisticPalette({ contrast, values }, palette) {
   // Oklab trends a little dark, so tones and shades need adjustment
   const ADJUSTMENT_VALUE = 1.27;
 
-  return utility_pipe(
+  return fn_pipe(
     palette,
     (palette) =>
       palette.map((color, index) => {
@@ -1342,18 +1342,14 @@ export function Subcategory(modifiers, ms) {
   const raw = (values) => values.map((n) => precision(n));
 
   return {
-    base: unit
-      ? utility_pipe([base], utility_curry(ms_units, unit)).toString()
-      : base,
+    base: unit ? fn_pipe([base], fn_curry(ms_units, unit)).toString() : base,
     ...generateScale(
       ["x", "-x"],
       [
         unit ? ms_units(unit, values) : raw(values),
-        utility_pipe(
+        fn_pipe(
           inverse,
-          unit
-            ? utility_curry(ms_units, inversionUnit ? inversionUnit : unit)
-            : raw,
+          unit ? fn_curry(ms_units, inversionUnit ? inversionUnit : unit) : raw,
         ),
       ],
     ),
@@ -1396,11 +1392,11 @@ export function SubcategoryUnidirectional(modifiers, ms) {
   const { unit = undefined } = modifiers;
 
   const raw = (values) => values.map((n) => precision(n));
-  const output = utility_curry(ms_units, unit);
+  const output = fn_curry(ms_units, unit);
 
   return {
     base: unit ? output([base]).toString() : base,
-    ...generateUnidirectional("x", utility_pipe(values, unit ? output : raw)),
+    ...generateUnidirectional("x", fn_pipe(values, unit ? output : raw)),
   };
 }
 
@@ -1468,11 +1464,11 @@ export function SubcategoryRange(modifiers, ms) {
     trunc = false,
   } = modifiers;
 
-  const output = utility_curry(ms_units, unit);
+  const output = fn_curry(ms_units, unit);
 
   return generateRange(keys, [
     unit ? output([max]).toString() : precision(max),
-    utility_pipe(
+    fn_pipe(
       Array.from(
         new Set(
           ms_modify((n) => {
@@ -1778,7 +1774,7 @@ const SYSTEM_FONT_STACKS = {
  * @example
  * Extract RGB values from any valid CSS color
  * ```ts
- * const extract_rgb = utility_compose(
+ * const extract_rgb = fn_compose(
  *   color_to_rgb,
  *   color_inspect,
  *   (data) => data.parsed,
@@ -1788,7 +1784,7 @@ const SYSTEM_FONT_STACKS = {
  * extract_rgb("crimson");
  * ```
  */
-export function utility_compose(...fns) {
+export function fn_compose(...fns) {
   return compose(...fns);
 }
 
@@ -1806,7 +1802,7 @@ export function utility_compose(...fns) {
  * @returns {Fn} Pending data operation
  *
  * @remarks
- * The implementation of `utility_curry` is written especially for binary
+ * The implementation of `fn_curry` is written especially for binary
  * functions because of the explicit design of this library where a function
  * will either have one argument (the data itself) or two (the output modifier, the data itself).
  *
@@ -1816,12 +1812,12 @@ export function utility_compose(...fns) {
  * @example
  * Desaturating and brightening any valid color
  * ```ts
- * const baseColorAdjustment = utility_curry(color_adjust, { lightness: 30, chroma: -25 });
+ * const baseColorAdjustment = fn_curry(color_adjust, { lightness: 30, chroma: -25 });
  *
  * baseColorAdjustment("coral");
  * ```
  */
-export function utility_curry(fn, modifier) {
+export function fn_curry(fn, modifier) {
   return curry(fn)(modifier);
 }
 
@@ -1848,9 +1844,9 @@ export function utility_curry(fn, modifier) {
  * @example
  * Color to palette CSS pipeline
  * ```ts
- * utility_pipe(
+ * fn_pipe(
  *   "chartreuse",
- *   utility_curry(MaterialPalette, { scheme: "triadic" }),
+ *   fn_curry(MaterialPalette, { scheme: "triadic" }),
  *   (color) => ({ color }),
  *   (tokens) => ({
        project: {
@@ -1865,7 +1861,7 @@ export function utility_curry(fn, modifier) {
  * )
  * ```
  */
-export function utility_pipe(x, ...fns) {
+export function fn_pipe(x, ...fns) {
   return pipe(x, ...fns);
 }
 
@@ -2243,7 +2239,7 @@ export function color_to_scheme_analogous(color) {
  * @param {string} color - the input color
  * @returns {[string, string, string]} `[a, b, c]` where `a = color`, `b = 30deg left of opposite`, `c = 30deg right of opposite`
  */
-export function color_to_scheme_split_complementary(color) {
+export function color_to_scheme_split(color) {
   const [origin, complement] = Array.from(color_to_scheme_complementary(color));
   return [
     origin,
@@ -2841,7 +2837,7 @@ export function tokens_to_css(dict) {
  *
  * The tokens are basic Sass variables. No mapping.
  *
- * @see {@link tokens_to_style_dictionary} for exporting tokens to Style Dictionary,
+ * @see {@link tokens_to_styledict} for exporting tokens to Style Dictionary,
  * which does allow output as Sass maps
  */
 export function tokens_to_scss(dict) {
@@ -3152,7 +3148,7 @@ export function tokens_to_tailwindcss(dict) {
  * @param {QSD} dict - the tokens to transform
  * @returns {object}
  */
-export function tokens_to_style_dictionary(dict) {
+export function tokens_to_styledict(dict) {
   const { project, ...tokens } = dict;
 
   const assemble = (node) =>
