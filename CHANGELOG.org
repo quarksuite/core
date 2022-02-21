@@ -5,30 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v120---2021-02-21][v1.2.0 - 2021-02-21]]
+  - [[#changed][Changed]]
+  - [[#fixed][Fixed]]
 - [[#v110---2021-02-16][v1.1.0 - 2021-02-16]]
   - [[#added][Added]]
-  - [[#changed][Changed]]
+  - [[#changed-1][Changed]]
 - [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
   - [[#added-1][Added]]
-  - [[#fixed][Fixed]]
+  - [[#fixed-1][Fixed]]
 - [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
   - [[#added-2][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
 - [[#v021---2020-06-07][v0.2.1 - 2020-06-07]]
-  - [[#fixed-1][Fixed]]
+  - [[#fixed-2][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
   - [[#added-3][Added]]
     - [[#color-conversion][color conversion]]
-  - [[#changed-1][Changed]]
+  - [[#changed-2][Changed]]
     - [[#color-adjustment-1][color adjustment]]
     - [[#color-mixture][color mixture]]
     - [[#color-schemes][color schemes]]
     - [[#color-palette-color-scale][+color palette+ color scale]]
 - [[#v011---2020-04-29][v0.1.1 - 2020-04-29]]
-  - [[#changed-2][Changed]]
+  - [[#changed-3][Changed]]
     - [[#color-conversion-1][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
   - [[#added-4][Added]]
@@ -36,11 +39,64 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
     - [[#color-accessibility][color accessibility]]
-  - [[#changed-3][Changed]]
+  - [[#changed-4][Changed]]
     - [[#scheme-functions-1][scheme functions]]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v1.2.0 - 2021-02-21
+
+This release updates the /object factory/ workflow with more consistent names and better propagation over values and
+scales.
+
++ =$_= will cycle the execution over values (=object.$_adjust()=)
++ =$$_= will cycle the execution over scales (=object.$$_modify()=)
+
+This change allows you even more control over your generated data.
+
+In addition, the setup has changed:
+
+#+BEGIN_SRC js
+import * as Q from "https://x.nest.land/quarksuite:core@1.2.0/mod.js";
+
+const { fn_compose, fn_curry fn_filter, fn_to_factory } = Q;
+
+// Initialize a factory: fn_filter -> [fn] -> fn_to_factory -> (x) => object
+const Color = fn_compose(fn_curry(fn_filter, "color") fn_to_factory);
+
+// Create an instance
+const swatch = Color("lime");
+
+// Instance methods are encapsulated in its prototype, so you won't see the data
+// until you invoke one
+console.log(swatch) // {}
+console.log(swatch.to_hex()) // { x: "#00ff00" }
+
+// do stuff with it (now only strips the type in translation)
+swatch.to_rgb();
+swatch.to_scheme_triadic();
+
+// factory methods are shadowed by $_ and $$_ equivalents that transform data recursively.
+// $_ iterates over each value recursively and executes, $$_ iterates over scales of values and executes
+// e.g.: $_material means ([a, b, c] -> [[50..900], [50..900], [50..900]])
+swatch.to_rgb().to_scheme_triadic().$_material();
+
+// Every instance has a data getter that extracts the result
+const { data: palette } = swatch.to_rgb().to_scheme_triadic().$_material();
+
+// Which can then be the initializer for another instance
+const { data: secondaryPalette } = Color(swatch).$_adjust({ hue: 120 });
+#+END_SRC
+
+** Changed
+
++ `imports_to_module` renamed to `fn_filter`
++ `module_to_factory` renamed to `fn_to_factory`
+
+** Fixed
+
++ errors with data propagation when the method expected a scale (now handled by =$$_= methods)
 
 * v1.1.0 - 2021-02-16
 
