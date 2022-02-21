@@ -1,4 +1,4 @@
-// Project: Quarks System Core (v1.0.1)
+// Project: Quarks System Core (v1.2.0)
 // Author: Chatman R. Jr <crjr.code@protonmail.com>
 // Repository: https://github.com/quarksuite/core
 // License: Unlicense
@@ -1849,20 +1849,168 @@ export function fn_curry(fn, modifier) {
  *   fn_curry(MaterialPalette, { scheme: "triadic" }),
  *   (color) => ({ color }),
  *   (tokens) => ({
-       project: {
-         name: "Sample Color Palette",
-         author: "Ed N. Bacon",
-         version: "0.1.0",
-         license: "Unlicense"
-       },
-       tok: tokens
-     }),
-     tokens_to_css
+ *      project: {
+ *       name: "Sample Color Palette",
+ *       author: "Ed N. Bacon",
+ *       version: "0.1.0",
+ *       license: "Unlicense"
+ *     },
+ *     tok: tokens
+ *   }),
+ *   tokens_to_css
  * )
  * ```
  */
 export function fn_pipe(x, ...fns) {
   return pipe(x, ...fns);
+}
+
+/**
+ * A utility that filters namespace import functions by type.
+ *
+ * @param {string} type - the type to check
+ * @param {object} namespace - the namespace import
+ * @returns {Array<((y: unknown, x: unknown) => unknown) | ((x: unknown) => unknown)>}
+ *
+ * @example
+ * Filtering a namespace
+ * ```ts
+ * import * as Q from "https://x.nest.land/quarksuite:core@1.1.0/mod.js";
+ *
+ * const color = fn_filter("color", Q);
+ * const ms = fn_filter("ms", Q);
+ * ```
+ *
+ * @remarks
+ * This utility conveniently maps functions of `type` to an array that
+ * `fn_to_factory` can use to create an object factory.
+ *
+ * @see {@link fn_to_factory}
+ */
+export function fn_filter(type, namespace) {
+  return Object.entries(namespace)
+    .filter(([name]) => name.startsWith(type))
+    .map(([, fn]) => fn);
+}
+
+/**
+ * A utility for translating functions as methods of a an object factory.
+ *
+ * @param {Array<((y: unknown, x: unkown) => unknown) | ((x: unknown) => unknown)>} fns - the functions to translate
+ * @returns {(x: unknown) => object} An object factory waiting for initialization
+ *
+ * @example
+ * Generating an object factory from directly imported QSC utilities
+ * ```ts
+ * import {
+ *   color_to_hex,
+ *   color_mix,
+ *   color_adjust
+ * } from "https://x.nest.land/quarksuite:core@1.1.0/mod.js";
+ *
+ * const Color = fn_to_factory([
+ *   color_to_hex,
+ *   color_mix,
+ *   color_adjust
+ * ]);
+ *
+ * const { value: swatch } = Color("lime")
+ *   .to_hex()
+ *   .mix({ amount: 75, target: "blue" })
+ *   .adjust({ chroma: -5 });
+ *
+ * console.log(swatch) // "#3878c6"
+ * ```
+ *
+ * @example
+ * Propagation
+ * ```ts
+ * import {
+ *   color_to_hex,
+ *   color_mix,
+ *   color_adjust,
+ *   color_analogous
+ * } from "https://x.nest.land/quarksuite:core@1.1.0/mod.js";
+ *
+ * const Color = fn_to_factory([
+ *   color_to_hex,
+ *   color_mix,
+ *   color_adjust,
+ *   color_analogous
+ * ])
+ *
+ * const { value: main } = Color("coral")
+ *   .to_hex()
+ *   .mix({ target: "dodgerblue"})
+ *   .analogous()
+ *   .$_adjust({ chroma: -5 });
+ *
+ * console.log(swatch) // ["#d29385", "#c19f6b", "#9bad75"]
+ * ```
+ *
+ * @remarks
+ * Each function passed in will have its type stripped as a method.
+ * e. g.: (`color_to_hex() -> object.to_hex()`)
+ *
+ * In addition:
+ *
+ * + The factory object has a `data` getter (state represented by `x`)
+ * + Each method includes propagated siblings (`$_`, `$$_`)
+ *   - `$_` cycles through values in its execution
+ *   - `$$_` cycles through scales in its execution
+ */
+export function fn_to_factory(fns) {
+  return (x) =>
+    Object.create({
+      x,
+      get data() {
+        return this.x;
+      },
+      ...[].concat(fns).reduce(asMethods, {}),
+    });
+}
+
+function asMethods(acc, fn) {
+  const name = fn.name.split("_").splice(1).join("_");
+  const exec = (y, x) => (y ? fn(y, x) : fn(x));
+
+  return {
+    ...acc,
+
+    [name](y = undefined) {
+      this.x = exec(y, this.x);
+
+      return this;
+    },
+
+    [["$_", name].join("")](...args) {
+      const propagate = (collection) => {
+        let [y] = args;
+
+        return collection.map((x) => {
+          return Array.isArray(x) ? propagate(x) : exec(y, x);
+        });
+      };
+
+      this.x = propagate(this.x);
+      return this;
+    },
+
+    [["$$_", name].join("")](...args) {
+      const propagate = (collection) => {
+        let [y] = args;
+
+        return collection.map((xs) => {
+          return Array.isArray(xs) && !xs.every((x) => Array.isArray(x))
+            ? propagate(xs)
+            : xs.map((x) => exec(y, x));
+        });
+      };
+
+      this.x = propagate(this.x);
+      return this;
+    },
+  };
 }
 
 /**
@@ -3163,133 +3311,6 @@ export function tokens_to_styledict(dict) {
     }, {});
 
   return (project && assemble(tokens)) || MissingProjectMetadataError();
-}
-
-/**
- * A utility for preparing library imports for factory use.
- *
- * @param {"color" | "palette" | "ms" | "tokens"} type - matches the type of data utilities to wrap
- * @param {object} imports - imported utilities wrapped as an object
- * @returns {object}
- *
- * @example
- * Prepping library imports
- * ```ts
- * import * as qsc from "https://x.nest.land/quarksuite:core@1.1.0/mod.js";
- *
- * const color = imports_to_module("color", qsc);
- * const ms = imports_to_module("ms", qsc);
- * ```
- *
- * @remarks
- * This utility acts mainly as a convenience to package library imports for
- * `module_to_factory`. You can also pass in raw objects and it'll work the same,
- * so if that's your approach, you won't need this step.
- *
- * @see {@link module_to_factory}
- */
-export function imports_to_module(type, imports) {
-  return Object.keys(imports)
-    .filter((name) => name.startsWith(type))
-    .reduce(
-      (acc, name) => ({ ...acc, [name.split("_").pop()]: imports[name] }),
-      {},
-    );
-}
-
-/**
- * A utility for generating factory objects from a prepared module.
- *
- * @param {object} module - an object containing functions to convert as chainable methods
- * @returns {(initial: unknown) => object} A factory object waiting for initialization
- *
- * @example
- * Generating a factory object from directly imported QSC utilities
- * ```ts
- * import {
- *   color_to_hex,
- *   color_mix,
- *   color_adjust
- * } from "https://x.nest.land/quarksuite:core@1.1.0/mod.js";
- *
- * const Color = module_to_factory({
- *   hex: color_to_hex,
- *   mix: color_mix,
- *   adjust: color_adjust
- * });
- *
- * const { value: swatch } = Color("lime")
- *   .hex()
- *   .mix({ amount: 75, target: "blue" })
- *   .adjust({ chroma: -5 });
- *
- * console.log(swatch) // "#3878c6"
- * ```
- *
- * @example
- * Generating a factory object dynamically from a namespace import
- * ```ts
- * import * as qsc from "https://x.nest.land/quarksuite:core@1.1.0/mod.js";
- *
- * const Color = module_to_factory(import_to_module("color", qsc));
- *
- * const { value: main } = Color("coral")
- *   .hex()
- *   .mix({ target: "dodgerblue"})
- *   .analogous()
- *   .$adjust({ chroma: -5 });
- *
- * console.log(swatch) // ["#d29385", "#c19f6b", "#9bad75"]
- * ```
- *
- * @remarks
- * When using explicit utility imports, the property name will be reflected as a
- * as a method of the same name (`module.hex -> factory.hex()`). When created
- * dynamically from a namespace import, the method name is the last part of the
- * function name (`module.color_to_scheme_dyadic -> factory.dyadic()`).
- *
- * In addition:
- *
- * + The factory object has a `value` getter that extracts the current value in
- * the method chain.
- * + Each dynamic method includes a propagated (`$`) twin that works on
- * arrays recursively
- */
-export function module_to_factory(module) {
-  const methods = Object.entries(module).reduce(
-    (acc, [name, fn]) => ({
-      ...acc,
-      [name](...args) {
-        this._data = fn.apply(null, [...args, this._data]);
-        return this;
-      },
-      [["$", name].join("")](...args) {
-        const propagate = (collection) =>
-          collection.map((value) =>
-            Array.isArray(value)
-              ? propagate(value)
-              : fn.apply(null, [...args, value])
-          );
-
-        this._data = propagate(
-          Array.isArray(this._data) ? this._data : [this._data],
-        );
-
-        return this;
-      },
-    }),
-    {},
-  );
-
-  return function (initial) {
-    return Object.create({
-      _data: initial,
-      get value() {
-        return this._data;
-      },
-      ...methods,
-    });
-  };
 }
 
 function cssFormatStructure(

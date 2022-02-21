@@ -1,19 +1,17 @@
 import * as qsc from "../mod.js";
-import { benchmark, data, exception, init, suite } from "./index.js";
+import { benchmark, data, init, suite } from "./index.js";
 
 const testInitialization = [
   "Initialization",
   [
-    "can generate a factory object from explicitly defined module",
+    "can generate an object factory from explicitly defined modules",
     data(
       (() => {
-        const color = {
-          hex: qsc.color_to_hex,
-          mix: qsc.color_mix,
-          adjust: qsc.color_adjust,
-        };
-
-        const Color = qsc.module_to_factory(color);
+        const Color = qsc.fn_to_factory([
+          qsc.color_to_hex,
+          qsc.color_mix,
+          qsc.color_adjust,
+        ]);
 
         return Color("#cadd99");
       })(),
@@ -21,12 +19,12 @@ const testInitialization = [
     ),
   ],
   [
-    "can generate a factory object from namespaced import",
+    "can generate an object factory from namespace",
     data(
       (() => {
-        const color = qsc.imports_to_module("color", qsc);
+        const color = qsc.fn_filter("color", qsc);
 
-        const Color = qsc.module_to_factory(color);
+        const Color = qsc.fn_to_factory(color);
 
         return Color("#cadd99");
       })(),
@@ -41,9 +39,9 @@ const testBehavior = [
     "state of data is not exposed until transformed",
     data(
       (() => {
-        const color = qsc.imports_to_module("color", qsc);
+        const color = qsc.fn_filter("color", qsc);
 
-        const Color = qsc.module_to_factory(color);
+        const Color = qsc.fn_to_factory(color);
 
         return Color("#cadd99");
       })(),
@@ -51,24 +49,24 @@ const testBehavior = [
     ),
     data(
       (() => {
-        const color = qsc.imports_to_module("color", qsc);
+        const color = qsc.fn_filter("color", qsc);
 
-        const Color = qsc.module_to_factory(color);
+        const Color = qsc.fn_to_factory(color);
 
-        return Color("#cadd99").rgb();
+        return Color("#cadd99").to_rgb();
       })(),
-      { _data: "rgb(202, 221, 153)" },
+      { x: "rgb(202, 221, 153)" },
     ),
   ],
   [
-    "composition is possible via value getter",
+    "composition is possible via data getter",
     data(
       (() => {
-        const ms = qsc.imports_to_module("ms", qsc);
+        const ms = qsc.fn_filter("ms", qsc);
 
-        const Ms = qsc.module_to_factory(ms);
+        const Ms = qsc.fn_to_factory(ms);
 
-        const { value: scale } = Ms(1).create({});
+        const { data: scale } = Ms(1).create({});
 
         return [
           Ms(scale).modify((n) => n + 10),
@@ -80,13 +78,13 @@ const testBehavior = [
         ];
       })(),
       [
-        { _data: [11, 11.5, 12.25, 13.375, 15.0625, 17.59375] },
-        { _data: [-9, -8.5, -7.75, -6.625, -4.9375, -2.40625] },
-        { _data: [10, 15, 22.5, 33.75, 50.625, 75.9375] },
-        { _data: [0.1, 0.15, 0.225, 0.3375, 0.50625, 0.759375] },
-        { _data: [1, 1.5, 2.25, 3.375, 5.0625, 7.59375] },
+        { x: [11, 11.5, 12.25, 13.375, 15.0625, 17.59375] },
+        { x: [-9, -8.5, -7.75, -6.625, -4.9375, -2.40625] },
+        { x: [10, 15, 22.5, 33.75, 50.625, 75.9375] },
+        { x: [0.1, 0.15, 0.225, 0.3375, 0.50625, 0.759375] },
+        { x: [1, 1.5, 2.25, 3.375, 5.0625, 7.59375] },
         {
-          _data: [
+          x: [
             1,
             57.6650390625,
             3325.256730079651,
@@ -102,16 +100,16 @@ const testBehavior = [
     "propagated methods work recursively",
     data(
       (() => {
-        const color = qsc.imports_to_module("color", qsc);
+        const color = qsc.fn_filter("color", qsc);
 
-        const Color = qsc.module_to_factory(color);
+        const Color = qsc.fn_to_factory(color);
 
-        const { value: main } = Color("dodgerblue").hex();
+        const { data: main } = Color("dodgerblue").to_hex();
 
-        return Color(main).triadic().$analogous().$mix({
+        return Color(main).to_scheme_triadic().$_to_scheme_analogous().$_mix({
           target: "coral",
           amount: 30,
-        }).value;
+        }).data;
       })(),
       [
         ["#8094d2", "#bb7bc9", "#e46597"],
@@ -119,24 +117,47 @@ const testBehavior = [
         ["#9a9f27", "#87a880", "#83a0bc"],
       ],
     ),
+    data(
+      (() => {
+        const ms = qsc.fn_filter("ms", qsc);
+
+        const Ms = qsc.fn_to_factory(ms);
+
+        return Ms(1).create({}).split(2).$_create({ values: 4 }).data;
+      })(),
+      [
+        [
+          [1, 1.5, 2.25, 3.375],
+          [1.5, 2.25, 3.375, 5.0625],
+        ],
+        [
+          [2.25, 3.375, 5.0625, 7.59375],
+          [3.375, 5.0625, 7.59375, 11.390625],
+        ],
+        [
+          [5.0625, 7.59375, 11.390625, 17.0859375],
+          [7.59375, 11.390625, 17.0859375, 25.62890625],
+        ],
+      ],
+    ),
   ],
   [
     "plays nice with functional utilities",
     data(
       (() => {
-        const ColorFactory = qsc.utility_compose(
-          qsc.utility_curry(qsc.imports_to_module, "color"),
-          qsc.module_to_factory,
+        const ColorFactory = qsc.fn_compose(
+          qsc.fn_curry(qsc.fn_filter, "color"),
+          qsc.fn_to_factory,
         );
 
         const Color = ColorFactory(qsc);
 
-        const { value: main } = Color("dodgerblue").hex();
+        const { data: main } = Color("dodgerblue").to_hex();
 
-        return Color(main).triadic().$analogous().$mix({
+        return Color(main).to_scheme_triadic().$_to_scheme_analogous().$_mix({
           target: "coral",
           amount: 30,
-        }).value;
+        }).data;
       })(),
       [
         ["#8094d2", "#bb7bc9", "#e46597"],
@@ -162,17 +183,17 @@ suite("Factory Interface", testInitialization, testBehavior);
 */
 
 benchmark(async function factoryConcurrentStressBench() {
-  const color = qsc.imports_to_module("color", qsc);
+  const color = qsc.fn_filter("color", qsc);
 
-  const Color = qsc.module_to_factory(color);
+  const Color = qsc.fn_to_factory(color);
 
-  const { value: main } = Color("dodgerblue").hex();
+  const { data: main } = Color("dodgerblue").to_hex();
 
-  const [{ value: a }, { value: b }, { value: c }, { value: d }] = [
-    await Color(main).adjust({ hue: 30 }).dyadic(),
-    await Color(main).mix({ amount: 25 }).triadic(),
-    await Color(main).material({}),
-    await Color(main).interpolation({ values: 25, hue: 90 }),
+  const [{ data: a }, { data: b }, { data: c }, { data: d }] = [
+    await Color(main).interpolation({ values: 100, hue: 90 }),
+    await Color(main).interpolation({ values: 100, hue: 180 }),
+    await Color(main).interpolation({ values: 100, hue: 270 }),
+    await Color(main).interpolation({ values: 100, hue: 360 }),
   ];
 
   return { a, b, c, d };
