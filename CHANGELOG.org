@@ -5,22 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v121---2021-02-24][v1.2.1 - 2021-02-24]]
+  - [[#fixed][Fixed]]
 - [[#v120---2021-02-21][v1.2.0 - 2021-02-21]]
   - [[#changed][Changed]]
-  - [[#fixed][Fixed]]
+  - [[#fixed-1][Fixed]]
 - [[#v110---2021-02-16][v1.1.0 - 2021-02-16]]
   - [[#added][Added]]
   - [[#changed-1][Changed]]
 - [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
   - [[#added-1][Added]]
-  - [[#fixed-1][Fixed]]
+  - [[#fixed-2][Fixed]]
 - [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
   - [[#added-2][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
 - [[#v021---2020-06-07][v0.2.1 - 2020-06-07]]
-  - [[#fixed-2][Fixed]]
+  - [[#fixed-3][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
   - [[#added-3][Added]]
@@ -44,6 +46,15 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v1.2.1 - 2021-02-24
+
+Fixes =color_adjust= and =color_filter= and improves chromatic accuracy for color generation in general.
+
+** Fixed
+
++ chromatic adjustment through the OKLab color space was /not/ bound to a range 0-0.5. This threw off chromatic accuracy
+  and made chroma impossible to filter for
 
 * v1.2.0 - 2021-02-21
 
