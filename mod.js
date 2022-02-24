@@ -2173,10 +2173,14 @@ export function color_adjust(properties, color) {
     color_to_oklab(color),
     extractor,
     ([, [L, C, H, A]]) => [
-      normalize(200, 0, parseFloat(L) + lightness),
-      normalize(1, 0, parseFloat(C) + numberFromPercent(chroma)),
+      normalize(100, 0, parseFloat(L) + lightness),
+      normalize(
+        0.5,
+        0,
+        parseFloat(C) + numberFromPercent(100, chroma) * 0.5 * 0.5,
+      ),
       hueCorrection(parseFloat(H) + hue),
-      parseFloat(A ?? 1) + numberFromPercent(alpha),
+      parseFloat(A ?? 1) + numberFromPercent(100, alpha),
     ],
     ([L, C, H, A]) => output(["oklab", [String(L).concat("%"), C, H, A]]),
     curry(revert)(color),
@@ -2216,9 +2220,9 @@ export function color_mix(modifiers, color) {
   const { amount = 50, target = "black" } = modifiers;
 
   return pipe(
-    calculateMix(color, target, numberFromPercent(amount)),
+    calculateMix(color, target, numberFromPercent(100, amount)),
     ([L, a, b, A]) => [
-      numberToPercent(L).toString().concat("%"),
+      numberToPercent(100, L).toString().concat("%"),
       Math.sqrt(a ** 2 + b ** 2).toFixed(4),
       hueCorrection(radToDegrees(Math.atan2(b, a))),
       A,
@@ -2582,7 +2586,10 @@ function paletteToOklabValues(palette) {
     Array.from(palette),
     (palette) => palette.map((color) => color_to_oklab(color)),
     (palette) => palette.map((color) => extractor(color)),
-    (palette) => palette.map(([, color]) => color),
+    (palette) =>
+      palette.map(([, color]) => {
+        return color;
+      }),
     (palette) => palette.map((color) => color.map((C) => parseFloat(C))),
   );
 }
@@ -2648,17 +2655,35 @@ function flushPalette({ by, min, max }, palette) {
 }
 
 function parseFlushCondition({ by, min, max }) {
-  const filterCondition = (v) => (max ? v >= min && v <= max : v > min);
-  const filterConditionAsNumber = (v) =>
-    max
-      ? v > numberFromPercent(min) && v < numberFromPercent(max)
-      : v > numberFromPercent(min);
+  const filterCondition = (v) => (max ? v > min && v < max : v > min);
   const matchProperty = (property) =>
     new Map([
       ["lightness", ([V]) => filterCondition(V)],
-      ["chroma", ([, V]) => filterConditionAsNumber(V)],
+      [
+        "chroma",
+        ([, V]) => {
+          const MIN = numberFromPercent(
+            0.5,
+            numberFromPercent(100, min) * 0.5 * 0.5,
+          );
+          const MAX = numberFromPercent(
+            0.5,
+            numberFromPercent(100, max) * 0.5 * 0.5,
+          );
+
+          return MAX ? V > MIN && V < MAX : V > MIN;
+        },
+      ],
       ["hue", ([, , V]) => filterCondition(V)],
-      ["alpha", ([, , , V]) => filterConditionAsNumber(V)],
+      [
+        "alpha",
+        ([, , , V]) => {
+          const MIN = numberFromPercent(100, min);
+          const MAX = numberFromPercent(100, max);
+
+          return MAX ? V > MIN && V < MAX : V > MIN;
+        },
+      ],
     ]).get(property);
 
   return matchProperty(by);
@@ -3627,17 +3652,11 @@ const normalize = (b, a, x) => (x < a ? a : x > b ? b : precision(x));
 const hexFragmentToRgb = (fragment) => parseInt(fragment, 16);
 const hexFragmentFromRgb = (channel) => channel.toString(16).padStart(2, "0");
 
-const numberToPercent = (n) => multiply(100, n);
-const numberFromPercent = (percentage) => divide(100, percentage);
+const numberToPercent = (whole, n) => multiply(whole, n);
+const numberFromPercent = (whole, percentage) => divide(whole, percentage);
 
 const numberToRgb = (n) => multiply(255, n);
 const numberFromRgb = (channel) => divide(255, channel);
-const rgbFromPercent = compose(numberFromPercent, numberToRgb, Math.round);
-const hexFragmentFromNumber = compose(
-  numberToRgb,
-  Math.round,
-  hexFragmentFromRgb,
-);
 
 const radToDegrees = (radians) =>
   compose(
@@ -3876,6 +3895,7 @@ function hslFromRgb(color) {
     calculateSaturation(DELTA, L),
   ];
 
+  const setWhole = curry(numberToPercent)(100);
   const limitPercent = curry(normalize)(100, 0);
 
   return pipe(
@@ -3884,8 +3904,9 @@ function hslFromRgb(color) {
       [
         hueCorrection(H),
         ...[S, L].map((V) =>
-          pipe(V, numberToPercent, limitPercent, (value) => value.toString())
-            .concat("%")
+          pipe(V, setWhole, limitPercent, (value) => value.toString()).concat(
+            "%",
+          )
         ),
         A,
       ],
@@ -3917,6 +3938,7 @@ function cmykFromRgb(color) {
   const K = 1 - Math.max(R, G, B);
   const [C, M, Y] = [R, G, B].map((V) => (1 - V - K) / (1 - K));
 
+  const setWhole = curry(numberToPercent)(100);
   const limitPercent = curry(normalize)(100, 0);
 
   return pipe(
@@ -3924,7 +3946,7 @@ function cmykFromRgb(color) {
       "cmyk",
       [
         ...[C, M, Y, K]
-          .map((V) => (isNaN(V) ? 0 : pipe(V, numberToPercent, limitPercent)))
+          .map((V) => (isNaN(V) ? 0 : pipe(V, setWhole, limitPercent)))
           .map((V) => V.toString().concat("%")),
         A,
       ],
@@ -3946,6 +3968,7 @@ function hwbFromRgb(color) {
 
   const [W, BLK] = [MIN, 1 - MAX];
 
+  const setWhole = curry(numberToPercent)(100);
   const limitPercent = curry(normalize)(100, 0);
 
   return pipe(
@@ -3954,7 +3977,7 @@ function hwbFromRgb(color) {
       [
         hueCorrection(H),
         ...[W, BLK].map((V) =>
-          pipe(V, numberToPercent, limitPercent).toString().concat("%")
+          pipe(V, setWhole, limitPercent).toString().concat("%")
         ),
         A,
       ],
@@ -4030,7 +4053,7 @@ function oklabFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
   const [l, a, b] = lrgbToOklab([R, G, B]);
 
-  const L = precision(numberToPercent(l)).toString().concat("%");
+  const L = (+numberToPercent(100, l).toFixed(4)).toString().concat("%");
   const c = normalize(0.5, 0, +Math.sqrt(a ** 2 + b ** 2).toFixed(4)); // toPrecision isn't strict enough
   const C = Math.sign(Math.round(c)) === -1 ? 0 : c;
   const H = pipe(Math.atan2(b, a), radToDegrees, hueCorrection);
@@ -4110,13 +4133,14 @@ function validator(color) {
   return (
     Object.entries(SUPPORTED_FORMATS)
       .map(([format, fn]) => [format, fn(color) && color])
-      .find(([, color]) => color) || InvalidOrUnsupportedColorError()
+      .find(([, color]) => color) || InvalidOrUnsupportedColorError(color)
   );
 }
 
-function InvalidOrUnsupportedColorError() {
+function InvalidOrUnsupportedColorError(culprit) {
   throw new QSCError({
     name: "Invalid or Unsupported Color",
+    culprit,
     reason: `
 The input matches none of Quarks System Core's supported color formats. It's
 also possible you have a syntax error.
@@ -4352,7 +4376,7 @@ function parseRGB(color) {
       format,
       components.map((c, pos) =>
         c.endsWith("%")
-          ? parsePercent(c)
+          ? parsePercent(255, numberFromPercent(100, c) * 255)
           : pos === 3
           ? parseNumber(c)
           : parseChannel(c)
@@ -4374,8 +4398,8 @@ function parseHSL(color) {
         pos === 0
           ? parseHue(c)
           : pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
-          : parsePercent(c)
+          ? c.endsWith("%") ? parsePercent(100, c) : parseNumber(c)
+          : parsePercent(100, c)
       ),
     ],
   );
@@ -4390,7 +4414,9 @@ function parseCMYK(color) {
     ],
     ([format, components]) => [
       format,
-      components.map((c) => c.endsWith("%") ? parsePercent(c) : parseNumber(c)),
+      components.map((c) =>
+        c.endsWith("%") ? parsePercent(100, c) : parseNumber(c)
+      ),
     ],
   );
 }
@@ -4415,13 +4441,21 @@ function parseOklab(color) {
     ],
     ([format, components]) => [
       format,
-      components.map((c, pos) =>
-        pos === 0
-          ? parsePercent(c)
-          : pos === 1 || pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
-          : parseHueAsRadians(c)
-      ),
+      components.map((c, pos) => {
+        if (pos === 0) return parsePercent(100, c);
+
+        if (pos === 1 && c.endsWith("%")) {
+          return parsePercent(0.5, numberFromPercent(100, c) * 0.5 * 0.5);
+        }
+
+        if (pos === 2) return parseHueAsRadians(c);
+
+        if (pos === 3 && c.endsWith("%")) {
+          return parsePercent(100, c);
+        }
+
+        return parseNumber(c);
+      }),
     ],
     ([format, [L, C, H, A]]) => [
       format,
@@ -4434,8 +4468,9 @@ function parseNumber(n) {
   return pipe(n, parseFloat, precision);
 }
 
-function parsePercent(percentage) {
-  return pipe(percentage, parseFloat, numberFromPercent);
+function parsePercent(whole, percentage) {
+  const setWhole = curry(numberFromPercent)(whole);
+  return pipe(percentage, parseFloat, setWhole);
 }
 
 function parseChannel(channel) {
@@ -4473,7 +4508,7 @@ function parseCie(unique, color) {
         pos === 0
           ? parseNumber(c)
           : pos === 3
-          ? c.endsWith("%") ? parsePercent(c) : parseNumber(c)
+          ? c.endsWith("%") ? parsePercent(100, c) : parseNumber(c)
           : unique(c, pos)
       ),
     ],
@@ -4526,12 +4561,16 @@ function modernOutput(prefix, components) {
 class QSCError extends Error {
   constructor({
     name = "Unknown Error",
+    culprit = "some value",
     reason = "here's why",
     suggestion = "try this",
   } = {}) {
     super();
     this.name = name;
     this.message = `
+
+${culprit} caused this error!
+${"-".repeat(80)}
 ${reason}
 ${suggestion}
 ${"=".repeat(80)}
