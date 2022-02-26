@@ -3614,6 +3614,7 @@ const INPUT_TO_RGB = {
   hwb: hwbToRgb,
   cielab: cielabToRgb,
   cielch: compose(cielabFromCielch, passthrough, cielabToRgb),
+  oklab: compose(oklabToOklch, passthrough, oklchToRgb),
   oklch: oklchToRgb,
 };
 
@@ -3625,6 +3626,7 @@ const OUTPUT_FROM_RGB = {
   hwb: hwbFromRgb,
   cielab: cielabFromRgb,
   cielch: compose(cielabFromRgb, passthrough, cielabToCielch),
+  oklab: compose(oklchFromRgb, passthrough, oklabFromOklch),
   oklch: oklchFromRgb,
 };
 
