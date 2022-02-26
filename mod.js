@@ -4126,10 +4126,24 @@ const SUPPORTED_FORMATS = {
   hwb: hwbValidator,
   cielab: cielabValidator,
   cielch: cielchValidator,
+  oklab: oklabValidator,
   oklch: oklchValidator,
 };
 
 function validator(color) {
+  const SUPPORTED_FORMATS = {
+    named: namedValidator,
+    hex: hexValidator,
+    rgb: rgbValidator,
+    hsl: hslValidator,
+    cmyk: cmykValidator,
+    hwb: hwbValidator,
+    cielab: cielabValidator,
+    cielch: cielchValidator,
+    oklab: oklabValidator,
+    oklch: oklchValidator,
+  };
+
   return (
     Object.entries(SUPPORTED_FORMATS)
       .map(([format, fn]) => [format, fn(color) && color])
@@ -4281,6 +4295,14 @@ function cielchValidator(color) {
     PERCENT_TOKEN,
     NUMBER_TOKEN,
     HUE_TOKEN,
+  ]).test(color);
+}
+
+function oklabValidator(color) {
+  return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
+    PERCENT_TOKEN,
+    NUMBER_TOKEN,
+    NUMBER_TOKEN,
   ]).test(color);
 }
 
