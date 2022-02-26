@@ -4104,6 +4104,20 @@ function oklabToOklch(color) {
   );
 }
 
+function oklabFromOklch(color) {
+  const [, [L, a, b, A]] = parser(color);
+
+  return pipe(
+    output("oklab", [
+      numberToPercent(100, L).toString().concat("%"),
+      normalize(0.5, -0.5, a),
+      normalize(0.5, -0.5, b),
+      A,
+    ]),
+    validator,
+  );
+}
+
 function hexFromNamedColor(color) {
   return validator(NAMED_COLOR_KEYWORDS[color]);
 }
