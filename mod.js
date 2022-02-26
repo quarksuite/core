@@ -4104,7 +4104,7 @@ function oklabToOklch(color) {
     output([
       "oklch",
       [
-        numberToPercent(100, L).toString().concat("%"),
+        (+numberToPercent(100, L).toFixed(4)).toString().concat("%"),
         normalize(0.5, 0, C),
         pipe(H, radToDegrees, hueCorrection),
         A,
@@ -4121,7 +4121,7 @@ function oklabFromOklch(color) {
     output([
       "oklab",
       [
-        numberToPercent(100, L).toString().concat("%"),
+        (+numberToPercent(100, L).toFixed(4)).toString().concat("%"),
         normalize(0.5, -0.5, a),
         normalize(0.5, -0.5, b),
         A,
