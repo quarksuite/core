@@ -4361,6 +4361,7 @@ const FORMAT_PARSERS = {
   hwb: parseHSL, // identical to HSL
   cielab: parseCielab,
   cielch: parseCielch,
+  oklab: parseOklab,
   oklch: parseOklch,
 };
 
@@ -4451,6 +4452,28 @@ function parseCielch(color) {
   return parseCie(
     (c, pos) => (pos === 2 ? parseHue(c) : parseNumber(c)),
     color,
+  );
+}
+
+function parseOklab(color) {
+  return pipe(
+    extractor(color),
+    ([format, components]) => [
+      format,
+      components.length === 4 ? components : [...components, "1"],
+    ],
+    ([format, components]) => [
+      format,
+      components.map((c, pos) => {
+        if (pos === 0) return parsePercent(100, c);
+
+        if (pos === 3 && c.endsWith("%")) {
+          return parsePercent(100, c);
+        }
+
+        return parseNumber(c);
+      }),
+    ],
   );
 }
 
