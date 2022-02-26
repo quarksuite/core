@@ -5,19 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v130---2021-02-25][v1.3.0 - 2021-02-25]]
+  - [[#added][Added]]
+  - [[#changed][Changed]]
 - [[#v121---2021-02-24][v1.2.1 - 2021-02-24]]
   - [[#fixed][Fixed]]
 - [[#v120---2021-02-21][v1.2.0 - 2021-02-21]]
-  - [[#changed][Changed]]
+  - [[#changed-1][Changed]]
   - [[#fixed-1][Fixed]]
 - [[#v110---2021-02-16][v1.1.0 - 2021-02-16]]
-  - [[#added][Added]]
-  - [[#changed-1][Changed]]
-- [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
   - [[#added-1][Added]]
+  - [[#changed-2][Changed]]
+- [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
+  - [[#added-2][Added]]
   - [[#fixed-2][Fixed]]
 - [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
-  - [[#added-2][Added]]
+  - [[#added-3][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
@@ -25,27 +28,56 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#fixed-3][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
-  - [[#added-3][Added]]
+  - [[#added-4][Added]]
     - [[#color-conversion][color conversion]]
-  - [[#changed-2][Changed]]
+  - [[#changed-3][Changed]]
     - [[#color-adjustment-1][color adjustment]]
     - [[#color-mixture][color mixture]]
     - [[#color-schemes][color schemes]]
     - [[#color-palette-color-scale][+color palette+ color scale]]
 - [[#v011---2020-04-29][v0.1.1 - 2020-04-29]]
-  - [[#changed-3][Changed]]
+  - [[#changed-4][Changed]]
     - [[#color-conversion-1][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
-  - [[#added-4][Added]]
+  - [[#added-5][Added]]
     - [[#functional-utilities][functional utilities]]
     - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
     - [[#color-accessibility][color accessibility]]
-  - [[#changed-4][Changed]]
+  - [[#changed-5][Changed]]
     - [[#scheme-functions-1][scheme functions]]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v1.3.0 - 2021-02-25
+
+This minor release updates the implementation of OKLab and OKLCH to [[https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch][adhere to the currently defined spec]].
+
+This means that Quarks System Core now supports the use of colors in most major current and emerging formats.
+
+Specifically:
+
++ Named colors
++ RGB Hex
++ Functional RGB
++ Functional HSL
++ Functional device-cmyk
++ Functional HWB
++ Functional CIELAB
++ Functional CIELCH
++ Functional OKLab
++ Functional OKLCH
+
+** Added
+
++ =color_to_oklab=
+
+** Changed
+
++ renamed =color_to_oklab= to =color_to_oklch=
++ =color_to_oklab= output takes over =oklab= prefix
++ OKLCH color prefix now =oklch=
 
 * v1.2.1 - 2021-02-24
 

@@ -28,13 +28,15 @@ Quarks System Core is a library for creating, assembling, and distributing [[htt
 It's part of the emerging QuarkSuite toolkit which focuses on using modern web technologies to spin up reproducible
 baselines for web projects.
 
-Think of it like a UI boilerplate generator you can use right in your browser.
+Think of it as UI toolkit scaffolding you can use right in your browser.
 
 Quarks System Core is written in vanilla JavaScript (ES2017+).
 
 * Features
 
-+ Generate and manipulate colors with ease
++ Roll your own design token foundation
++ Embed your common design idioms as a cross-project baseline
++ Generate and manipulate colors with ease (using CSS standard color strings)
 + Enforce consistency in your proportions and layout with modular scaling
 + A simple data spec inspired by familiar tools
 + Workflow flexibility encourages you to do things /your/ way
@@ -48,7 +50,7 @@ If you just want to inspect what the library makes available and play around wit
 browser or run a =deno repl= and paste:
 
 #+BEGIN_SRC js
-const QSC = await import("https://x.nest.land/quarksuite:core@1.2.1/mod.js");
+const QSC = await import("https://x.nest.land/quarksuite:core@1.3.0/mod.js");
 #+END_SRC
 
 ** Setup
@@ -56,7 +58,7 @@ const QSC = await import("https://x.nest.land/quarksuite:core@1.2.1/mod.js");
 When you're ready to start a real project with Quarks System Core, get situated with the following code.
 
 #+BEGIN_SRC js
-import { Quarks } from "https://x.nest.land/quarksuite:core@1.2.1/mod.js";
+import { Quarks } from "https://x.nest.land/quarksuite:core@1.3.0/mod.js";
 
 Quarks(); // generates default option tokens
 #+END_SRC
@@ -86,11 +88,16 @@ Though, you can also work offline with a local copy of the source.
 * Documentation
 
 The [[https://observablehq.com/@cr-jr/qsc-handbook][Quarks System Core Handbook]] is an interactive document introducing the library from a user perspective. You'll want
-to begin here to get a general idea of how things work. Once you're ready to get in-depth, the [[https://observablehq.com/@cr-jr/qsc-api][Quarks System Core API]]
+to begin here to get a general idea of how things work.Once you're ready to get in-depth, the [[https://observablehq.com/@cr-jr/qsc-api][Quarks System Core API]]
 documentation will serve you well.
 
 Both documents are Observable notebooks, so the examples are fully runnable. This will allow you to play around with the
 library without local setup. I hope you thoroughly evaluate it and that it helps your next project.
+
+Though, I'll warn you the documentation needs a touch up.
+
+The workflow doesn't change too much between minor versions, so it'll get you most of the way. You can also keep an eye
+on the growing collection of [[https://glitch.com/@quarksuite][experiments and examples I build on Glitch]] for a more project-focused overview.
 
 * Contributing
 
@@ -125,7 +132,7 @@ single point of entry, relatively small size, and simple output all work to make
 ** Adaptability
 
 Quarks System Core aims to grow or shrink according to your needs. Its functional nature makes it straightforward to use
-and extend as you see fit.
+and extend as you see fit. You can also use a more familiar object pattern if you'd like.
 
 ** Invisibility
 
@@ -138,7 +145,7 @@ Quarks System Core is built to work with what already exists in the design token
 its own, but its schema is nothing but a plain object.
 
 This makes it particularly suited for integration with design tools that use their /own/ schemas (such as [[https://tailwindcss.com/][TailwindCSS]]
-and Style Dictionary).
+and [[https://amzn.github.io/style-dictionary/][Style Dictionary]]).
 
 ** Stability
 
@@ -158,7 +165,7 @@ last stable version and refreshing your dev environment.
   - hex, rgb, hsl: [[https://www.rapidtables.com/convert/color/index.html][RapidTables]]
   - cmyk, hwb: [[https://drafts.csswg.org/css-color-4/][W3C CSS Color Module 4]] (though, as of this writing, =device-cmyk()= is bumped to Color Module 5)
   - lab, lch: [[http://www.brucelindbloom.com/index.html?Math.html][Bruce Lindbloom]]
-  - oklab (oklch): [[https://bottosson.github.io/posts/oklab/][Björn Ottosson]] (the creator of the Oklab color space)
+  - oklab, oklch: [[https://bottosson.github.io/posts/oklab/][Björn Ottosson]] (the creator of the Oklab color space)
 + Built-in datasets:
   - Named colors: [[https://www.w3.org/wiki/CSS/Properties/color/keywords][W3C Wiki]]
   - System font stacks: [[https://systemfontstack.com][System Font Stack]]
