@@ -260,7 +260,7 @@ function paletteFromType(base, type, modifiers = {}) {
 
 /** @typedef {"dyadic" | "complementary" | "analgous" | "split" | "triadic" | "clash" | "tetradic" | "square" | "star" | "hexagon"} QSPaletteScheme - built-in color schemes for palette formulas */
 
-/** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab"} QSPaletteFormat - built-in color formats for palette formulas */
+/** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklch"} QSPaletteFormat - built-in color formats for palette formulas */
 
 /** @typedef {{
   [category: string]: {
@@ -678,7 +678,7 @@ function generateMaterialPalette({ light, dark }, palette) {
 }
 
 function generateArtisticPalette({ contrast, values }, palette) {
-  // Oklab trends a little dark, so tones and shades need adjustment
+  // Oklch trends a little dark, so tones and shades need adjustment
   const ADJUSTMENT_VALUE = 1.27;
 
   return fn_pipe(
@@ -2084,17 +2084,17 @@ export function color_to_cielch(color) {
 }
 
 /**
- * A utility to convert a valid CSS color to its Oklab (LCh) equivalent.
+ * A utility to convert a valid CSS color to its Oklch (LCh) equivalent.
  *
  * @param {string} color - the color to convert
  * @returns {string}
  *
  * @remarks
- * Oklab is non-standard and has no browser support, so convert any Oklab
+ * Oklch is non-standard and has no browser support, so convert any Oklch
  * colors to a standard format before using them.
  */
-export function color_to_oklab(color) {
-  return compose(curry(convert)("oklab"), passthrough)(color);
+export function color_to_oklch(color) {
+  return compose(curry(convert)("oklch"), passthrough)(color);
 }
 
 /**
@@ -2113,7 +2113,7 @@ export function color_to_oklab(color) {
  *    hwb: string,
  *    cielab: string,
  *    cielch: string,
- *    oklab: string,
+ *    oklch: string,
  *  }
  * }}
  *
@@ -2148,7 +2148,7 @@ export function color_inspect(color) {
       hwb: color_to_hwb(color),
       cielab: color_to_cielab(color),
       cielch: color_to_cielch(color),
-      oklab: color_to_oklab(color),
+      oklch: color_to_oklch(color),
     },
   };
 }
@@ -2170,7 +2170,7 @@ export function color_adjust(properties, color) {
   const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = properties;
 
   return pipe(
-    color_to_oklab(color),
+    color_to_oklch(color),
     extractor,
     ([, [L, C, H, A]]) => [
       normalize(100, 0, parseFloat(L) + lightness),
@@ -2182,7 +2182,7 @@ export function color_adjust(properties, color) {
       hueCorrection(parseFloat(H) + hue),
       parseFloat(A ?? 1) + numberFromPercent(100, alpha),
     ],
-    ([L, C, H, A]) => output(["oklab", [String(L).concat("%"), C, H, A]]),
+    ([L, C, H, A]) => output(["oklch", [String(L).concat("%"), C, H, A]]),
     curry(revert)(color),
   );
 }
@@ -2227,7 +2227,7 @@ export function color_mix(modifiers, color) {
       hueCorrection(radToDegrees(Math.atan2(b, a))),
       A,
     ],
-    (components) => output(["oklab", components]),
+    (components) => output(["oklch", components]),
     curry(revert)(color),
   );
 }
@@ -2235,13 +2235,13 @@ export function color_mix(modifiers, color) {
 function calculateMix(original, target, amount) {
   const [OL, Oa, Ob, OA] = pipe(
     original,
-    color_to_oklab,
+    color_to_oklch,
     parser,
     ([, components]) => components,
   );
   const [TL, Ta, Tb, TA] = pipe(
     target,
-    color_to_oklab,
+    color_to_oklch,
     parser,
     ([, components]) => components,
   );
@@ -2575,16 +2575,16 @@ export function palette_sort(condition, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
-    paletteToOklabValues,
+    paletteToOklchValues,
     curry(sortPalette)({ by: property, order }),
-    curry(paletteFromOklab)(color),
+    curry(paletteFromOklch)(color),
   );
 }
 
-function paletteToOklabValues(palette) {
+function paletteToOklchValues(palette) {
   return pipe(
     Array.from(palette),
-    (palette) => palette.map((color) => color_to_oklab(color)),
+    (palette) => palette.map((color) => color_to_oklch(color)),
     (palette) => palette.map((color) => extractor(color)),
     (palette) =>
       palette.map(([, color]) => {
@@ -2607,12 +2607,12 @@ function sortPalette({ by, order }, palette) {
   return palette.sort(sortingConditions(by));
 }
 
-function paletteFromOklab(input, palette) {
+function paletteFromOklch(input, palette) {
   return pipe(
     palette,
     (palette) =>
       palette.map(([L, C, H, A]) =>
-        output(["oklab", [L.toString().concat("%"), C, H, A ?? 1]])
+        output(["oklch", [L.toString().concat("%"), C, H, A ?? 1]])
       ),
     (palette) =>
       Array.from(new Set(palette.map((color) => revert(input, color)))),
@@ -2644,9 +2644,9 @@ export function palette_filter(condition, palette) {
   const [, color] = validator(palette[0]);
   return pipe(
     palette,
-    paletteToOklabValues,
+    paletteToOklchValues,
     curry(flushPalette)({ by: property, min, max }),
-    curry(paletteFromOklab)(color),
+    curry(paletteFromOklch)(color),
   );
 }
 
@@ -3614,7 +3614,7 @@ const INPUT_TO_RGB = {
   hwb: hwbToRgb,
   cielab: cielabToRgb,
   cielch: compose(cielabFromCielch, passthrough, cielabToRgb),
-  oklab: oklabToRgb,
+  oklch: oklchToRgb,
 };
 
 const OUTPUT_FROM_RGB = {
@@ -3625,7 +3625,7 @@ const OUTPUT_FROM_RGB = {
   hwb: hwbFromRgb,
   cielab: cielabFromRgb,
   cielch: compose(cielabFromRgb, passthrough, cielabToCielch),
-  oklab: oklabFromRgb,
+  oklch: oklchFromRgb,
 };
 
 function passthrough([, color]) {
@@ -3822,9 +3822,9 @@ function lrgbToRgb([LR, LG, LB]) {
   );
 }
 
-function oklabToRgb(color) {
+function oklchToRgb(color) {
   const [, [L, a, b, A]] = parser(color);
-  const [LR, LG, LB] = oklabToLrgb([L, a, b]);
+  const [LR, LG, LB] = oklchToLrgb([L, a, b]);
 
   const [R, G, B] = lrgbToRgb([LR, LG, LB]).map((V) =>
     pipe(V, numberToRgb, Math.round, curry(normalize)(255, 0))
@@ -3839,20 +3839,20 @@ const LINEAR_LMS_CONE_ACTIVATIONS = [
   [0.0894841775, 1.291485548],
 ];
 
-const LINEAR_RGB_OKLAB_MATRIX = [
+const LINEAR_RGB_OKLCH_MATRIX = [
   [4.076416621, 3.3077115913, 0.2309699292],
   [-1.2684380046, 2.6097574011, 0.3413193965],
   [-0.0041960863, 0.7034186147, 1.707614701],
 ];
 
-function oklabToLrgb([L, a, b]) {
+function oklchToLrgb([L, a, b]) {
   const [LONG, M, S] = LINEAR_LMS_CONE_ACTIVATIONS.map(([V1, V2], pos) => {
     if (pos === 0) return L + a * V1 + b * V2;
     if (pos === 1) return L - a * V1 - b * V2;
     return L - a * V1 - b * V2;
   }).map((V) => V ** 3);
 
-  const [LR, LG, LB] = LINEAR_RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
+  const [LR, LG, LB] = LINEAR_RGB_OKLCH_MATRIX.map(([V1, V2, V3], pos) => {
     if (pos === 0) return LONG * V1 - M * V2 + S * V3;
     if (pos === 1) return LONG * V1 + M * V2 - S * V3;
     return LONG * V1 - M * V2 + S * V3;
@@ -4049,16 +4049,16 @@ function rgbToLrgb([R, G, B]) {
   );
 }
 
-function oklabFromRgb(color) {
+function oklchFromRgb(color) {
   const [, [R, G, B, A]] = parser(color);
-  const [l, a, b] = lrgbToOklab([R, G, B]);
+  const [l, a, b] = lrgbToOklch([R, G, B]);
 
   const L = (+numberToPercent(100, l).toFixed(4)).toString().concat("%");
   const c = normalize(0.5, 0, +Math.sqrt(a ** 2 + b ** 2).toFixed(4)); // toPrecision isn't strict enough
   const C = Math.sign(Math.round(c)) === -1 ? 0 : c;
   const H = pipe(Math.atan2(b, a), radToDegrees, hueCorrection);
 
-  return pipe(output(["oklab", [L, C, H, A]]), validator);
+  return pipe(output(["oklch", [L, C, H, A]]), validator);
 }
 
 const NONLINEAR_LMS_CONE_ACTIVATIONS = [
@@ -4067,20 +4067,20 @@ const NONLINEAR_LMS_CONE_ACTIVATIONS = [
   [0.0883024619, 0.2817188376, 0.6299787005],
 ];
 
-const RGB_OKLAB_MATRIX = [
+const RGB_OKLCH_MATRIX = [
   [0.2104542553, 0.793617785, 0.0040720468],
   [1.9779984951, 2.428592205, 0.4505937099],
   [0.0259040371, 0.7827717662, 0.808675766],
 ];
 
-function lrgbToOklab([R, G, B]) {
+function lrgbToOklch([R, G, B]) {
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
     ([L, M, S]) => L * LR + M * LG + S * LB,
   ).map((V) => Math.cbrt(V));
 
-  return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
+  return RGB_OKLCH_MATRIX.map(([V1, V2, V3], pos) => {
     if (pos === 0) return V1 * L + V2 * M - V3 * S;
     if (pos === 1) return V1 * L - V2 * M + V3 * S;
     return V1 * L + V2 * M - V3 * S;
@@ -4126,7 +4126,7 @@ const SUPPORTED_FORMATS = {
   hwb: hwbValidator,
   cielab: cielabValidator,
   cielch: cielchValidator,
-  oklab: oklabValidator,
+  oklch: oklchValidator,
 };
 
 function validator(color) {
@@ -4202,16 +4202,16 @@ lch(25% 49 180)
 lch(75% 0 0)
 lch(56.551 77.38 2rad / 0.6892)
 
-Oklab (LCh)
+Oklch (LCh)
 -----------
 NOTE: This format is non-standard. If you use it, be sure to
 convert to a standard CSS format.
 
-Example: color_to_hex("oklab(0% 0 0)")
+Example: color_to_hex("oklch(0% 0 0)")
 
-oklab(59.4% 0.33 150)
-oklab(33% 64% 0.2turn)
-oklab(68.332% 0.16 1.778rad)
+oklch(59.4% 0.33 150)
+oklch(33% 64% 0.2turn)
+oklch(68.332% 0.16 1.778rad)
 `,
   });
 }
@@ -4284,8 +4284,8 @@ function cielchValidator(color) {
   ]).test(color);
 }
 
-function oklabValidator(color) {
-  return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
+function oklchValidator(color) {
+  return matchFunctionalFormat({ prefix: "oklch", legacy: false }, [
     PERCENT_TOKEN,
     COMPONENT_TOKEN,
     HUE_TOKEN,
@@ -4339,7 +4339,7 @@ const FORMAT_PARSERS = {
   hwb: parseHSL, // identical to HSL
   cielab: parseCielab,
   cielch: parseCielch,
-  oklab: parseOklab,
+  oklch: parseOklch,
 };
 
 const parser = compose(
@@ -4432,7 +4432,7 @@ function parseCielch(color) {
   );
 }
 
-function parseOklab(color) {
+function parseOklch(color) {
   return pipe(
     extractor(color),
     ([format, components]) => [
@@ -4531,7 +4531,7 @@ function COLOR_ASSEMBLER(components) {
     hwb: modernOutput("hwb", components),
     cielab: modernOutput("lab", components),
     cielch: modernOutput("lch", components),
-    oklab: modernOutput("oklab", components),
+    oklch: modernOutput("oklch", components),
   };
 }
 

@@ -13,7 +13,7 @@ import {
   color_to_hex,
   color_to_hsl,
   color_to_hwb,
-  color_to_oklab,
+  color_to_oklch,
   color_to_rgb,
   color_to_scheme_analogous,
   color_to_scheme_clash,
@@ -50,7 +50,7 @@ const formatFuncs = [
   color_to_hwb,
   color_to_cielab,
   color_to_cielch,
-  color_to_oklab,
+  color_to_oklch,
 ];
 
 const schemes = [
@@ -80,7 +80,7 @@ const testColorFormats = [
   ["hwb", string(color_to_hwb(color), "hwb(209.6 11.765% 0%)")],
   ["lab", string(color_to_cielab(color), "lab(58.362% 0.8897 -64.779)")],
   ["lch", string(color_to_cielch(color), "lch(58.362% 64.785 270.79)")],
-  ["oklab", string(color_to_oklab(color), "oklab(65.2006% 0.1901 253.21)")],
+  ["oklch", string(color_to_oklch(color), "oklch(65.2006% 0.1901 253.21)")],
   ["reject invalid color", formatFuncs.forEach((f) => exception(f, "invalid"))],
   [
     "valid with alpha component",
@@ -92,7 +92,7 @@ const testColorFormats = [
       hwb: "hwb(209.6 11.765% 0% / 0.74902)",
       cielab: "lab(58.362% 0.8897 -64.779 / 0.74902)",
       cielch: "lch(58.362% 64.785 270.79 / 0.74902)",
-      oklab: "oklab(65.2006% 0.1901 253.21 / 0.74902)",
+      oklch: "oklch(65.2006% 0.1901 253.21 / 0.74902)",
     }),
   ],
 ];
