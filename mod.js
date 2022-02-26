@@ -2084,14 +2084,20 @@ export function color_to_cielch(color) {
 }
 
 /**
- * A utility to convert a valid CSS color to its Oklch (LCh) equivalent.
+ * A utility to convert a valid CSS color to its `oklab()` equivalent.
  *
  * @param {string} color - the color to convert
  * @returns {string}
+ */
+export function color_to_oklab(color) {
+  return compose(curry(convert)("oklab"), passthrough)(color);
+}
+
+/**
+ * A utility to convert a valid CSS color to its `oklch()` equivalent.
  *
- * @remarks
- * Oklch is non-standard and has no browser support, so convert any Oklch
- * colors to a standard format before using them.
+ * @param {string} color - the color to convert
+ * @returns {string}
  */
 export function color_to_oklch(color) {
   return compose(curry(convert)("oklch"), passthrough)(color);
@@ -2113,6 +2119,7 @@ export function color_to_oklch(color) {
  *    hwb: string,
  *    cielab: string,
  *    cielch: string,
+ *    oklab: string,
  *    oklch: string,
  *  }
  * }}
@@ -2148,6 +2155,7 @@ export function color_inspect(color) {
       hwb: color_to_hwb(color),
       cielab: color_to_cielab(color),
       cielch: color_to_cielch(color),
+      oklab: color_to_oklab(color),
       oklch: color_to_oklch(color),
     },
   };
@@ -4110,11 +4118,14 @@ function oklabFromOklch(color) {
   const [, [L, a, b, A]] = parser(color);
 
   return pipe(
-    output("oklab", [
-      numberToPercent(100, L).toString().concat("%"),
-      normalize(0.5, -0.5, a),
-      normalize(0.5, -0.5, b),
-      A,
+    output([
+      "oklab",
+      [
+        numberToPercent(100, L).toString().concat("%"),
+        normalize(0.5, -0.5, a),
+        normalize(0.5, -0.5, b),
+        A,
+      ],
     ]),
     validator,
   );
@@ -4496,10 +4507,7 @@ function parseOklab(color) {
     ],
     ([format, [L, a, b, A]]) => [
       format,
-      L,
-      Math.sqrt(a ** 2 + b ** 2),
-      Math.atan2(b, a),
-      A,
+      [L, Math.sqrt(a ** 2 + b ** 2), Math.atan2(b, a), A],
     ],
   );
 }
