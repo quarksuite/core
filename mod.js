@@ -4474,6 +4474,13 @@ function parseOklab(color) {
         return parseNumber(c);
       }),
     ],
+    ([format, [L, a, b, A]]) => [
+      format,
+      L,
+      Math.sqrt(a ** 2 + b ** 2),
+      Math.atan2(b, a),
+      A,
+    ],
   );
 }
 
