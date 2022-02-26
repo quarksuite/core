@@ -4087,6 +4087,23 @@ function lrgbToOklch([R, G, B]) {
   });
 }
 
+function oklabToOklch(color) {
+  const [, [L, C, H, A]] = parser(color);
+
+  return pipe(
+    output([
+      "oklch",
+      [
+        numberToPercent(100, L).toString().concat("%"),
+        normalize(0.5, 0, C),
+        pipe(H, radToDegrees, hueCorrection),
+        A,
+      ],
+    ]),
+    validator,
+  );
+}
+
 function hexFromNamedColor(color) {
   return validator(NAMED_COLOR_KEYWORDS[color]);
 }
@@ -4116,19 +4133,6 @@ function cielabFromCielch(color) {
     validator,
   );
 }
-
-const SUPPORTED_FORMATS = {
-  named: namedValidator,
-  hex: hexValidator,
-  rgb: rgbValidator,
-  hsl: hslValidator,
-  cmyk: cmykValidator,
-  hwb: hwbValidator,
-  cielab: cielabValidator,
-  cielch: cielchValidator,
-  oklab: oklabValidator,
-  oklch: oklchValidator,
-};
 
 function validator(color) {
   const SUPPORTED_FORMATS = {
@@ -4579,6 +4583,7 @@ function COLOR_ASSEMBLER(components) {
     hwb: modernOutput("hwb", components),
     cielab: modernOutput("lab", components),
     cielch: modernOutput("lch", components),
+    oklab: modernOutput("oklab", components),
     oklch: modernOutput("oklch", components),
   };
 }
