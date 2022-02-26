@@ -4287,7 +4287,7 @@ function cielchValidator(color) {
 function oklchValidator(color) {
   return matchFunctionalFormat({ prefix: "oklch", legacy: false }, [
     PERCENT_TOKEN,
-    COMPONENT_TOKEN,
+    NUMBER_TOKEN,
     HUE_TOKEN,
   ]).test(color);
 }
