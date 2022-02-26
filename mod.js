@@ -4194,21 +4194,21 @@ also possible you have a syntax error.
 Check your input color against these supported CSS color formats:
 
 Named Colors
-------------
+-----------
 coral
 springgreen
 dodgerblue
 rebeccapurple
 
 RGB Hex
--------
+------
 #f0f
 #ca5e
 #933cca
 #99eefff7
 
 Functional RGB
---------------
+------------
 rgb(30, 110, 0)
 rgb(19%, 38.9%, 70%)
 rgba(255, 255, 255, 0.8)
@@ -4216,14 +4216,14 @@ rgb(129 22 108)
 rgb(20% 2% 100% / 0.25)
 
 Functional HSL
---------------
+------------
 hsl(240, 39%, 81%)
 hsla(120, 78%, 45%, 0.93)
 hsl(2.5rad 29% 40%)
 hsl(216.44grad 20% 90% / 0.75)
 
 Device CMYK
------------
+----------
 device-cmyk(0 0.2 0.399 0)
 device-cmyk(90% 0% 0% 37.5%)
 device-cmyk(0% 39% 0% 0 / 0.88)
@@ -4242,21 +4242,24 @@ lab(87% -33 0)
 lab(59% -88 -2 / 0.5)
 
 CIELCh(ab)
-----------
+---------
 lch(25% 49 180)
 lch(75% 0 0)
 lch(56.551 77.38 2rad / 0.6892)
 
-Oklch (LCh)
------------
-NOTE: This format is non-standard. If you use it, be sure to
-convert to a standard CSS format.
+OKLab
+-----
+oklab(0% 0 0)
+oklab(73.11% 0.311 -0.449)
+oklab(48.36% -0.472 -0.221123)
+oklab(64.1933% 0 0.25 / 0.96)
 
-Example: color_to_hex("oklch(0% 0 0)")
+OKLCH
+-----
 
 oklch(59.4% 0.33 150)
-oklch(33% 64% 0.2turn)
 oklch(68.332% 0.16 1.778rad)
+oklch(45% 0.0332 0.3turn / 0.331)
 `,
   });
 }
