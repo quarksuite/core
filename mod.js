@@ -4466,10 +4466,6 @@ function parseOklch(color) {
       components.map((c, pos) => {
         if (pos === 0) return parsePercent(100, c);
 
-        if (pos === 1 && c.endsWith("%")) {
-          return parsePercent(0.5, numberFromPercent(100, c) * 0.5 * 0.5);
-        }
-
         if (pos === 2) return parseHueAsRadians(c);
 
         if (pos === 3 && c.endsWith("%")) {
