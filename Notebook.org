@@ -197,7 +197,8 @@ export function fn_process(...emitters) {
 A functional utility that accepts an action and its modifiers and converts it to an emitter.
 
 + =fn_preset(action, y) => (x)=
-  + =fn: (y, x) => unknown=: the action to transform
+  + =action: (y, x) => unknown=: the action to transform
+  + =y: unknown=: the action's associated modifiers
 
 ***** fn_preset Examples
 
@@ -214,6 +215,8 @@ export function fn_preset(action, y) {
 ***** fn_preset Errors
 
 **** fn_pipeline
+
+A functional utility that shuttles data =x= through a process pipeline.
 
 + =fn_pipeline(x, ...processes) => unknown=
   + =x: unknown=: data to pipe
