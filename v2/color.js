@@ -289,12 +289,12 @@ function hwbValidator(color) {
 }
 // HWB Validation:1 ends here
 
-// CIELAB/CIELCH
+// CIELAB/CIELCH Validation
 
 // These two formats are scalar and polar variants of the same color space, so I'll combine their validators.
 
 
-// [[file:../Notebook.org::*CIELAB/CIELCH][CIELAB/CIELCH:1]]
+// [[file:../Notebook.org::*CIELAB/CIELCH Validation][CIELAB/CIELCH Validation:1]]
 function cielabValidator(color) {
   return matchFunctionalFormat({ prefix: "lab", legacy: false }, [
     PERCENTAGE_TOKEN,
@@ -309,14 +309,14 @@ function cielchValidator(color) {
     HUE_TOKEN,
   ]).test(color);
 }
-// CIELAB/CIELCH:1 ends here
+// CIELAB/CIELCH Validation:1 ends here
 
-// OKLab/OKLCH
+// OKLab/OKLCH Validation
 
 // Same with OKLab/OKLCH, which recently became standard so I reimplemented them according to the spec.
 
 
-// [[file:../Notebook.org::*OKLab/OKLCH][OKLab/OKLCH:1]]
+// [[file:../Notebook.org::*OKLab/OKLCH Validation][OKLab/OKLCH Validation:1]]
 function oklabValidator(color) {
   return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
     PERCENTAGE_TOKEN,
@@ -332,7 +332,7 @@ function oklchValidator(color) {
     HUE_TOKEN,
   ]).test(color);
 }
-// OKLab/OKLCH:1 ends here
+// OKLab/OKLCH Validation:1 ends here
 
 // Preparing Validation
 
@@ -801,3 +801,48 @@ function parser(extracted) {
   return FORMAT_PARSERS[format](extracted);
 }
 // Parsing Preparation:1 ends here
+
+// Hex -> RGB
+
+// If you remember from =parseHex()=, a parsed hexadecimal color is already a valid RGB result. So we mark it as such and pass it
+// through.
+
+
+// [[file:../Notebook.org::*Hex -> RGB][Hex -> RGB:1]]
+function hexToRgb([, values]) {
+  return ["rgb", values];
+}
+// Hex -> RGB:1 ends here
+
+// HSL -> RGB
+
+// To convert HSL to RGB, we use [[https://www.rapidtables.com/convert/color/hsl-to-rgb.html][this conversion formula from RapidTables]].
+
+
+// [[file:../Notebook.org::*HSL -> RGB][HSL -> RGB:1]]
+function calculateRgb(C, X, H) {
+  return new Map([
+    [[C, X, 0], 0 <= H && H < 60],
+    [[X, C, 0], 60 <= H && H < 120],
+    [[0, C, X], 120 <= H && H < 180],
+    [[0, X, C], 180 <= H && H < 240],
+    [[X, 0, C], 240 <= H && H < 300],
+    [[C, 0, X], 300 <= H && H < 360],
+  ]);
+}
+
+function hslToRgb([, values]) {
+  const [H, S, L, A] = values;
+
+  // Calculate chroma
+  const C = (1 - Math.abs(2 * L - 1)) * S;
+  const X = C * (1 - Math.abs(((H / 60) % 2) - 1));
+  const m = L - C / 2;
+
+  const [R, G, B] = Array.from(calculateRgb(C, X, H))
+    .find(([, condition]) => condition)
+    .map((n) => numberToChannel(n + m));
+
+  return ["rgb", [R, G, B, A]];
+}
+// HSL -> RGB:1 ends here

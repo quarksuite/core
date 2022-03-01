@@ -2,7 +2,7 @@
 #+PROPERTY: header-args:deno :tangle no
 #+PROPERTY: header-args:js :tangle yes :mkdirp yes
 
-* Table of Contents :TOC@4:
+* Table of Contents :TOC@5:
 - [[#summary][Summary]]
 - [[#whats-new-in-v2][What's New in v2?]]
   - [[#workflows][Workflows]]
@@ -16,8 +16,20 @@
   - [[#api][API]]
     - [[#functional-utilities][Functional Utilities]]
       - [[#fn_process][fn_process]]
+        - [[#fn_process-examples][fn_process Examples]]
+        - [[#fn_process-implementation][fn_process Implementation]]
+        - [[#fn_process-tests][fn_process Tests]]
+        - [[#fn_process-errors][fn_process Errors]]
       - [[#fn_preset][fn_preset]]
+        - [[#fn_preset-examples][fn_preset Examples]]
+        - [[#fn_preset-implementation][fn_preset Implementation]]
+        - [[#fn_preset-tests][fn_preset Tests]]
+        - [[#fn_preset-errors][fn_preset Errors]]
       - [[#fn_pipeline][fn_pipeline]]
+        - [[#fn_pipeline-examples][fn_pipeline Examples]]
+        - [[#fn_pipeline-implementation][fn_pipeline Implementation]]
+        - [[#fn_pipeline-tests][fn_pipeline Tests]]
+        - [[#fn_pipeline-errors][fn_pipeline Errors]]
     - [[#color][Color]]
       - [[#color_adjust][color_adjust]]
       - [[#color_mix][color_mix]]
@@ -78,9 +90,31 @@
     - [[#color-1][Color]]
       - [[#tokenization][Tokenization]]
       - [[#validation][Validation]]
+        - [[#named-color-validation][Named Color Validation]]
+        - [[#rgb-hex-validation][RGB Hex Validation]]
+        - [[#functional-formats][Functional Formats]]
+        - [[#preparing-validation][Preparing Validation]]
+        - [[#invalid-color-handling][Invalid Color Handling]]
       - [[#extraction][Extraction]]
+        - [[#rgb-hex-extractor][RGB Hex Extractor]]
+        - [[#functional-format-extractor][Functional Format Extractor]]
+        - [[#extraction-preparation][Extraction Preparation]]
       - [[#parsing][Parsing]]
+        - [[#math][Math]]
+        - [[#parsing-rgb-hex][Parsing RGB Hex]]
+        - [[#parsing-functional-rgb][Parsing Functional RGB]]
+        - [[#parsing-functional-hsl][Parsing Functional HSL]]
+        - [[#parsing-functional-cmyk][Parsing Functional CMYK]]
+        - [[#parsing-functional-hwb][Parsing Functional HWB]]
+        - [[#parsing-functional-cielabcielch][Parsing Functional CIELAB/CIELCH]]
+        - [[#parsing-oklaboklch][Parsing OKLab/OKLCH]]
+        - [[#parsing-preparation][Parsing Preparation]]
       - [[#conversion][Conversion]]
+        - [[#preamble][Preamble]]
+        - [[#input---rgb][INPUT -> RGB]]
+        - [[#rgb---output][RGB -> OUTPUT]]
+        - [[#scalar---polar][SCALAR <-> POLAR]]
+        - [[#color-conversion-pipeline][Color Conversion Pipeline]]
       - [[#serialization][Serialization]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
@@ -666,7 +700,7 @@ function hwbValidator(color) {
 }
 #+END_SRC
 
-****** CIELAB/CIELCH
+****** CIELAB/CIELCH Validation
 
 These two formats are scalar and polar variants of the same color space, so I'll combine their validators.
 
@@ -687,7 +721,7 @@ function cielchValidator(color) {
 }
 #+END_SRC
 
-****** OKLab/OKLCH
+****** OKLab/OKLCH Validation
 
 Same with OKLab/OKLCH, which recently became standard so I reimplemented them according to the spec.
 
@@ -737,7 +771,7 @@ function validator(input) {
 }
 #+END_SRC
 
-****** Invalid Color Handling
+***** Invalid Color Handling
 
 Otherwise, the input does not match any of the available formats and throws a useful error.
 
@@ -1192,7 +1226,9 @@ pass through the sRGB gamut. This means that sRGB is our given /conversion ancho
 With this in mind we can say color conversion is best structured as a pipeline where =INPUT -> RGB -> OUTPUT= routes
 every input format to its targeted output format.
 
-****** Preamble
+Some formats need to be linked into the pipeline. Specifically =Scalar <-> Polar= formats.
+
+***** Preamble
 
 To keep things simple, I'll keep using the color tuple data structure up until the point it's actually time to hand a
 color back to the user. This is a *major* change from v1, where I attempted to reassemble the color within each conversion
@@ -1201,8 +1237,69 @@ function which sometimes led to wonky behavior from the pipeline.
 It makes far more sense to keep passing along the raw conversions to the color tuple for serialization and make
 reassembly an explicit, predictable step.
 
-By this point, we're assuming the color has been validated, extracted, and correctly parsed. So we'll be passing
+By this point, we're assuming the color has been validated, extracted, and correctly parsed. So we'll be passing along
+the result of parsing as the color tuple =[format, values]=.
 
+In the color conversion functions themselves, we'll be passing the results along as the =[format, results]= tuple.
+
+***** INPUT -> RGB
+
+The first process in the conversion pipeline is to take the =INPUT= format and convert it to =RGB=.
+
+****** Hex -> RGB
+
+If you remember from =parseHex()=, a parsed hexadecimal color is already a valid RGB result. So we mark it as such and pass it
+through.
+
+#+BEGIN_SRC js
+function hexToRgb([, values]) {
+  return ["rgb", values];
+}
+#+END_SRC
+
+****** HSL -> RGB
+
+To convert HSL to RGB, we use [[https://www.rapidtables.com/convert/color/hsl-to-rgb.html][this conversion formula from RapidTables]].
+
+#+BEGIN_SRC js
+function calculateRgb(C, X, H) {
+  return new Map([
+    [[C, X, 0], 0 <= H && H < 60],
+    [[X, C, 0], 60 <= H && H < 120],
+    [[0, C, X], 120 <= H && H < 180],
+    [[0, X, C], 180 <= H && H < 240],
+    [[X, 0, C], 240 <= H && H < 300],
+    [[C, 0, X], 300 <= H && H < 360],
+  ]);
+}
+
+function hslToRgb([, values]) {
+  const [H, S, L, A] = values;
+
+  // Calculate chroma
+  const C = (1 - Math.abs(2 * L - 1)) * S;
+  const X = C * (1 - Math.abs(((H / 60) % 2) - 1));
+  const m = L - C / 2;
+
+  const [R, G, B] = Array.from(calculateRgb(C, X, H))
+    .find(([, condition]) => condition)
+    .map((n) => numberToChannel(n + m));
+
+  return ["rgb", [R, G, B, A]];
+}
+#+END_SRC
+
+****** CMYK -> RGB
+
+#+BEGIN_QUOTE
+IMPORTANT: CSS Color Module 5 will use a device-independent conversion of CMYK through the CIELAB space. This means the
+below approach is outdated. For practicality and compatibility's sake, I use the old conversion method through
+sRGB. Which works today.
+#+END_QUOTE
+
+***** RGB -> OUTPUT
+***** SCALAR <-> POLAR
+***** Color Conversion Pipeline
 **** Serialization
 
 *** Modular Scale Internals
