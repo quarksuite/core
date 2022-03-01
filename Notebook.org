@@ -1293,9 +1293,45 @@ function hslToRgb([, values]) {
 
 #+BEGIN_QUOTE
 IMPORTANT: CSS Color Module 5 will use a device-independent conversion of CMYK through the CIELAB space. This means the
-below approach is outdated. For practicality and compatibility's sake, I use the old conversion method through
+below approach is outdated. For practicality and compatibility's sake, I still use the old conversion method through
 sRGB. Which works today.
 #+END_QUOTE
+
+Conversion of CMYK to RGB is [[https://www.rapidtables.com/convert/color/cmyk-to-rgb.html][covered by another RapidTables formula]].
+
+#+BEGIN_SRC js
+function cmykToRgb([, values]) {
+  const [C, M, Y, K, A] = values;
+
+  const [R, G, B] = [C, M, Y].map((V) => numberToChannel((1 - V) * (1 - K)));
+
+  return ["rgb", [R, G, B, A]];
+}
+#+END_SRC
+
+****** HWB -> RGB
+
+The formula for conversion of HWB to RGB is [[https://www.w3.org/TR/css-color-4/#hwb-to-rgb][adapted from the spec itself]].
+
+#+BEGIN_SRC js
+function hwbToRgb([, values]) {
+  const [H, W, BLK, A] = values;
+
+  // Achromacity
+  if (W + BLK >= 1) {
+    let GRAY = numberToChannel(W / (W + BLK));
+
+    return ["rgb", [Array(3).fill(GRAY), A]];
+  }
+
+  // Conversion
+  const [R, G, B] = hslToRgb(["hsl", [H, 1, 0.5, 1]]).map(
+    (V) => V * (1 - W - BLK) + W,
+  );
+
+  return ["rgb", [R, G, B, A]];
+}
+#+END_SRC
 
 ***** RGB -> OUTPUT
 ***** SCALAR <-> POLAR
