@@ -9,7 +9,7 @@
   - [[#concrete-idioms][Concrete Idioms]]
   - [[#settled-types][Settled Types]]
   - [[#simple-data-rendering][Simple Data Rendering]]
-  - [[#wtcg-standard-token-spec][WTCG Standard Token Spec]]
+  - [[#wtcg-design-token-spec][WTCG Design Token Spec]]
   - [[#improved-performance][Improved Performance]]
   - [[#internal-simplicity][Internal Simplicity]]
 - [[#spec][Spec]]
@@ -124,9 +124,10 @@ so much as ways to render data to a view. =type_as_element= is a new emitter in 
 HTML rendered or a web component.
 
 
-** WTCG Standard Token Spec
+** WTCG Design Token Spec
 
-I can abandon my own Quarks System Dictionary spec in favor of [[https://design-tokens.github.io/community-group/format/][adopting an emerging web standard]]. You love to see it.
+I can transition away from my own Quarks System Dictionary spec in favor of [[https://design-tokens.github.io/community-group/format/][adopting an emerging community spec]]. You
+love to see it.
 
 ** Improved Performance
 
