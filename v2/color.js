@@ -6,6 +6,7 @@
 // =COMPONENT_TOKEN= combining the first two, and a =HUE_TOKEN=. That's all that's needed to account for every format
 // QuarkSuite supports.
 
+
 // [[file:../Notebook.org::*Tokenization][Tokenization:1]]
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
@@ -30,6 +31,7 @@ const HUE_TOKEN = new RegExp(
 // Named Color Validation
 
 // QuarkSuite supports CSS named colors through to CSS Color Module 4 using an object query.
+
 
 // [[file:../Notebook.org::*Named Color Validation][Named Color Validation:1]]
 const NAMED_COLOR_KEYWORDS = {
@@ -199,6 +201,7 @@ function namedValidator(color) {
 
 // This can be done with a regular expression.
 
+
 // [[file:../Notebook.org::*RGB Hex Validation][RGB Hex Validation:1]]
 function hexValidator(color) {
   return /^#([\da-f]{3,4}){1,2}$/i.test(color);
@@ -212,6 +215,7 @@ function hexValidator(color) {
 // delimiters. Otherwise, we know it's a modern format.
 
 // Each format has varying components, so we map over the tokens we plug in and link them with delimiters.
+
 
 // [[file:../Notebook.org::*Functional Formats][Functional Formats:1]]
 function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
@@ -236,6 +240,7 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
 // =matchFunctionalFormats= makes validating the remaining CSS formats a matter of slotting in tokens with the right
 // prefix. As you'll see, some tokens repeat and others have to be slotted individually.
 
+
 // [[file:../Notebook.org::*RGB Validation][RGB Validation:1]]
 function rgbValidator(color) {
   return matchFunctionalFormat(
@@ -246,6 +251,7 @@ function rgbValidator(color) {
 // RGB Validation:1 ends here
 
 // HSL Validation
+
 
 // [[file:../Notebook.org::*HSL Validation][HSL Validation:1]]
 function hslValidator(color) {
@@ -261,6 +267,7 @@ function hslValidator(color) {
 // =device-cmyk= is the first modern format, so the legacy flag will have to be disabled. It's also technically been moved
 // to CSS Color Module 5, but I implemented it before I found that out.
 
+
 // [[file:../Notebook.org::*CMYK Validation][CMYK Validation:1]]
 function cmykValidator(color) {
   return matchFunctionalFormat(
@@ -271,6 +278,7 @@ function cmykValidator(color) {
 // CMYK Validation:1 ends here
 
 // HWB Validation
+
 
 // [[file:../Notebook.org::*HWB Validation][HWB Validation:1]]
 function hwbValidator(color) {
@@ -284,6 +292,7 @@ function hwbValidator(color) {
 // CIELAB/CIELCH
 
 // These two formats are scalar and polar variants of the same color space, so I'll combine their validators.
+
 
 // [[file:../Notebook.org::*CIELAB/CIELCH][CIELAB/CIELCH:1]]
 function cielabValidator(color) {
@@ -305,6 +314,7 @@ function cielchValidator(color) {
 // OKLab/OKLCH
 
 // Same with OKLab/OKLCH, which recently became standard so I reimplemented them according to the spec.
+
 
 // [[file:../Notebook.org::*OKLab/OKLCH][OKLab/OKLCH:1]]
 function oklabValidator(color) {
@@ -328,6 +338,7 @@ function oklchValidator(color) {
 
 // From here, we'll implement a =validator()= that accepts input and checks it against all of the available formats. A valid
 // color will match /one of/ the available formats and get slotted in a =[format, color]= tuple.
+
 
 // [[file:../Notebook.org::*Preparing Validation][Preparing Validation:1]]
 function validator(input) {
@@ -355,6 +366,7 @@ function validator(input) {
 // Invalid Color Handling
 
 // Otherwise, the input does not match any of the available formats and throws a useful error.
+
 
 // [[file:../Notebook.org::*Invalid Color Handling][Invalid Color Handling:1]]
 class InvalidColor extends Error {
@@ -393,6 +405,7 @@ ${"=".repeat(100)}
 // For RGB Hex extraction, we need to consider that RGB colors can also come in the form =#RGB(A)=. So we'll use =expandHex()= to expand
 // those to a full =#RRGGBB(AA)=. And then we have =hexExtractor()= to do the extraction proper.
 
+
 // [[file:../Notebook.org::*RGB Hex Extractor][RGB Hex Extractor:1]]
 function hexExtractor(color) {
   return expandHex(color).match(/[\da-f]{2}/gi);
@@ -416,6 +429,7 @@ function expandHex(color) {
 
 // This is done with =componentExtractor()=.
 
+
 // [[file:../Notebook.org::*Functional Format Extractor][Functional Format Extractor:1]]
 function componentExtractor(color) {
   return color.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
@@ -424,19 +438,28 @@ function componentExtractor(color) {
 
 // Extraction Preparation
 
-// Now with all the parts in place, we'll create a general =extractor()= that checks a valid color format. If it's ="hex"=,
-// we'll call =hexExtractor()=, otherwise it's a functional format and must be handled by =componentExtractor()=.
+// Now with all the parts in place, we'll create a general =extractor()= that consumes a valid color tuple. If the =format=
+// is =hex=, we'll call =hexExtractor()=, otherwise it's a functional format and must be handled by =componentExtractor()=.
 
-// Note that we're also passing the extraction along in the =[format, color]= tuple form for additional parsing.
+// We also need to do additional work if the =format= is =named=, so we pass its value in =NAMED_COLOR_KEYWORDS= through
+// =hexExtractor()=.
+
+// Note that we're also passing the extraction along in the =[format, components]= tuple form for additional parsing.
+
 
 // [[file:../Notebook.org::*Extraction Preparation][Extraction Preparation:1]]
-function extractor(input) {
-  const [format, color] = validator(input);
+function extractor(validated) {
+  const [format, color] = validated;
 
-  return [
-    format,
-    format === "hex" ? hexExtractor(color) : componentExtractor(color),
-  ];
+  if (format === "named") {
+    return ["hex", hexExtractor(NAMED_COLOR_KEYWORDS[color])];
+  }
+
+  if (format === "hex") {
+    return ["hex", hexExtractor(color)];
+  }
+
+  return [format, componentExtractor(color)];
 }
 // Extraction Preparation:1 ends here
 
@@ -444,6 +467,7 @@ function extractor(input) {
 
 // Before anything else, we'll need a helper to =clamp()= values between a =min= and =max=. Some values in functional
 // formats are capped, and others are not. We'll see which when we implement the serializer.
+
 
 // [[file:../Notebook.org::*Clamping Values][Clamping Values:1]]
 function clamp(x, a, b) {
@@ -466,6 +490,7 @@ function clamp(x, a, b) {
 // =16= is the /radix/ (or base) of hexadecimal, so we use =parseInt()= to convert the hex value to a decimal and
 // =toString()= to convert a decimal to hexadecimal.
 
+
 // [[file:../Notebook.org::*Hex Fragment <-> Channel][Hex Fragment <-> Channel:1]]
 function hexFragmentToChannel(hex) {
   return parseInt(hex, 16);
@@ -479,6 +504,7 @@ function hexFragmentFromChannel(channel) {
 // Number <-> Percentage
 
 // Some functional formats will need to have their numbers converted to percentages or the reverse.
+
 
 // [[file:../Notebook.org::*Number <-> Percentage][Number <-> Percentage:1]]
 function numberToPercentage(n) {
@@ -494,6 +520,7 @@ function numberFromPercentage(percentage) {
 
 // RGB channels need to be converted to a =0-1= range to be useful in calculation. And then they need to be converted back
 // to channels later.
+
 
 // [[file:../Notebook.org::*Number <-> Channel][Number <-> Channel:1]]
 function numberToChannel(n) {
@@ -511,6 +538,7 @@ function numberFromChannel(channel) {
 
 // The hue component also supports gradians and rotations, so we'll have to account for those as well to stay true to the
 // spec.
+
 
 // [[file:../Notebook.org::*Hue Component][Hue Component:1]]
 function radiansToDegrees(radians) {
@@ -537,6 +565,7 @@ function turnsToDegrees(turns) {
 // However, if it's to be useful in calculation, we must then /correct/ the value to a range =-360-360= or one full
 // rotation clockwise and counterclockwise. Our implmentation of =hueCorrection()= takes care of that.
 
+
 // [[file:../Notebook.org::*Hue Correction][Hue Correction:1]]
 function hueCorrection(hue) {
   let h = hue;
@@ -560,9 +589,10 @@ function hueCorrection(hue) {
 // If =A= is missing, then we attach it to ensure uniformity. Finally, we convert the hex fragments to RGB. The alpha
 // component needs additional handling.
 
+
 // [[file:../Notebook.org::*Parsing RGB Hex][Parsing RGB Hex:1]]
-function parseHex(input) {
-  const [format, [r, g, b, A]] = extractor(input);
+function parseHex([format, components]) {
+  const [r, g, b, A] = components;
 
   const [R, G, B] = [r, g, b].map((fragment) =>
     hexFragmentToChannel(parseFloat(fragment))
@@ -588,6 +618,7 @@ function parseHex(input) {
 
 // This is an operation we'll repeat multiple times during parsing, so it's captured in a =parsePercentage()= helper.
 
+
 // [[file:../Notebook.org::*Parsing Functional RGB][Parsing Functional RGB:1]]
 function parsePercentage(component) {
   if (component.endsWith("%")) {
@@ -596,8 +627,8 @@ function parsePercentage(component) {
   return parseFloat(component);
 }
 
-function parseRgb(input) {
-  const [format, [r, g, b, A]] = extractor(input);
+function parseRgb([format, components]) {
+  const [r, g, b, A] = components;
 
   const [R, G, B] = [r, g, b].map((channel) => {
     if (channel.endsWith("%")) return parsePercentage(channel);
@@ -619,6 +650,7 @@ function parseRgb(input) {
 
 // Several formats beyond this point have a hue value, so we'll create a =parseHue()= helper to capture that logic.
 
+
 // [[file:../Notebook.org::*Parsing Functional HSL][Parsing Functional HSL:1]]
 function parseHue(hue) {
   let HUE = parseFloat(hue);
@@ -638,8 +670,8 @@ function parseHue(hue) {
   return hueCorrection(HUE);
 }
 
-function parseHsl(input) {
-  const [format, [h, s, l, A]] = extractor(input);
+function parseHsl([format, components]) {
+  const [h, s, l, A] = components;
 
   let H = parseHue(h);
 
@@ -660,10 +692,9 @@ function parseHsl(input) {
 // Functional CMYK is dead simple to parse. We check to see if the components are percentages and convert them. Otherwise,
 // we coerce them to numbers with no additional processing.
 
-// [[file:../Notebook.org::*Parsing Functional CMYK][Parsing Functional CMYK:1]]
-function parseCMYK(input) {
-  const [format, components] = extractor(input);
 
+// [[file:../Notebook.org::*Parsing Functional CMYK][Parsing Functional CMYK:1]]
+function parseCMYK([format, components]) {
   const [C, M, Y, K, A] = components.map((V) => {
     if (V.endsWith("%")) return parsePercentage(V);
     return parseFloat(V);
@@ -682,9 +713,10 @@ function parseCMYK(input) {
 // Of these two, the only one that requires any special attention is CIELCH because of that hue component. CIELAB just
 // passes its values through number coercion.
 
+
 // [[file:../Notebook.org::*Parsing Functional CIELAB/CIELCH][Parsing Functional CIELAB/CIELCH:1]]
-function parseCielab(input) {
-  const [format, [$L, $a, $b, A]] = extractor(input);
+function parseCielab([format, components]) {
+  const [$L, $a, $b, A] = components;
 
   const [L, a, b] = [$L, $a, $b].map((component) => parseFloat(component));
 
@@ -695,8 +727,8 @@ function parseCielab(input) {
   return [[L, a, b, 1]];
 }
 
-function parseCielch(input) {
-  const [format, [$L, c, h, A]] = extractor(input);
+function parseCielch([format, components]) {
+  const [$L, c, h, A] = components;
 
   const [L, C] = [$L, c].map((component) => parseFloat(component));
   const H = parseHue(h);
@@ -714,9 +746,10 @@ function parseCielch(input) {
 // Parsing OKLab/OKLCH is similar to the above section, but it's important to note that OKLCH calculations expect the hue
 // in /radians/. =L= is also converted to a =0-1= range.
 
+
 // [[file:../Notebook.org::*Parsing OKLab/OKLCH][Parsing OKLab/OKLCH:1]]
-function parseOklab(input) {
-  const [format, [$L, $a, $b, A]] = extractor(input);
+function parseOklab([format, components]) {
+  const [$L, $a, $b, A] = components;
 
   const L = parsePercentage($L);
   const [a, b] = [$a, $b].map((component) => parseFloat(component));
@@ -728,8 +761,8 @@ function parseOklab(input) {
   return [format, [L, a, b, 1]];
 }
 
-function parseOklch(input) {
-  const [format, [$L, c, h, A]] = extractor(input);
+function parseOklch([format, components]) {
+  const [$L, c, h, A] = components;
 
   const L = parsePercentage($L);
   const C = parseFloat(c);
@@ -745,12 +778,13 @@ function parseOklch(input) {
 
 // Parsing Preparation
 
-// Similar to the validator and extractor, the =parser()= will read a color tuple and execute the correct parsing
-// function for a matched format.
+// Similar to the validator and extractor, the =parser()= will read a color tuple and execute the correct parsing function
+// for a matched format. And then it throws back a transformed tuple of =[format, values]=.
+
 
 // [[file:../Notebook.org::*Parsing Preparation][Parsing Preparation:1]]
-function parser(input) {
-  const [format, color] = validator(input);
+function parser(extracted) {
+  const [format] = extracted;
 
   const FORMAT_PARSERS = {
     hex: parseHex,
@@ -764,6 +798,6 @@ function parser(input) {
     oklch: parseOklch,
   };
 
-  return FORMAT_PARSERS[format](color);
+  return FORMAT_PARSERS[format](extracted);
 }
 // Parsing Preparation:1 ends here

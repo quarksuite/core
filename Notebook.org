@@ -98,8 +98,7 @@ design token development environment for web projects.
 v1 focused on utilities as the base API and built abstractions (formulas, bootstrappers) on top of it. v2 focuses
 *exclusively* on the relationship between types, their available actions, and output emitters.
 
-Rather than providing the factory pattern, I've resolved to /further improve/ the functional workflow. If the community
-wants it back, I'll add it back.
+Rather than providing the factory pattern, I've resolved to /further improve/ the functional workflow.
 
 ** Concrete Idioms
 
@@ -815,19 +814,27 @@ function componentExtractor(color) {
 
 ***** Extraction Preparation
 
-Now with all the parts in place, we'll create a general =extractor()= that checks a valid color format. If it's ="hex"=,
-we'll call =hexExtractor()=, otherwise it's a functional format and must be handled by =componentExtractor()=.
+Now with all the parts in place, we'll create a general =extractor()= that consumes a valid color tuple. If the =format=
+is =hex=, we'll call =hexExtractor()=, otherwise it's a functional format and must be handled by =componentExtractor()=.
 
-Note that we're also passing the extraction along in the =[format, color]= tuple form for additional parsing.
+We also need to do additional work if the =format= is =named=, so we pass its value in =NAMED_COLOR_KEYWORDS= through
+=hexExtractor()=.
+
+Note that we're also passing the extraction along in the =[format, components]= tuple form for additional parsing.
 
 #+BEGIN_SRC js
-function extractor(input) {
-  const [format, color] = validator(input);
+function extractor(validated) {
+  const [format, color] = validated;
 
-  return [
-    format,
-    format === "hex" ? hexExtractor(color) : componentExtractor(color),
-  ];
+  if (format === "named") {
+    return ["hex", hexExtractor(NAMED_COLOR_KEYWORDS[color])];
+  }
+
+  if (format === "hex") {
+    return ["hex", hexExtractor(color)];
+  }
+
+  return [format, componentExtractor(color)];
 }
 #+END_SRC
 
@@ -965,8 +972,8 @@ If =A= is missing, then we attach it to ensure uniformity. Finally, we convert t
 component needs additional handling.
 
 #+BEGIN_SRC js
-function parseHex(input) {
-  const [format, [r, g, b, A]] = extractor(input);
+function parseHex([format, components]) {
+  const [r, g, b, A] = components;
 
   const [R, G, B] = [r, g, b].map((fragment) =>
     hexFragmentToChannel(parseFloat(fragment))
@@ -1000,8 +1007,8 @@ function parsePercentage(component) {
   return parseFloat(component);
 }
 
-function parseRgb(input) {
-  const [format, [r, g, b, A]] = extractor(input);
+function parseRgb([format, components]) {
+  const [r, g, b, A] = components;
 
   const [R, G, B] = [r, g, b].map((channel) => {
     if (channel.endsWith("%")) return parsePercentage(channel);
@@ -1042,8 +1049,8 @@ function parseHue(hue) {
   return hueCorrection(HUE);
 }
 
-function parseHsl(input) {
-  const [format, [h, s, l, A]] = extractor(input);
+function parseHsl([format, components]) {
+  const [h, s, l, A] = components;
 
   let H = parseHue(h);
 
@@ -1065,9 +1072,7 @@ Functional CMYK is dead simple to parse. We check to see if the components are p
 we coerce them to numbers with no additional processing.
 
 #+BEGIN_SRC js
-function parseCMYK(input) {
-  const [format, components] = extractor(input);
-
+function parseCMYK([format, components]) {
   const [C, M, Y, K, A] = components.map((V) => {
     if (V.endsWith("%")) return parsePercentage(V);
     return parseFloat(V);
@@ -1091,8 +1096,8 @@ Of these two, the only one that requires any special attention is CIELCH because
 passes its values through number coercion.
 
 #+BEGIN_SRC js
-function parseCielab(input) {
-  const [format, [$L, $a, $b, A]] = extractor(input);
+function parseCielab([format, components]) {
+  const [$L, $a, $b, A] = components;
 
   const [L, a, b] = [$L, $a, $b].map((component) => parseFloat(component));
 
@@ -1103,8 +1108,8 @@ function parseCielab(input) {
   return [[L, a, b, 1]];
 }
 
-function parseCielch(input) {
-  const [format, [$L, c, h, A]] = extractor(input);
+function parseCielch([format, components]) {
+  const [$L, c, h, A] = components;
 
   const [L, C] = [$L, c].map((component) => parseFloat(component));
   const H = parseHue(h);
@@ -1123,8 +1128,8 @@ Parsing OKLab/OKLCH is similar to the above section, but it's important to note 
 in /radians/. =L= is also converted to a =0-1= range.
 
 #+BEGIN_SRC js
-function parseOklab(input) {
-  const [format, [$L, $a, $b, A]] = extractor(input);
+function parseOklab([format, components]) {
+  const [$L, $a, $b, A] = components;
 
   const L = parsePercentage($L);
   const [a, b] = [$a, $b].map((component) => parseFloat(component));
@@ -1136,8 +1141,8 @@ function parseOklab(input) {
   return [format, [L, a, b, 1]];
 }
 
-function parseOklch(input) {
-  const [format, [$L, c, h, A]] = extractor(input);
+function parseOklch([format, components]) {
+  const [$L, c, h, A] = components;
 
   const L = parsePercentage($L);
   const C = parseFloat(c);
@@ -1153,12 +1158,12 @@ function parseOklch(input) {
 
 ***** Parsing Preparation
 
-Similar to the validator and extractor, the =parser()= will read a color tuple and execute the correct parsing
-function for a matched format.
+Similar to the validator and extractor, the =parser()= will read a color tuple and execute the correct parsing function
+for a matched format. And then it throws back a transformed tuple of =[format, values]=.
 
 #+BEGIN_SRC js
-function parser(input) {
-  const [format, color] = validator(input);
+function parser(extracted) {
+  const [format] = extracted;
 
   const FORMAT_PARSERS = {
     hex: parseHex,
@@ -1172,11 +1177,31 @@ function parser(input) {
     oklch: parseOklch,
   };
 
-  return FORMAT_PARSERS[format](color);
+  return FORMAT_PARSERS[format](extracted);
 }
 #+END_SRC
 
 **** Conversion
+
+Having completed our necessary preparations, we can finally move on to color conversion. QuarkSuite handles conversion
+with a very precise method.
+
+The idea: as a tool created for the web, and therefore largely for screens, every color used will eventually have to
+pass through the sRGB gamut. This means that sRGB is our given /conversion anchor/.
+
+With this in mind we can say color conversion is best structured as a pipeline where =INPUT -> RGB -> OUTPUT= routes
+every input format to its targeted output format.
+
+****** Preamble
+
+To keep things simple, I'll keep using the color tuple data structure up until the point it's actually time to hand a
+color back to the user. This is a *major* change from v1, where I attempted to reassemble the color within each conversion
+function which sometimes led to wonky behavior from the pipeline.
+
+It makes far more sense to keep passing along the raw conversions to the color tuple for serialization and make
+reassembly an explicit, predictable step.
+
+By this point, we're assuming the color has been validated, extracted, and correctly parsed. So we'll be passing
 
 **** Serialization
 
