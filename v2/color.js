@@ -860,3 +860,127 @@ function hwbToRgb([, values]) {
   return ["rgb", [R, G, B, A]];
 }
 // HWB -> RGB:1 ends here
+
+// CIELAB -> RGB
+
+// The steps for the CIELAB to RGB conversion are as follows:
+
+// 1. Convert CIELAB to CIEXYZ
+// 2. Convert CIEXYZ to LRGB
+// 3. Convert LRGB to RGB
+
+// The actual equations are helpfully [[http://www.brucelindbloom.com/index.html?Math.html][provided by Bruce Lindbloom]].
+
+// [[file:../Notebook.org::*CIELAB -> RGB][CIELAB -> RGB:1]]
+function cielabToCiexyz([L, a, b]) {
+  // CIE standards
+  const ε = 216 / 24389;
+  const κ = 24389 / 27;
+  const WHITE = [0.96422, 1.0, 0.82521]; // D50 reference white
+
+  // Compute the values of F
+  const FY = (L + 16) / 116;
+  const FX = a / 500 + FY;
+  const FZ = FY - b / 200;
+
+  // Calculate xyz
+  const [X, Y, Z] = [
+    FX ** 3 > ε ? FX ** 3 : (116 * FX - 16) / κ,
+    L > κ * ε ? FY ** 3 : L / κ,
+    FZ ** 3 > ε ? FZ ** 3 : (116 * FZ - 16) / κ,
+  ].map((V, i) => V * WHITE[i]);
+
+  return [X, Y, Z];
+}
+
+const D65_CHROMATIC_ADAPTATION = [
+  [0.9555766, -0.0230393, 0.0631636],
+  [-0.0282895, 1.0099416, 0.0210077],
+  [0.0122982, -0.020483, 1.3299098],
+];
+
+const LINEAR_RGB_TRANSFORMATION_MATRIX = [
+  [3.2404542, -1.5371385, -0.4985314],
+  [-0.969266, 1.8760108, 0.041556],
+  [0.0556434, -0.2040259, 1.0572252],
+];
+
+function ciexyzToLrgb([X, Y, Z]) {
+  const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
+  );
+
+  const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
+  );
+
+  return [LR, LG, LB];
+}
+
+function lrgbToRgb([LR, LG, LB]) {
+  return [LR, LG, LB].map((V) =>
+    V <= 0.0031308 ? 12.92 * V : 1.055 * V ** (1 / 2.4) - 0.055
+  );
+}
+
+function cielabToRgb([, values]) {
+  const [L, a, b, A] = values;
+
+  const [R, G, B] = lrgbToRgb(ciexyzToLrgb(cielabToCiexyz([L, a, b]))).map(
+    (n) => numberToChannel(n),
+  );
+
+  return ["rgb", [R, G, B, A]];
+}
+// CIELAB -> RGB:1 ends here
+
+// OKLAB -> RGB
+
+// The OKLab to RGB conversion steps are adapted from the creator, Björn Ottosson's, [[https://bottosson.github.io/posts/oklab/][original post about it]].
+
+// The process breaks down to:
+
+// 1. Convert OKLab to LRGB
+// 2. Convert LRGB to RGB
+
+// Simple and direct.
+
+// [[file:../Notebook.org::*OKLAB -> RGB][OKLAB -> RGB:1]]
+const LINEAR_LMS_CONE_ACTIVATIONS = [
+  [0.3963377774, 0.2158037573],
+  [0.1055613458, 0.0638541728],
+  [0.0894841775, 1.291485548],
+];
+
+const OKLAB_TO_LRGB_MATRIX = [
+  [4.076416621, 3.3077115913, 0.2309699292],
+  [-1.2684380046, 2.6097574011, 0.3413193965],
+  [-0.0041960863, 0.7034186147, 1.707614701],
+];
+
+function oklabToLrgb([L, a, b]) {
+  const [LONG, M, S] = LINEAR_LMS_CONE_ACTIVATIONS.map(([V1, V2], pos) => {
+    if (pos === 0) return L + a * V1 + b * V2;
+    if (pos === 1) return L - a * V1 - b * V2;
+    return L - a * V1 - b * V2;
+  }).map((V) => V ** 3);
+
+  const [LR, LG, LB] = OKLAB_TO_LRGB_MATRIX.map(([V1, V2, V3], pos) => {
+    if (pos === 0) return LONG * V1 - M * V2 + S * V3;
+    if (pos === 1) return LONG * V1 + M * V2 - S * V3;
+    return LONG * V1 - M * V2 + S * V3;
+  });
+
+  return [LR, LG, LB];
+}
+
+function oklabToRgb([, values]) {
+  const [L, a, b, A] = values;
+
+  const [R, G, B] = lrgbToRgb(oklabToLrgb([L, a, b])).map((n) =>
+    numberToChannel(n)
+  );
+
+  return ["rgb", [R, G, B, A]];
+}
+// OKLAB -> RGB:1 ends here
