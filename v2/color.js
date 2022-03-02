@@ -13,14 +13,16 @@ const PERCENTAGE_TOKEN = new RegExp(
 );
 
 const LEGACY_DELIMITER = /(?:[\s,]+)/;
-const LEGACY_ALPHA_DELIMITER = new RegExp(DELIMITER.source.replace(",", ",/"));
-const MODERN_DELIMITER = new RegExp(DELIMITER.source.replace(",", ""));
+const LEGACY_ALPHA_DELIMITER = new RegExp(
+  LEGACY_DELIMITER.source.replace(",", ",/"),
+);
+const MODERN_DELIMITER = new RegExp(LEGACY_DELIMITER.source.replace(",", ""));
 const MODERN_ALPHA_DELIMITER = new RegExp(
   LEGACY_ALPHA_DELIMITER.source.replace(",", ""),
 );
 
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENT_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
+  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
 );
 const HUE_TOKEN = new RegExp(
   ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
@@ -347,7 +349,7 @@ function validator(input) {
   return (
     Object.entries(SUPPORTED_FORMATS)
       .map(([format, test]) => [format, test(input) && input])
-      .find(([, color]) => color) || InvalidColor(input)
+      .find(([, color]) => color) || InvalidColorError(input)
   );
 }
 // Preparing Validation:1 ends here
@@ -367,12 +369,14 @@ class InvalidColor extends Error {
     }
 
     this.name = "Invalid Color Format";
-    this.msg = `
-${input} is not a valid color.
+    this.message = `
+${"-".repeat(100)}
+"${input}" is not a valid color.
 ${"-".repeat(100)}
 
 Supported color formats:
 
+- Named colors
 - RGB Hex
 - Functional RGB
 - Functional HSL
@@ -385,6 +389,10 @@ Read more about these formats at: https://www.w3.org/TR/css-color-4/
 ${"=".repeat(100)}
 `;
   }
+}
+
+function InvalidColorError(input) {
+  return new InvalidColor(input);
 }
 // Invalid Color Handling:1 ends here
 
@@ -572,9 +580,7 @@ function hueCorrection(hue) {
 function parseHex([format, components]) {
   const [r, g, b, A] = components;
 
-  const [R, G, B] = [r, g, b].map((fragment) =>
-    hexFragmentToChannel(parseFloat(fragment))
-  );
+  const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
 
   if (A) {
     return [
@@ -698,7 +704,7 @@ function parseCielab([format, components]) {
     return [format, [L, a, b, parsePercentage(A)]];
   }
 
-  return [[L, a, b, 1]];
+  return [format, [L, a, b, 1]];
 }
 
 function parseCielch([format, components]) {
@@ -711,7 +717,7 @@ function parseCielch([format, components]) {
     return [format, [L, C, H, parsePercentage(A)]];
   }
 
-  return [L, C, H, 1];
+  return [format, [L, C, H, 1]];
 }
 // Parsing Functional CIELAB/CIELCH:1 ends here
 
@@ -811,6 +817,7 @@ function hslToRgb([, values]) {
 
   const [R, G, B] = Array.from(calculateRgb(C, X, H))
     .find(([, condition]) => condition)
+    .flatMap((result) => result)
     .map((n) => numberToChannel(n + m));
 
   return ["rgb", [R, G, B, A]];
@@ -853,8 +860,9 @@ function hwbToRgb([, values]) {
   }
 
   // Conversion
-  const [R, G, B] = hslToRgb(["hsl", [H, 1, 0.5, 1]]).map(
-    (V) => V * (1 - W - BLK) + W,
+  const [, [r, g, b, a]] = hslToRgb(["hsl", [H, 1, 0.5, 1]]);
+  const [R, G, B] = [r, g, b].map((channel) =>
+    numberToChannel(numberFromChannel(channel) * (1 - W - BLK) + W)
   );
 
   return ["rgb", [R, G, B, A]];
