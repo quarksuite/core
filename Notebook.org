@@ -1373,19 +1373,19 @@ function cielabToCiexyz([L, a, b]) {
   return [X, Y, Z];
 }
 
-const D65_CHROMATIC_ADAPTATION = [
-  [0.9555766, -0.0230393, 0.0631636],
-  [-0.0282895, 1.0099416, 0.0210077],
-  [0.0122982, -0.020483, 1.3299098],
-];
-
-const LINEAR_RGB_TRANSFORMATION_MATRIX = [
-  [3.2404542, -1.5371385, -0.4985314],
-  [-0.969266, 1.8760108, 0.041556],
-  [0.0556434, -0.2040259, 1.0572252],
-];
-
 function ciexyzToLrgb([X, Y, Z]) {
+  const D65_CHROMATIC_ADAPTATION = [
+    [0.9555766, -0.0230393, 0.0631636],
+    [-0.0282895, 1.0099416, 0.0210077],
+    [0.0122982, -0.020483, 1.3299098],
+  ];
+
+  const LINEAR_RGB_TRANSFORMATION_MATRIX = [
+    [3.2404542, -1.5371385, -0.4985314],
+    [-0.969266, 1.8760108, 0.041556],
+    [0.0556434, -0.2040259, 1.0572252],
+  ];
+
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
     ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
   );
@@ -1426,19 +1426,19 @@ The process breaks down to:
 Simple and direct.
 
 #+BEGIN_SRC js
-const LINEAR_LMS_CONE_ACTIVATIONS = [
-  [0.3963377774, 0.2158037573],
-  [0.1055613458, 0.0638541728],
-  [0.0894841775, 1.291485548],
-];
-
-const OKLAB_TO_LRGB_MATRIX = [
-  [4.076416621, 3.3077115913, 0.2309699292],
-  [-1.2684380046, 2.6097574011, 0.3413193965],
-  [-0.0041960863, 0.7034186147, 1.707614701],
-];
-
 function oklabToLrgb([L, a, b]) {
+  const LINEAR_LMS_CONE_ACTIVATIONS = [
+    [0.3963377774, 0.2158037573],
+    [0.1055613458, 0.0638541728],
+    [0.0894841775, 1.291485548],
+  ];
+
+  const OKLAB_TO_LRGB_MATRIX = [
+    [4.076416621, 3.3077115913, 0.2309699292],
+    [-1.2684380046, 2.6097574011, 0.3413193965],
+    [-0.0041960863, 0.7034186147, 1.707614701],
+  ];
+
   const [LONG, M, S] = LINEAR_LMS_CONE_ACTIVATIONS.map(([V1, V2], pos) => {
     if (pos === 0) return L + a * V1 + b * V2;
     if (pos === 1) return L - a * V1 - b * V2;
@@ -1466,6 +1466,222 @@ function oklabToRgb([, values]) {
 #+END_SRC
 
 ***** RGB -> OUTPUT
+
+The next stage is to get the output format /from/ the RGB.
+
+****** RGB -> Hex
+
+Getting RGB to hexadecimal color output is a similarly stratightforward implementation.
+
+Rounding the results is necessary because hexadecimal format expects integers. Having reached our target output, we can
+now forward the result for serializing.
+
+#+BEGIN_SRC js
+function hexFromRgb([, rgbValues]) {
+  const [r, g, b, a] = rgbValues;
+
+  const [R, G, B] = [r, g, b].map((channel) =>
+    hexFragmentFromChannel(Math.round(channel))
+  );
+  const A = hexFragmentFromChannel(Math.round(numberToChannel(a)));
+
+  return ["hex", [R, G, B, A]];
+}
+#+END_SRC
+
+****** RGB -> HSL
+
+Getting RGB to an HSL output color is [[https://www.rapidtables.com/convert/color/rgb-to-hsl.html][handled by another RapidTables formula]].
+
+#+BEGIN_SRC js
+function calculateHue(R, G, B, cmax, delta) {
+  return new Map([
+    [0, delta === 0],
+    [60 * (((G - B) / delta) % 6), cmax === R],
+    [60 * ((B - R) / delta + 2), cmax === G],
+    [60 * ((R - G) / delta + 4), cmax === B],
+  ]);
+}
+
+function calculateSaturation(delta, L) {
+  return delta === 0 ? 0 : delta / (1 - Math.abs(2 * L - 1));
+}
+
+function calculateLightness(cmin, cmax) {
+  return (cmax + cmin) / 2;
+}
+
+function hslFromRgb([, rgbValues]) {
+  const [r, g, b, A] = rgbValues;
+
+  const [R, G, B] = [r, g, b].map((channel) => numberFromChannel(channel));
+
+  const cmin = Math.min(R, G, B);
+  const cmax = Math.max(R, G, B);
+  const delta = cmax - cmin;
+
+  const L = calculateLightness(cmin, cmax);
+  const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
+    ([, condition]) => condition,
+  );
+  const S = calculateSaturation(delta, L);
+
+  return ["hsl", [H, S, L, A]];
+}
+#+END_SRC
+
+****** RGB -> CMYK
+
+Getting RGB to CMYK output [[https://www.rapidtables.com/convert/color/rgb-to-cmyk.html][requires yet another RapidTables formula]].
+
+#+BEGIN_SRC js
+function cmykFromRgb([, rgbValues]) {
+  const [r, g, b, A] = rgbValues;
+
+  const [R, G, B] = [r, g, b].map((channel) => numberFromChannel(channel));
+
+  const K = 1 - Math.max(R, G, B);
+  const [C, M, Y] = [R, G, B].map((channel) => (1 - channel - K) / (1 - K));
+
+  return ["cmyk", [C, M, Y, K, A]];
+}
+#+END_SRC
+
+****** RGB -> HWB
+
+The formula for converting RGB to HWB output is also [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][pulled from the spec]].
+
+#+BEGIN_SRC js
+function hwbFromRgb([, rgbValues]) {
+  const [r, g, b, A] = rgbValues;
+
+  const [R, G, B] = [r, g, b].map((channel) => numberFromChannel(channel));
+
+  const cmax = Math.max(R, G, B);
+  const cmin = Math.min(R, G, B);
+  const delta = cmax - cmin;
+
+  const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
+    ([, condition]) => condition,
+  );
+
+  const [W, BLK] = [cmin, 1 - cmax];
+
+  return ["hwb", [H, W, BLK, A]];
+}
+#+END_SRC
+
+****** RGB -> CIELAB
+
+For getting CIELAB output from RGB, we'll be leaning on Bruce Lindbloom's equations again.
+
+The process is as follows:
+
+1. RGB to LRGB
+2. LRGB to CIEXYZ
+3. CIEXYZ to CIELAB
+
+#+BEGIN_SRC js
+function rgbToLrgb([R, G, B]) {
+  return [R, G, B].map((V) =>
+    V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4
+  );
+}
+
+function lrgbToCiexyz([LR, LG, LB]) {
+  const D65_REFERENCE_WHITE = [
+    [0.4124564, 0.3575761, 0.1804375],
+    [0.2126729, 0.7151522, 0.072175],
+    [0.0193339, 0.119192, 0.9503041],
+  ];
+
+  const D50_CHROMATIC_ADAPTATION = [
+    [1.0478112, 0.0228866, -0.050127],
+    [0.0295424, 0.9904844, -0.0170491],
+    [-0.0092345, 0.0150436, 0.7521316],
+  ];
+
+  const [x, y, z] = D65_REFERENCE_WHITE.map(
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
+  );
+
+  const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
+  );
+
+  return [X, Y, Z];
+}
+
+function ciexyzToCielab([X, Y, Z]) {
+  // CIE standards
+  const ε = 216 / 24389;
+  const κ = 24389 / 27;
+  const D50_WHITE = [0.96422, 1.0, 0.82521];
+
+  // Calculating F for each value
+  const [FX, FY, FZ] = [X, Y, Z]
+    .map((V, i) => V / D50_WHITE[i])
+    .map((V) => (V > ε ? Math.cbrt(V) : (κ * V + 16) / 116));
+
+  const [L, a, b] = [116 * FY - 16, 500 * (FX - FY), 200 * (FY - FZ)];
+
+  return [L, a, b];
+}
+
+function cielabFromRgb([, rgbValues]) {
+  const [r, g, $b, A] = rgbValues;
+
+  const [R, G, B] = [r, g, $b].map((channel) => numberFromChannel(channel));
+  const [L, a, b] = ciexyzToCielab(lrgbToCiexyz(rgbToLrgb([R, G, B])));
+
+  return ["cielab", [L, a, b, A]];
+}
+#+END_SRC
+
+****** RGB -> OKLAB
+
+To get Oklab output from RGB, we're going to use the inversion also documented by its creator.
+
+That process goes:
+
+1. RGB to LRGB
+2. LRGB to OKLAB
+
+#+BEGIN_SRC js
+function lrgbToOklab([LR, LG, LB]) {
+  const NONLINEAR_LMS_CONE_ACTIVATIONS = [
+    [0.4122214708, 0.5363325363, 0.0514459929],
+    [0.2119034982, 0.6806995451, 0.1073969566],
+    [0.0883024619, 0.2817188376, 0.6299787005],
+  ];
+
+  const RGB_OKLAB_MATRIX = [
+    [0.2104542553, 0.793617785, 0.0040720468],
+    [1.9779984951, 2.428592205, 0.4505937099],
+    [0.0259040371, 0.7827717662, 0.808675766],
+  ];
+
+  const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
+    ([L, M, S]) => L * LR + M * LG + S * LB,
+  ).map((V) => Math.cbrt(V));
+
+  return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
+    if (pos === 0) return V1 * L + V2 * M - V3 * S;
+    if (pos === 1) return V1 * L - V2 * M + V3 * S;
+    return V1 * L + V2 * M - V3 * S;
+  });
+}
+
+function oklabFromRgb([, rgbValues]) {
+  const [r, g, $b, A] = rgbValues;
+
+  const [R, G, B] = [r, g, $b].map((channel) => numberFromChannel(channel));
+  const [L, a, b] = lrgbToOklab(rgbToLrgb([R, G, B]));
+
+  return ["oklab", [L, a, b, A]];
+}
+#+END_SRC
+
 ***** SCALAR <-> POLAR
 ***** Color Conversion Pipeline
 **** Serialization
