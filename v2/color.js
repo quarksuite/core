@@ -1258,3 +1258,54 @@ function oklabFromOklch([, oklchValues]) {
   return ["oklab", scalarFromPolar(["oklch", oklchValues])];
 }
 // OKLab <-> OKLCH:1 ends here
+
+// Color Conversion Pipeline
+
+// Phew, now that we've prepared each individual format, it's time to construct the color conversion pipeline.
+
+// This will essentially be composed of two objects: =INPUT_TO_RGB= and =RGB_TO_OUTPUT= inside our main color =convert()=
+// function. You give it a color as input which then gets validated, has its components, extracted, and then parsed. The
+// parsed values are then passed along and converted to a specified output format.
+
+// [[file:../Notebook.org::*Color Conversion Pipeline][Color Conversion Pipeline:1]]
+function convert(color, to) {
+  // Let's make the pathway explicit
+  const valid = validator(color);
+  const extraction = extractor(valid);
+  const [format, values] = parser(extraction);
+
+  // Takes the input and converts it to RGB depending on format
+  const INPUT_TO_RGB = (input) => ({
+    named: hexToRgb(input),
+    hex: hexToRgb(input),
+    rgb: input, // identity
+    hsl: hslToRgb(input),
+    cmyk: cmykToRgb(input),
+    hwb: hwbToRgb(input),
+    cielab: cielabToRgb(input),
+    cielch: cielabToRgb(cielabFromCielch(input)),
+    oklab: oklabToRgb(input),
+    oklch: oklabToRgb(oklabFromOklch(input)),
+  });
+
+  // Takes the RGB and converts to output target
+  const RGB_TO_OUTPUT = (rgb) => ({
+    hex: hexFromRgb(rgb),
+    rgb, // identity
+    hsl: hslFromRgb(rgb),
+    cmyk: cmykFromRgb(rgb),
+    hwb: hwbFromRgb(rgb),
+    cielab: cielabFromRgb(rgb),
+    cielch: cielabToCielch(cielabFromRgb(rgb)),
+    oklab: oklabFromRgb(rgb),
+    oklch: oklabToOklch(oklabFromRgb(rgb)),
+  });
+
+  // Construct the pipeline
+  const OUTPUT = RGB_TO_OUTPUT(INPUT_TO_RGB([format, values])[format])[to];
+
+  return OUTPUT;
+}
+// Color Conversion Pipeline:1 ends here
+
+console.log(convert("oklch(72% 0.2 135)", "hex"));
