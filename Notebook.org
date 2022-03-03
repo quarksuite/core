@@ -1327,6 +1327,11 @@ below approach is outdated. For practicality and compatibility's sake, I still u
 sRGB. Which works today.
 #+END_QUOTE
 
+#+BEGIN_QUOTE
+UPDATE: The below approach is not outdated in CSS Color Module 5, but it is considered a /naive/ conversion. It works
+well enough for the purposes of this library either way.
+#+END_QUOTE
+
 Conversion of CMYK to RGB is [[https://www.rapidtables.com/convert/color/cmyk-to-rgb.html][covered by another RapidTables formula]].
 
 #+BEGIN_SRC js
