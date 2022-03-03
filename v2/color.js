@@ -207,7 +207,7 @@ function hexValidator(color) {
 }
 // RGB Hex Validation:1 ends here
 
-// Functional Formats
+// Validating Functional Formats
 
 // The functional formats require a bit of extra processing. Good thing we created those tokens earlier. Functional formats
 // always have an optional alpha component, so we tack that onto the end. If =legacy= is =true=, then we use the legacy
@@ -215,7 +215,7 @@ function hexValidator(color) {
 
 // Each format has varying components, so we map over the tokens we plug in and link them with delimiters.
 
-// [[file:../Notebook.org::*Functional Formats][Functional Formats:1]]
+// [[file:../Notebook.org::*Validating Functional Formats][Validating Functional Formats:1]]
 function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   const VALUES = tokens.map((token) => token.source);
 
@@ -231,7 +231,7 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
     ),
   );
 }
-// Functional Formats:1 ends here
+// Validating Functional Formats:1 ends here
 
 // RGB Validation
 
@@ -780,6 +780,26 @@ function parser(extracted) {
 }
 // Parsing Preparation:1 ends here
 
+// RGB <-> RGB
+
+// Yes, we do have to account for RGB converting to and from itself, because the parsed RGB can't be serialized.
+
+// [[file:../Notebook.org::*RGB <-> RGB][RGB <-> RGB:1]]
+function rgbInputIdentity([, values]) {
+  const [r, g, b, A] = values;
+
+  const [R, G, B] = [r, g, b].map((channel) =>
+    Math.round(numberToChannel(channel))
+  );
+
+  return ["rgb", [R, G, B, A]];
+}
+
+function rgbOutputIdentity([, rgbValues]) {
+  return ["rgb", rgbValues];
+}
+// RGB <-> RGB:1 ends here
+
 // Hex -> RGB
 
 // If you remember from =parseHex()=, a parsed hexadecimal color is already a valid RGB result. So we mark it as such and pass it
@@ -1278,7 +1298,7 @@ function convert(color, to) {
   const INPUT_TO_RGB = (input) => ({
     named: hexToRgb(input),
     hex: hexToRgb(input),
-    rgb: input, // identity
+    rgb: rgbInputIdentity(input), // identity
     hsl: hslToRgb(input),
     cmyk: cmykToRgb(input),
     hwb: hwbToRgb(input),
@@ -1291,7 +1311,7 @@ function convert(color, to) {
   // Takes the RGB and converts to output target
   const RGB_TO_OUTPUT = (rgb) => ({
     hex: hexFromRgb(rgb),
-    rgb, // identity
+    rgb: rgbOutputIdentity(rgb), // identity
     hsl: hslFromRgb(rgb),
     cmyk: cmykFromRgb(rgb),
     hwb: hwbFromRgb(rgb),

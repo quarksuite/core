@@ -92,7 +92,7 @@
       - [[#validation][Validation]]
         - [[#named-color-validation][Named Color Validation]]
         - [[#rgb-hex-validation][RGB Hex Validation]]
-        - [[#functional-formats][Functional Formats]]
+        - [[#validating-functional-formats][Validating Functional Formats]]
         - [[#preparing-validation][Preparing Validation]]
         - [[#invalid-color-handling][Invalid Color Handling]]
       - [[#extraction][Extraction]]
@@ -111,11 +111,14 @@
         - [[#parsing-preparation][Parsing Preparation]]
       - [[#conversion][Conversion]]
         - [[#preamble][Preamble]]
+        - [[#rgb---rgb][RGB <-> RGB]]
         - [[#input---rgb][INPUT -> RGB]]
         - [[#rgb---output][RGB -> OUTPUT]]
         - [[#scalar---polar][SCALAR <-> POLAR]]
         - [[#color-conversion-pipeline][Color Conversion Pipeline]]
       - [[#serialization][Serialization]]
+        - [[#serializing-rgb-hex][Serializing RGB Hex]]
+        - [[#serializing-functional-formats][Serializing Functional Formats]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
 
@@ -625,7 +628,7 @@ function hexValidator(color) {
 }
 #+END_SRC
 
-***** Functional Formats
+***** Validating Functional Formats
 
 The functional formats require a bit of extra processing. Good thing we created those tokens earlier. Functional formats
 always have an optional alpha component, so we tack that onto the end. If =legacy= is =true=, then we use the legacy
@@ -1247,6 +1250,27 @@ the result of parsing as the color tuple =[format, values]=.
 
 In the color conversion functions themselves, we'll be passing the results along as the =[format, results]= tuple.
 
+***** RGB <-> RGB
+
+Yes, we do have to account for RGB converting to and from itself, because the parsed RGB can't be serialized.
+
+#+BEGIN_SRC js
+function rgbInputIdentity([, values]) {
+  const [r, g, b, A] = values;
+
+  const [R, G, B] = [r, g, b].map((channel) =>
+    Math.round(numberToChannel(channel))
+  );
+
+  return ["rgb", [R, G, B, A]];
+}
+
+function rgbOutputIdentity([, rgbValues]) {
+  return ["rgb", rgbValues];
+}
+#+END_SRC
+
+
 ***** INPUT -> RGB
 
 The first process in the conversion pipeline is to take the =INPUT= format and convert it to =RGB=.
@@ -1753,7 +1777,7 @@ function convert(color, to) {
   const INPUT_TO_RGB = (input) => ({
     named: hexToRgb(input),
     hex: hexToRgb(input),
-    rgb: input, // identity
+    rgb: rgbInputIdentity(input), // identity
     hsl: hslToRgb(input),
     cmyk: cmykToRgb(input),
     hwb: hwbToRgb(input),
@@ -1766,7 +1790,7 @@ function convert(color, to) {
   // Takes the RGB and converts to output target
   const RGB_TO_OUTPUT = (rgb) => ({
     hex: hexFromRgb(rgb),
-    rgb, // identity
+    rgb: rgbOutputIdentity(rgb), // identity
     hsl: hslFromRgb(rgb),
     cmyk: cmykFromRgb(rgb),
     hwb: hwbFromRgb(rgb),
