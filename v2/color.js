@@ -1328,4 +1328,186 @@ function convert(color, to) {
 }
 // Color Conversion Pipeline:1 ends here
 
-console.log(convert("oklch(72% 0.2 135)", "hex"));
+// Serializing RGB Hex
+
+// Concatenate the =hexResult= with a =#=. If the alpha channel is =ff=, the color is opaque and alpha should be removed.
+
+// [[file:../Notebook.org::*Serializing RGB Hex][Serializing RGB Hex:1]]
+function serializeHex([, hexResult]) {
+  const [R, G, B, A] = hexResult;
+
+  if (A === "ff") {
+    return "#".concat(R, G, B);
+  }
+  return "#".concat([R, G, B, A]);
+}
+// Serializing RGB Hex:1 ends here
+
+// Serializing Functional Formats
+
+// Functional color formats have an incredibly uniform syntax, so let's create a helper =serializeFunctionalFormat()= to
+// logically assemble the data. It needs to be generic enough for us to simply attach a prefix and plug in values; similar
+// to =matchFunctionalFormat()= above.
+
+// [[file:../Notebook.org::*Serializing Functional Formats][Serializing Functional Formats:1]]
+function serializeFunctionalFormat({ prefix, legacy = true }, components) {
+  const DELIMITER = legacy ? ", " : " ";
+  const ALPHA_DELIMITER = legacy ? ", " : " / ";
+
+  // Coercing the result of toFixed() to a number preserves precision while removing trailing zeroes.
+  const isOpaque = components[components.length - 1] === 1;
+  const values = components.slice(0, components.length - 1);
+  const alpha = (+components.slice(-1)).toFixed(3);
+
+  return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
+    values.join(DELIMITER),
+    isOpaque ? "" : ALPHA_DELIMITER.concat(alpha),
+    ")",
+  );
+}
+// Serializing Functional Formats:1 ends here
+
+// Serializing RGB
+
+// [[file:../Notebook.org::*Serializing RGB][Serializing RGB:1]]
+function serializeRgb([, rgbResult]) {
+  const [r, g, b, A] = rgbResult;
+
+  // Clamp RGB channels 0-255. Round to integer for compatibility
+  const [R, G, B] = [r, g, b].map(
+    (component) => +clamp(component, 0, 255).toFixed(3),
+  );
+
+  return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
+}
+// Serializing RGB:1 ends here
+
+// Serializing HSL
+
+// [[file:../Notebook.org::*Serializing HSL][Serializing HSL:1]]
+function serializeHsl([, hslResult]) {
+  const [h, s, l, A] = hslResult;
+
+  // Correct the hue result
+  const H = hueCorrection(+h.toFixed(3));
+
+  // convert saturation, lightness to percentages
+  const [S, L] = [s, l].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
+
+  return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
+}
+// Serializing HSL:1 ends here
+
+// Serializing CMYK
+
+// [[file:../Notebook.org::*Serializing CMYK][Serializing CMYK:1]]
+
+// Serializing CMYK:1 ends here
+function serializeCmyk([, cmykResult]) {
+  return serializeFunctionalFormat(
+    { prefix: "device-cmyk", legacy: false },
+    cmykResult.map((n) => +n.toFixed(3)),
+  );
+}
+// Serializing HWB
+
+// [[file:../Notebook.org::*Serializing HWB][Serializing HWB:1]]
+function serializeHwb([, hslResult]) {
+  const [h, w, blk, A] = hslResult;
+
+  // Correct the hue result
+  const H = hueCorrection(+h.toFixed(3));
+
+  // convert saturation, lightness to percentages
+  const [W, BLK] = [w, blk].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
+
+  return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
+    H,
+    W,
+    BLK,
+    A,
+  ]);
+}
+// Serializing HWB:1 ends here
+
+// Serializing CIELAB/CIELCH
+
+// [[file:../Notebook.org::*Serializing CIELAB/CIELCH][Serializing CIELAB/CIELCH:1]]
+function serializeCielab([, cielabValues]) {
+  const [$L, $a, $b, A] = cielabValues;
+
+  // Clamp lightness at 0-100
+  const L = `${+clamp($L, 0, 100).toFixed(3)}%`;
+
+  // Clamp a, b at ±127
+  const [a, b] = [$a, $b].map((n) => +clamp(n, -127, 127).toFixed(3));
+
+  return serializeFunctionalFormat({ prefix: "lab", legacy: false }, [
+    L,
+    a,
+    b,
+    A,
+  ]);
+}
+
+function serializeCielch([, cielchValues]) {
+  const [$L, c, h, A] = cielchValues;
+
+  // Clamp lightness at 0-100
+  const L = `${+clamp($L, 0, 100).toFixed(3)}%`;
+
+  // Clamp chroma at 0-132
+  const C = +clamp(c, 0, 132).toFixed(3);
+
+  // Convert hue to degrees, correct hue
+  const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+
+  return serializeFunctionalFormat({ prefix: "lch", legacy: false }, [
+    L,
+    C,
+    H,
+    A,
+  ]);
+}
+// Serializing CIELAB/CIELCH:1 ends here
+
+// Serializing OKLab/OKLCH
+
+// [[file:../Notebook.org::*Serializing OKLab/OKLCH][Serializing OKLab/OKLCH:1]]
+function serializeOklab([, oklabValues]) {
+  const [$L, $a, $b, A] = oklabValues;
+
+  // Convert number to percentage, clamp at 0-100
+  const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
+
+  // Clamp a, b at ±0.5
+  const [a, b] = [$a, $b].map((n) => +clamp(n, -0.5, 0.5).toFixed(5));
+
+  return serializeFunctionalFormat({ prefix: "oklab", legacy: false }, [
+    L,
+    a,
+    b,
+    A,
+  ]);
+}
+
+function serializeOklch([, oklchValues]) {
+  const [$L, c, h, A] = oklchValues;
+
+  // Convert lightness to percentage, clamp at 0-100
+  const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
+
+  // Clamp chroma at 0-0.5
+  const C = +clamp(c, 0, 0.5).toFixed(3);
+
+  // Convert hue to degrees, correct hue
+  const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+
+  return serializeFunctionalFormat({ prefix: "oklch", legacy: false }, [
+    L,
+    C,
+    H,
+    A,
+  ]);
+}
+// Serializing OKLab/OKLCH:1 ends here

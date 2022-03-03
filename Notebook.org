@@ -1809,6 +1809,194 @@ function convert(color, to) {
 
 **** Serialization
 
+All of that is well and good, but this leaves the converted color in a state that the user doesn't expect, and the
+browser can't make any use of. That's why we have to /serialize/ the result.
+
+Serialization is basically validation in reverse. We take the conversion data, perform the final bits of modification,
+and then put it back into a color string and give it to the user. We want a different serialization method based on the
+format, but we already have that information.
+
+Now let's create the serialization functions.
+
+***** Serializing RGB Hex
+
+Concatenate the =hexResult= with a =#=. If the alpha channel is =ff=, the color is opaque and alpha should be removed.
+
+#+BEGIN_SRC js
+function serializeHex([, hexResult]) {
+  const [R, G, B, A] = hexResult;
+
+  if (A === "ff") {
+    return "#".concat(R, G, B);
+  }
+  return "#".concat([R, G, B, A]);
+}
+#+END_SRC
+
+***** Serializing Functional Formats
+
+Functional color formats have an incredibly uniform syntax, so let's create a helper =serializeFunctionalFormat()= to
+logically assemble the data. It needs to be generic enough for us to simply attach a prefix and plug in values; similar
+to =matchFunctionalFormat()= above.
+
+#+BEGIN_SRC js
+function serializeFunctionalFormat({ prefix, legacy = true }, components) {
+  const DELIMITER = legacy ? ", " : " ";
+  const ALPHA_DELIMITER = legacy ? ", " : " / ";
+
+  // Coercing the result of toFixed() to a number preserves precision while removing trailing zeroes.
+  const isOpaque = components[components.length - 1] === 1;
+  const values = components.slice(0, components.length - 1);
+  const alpha = (+components.slice(-1)).toFixed(3);
+
+  return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
+    values.join(DELIMITER),
+    isOpaque ? "" : ALPHA_DELIMITER.concat(alpha),
+    ")",
+  );
+}
+#+END_SRC
+
+****** Serializing RGB
+
+#+BEGIN_SRC js
+function serializeRgb([, rgbResult]) {
+  const [r, g, b, A] = rgbResult;
+
+  // Clamp RGB channels 0-255. Round to integer for compatibility
+  const [R, G, B] = [r, g, b].map(
+    (component) => +clamp(component, 0, 255).toFixed(3),
+  );
+
+  return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
+}
+#+END_SRC
+
+****** Serializing HSL
+
+#+BEGIN_SRC js
+function serializeHsl([, hslResult]) {
+  const [h, s, l, A] = hslResult;
+
+  // Correct the hue result
+  const H = hueCorrection(+h.toFixed(3));
+
+  // convert saturation, lightness to percentages
+  const [S, L] = [s, l].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
+
+  return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
+}
+#+END_SRC
+
+****** Serializing CMYK
+
+#+BEGIN_SRC js
+
+#+END_SRC
+
+****** Serializing HWB
+
+#+BEGIN_SRC js
+function serializeHwb([, hslResult]) {
+  const [h, w, blk, A] = hslResult;
+
+  // Correct the hue result
+  const H = hueCorrection(+h.toFixed(3));
+
+  // convert saturation, lightness to percentages
+  const [W, BLK] = [w, blk].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
+
+  return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
+    H,
+    W,
+    BLK,
+    A,
+  ]);
+}
+#+END_SRC
+
+****** Serializing CIELAB/CIELCH
+
+#+BEGIN_SRC js
+function serializeCielab([, cielabValues]) {
+  const [$L, $a, $b, A] = cielabValues;
+
+  // Clamp lightness at 0-100
+  const L = `${+clamp($L, 0, 100).toFixed(3)}%`;
+
+  // Clamp a, b at ±127
+  const [a, b] = [$a, $b].map((n) => +clamp(n, -127, 127).toFixed(3));
+
+  return serializeFunctionalFormat({ prefix: "lab", legacy: false }, [
+    L,
+    a,
+    b,
+    A,
+  ]);
+}
+
+function serializeCielch([, cielchValues]) {
+  const [$L, c, h, A] = cielchValues;
+
+  // Clamp lightness at 0-100
+  const L = `${+clamp($L, 0, 100).toFixed(3)}%`;
+
+  // Clamp chroma at 0-132
+  const C = +clamp(c, 0, 132).toFixed(3);
+
+  // Convert hue to degrees, correct hue
+  const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+
+  return serializeFunctionalFormat({ prefix: "lch", legacy: false }, [
+    L,
+    C,
+    H,
+    A,
+  ]);
+}
+#+END_SRC
+
+****** Serializing OKLab/OKLCH
+
+#+BEGIN_SRC js
+function serializeOklab([, oklabValues]) {
+  const [$L, $a, $b, A] = oklabValues;
+
+  // Convert number to percentage, clamp at 0-100
+  const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
+
+  // Clamp a, b at ±0.5
+  const [a, b] = [$a, $b].map((n) => +clamp(n, -0.5, 0.5).toFixed(5));
+
+  return serializeFunctionalFormat({ prefix: "oklab", legacy: false }, [
+    L,
+    a,
+    b,
+    A,
+  ]);
+}
+
+function serializeOklch([, oklchValues]) {
+  const [$L, c, h, A] = oklchValues;
+
+  // Convert lightness to percentage, clamp at 0-100
+  const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
+
+  // Clamp chroma at 0-0.5
+  const C = +clamp(c, 0, 0.5).toFixed(3);
+
+  // Convert hue to degrees, correct hue
+  const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+
+  return serializeFunctionalFormat({ prefix: "oklch", legacy: false }, [
+    L,
+    C,
+    H,
+    A,
+  ]);
+}
+#+END_SRC
+
 *** Modular Scale Internals
 
 *** Design Token Internals
