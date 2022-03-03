@@ -1205,3 +1205,56 @@ function oklabFromRgb([, rgbValues]) {
   return ["oklab", [L, a, b, A]];
 }
 // RGB -> OKLAB:1 ends here
+
+// SCALAR <-> POLAR
+
+// The last thing we need to do before wiring everything up is create a bridge to and from CIELAB & OKLab to their polar
+// coordinate alter-egos (CIELCH & OKLCH).
+
+// Since we already have a completed chain of =INPUT -> RGB -> OUTPUT= for both formats, we don't need to do much more.
+
+// The two basically [[https://www.w3.org/TR/css-color-4/#lab-to-lch][share formulas]], so I'm going to create the helpers =scalarToPolar()= and =scalarFromPolar=.
+
+// [[file:../Notebook.org::*SCALAR <-> POLAR][SCALAR <-> POLAR:1]]
+function scalarToPolar([, scalarValues]) {
+  const [L, a, b, A] = scalarValues;
+
+  const C = Math.sqrt(a ** 2 + b ** 2);
+  const H = Math.atan2(b, a);
+
+  return [L, C, H, A];
+}
+
+function scalarFromPolar([, polarValues]) {
+  const [L, C, H, A] = polarValues;
+
+  const a = C * Math.cos(H);
+  const b = C * Math.sin(H);
+
+  return [L, a, b, A];
+}
+// SCALAR <-> POLAR:1 ends here
+
+// CIELAB <-> CIELCH
+
+// [[file:../Notebook.org::*CIELAB <-> CIELCH][CIELAB <-> CIELCH:1]]
+function cielabToCielch([, cielabValues]) {
+  return ["cielch", scalarToPolar(["cielab", cielabValues])];
+}
+
+function cielabFromCielch([, cielchValues]) {
+  return ["cielab", scalarFromPolar(["cielch", cielchValues])];
+}
+// CIELAB <-> CIELCH:1 ends here
+
+// OKLab <-> OKLCH
+
+// [[file:../Notebook.org::*OKLab <-> OKLCH][OKLab <-> OKLCH:1]]
+function oklabToOklch([, oklabValues]) {
+  return ["oklch", scalarToPolar(["oklab", oklabValues])];
+}
+
+function oklabFromOklch([, oklchValues]) {
+  return ["oklab", scalarFromPolar(["oklch", oklchValues])];
+}
+// OKLab <-> OKLCH:1 ends here
