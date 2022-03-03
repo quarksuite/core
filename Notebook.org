@@ -1868,7 +1868,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
 function serializeRgb([, rgbResult]) {
   const [r, g, b, A] = rgbResult;
 
-  // Clamp RGB channels 0-255. Round to integer for compatibility
+  // Clamp RGB channels 0-255
   const [R, G, B] = [r, g, b].map(
     (component) => +clamp(component, 0, 255).toFixed(3),
   );
@@ -1908,7 +1908,7 @@ function serializeHwb([, hslResult]) {
   // Correct the hue result
   const H = hueCorrection(+h.toFixed(3));
 
-  // convert saturation, lightness to percentages
+  // convert white, black to percentages
   const [W, BLK] = [w, blk].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
 
   return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
@@ -1988,7 +1988,7 @@ function serializeOklch([, oklchValues]) {
   const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
 
   // Clamp chroma at 0-0.5
-  const C = +clamp(c, 0, 0.5).toFixed(3);
+  const C = +clamp(c, 0, 0.5).toFixed(5);
 
   // Convert hue to degrees, correct hue
   const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);

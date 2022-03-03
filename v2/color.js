@@ -852,6 +852,11 @@ function hslToRgb([, values]) {
 // sRGB. Which works today.
 // #+END_QUOTE
 
+// #+BEGIN_QUOTE
+// UPDATE: The below approach is not outdated in CSS Color Module 5, but it is considered a /naive/ conversion. It works
+// well enough for the purposes of this library either way.
+// #+END_QUOTE
+
 // Conversion of CMYK to RGB is [[https://www.rapidtables.com/convert/color/cmyk-to-rgb.html][covered by another RapidTables formula]].
 
 // [[file:../Notebook.org::*CMYK -> RGB][CMYK -> RGB:1]]
@@ -1373,7 +1378,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
 function serializeRgb([, rgbResult]) {
   const [r, g, b, A] = rgbResult;
 
-  // Clamp RGB channels 0-255. Round to integer for compatibility
+  // Clamp RGB channels 0-255
   const [R, G, B] = [r, g, b].map(
     (component) => +clamp(component, 0, 255).toFixed(3),
   );
@@ -1403,12 +1408,7 @@ function serializeHsl([, hslResult]) {
 // [[file:../Notebook.org::*Serializing CMYK][Serializing CMYK:1]]
 
 // Serializing CMYK:1 ends here
-function serializeCmyk([, cmykResult]) {
-  return serializeFunctionalFormat(
-    { prefix: "device-cmyk", legacy: false },
-    cmykResult.map((n) => +n.toFixed(3)),
-  );
-}
+
 // Serializing HWB
 
 // [[file:../Notebook.org::*Serializing HWB][Serializing HWB:1]]
@@ -1418,7 +1418,7 @@ function serializeHwb([, hslResult]) {
   // Correct the hue result
   const H = hueCorrection(+h.toFixed(3));
 
-  // convert saturation, lightness to percentages
+  // convert white, black to percentages
   const [W, BLK] = [w, blk].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
 
   return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
@@ -1498,7 +1498,7 @@ function serializeOklch([, oklchValues]) {
   const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
 
   // Clamp chroma at 0-0.5
-  const C = +clamp(c, 0, 0.5).toFixed(3);
+  const C = +clamp(c, 0, 0.5).toFixed(5);
 
   // Convert hue to degrees, correct hue
   const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
