@@ -124,6 +124,7 @@
         - [[#parsing][Parsing]]
         - [[#calculation][Calculation]]
         - [[#serialization][Serialization]]
+      - [[#color-adjustment][Color Adjustment]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
 
@@ -2755,6 +2756,20 @@ function serializeOklch([, oklchValues]) {
   ]);
 }
 #+END_SRC
+
+**** Color Adjustment
+
+Now that color conversion is handled, we can move on to color actions. The first necessary action we can perform on a
+color is /adjustment/. QuarkSuite prioritizes the perceptual uniformity of all color adjustments and so adjusts colors
+through the OKLab color space as OKLCH.
+
+The properties we can adjust include:
+
++ Lightness/Luminance: The amount of light a color reflects or absorbs relative to its illuminant (light source). Though
+  it's easier to think of it as how light or dark a given color is (with amounts >50 trending toward white and <50
+  trending toward black).
++ Chroma/Saturation: A measure of a color's chromatic purity. Generally, a measure of color /intensity/ (with amounts
+  >50 trending toward vivid and <50 trending toward subtle). An achromatic color will thereby be some shade of gray.
 
 *** Modular Scale Internals
 
