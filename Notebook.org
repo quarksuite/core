@@ -117,37 +117,13 @@
     - [[#functional][Functional]]
       - [[#composition-internals][Composition Internals]]
     - [[#color-1][Color]]
-      - [[#tokenization][Tokenization]]
-      - [[#validation][Validation]]
-        - [[#named-color-validation][Named Color Validation]]
-        - [[#rgb-hex-validation][RGB Hex Validation]]
-        - [[#validating-functional-formats][Validating Functional Formats]]
-        - [[#preparing-validation][Preparing Validation]]
-        - [[#invalid-color-handling][Invalid Color Handling]]
-      - [[#extraction][Extraction]]
-        - [[#rgb-hex-extractor][RGB Hex Extractor]]
-        - [[#functional-format-extractor][Functional Format Extractor]]
-        - [[#extraction-preparation][Extraction Preparation]]
-      - [[#parsing][Parsing]]
-        - [[#math][Math]]
-        - [[#parsing-rgb-hex][Parsing RGB Hex]]
-        - [[#parsing-functional-rgb][Parsing Functional RGB]]
-        - [[#parsing-functional-hsl][Parsing Functional HSL]]
-        - [[#parsing-functional-cmyk][Parsing Functional CMYK]]
-        - [[#parsing-functional-hwb][Parsing Functional HWB]]
-        - [[#parsing-functional-cielabcielch][Parsing Functional CIELAB/CIELCH]]
-        - [[#parsing-oklaboklch][Parsing OKLab/OKLCH]]
-        - [[#parsing-preparation][Parsing Preparation]]
       - [[#conversion][Conversion]]
-        - [[#preamble][Preamble]]
-        - [[#rgb---rgb][RGB <-> RGB]]
-        - [[#input---rgb][INPUT -> RGB]]
-        - [[#rgb---output][RGB -> OUTPUT]]
-        - [[#scalar---polar][SCALAR <-> POLAR]]
-        - [[#color-conversion-pipeline][Color Conversion Pipeline]]
-      - [[#serialization][Serialization]]
-        - [[#serializing-rgb-hex][Serializing RGB Hex]]
-        - [[#serializing-functional-formats][Serializing Functional Formats]]
+        - [[#tokenization][Tokenization]]
+        - [[#validation][Validation]]
+        - [[#extraction][Extraction]]
+        - [[#parsing][Parsing]]
+        - [[#calculation][Calculation]]
+        - [[#serialization][Serialization]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
 
@@ -1157,10 +1133,12 @@ function compose(...fns) {
 QuarkSuite accepts and processes most valid CSS color formats defined in [[https://www.w3.org/TR/css-color-4/][CSS Color Module Level 4]]. There are no color objects
 to pass around, you just use the colors themselves and get colors back.
 
+**** Conversion
+
 Under the hood, a sequence of tokenization, validation, extraction, parsing, conversion, and serialization (mostly)
 guarantees correct color input /and/ output. So wield those colors with confidence.
 
-**** Tokenization
+***** Tokenization
 
 Color format tokenization follows the spec as closely as possible.
 
@@ -1191,12 +1169,12 @@ const HUE_TOKEN = new RegExp(
 );
 #+END_SRC
 
-**** Validation
+***** Validation
 
 Defining tokens will make validation of the functional color formats incredibly simple as the tokens can be combined
 with the correct format prefix to create a full color string.
 
-***** Named Color Validation
+****** Named Color Validation
 
 QuarkSuite supports CSS named colors through to CSS Color Module 4 using an object query.
 
@@ -1364,7 +1342,7 @@ function namedValidator(color) {
 }
 #+END_SRC
 
-***** RGB Hex Validation
+****** RGB Hex Validation
 
 This can be done with a regular expression.
 
@@ -1374,7 +1352,7 @@ function hexValidator(color) {
 }
 #+END_SRC
 
-***** Validating Functional Formats
+****** Validating Functional Formats
 
 The functional formats require a bit of extra processing. Good thing we created those tokens earlier. Functional formats
 always have an optional alpha component, so we tack that onto the end. If =legacy= is =true=, then we use the legacy
@@ -1400,7 +1378,7 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
 }
 #+END_SRC
 
-****** RGB Validation
+******* RGB Validation
 
 =matchFunctionalFormats= makes validating the remaining CSS formats a matter of slotting in tokens with the right
 prefix. As you'll see, some tokens repeat and others have to be slotted individually.
@@ -1414,7 +1392,7 @@ function rgbValidator(color) {
 }
 #+END_SRC
 
-****** HSL Validation
+******* HSL Validation
 
 #+BEGIN_SRC js
 function hslValidator(color) {
@@ -1425,7 +1403,7 @@ function hslValidator(color) {
 }
 #+END_SRC
 
-****** CMYK Validation
+******* CMYK Validation
 
 =device-cmyk= is the first modern format, so the legacy flag will have to be disabled. It's also technically been moved
 to CSS Color Module 5, but I implemented it before I found that out.
@@ -1439,7 +1417,7 @@ function cmykValidator(color) {
 }
 #+END_SRC
 
-****** HWB Validation
+******* HWB Validation
 
 #+BEGIN_SRC js
 function hwbValidator(color) {
@@ -1450,7 +1428,7 @@ function hwbValidator(color) {
 }
 #+END_SRC
 
-****** CIELAB/CIELCH Validation
+******* CIELAB/CIELCH Validation
 
 These two formats are scalar and polar variants of the same color space, so I'll combine their validators.
 
@@ -1471,7 +1449,7 @@ function cielchValidator(color) {
 }
 #+END_SRC
 
-****** OKLab/OKLCH Validation
+******* OKLab/OKLCH Validation
 
 Same with OKLab/OKLCH, which recently became standard so I reimplemented them according to the spec.
 
@@ -1493,7 +1471,7 @@ function oklchValidator(color) {
 }
 #+END_SRC
 
-***** Preparing Validation
+****** Preparing Validation
 
 From here, we'll implement a =validator()= that accepts input and checks it against all of the available formats. A valid
 color will match /one of/ the available formats and get slotted in a =[format, color]= tuple.
@@ -1521,7 +1499,7 @@ function validator(input) {
 }
 #+END_SRC
 
-***** Invalid Color Handling
+****** Invalid Color Handling
 
 Otherwise, the input does not match any of the available formats and throws a useful error.
 
@@ -1563,12 +1541,12 @@ function InvalidColorError(input) {
 }
 #+END_SRC
 
-**** Extraction
+***** Extraction
 
 Once we're sure we have a valid color, we need to extract its components. Since CSS color formats really have just two
 forms (hexadecimal and functional), that's how many extractors we need.
 
-***** RGB Hex Extractor
+****** RGB Hex Extractor
 
 For RGB Hex extraction, we need to consider that RGB colors can also come in the form =#RGB(A)=. So we'll use =expandHex()= to expand
 those to a full =#RRGGBB(AA)=. And then we have =hexExtractor()= to do the extraction proper.
@@ -1589,7 +1567,7 @@ function expandHex(color) {
 }
 #+END_SRC
 
-***** Functional Format Extractor
+****** Functional Format Extractor
 
 Extracting from functional formats requires that the values be picked /with their units attached/. We'll need this
 information for parsing them prior to format conversion.
@@ -1602,7 +1580,7 @@ function componentExtractor(color) {
 }
 #+END_SRC
 
-***** Extraction Preparation
+****** Extraction Preparation
 
 Now with all the parts in place, we'll create a general =extractor()= that consumes a valid color tuple. If the =format=
 is =hex=, we'll call =hexExtractor()=, otherwise it's a functional format and must be handled by =componentExtractor()=.
@@ -1628,7 +1606,7 @@ function extractor(validated) {
 }
 #+END_SRC
 
-**** Parsing
+***** Parsing
 
 Before we get into actual color conversion, we're going to parse the extracted values according to their format. In
 other words, we're going break them down into a calculable state that we can pass along to each conversion function.
@@ -1637,11 +1615,11 @@ We're going to use the extraction tuple and create a parser for each format so t
 
 But first...
 
-***** Math
+****** Math
 
 We're going to prepare some helpers for the necessary value conversions we'll need to perform.
 
-****** Clamping Values
+******* Clamping Values
 
 Before anything else, we'll need a helper to =clamp()= values between a =min= and =max=. Some values in functional
 formats are capped, and others are not. We'll see which when we implement the serializer.
@@ -1660,7 +1638,7 @@ function clamp(x, a, b) {
 }
 #+END_SRC
 
-****** Hex Fragment <-> Channel
+******* Hex Fragment <-> Channel
 
 Now, we're going to need to convert hex fragments to and from their RGB channel equivalents.
 
@@ -1677,7 +1655,7 @@ function hexFragmentFromChannel(channel) {
 }
 #+END_SRC
 
-****** Number <-> Percentage
+******* Number <-> Percentage
 
 Some functional formats will need to have their numbers converted to percentages or the reverse.
 
@@ -1691,7 +1669,7 @@ function numberFromPercentage(percentage) {
 }
 #+END_SRC
 
-****** Number <-> Channel
+******* Number <-> Channel
 
 RGB channels need to be converted to a =0-1= range to be useful in calculation. And then they need to be converted back
 to channels later.
@@ -1706,7 +1684,7 @@ function numberFromChannel(channel) {
 }
 #+END_SRC
 
-****** Hue Component
+******* Hue Component
 
 Some of the color conversions require the [[https://www.rapidtables.com/convert/number/how-degrees-to-radians.html][hue as radians]]. And then we need to be able to [[https://www.rapidtables.com/convert/number/how-radians-to-degrees.html][convert back]].
 
@@ -1731,7 +1709,7 @@ function turnsToDegrees(turns) {
 }
 #+END_SRC
 
-****** Hue Correction
+******* Hue Correction
 
 A stipulation of the hue component in the spec is that it must support hue values greater than a single revolution.
 
@@ -1754,7 +1732,7 @@ function hueCorrection(hue) {
 }
 #+END_SRC
 
-***** Parsing RGB Hex
+****** Parsing RGB Hex
 
 RGB Hex must be parsed as RGB channels to be mathematically useful. That's what =parseHex()= does.
 
@@ -1778,7 +1756,7 @@ function parseHex([format, components]) {
 }
 #+END_SRC
 
-***** Parsing Functional RGB
+****** Parsing Functional RGB
 
 As stated above, RGB must be converted to a =0-1= range to be mathematically useful. This is a straightforward
 conversion because of our =numberFromChannel()= helper. Meanwhile, percentage values are valid for =a=.
@@ -1811,7 +1789,7 @@ function parseRgb([format, components]) {
 }
 #+END_SRC
 
-***** Parsing Functional HSL
+****** Parsing Functional HSL
 
 The =h= component will need special processing depending on its units. And our conversion goal is /degrees/. Other than
 that, =s= and =l= need conversion to a =0-1= range, and =A= is handled as usual.
@@ -1854,7 +1832,7 @@ function parseHsl([format, components]) {
 }
 #+END_SRC
 
-***** Parsing Functional CMYK
+****** Parsing Functional CMYK
 
 Functional CMYK is dead simple to parse. We check to see if the components are percentages and convert them. Otherwise,
 we coerce them to numbers with no additional processing.
@@ -1874,11 +1852,11 @@ function parseCMYK([format, components]) {
 }
 #+END_SRC
 
-***** Parsing Functional HWB
+****** Parsing Functional HWB
 
 Parsing functional HWB simply reuses =parseHSL()= because in this area they are /identical/.
 
-***** Parsing Functional CIELAB/CIELCH
+****** Parsing Functional CIELAB/CIELCH
 
 Of these two, the only one that requires any special attention is CIELCH because of that hue component. CIELAB just
 passes its values through number coercion.
@@ -1910,7 +1888,7 @@ function parseCielch([format, components]) {
 }
 #+END_SRC
 
-***** Parsing OKLab/OKLCH
+****** Parsing OKLab/OKLCH
 
 Parsing OKLab/OKLCH is similar to the above section, but it's important to note that OKLCH calculations expect the hue
 in /radians/. =L= is also converted to a =0-1= range.
@@ -1944,7 +1922,7 @@ function parseOklch([format, components]) {
 }
 #+END_SRC
 
-***** Parsing Preparation
+****** Parsing Preparation
 
 Similar to the validator and extractor, the =parser()= will read a color tuple and execute the correct parsing function
 for a matched format. And then it throws back a transformed tuple of =[format, values]=.
@@ -1969,7 +1947,7 @@ function parser(extracted) {
 }
 #+END_SRC
 
-**** Conversion
+***** Calculation
 
 Having completed our necessary preparations, we can finally move on to color conversion. QuarkSuite handles conversion
 with a very precise method.
@@ -1982,7 +1960,7 @@ every input format to its targeted output format.
 
 Some formats need to be linked into the pipeline. Specifically =Scalar <-> Polar= formats.
 
-***** Preamble
+****** Preamble
 
 To keep things simple, I'll keep using the color tuple data structure up until the point it's actually time to hand a
 color back to the user. This is a *major* change from v1, where I attempted to reassemble the color within each conversion
@@ -1996,7 +1974,7 @@ the result of parsing as the color tuple =[format, values]=.
 
 In the color conversion functions themselves, we'll be passing the results along as the =[format, results]= tuple.
 
-***** RGB <-> RGB
+****** RGB <-> RGB
 
 Yes, we do have to account for RGB converting to and from itself, because the parsed RGB can't be serialized.
 
@@ -2017,11 +1995,11 @@ function rgbOutputIdentity([, rgbValues]) {
 #+END_SRC
 
 
-***** INPUT -> RGB
+****** INPUT -> RGB
 
 The first process in the conversion pipeline is to take the =INPUT= format and convert it to =RGB=.
 
-****** Hex -> RGB
+******* Hex -> RGB
 
 If you remember from =parseHex()=, a parsed hexadecimal color is already a valid RGB result. So we mark it as such and pass it
 through.
@@ -2032,7 +2010,7 @@ function hexToRgb([, values]) {
 }
 #+END_SRC
 
-****** HSL -> RGB
+******* HSL -> RGB
 
 To convert HSL to RGB, we use [[https://www.rapidtables.com/convert/color/hsl-to-rgb.html][this conversion formula from RapidTables]].
 
@@ -2065,7 +2043,7 @@ function hslToRgb([, values]) {
 }
 #+END_SRC
 
-****** CMYK -> RGB
+******* CMYK -> RGB
 
 #+BEGIN_QUOTE
 IMPORTANT: CSS Color Module 5 will use a device-independent conversion of CMYK through the CIELAB space. This means the
@@ -2090,7 +2068,7 @@ function cmykToRgb([, values]) {
 }
 #+END_SRC
 
-****** HWB -> RGB
+******* HWB -> RGB
 
 The formula for conversion of HWB to RGB is [[https://www.w3.org/TR/css-color-4/#hwb-to-rgb][adapted from the spec itself]].
 
@@ -2115,7 +2093,7 @@ function hwbToRgb([, values]) {
 }
 #+END_SRC
 
-****** CIELAB -> RGB
+******* CIELAB -> RGB
 
 The steps for the CIELAB to RGB conversion are as follows:
 
@@ -2188,7 +2166,7 @@ function cielabToRgb([, values]) {
 }
 #+END_SRC
 
-****** OKLAB -> RGB
+******* OKLAB -> RGB
 
 The OKLab to RGB conversion steps are adapted from the creator, Björn Ottosson's, [[https://bottosson.github.io/posts/oklab/][original post about it]].
 
@@ -2239,11 +2217,11 @@ function oklabToRgb([, values]) {
 }
 #+END_SRC
 
-***** RGB -> OUTPUT
+****** RGB -> OUTPUT
 
 The next stage is to get the output format /from/ the RGB.
 
-****** RGB -> Hex
+******* RGB -> Hex
 
 Getting RGB to hexadecimal color output is a similarly stratightforward implementation.
 
@@ -2263,7 +2241,7 @@ function hexFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-****** RGB -> HSL
+******* RGB -> HSL
 
 Getting RGB to an HSL output color is [[https://www.rapidtables.com/convert/color/rgb-to-hsl.html][handled by another RapidTables formula]].
 
@@ -2304,7 +2282,7 @@ function hslFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-****** RGB -> CMYK
+******* RGB -> CMYK
 
 Getting RGB to CMYK output [[https://www.rapidtables.com/convert/color/rgb-to-cmyk.html][requires yet another RapidTables formula]].
 
@@ -2321,7 +2299,7 @@ function cmykFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-****** RGB -> HWB
+******* RGB -> HWB
 
 The formula for converting RGB to HWB output is also [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][pulled from the spec]].
 
@@ -2345,7 +2323,7 @@ function hwbFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-****** RGB -> CIELAB
+******* RGB -> CIELAB
 
 For getting CIELAB output from RGB, we'll be leaning on Bruce Lindbloom's equations again.
 
@@ -2412,7 +2390,7 @@ function cielabFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-****** RGB -> OKLAB
+******* RGB -> OKLAB
 
 To get Oklab output from RGB, we're going to use the inversion also documented by its creator.
 
@@ -2456,7 +2434,7 @@ function oklabFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-***** SCALAR <-> POLAR
+****** SCALAR <-> POLAR
 
 The last thing we need to do before wiring everything up is create a bridge to and from CIELAB & OKLab to their polar
 coordinate alter-egos (CIELCH & OKLCH).
@@ -2485,7 +2463,7 @@ function scalarFromPolar([, polarValues]) {
 }
 #+END_SRC
 
-****** CIELAB <-> CIELCH
+******* CIELAB <-> CIELCH
 
 #+BEGIN_SRC js
 function cielabToCielch([, cielabValues]) {
@@ -2497,7 +2475,7 @@ function cielabFromCielch([, cielchValues]) {
 }
 #+END_SRC
 
-****** OKLab <-> OKLCH
+******* OKLab <-> OKLCH
 
 #+BEGIN_SRC js
 function oklabToOklch([, oklabValues]) {
@@ -2509,7 +2487,7 @@ function oklabFromOklch([, oklchValues]) {
 }
 #+END_SRC
 
-***** Color Conversion Pipeline
+****** Color Conversion Pipeline
 
 Phew, now that we've prepared each individual format, it's time to construct the color conversion pipeline.
 
@@ -2558,7 +2536,7 @@ function convert(color, to) {
 }
 #+END_SRC
 
-**** Serialization
+***** Serialization
 
 All of that is well and good, but this leaves the converted color in a state that the user doesn't expect, and the
 browser can't make any use of. That's why we have to /serialize/ the result.
@@ -2569,7 +2547,7 @@ format, but we already have that information.
 
 Now let's create the serialization functions.
 
-***** Serializing RGB Hex
+****** Serializing RGB Hex
 
 Concatenate the =hexResult= with a =#=. If the alpha channel is =ff=, the color is opaque and alpha should be removed.
 
@@ -2584,7 +2562,7 @@ function serializeHex([, hexResult]) {
 }
 #+END_SRC
 
-***** Serializing Functional Formats
+****** Serializing Functional Formats
 
 Functional color formats have an incredibly uniform syntax, so let's create a helper =serializeFunctionalFormat()= to
 logically assemble the data. It needs to be generic enough for us to simply attach a prefix and plug in values; similar
@@ -2608,7 +2586,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
 }
 #+END_SRC
 
-****** Serializing RGB
+******* Serializing RGB
 
 #+BEGIN_SRC js
 function serializeRgb([, rgbResult]) {
@@ -2623,7 +2601,7 @@ function serializeRgb([, rgbResult]) {
 }
 #+END_SRC
 
-****** Serializing HSL
+******* Serializing HSL
 
 #+BEGIN_SRC js
 function serializeHsl([, hslResult]) {
@@ -2639,7 +2617,7 @@ function serializeHsl([, hslResult]) {
 }
 #+END_SRC
 
-****** Serializing CMYK
+******* Serializing CMYK
 
 #+BEGIN_SRC js
 function serializeCmyk([, cmykResult]) {
@@ -2661,7 +2639,7 @@ function serializeCmyk([, cmykResult]) {
 }
 #+END_SRC
 
-****** Serializing HWB
+******* Serializing HWB
 
 #+BEGIN_SRC js
 function serializeHwb([, hslResult]) {
@@ -2682,7 +2660,7 @@ function serializeHwb([, hslResult]) {
 }
 #+END_SRC
 
-****** Serializing CIELAB/CIELCH
+******* Serializing CIELAB/CIELCH
 
 #+BEGIN_SRC js
 function serializeCielab([, cielabValues]) {
@@ -2730,7 +2708,7 @@ function serializeCielch([, cielchValues]) {
 }
 #+END_SRC
 
-****** Serializing OKLab/OKLCH
+******* Serializing OKLab/OKLCH
 
 #+BEGIN_SRC js
 function serializeOklab([, oklabValues]) {
@@ -2776,7 +2754,7 @@ function serializeOklch([, oklchValues]) {
     A,
   ]);
 }
-E#+END_SRC
+#+END_SRC
 
 *** Modular Scale Internals
 
