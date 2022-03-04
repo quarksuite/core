@@ -1,3 +1,75 @@
+// color_as_hex Implementation
+
+// [[file:../Notebook.org::*color_as_hex Implementation][color_as_hex Implementation:1]]
+export function color_as_hex(color) {
+  return serializeHex(convert(color, "hex"));
+}
+// color_as_hex Implementation:1 ends here
+
+// color_as_rgb Implementation
+
+// [[file:../Notebook.org::*color_as_rgb Implementation][color_as_rgb Implementation:1]]
+export function color_as_rgb(color) {
+  return serializeRgb(convert(color, "rgb"));
+}
+// color_as_rgb Implementation:1 ends here
+
+// color_as_hsl Implementation
+
+// [[file:../Notebook.org::*color_as_hsl Implementation][color_as_hsl Implementation:1]]
+export function color_as_hsl(color) {
+  return serializeHsl(convert(color, "hsl"));
+}
+// color_as_hsl Implementation:1 ends here
+
+// color_as_cmyk Implementation
+
+// [[file:../Notebook.org::*color_as_cmyk Implementation][color_as_cmyk Implementation:1]]
+export function color_as_cmyk(color) {
+  return serializeCmyk(convert(color, "cmyk"));
+}
+// color_as_cmyk Implementation:1 ends here
+
+// color_as_hwb Implementation
+
+// [[file:../Notebook.org::*color_as_hwb Implementation][color_as_hwb Implementation:1]]
+export function color_as_hwb(color) {
+  return serializeHwb(convert(color, "hwb"));
+}
+// color_as_hwb Implementation:1 ends here
+
+// color_as_cielab Implementation
+
+// [[file:../Notebook.org::*color_as_cielab Implementation][color_as_cielab Implementation:1]]
+export function color_as_cielab(color) {
+  return serializeCielab(convert(color, "cielab"));
+}
+// color_as_cielab Implementation:1 ends here
+
+// color_as_cielch Implementation
+
+// [[file:../Notebook.org::*color_as_cielch Implementation][color_as_cielch Implementation:1]]
+export function color_as_cielch(color) {
+  return serializeCielch(convert(color, "cielch"));
+}
+// color_as_cielch Implementation:1 ends here
+
+// color_as_oklab Implementation
+
+// [[file:../Notebook.org::*color_as_oklab Implementation][color_as_oklab Implementation:1]]
+export function color_as_oklab(color) {
+  return serializeOklab(convert(color, "oklab"));
+}
+// color_as_oklab Implementation:1 ends here
+
+// color_as_oklch Implementation
+
+// [[file:../Notebook.org::*color_as_oklch Implementation][color_as_oklch Implementation:1]]
+export function color_as_oklch(color) {
+  return serializeOklch(convert(color, "oklch"));
+}
+// color_as_oklch Implementation:1 ends here
+
 // Tokenization
 
 // Color format tokenization follows the spec as closely as possible.
@@ -1406,7 +1478,23 @@ function serializeHsl([, hslResult]) {
 // Serializing CMYK
 
 // [[file:../Notebook.org::*Serializing CMYK][Serializing CMYK:1]]
+function serializeCmyk([, cmykResult]) {
+  const [c, m, y, k, A] = cmykResult;
 
+  // Convert to percentage, cap at 0-100
+  const [C, M, Y, K] = [c, m, y, k].map(
+    (n) =>
+      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
+  );
+
+  return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
+    C,
+    M,
+    Y,
+    K,
+    A,
+  ]);
+}
 // Serializing CMYK:1 ends here
 
 // Serializing HWB
@@ -1459,8 +1547,15 @@ function serializeCielch([, cielchValues]) {
   // Clamp chroma at 0-132
   const C = +clamp(c, 0, 132).toFixed(3);
 
-  // Convert hue to degrees, correct hue
-  const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+  let H = h;
+
+  // Hue is powerless if chroma is 0
+  if (C === 0) {
+    H = 0;
+  } else {
+    // Otherwise, convert hue to degrees, correct hue
+    H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+  }
 
   return serializeFunctionalFormat({ prefix: "lch", legacy: false }, [
     L,
@@ -1500,8 +1595,15 @@ function serializeOklch([, oklchValues]) {
   // Clamp chroma at 0-0.5
   const C = +clamp(c, 0, 0.5).toFixed(5);
 
-  // Convert hue to degrees, correct hue
-  const H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+  let H = h;
+
+  // Hue is powerless if chroma is 0
+  if (C === 0) {
+    H = 0;
+  } else {
+    // Otherwise, convert hue to degrees, correct hue
+    H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
+  }
 
   return serializeFunctionalFormat({ prefix: "oklch", legacy: false }, [
     L,
