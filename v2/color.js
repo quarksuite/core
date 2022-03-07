@@ -1,3 +1,14 @@
+// color_adjust Implementation
+
+// [[file:../Notebook.org::*color_adjust Implementation][color_adjust Implementation:1]]
+export function color_adjust(properties, color) {
+  // Do nothing by default
+  const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = properties;
+
+  return colorAdjustment({ lightness, chroma, hue, alpha }, color);
+}
+// color_adjust Implementation:1 ends here
+
 // color_as_hex Implementation
 
 // [[file:../Notebook.org::*color_as_hex Implementation][color_as_hex Implementation:1]]
@@ -560,7 +571,7 @@ function hexFragmentToChannel(hex) {
 }
 
 function hexFragmentFromChannel(channel) {
-  return channel.toString(16).padStart(2, "0");
+  return clamp(channel, 0, 255).toString(16).padStart(2, "0");
 }
 // Hex Fragment <-> Channel:1 ends here
 
@@ -585,7 +596,7 @@ function numberFromPercentage(percentage) {
 
 // [[file:../Notebook.org::*Number <-> Channel][Number <-> Channel:1]]
 function numberToChannel(n) {
-  return n * 255;
+  return Math.round(n * 255);
 }
 
 function numberFromChannel(channel) {
@@ -860,9 +871,7 @@ function parser(extracted) {
 function rgbInputIdentity([, values]) {
   const [r, g, b, A] = values;
 
-  const [R, G, B] = [r, g, b].map((channel) =>
-    Math.round(numberToChannel(channel))
-  );
+  const [R, G, B] = [r, g, b].map((channel) => numberToChannel(channel));
 
   return ["rgb", [R, G, B, A]];
 }
@@ -957,7 +966,7 @@ function hwbToRgb([, values]) {
   }
 
   // Conversion
-  const [, [r, g, b, a]] = hslToRgb(["hsl", [H, 1, 0.5, 1]]);
+  const [, [r, g, b]] = hslToRgb(["hsl", [H, 1, 0.5, 1]]);
   const [R, G, B] = [r, g, b].map((channel) =>
     numberToChannel(numberFromChannel(channel) * (1 - W - BLK) + W)
   );
@@ -1101,10 +1110,8 @@ function oklabToRgb([, values]) {
 function hexFromRgb([, rgbValues]) {
   const [r, g, b, a] = rgbValues;
 
-  const [R, G, B] = [r, g, b].map((channel) =>
-    hexFragmentFromChannel(Math.round(channel))
-  );
-  const A = hexFragmentFromChannel(Math.round(numberToChannel(a)));
+  const [R, G, B] = [r, g, b].map((channel) => hexFragmentFromChannel(channel));
+  const A = hexFragmentFromChannel(numberToChannel(a));
 
   return ["hex", [R, G, B, A]];
 }
@@ -1416,7 +1423,7 @@ function serializeHex([, hexResult]) {
   if (A === "ff") {
     return "#".concat(R, G, B);
   }
-  return "#".concat([R, G, B, A]);
+  return "#".concat(R, G, B, A);
 }
 // Serializing RGB Hex:1 ends here
 
@@ -1613,3 +1620,84 @@ function serializeOklch([, oklchValues]) {
   ]);
 }
 // Serializing OKLab/OKLCH:1 ends here
+
+// Color Adjustment Through OKLCH
+
+// OKLab solved the above issues. As an offshoot of CIELAB, perceptual uniformity is baked into its calculations. As an
+// /improvement/ on CIELAB, these calculations were adjusted for increased practicality and predictability. In short, it
+// made sequential palette building both possible and simpler.
+
+// Its OKLCH polar form is also vastly more intuitive for color property adjustment than its raw OKLab scalar form.
+
+// The approach in steps:
+
+// 1. Convert the input color to OKLCH equivalent
+// 2. Adjust its target properties
+// 3. Convert result back to its input format
+
+// [[file:../Notebook.org::*Color Adjustment Through OKLCH][Color Adjustment Through OKLCH:1]]
+function extractOklchValues(color) {
+  const convertedOklch = serializeOklch(convert(color, "oklch"));
+  const [, components] = extractor(["oklch", convertedOklch]);
+
+  return components.map((V) => parseFloat(V));
+}
+
+function adjustColorProperties(
+  { lightness, chroma, hue, alpha },
+  [l, c, h, a],
+) {
+  // Adjust properties only if defined, make values parseable
+  let L = numberFromPercentage(lightness ? l + lightness : l);
+  let C = chroma ? c + numberFromPercentage(chroma) * 0.5 * 0.5 : c;
+  let H = radiansFromDegrees(hue ? hueCorrection(h + hue) : h);
+  let A = alpha ? (a ?? 1) + numberFromPercentage(alpha) : a ?? 1;
+
+  // Return adjusted values
+  return [L, C, H, A];
+}
+
+function serializeInput([format, values]) {
+  const SERIALIZATION_TARGETS = {
+    hex: serializeHex,
+    rgb: serializeRgb,
+    hsl: serializeHsl,
+    cmyk: serializeCmyk,
+    hwb: serializeHwb,
+    cielab: serializeCielab,
+    cielch: serializeCielch,
+    oklab: serializeOklab,
+    oklch: serializeOklch,
+  };
+
+  return SERIALIZATION_TARGETS[format]([format, values]);
+}
+
+function colorAdjustment(
+  { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
+  color,
+) {
+  // Ensure color is valid and store its format
+  const [format] = validator(color);
+
+  // Extract its OKLCH values
+  const values = extractOklchValues(color);
+
+  // Adjust target properties
+  const [L, C, H, A] = adjustColorProperties(
+    { lightness, chroma, hue, alpha },
+    values,
+  );
+
+  // Serialize oklch result
+  const oklch = serializeOklch(["oklch", [L, C, H, A]]);
+
+  // If input format is named, convert to hex
+  if (format === "named") {
+    return serializeInput(convert(oklch, "hex"));
+  }
+
+  // Otherwise use input format
+  return serializeInput(convert(oklch, format));
+}
+// Color Adjustment Through OKLCH:1 ends here

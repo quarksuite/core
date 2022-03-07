@@ -34,6 +34,9 @@
         - [[#fn_pipeline-errors][fn_pipeline Errors]]
     - [[#color][Color]]
       - [[#color_adjust][color_adjust]]
+        - [[#color_adjust-examples][color_adjust Examples]]
+        - [[#color_adjust-implementation][color_adjust Implementation]]
+        - [[#color_adjust-tests][color_adjust Tests]]
       - [[#color_mix][color_mix]]
       - [[#color_as_hex][color_as_hex]]
         - [[#color_as_hex-examples][color_as_hex Examples]]
@@ -125,6 +128,9 @@
         - [[#calculation][Calculation]]
         - [[#serialization][Serialization]]
       - [[#color-adjustment][Color Adjustment]]
+        - [[#target-properties][Target Properties]]
+        - [[#perceptually-uniform-color-adjustment][Perceptually Uniform Color Adjustment]]
+        - [[#color-adjustment-through-oklch][Color Adjustment Through OKLCH]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
 
@@ -291,6 +297,127 @@ export function fn_pipeline(x, ...processes) {
 :END:
 
 **** color_adjust
+
+An action that adjusts the =properties= of a given valid CSS =color=. Positive property values will increase while
+negative values will decrease.
+
++ =color_adjust(properties, color) => string=
+  - =properties: {}=: the color properties to adjust
+    * =properties.lightness = 0: number=: adjust the color's lightness (as a percentage)
+    * =properties.chroma = 0: number=: adjust the color's chroma (as a percentage)
+    * =properties.hue = 0: number=: adjust the color's hue (in degrees)
+    * =properties.alpha = 0: number=: adjust the color's transparency (as a percentage)
+  - =color: string=: the color to adjust
+
+***** color_adjust Examples
+
+***** color_adjust Implementation
+
+#+BEGIN_SRC js
+export function color_adjust(properties, color) {
+  // Do nothing by default
+  const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = properties;
+
+  return colorAdjustment({ lightness, chroma, hue, alpha }, color);
+}
+#+END_SRC
+
+***** color_adjust Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_adjust_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_adjust } from "../color.js";
+
+describe("color_adjust(properties, color)", () => {
+  it("should reject invalid colors", () => {
+    expect(() => color_adjust({}, "invalid")).toThrow();
+  });
+
+  it("should correctly adjust lightness of samples", () => {
+    expect(color_adjust({ lightness: -25 }, "white")).toBe("#aeaeae");
+    expect(color_adjust({ lightness: 25 }, "gray")).toBe("#cdcdcd");
+    expect(color_adjust({ lightness: 50 }, "black")).toBe("#636363");
+    expect(color_adjust({ lightness: -25 }, "red")).toBe("#a10000");
+    expect(color_adjust({ lightness: 10 }, "orange")).toBe("#ffc644");
+    expect(color_adjust({ lightness: -16 }, "yellow")).toBe("#cbc900");
+    expect(color_adjust({ lightness: -32 }, "lime")).toBe("#009300");
+    expect(color_adjust({ lightness: 16 }, "cyan")).toBe("#54ffff");
+    expect(color_adjust({ lightness: 32 }, "blue")).toBe("#479dff");
+    expect(color_adjust({ lightness: 24 }, "purple")).toBe("#cf5fcc");
+    expect(color_adjust({ lightness: -24 }, "magenta")).toBe("#a900ad");
+  });
+
+  it("should correctly adjust chroma of samples", () => {
+    expect(color_adjust({ chroma: 50 }, "white")).toBe("#ffdbfc");
+    expect(color_adjust({ chroma: 50 }, "gray")).toBe("#bb5d7d");
+    expect(color_adjust({ chroma: 75 }, "black")).toBe("#060000");
+    expect(color_adjust({ chroma: -25 }, "red")).toBe("#e64a3b");
+    expect(color_adjust({ chroma: -10 }, "orange")).toBe("#f6a941");
+    expect(color_adjust({ chroma: -16 }, "yellow")).toBe("#fcfe66");
+    expect(color_adjust({ chroma: -32 }, "lime")).toBe("#71f56a");
+    expect(color_adjust({ chroma: -75 }, "cyan")).toBe("#e0e0e0");
+    expect(color_adjust({ chroma: 32 }, "blue")).toBe("#1e00ff");
+    expect(color_adjust({ chroma: 24 }, "purple")).toBe("#8d008f");
+    expect(color_adjust({ chroma: -24 }, "magenta")).toBe("#f04bee");
+  });
+
+  it("should correctly adjust hue of samples", () => {
+    expect(color_adjust({ hue: 30 }, "white")).toBe("#ffffff");
+    expect(color_adjust({ hue: 60 }, "gray")).toBe("#808080");
+    expect(color_adjust({ hue: 90 }, "black")).toBe("#000000");
+    expect(color_adjust({ hue: 150 }, "red")).toBe("#00b48c");
+    expect(color_adjust({ hue: 180 }, "orange")).toBe("#5bc0ff");
+    expect(color_adjust({ hue: 210 }, "yellow")).toBe("#ffc2ff");
+    expect(color_adjust({ hue: 240 }, "lime")).toBe("#ff6072");
+    expect(color_adjust({ hue: 270 }, "cyan")).toBe("#f0e55d");
+    expect(color_adjust({ hue: 300 }, "blue")).toBe("#0075a4");
+    expect(color_adjust({ hue: 330 }, "purple")).toBe("#5e21a6");
+    expect(color_adjust({ hue: 360 }, "magenta")).toBe("#ff00ff");
+  });
+
+  it("should correctly adjust alpha of samples", () => {
+    expect(color_adjust({ alpha: -10 }, "white")).toBe("#ffffffe6");
+    expect(color_adjust({ alpha: -20 }, "gray")).toBe("#808080cc");
+    expect(color_adjust({ alpha: -30 }, "black")).toBe("#000000b3");
+    expect(color_adjust({ alpha: -40 }, "red")).toBe("#ff000099");
+    expect(color_adjust({ alpha: -50 }, "orange")).toBe("#ffa50080");
+    expect(color_adjust({ alpha: -60 }, "yellow")).toBe("#ffff0066");
+    expect(color_adjust({ alpha: -70 }, "lime")).toBe("#00ff004d");
+    expect(color_adjust({ alpha: -80 }, "cyan")).toBe("#00ffff33");
+    expect(color_adjust({ alpha: -90 }, "blue")).toBe("#0000ff1a");
+    expect(color_adjust({ alpha: -100 }, "purple")).toBe("#80008000");
+    expect(color_adjust({ alpha: -110 }, "magenta")).toBe("#ff00ff00");
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_adjust_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_adjust(properties, color)
+  • should reject invalid colors
+  • should correctly adjust lightness of samples
+  • should correctly adjust chroma of samples
+  • should correctly adjust hue of samples
+  • should correctly adjust alpha of samples
+
+running 5 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_adjust_test.js
+test color_adjust(properties, color) > should reject invalid colors ... ok (16ms)
+test color_adjust(properties, color) > should correctly adjust lightness of samples ... ok (30ms)
+test color_adjust(properties, color) > should correctly adjust chroma of samples ... ok (14ms)
+test color_adjust(properties, color) > should correctly adjust hue of samples ... ok (14ms)
+test color_adjust(properties, color) > should correctly adjust alpha of samples ... ok (15ms)
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (133ms)
+
+#+end_src
+
 
 **** color_mix
 
@@ -1652,7 +1779,7 @@ function hexFragmentToChannel(hex) {
 }
 
 function hexFragmentFromChannel(channel) {
-  return channel.toString(16).padStart(2, "0");
+  return clamp(channel, 0, 255).toString(16).padStart(2, "0");
 }
 #+END_SRC
 
@@ -1677,7 +1804,7 @@ to channels later.
 
 #+BEGIN_SRC js
 function numberToChannel(n) {
-  return n * 255;
+  return Math.round(n * 255);
 }
 
 function numberFromChannel(channel) {
@@ -1983,9 +2110,7 @@ Yes, we do have to account for RGB converting to and from itself, because the pa
 function rgbInputIdentity([, values]) {
   const [r, g, b, A] = values;
 
-  const [R, G, B] = [r, g, b].map((channel) =>
-    Math.round(numberToChannel(channel))
-  );
+  const [R, G, B] = [r, g, b].map((channel) => numberToChannel(channel));
 
   return ["rgb", [R, G, B, A]];
 }
@@ -2085,7 +2210,7 @@ function hwbToRgb([, values]) {
   }
 
   // Conversion
-  const [, [r, g, b, a]] = hslToRgb(["hsl", [H, 1, 0.5, 1]]);
+  const [, [r, g, b]] = hslToRgb(["hsl", [H, 1, 0.5, 1]]);
   const [R, G, B] = [r, g, b].map((channel) =>
     numberToChannel(numberFromChannel(channel) * (1 - W - BLK) + W)
   );
@@ -2233,10 +2358,8 @@ now forward the result for serializing.
 function hexFromRgb([, rgbValues]) {
   const [r, g, b, a] = rgbValues;
 
-  const [R, G, B] = [r, g, b].map((channel) =>
-    hexFragmentFromChannel(Math.round(channel))
-  );
-  const A = hexFragmentFromChannel(Math.round(numberToChannel(a)));
+  const [R, G, B] = [r, g, b].map((channel) => hexFragmentFromChannel(channel));
+  const A = hexFragmentFromChannel(numberToChannel(a));
 
   return ["hex", [R, G, B, A]];
 }
@@ -2559,7 +2682,7 @@ function serializeHex([, hexResult]) {
   if (A === "ff") {
     return "#".concat(R, G, B);
   }
-  return "#".concat([R, G, B, A]);
+  return "#".concat(R, G, B, A);
 }
 #+END_SRC
 
@@ -2760,8 +2883,9 @@ function serializeOklch([, oklchValues]) {
 **** Color Adjustment
 
 Now that color conversion is handled, we can move on to color actions. The first necessary action we can perform on a
-color is /adjustment/. QuarkSuite prioritizes the perceptual uniformity of all color adjustments and so adjusts colors
-through the OKLab color space as OKLCH.
+color is /adjustment/.
+
+***** Target Properties
 
 The properties we can adjust include:
 
@@ -2770,6 +2894,108 @@ The properties we can adjust include:
   trending toward black).
 + Chroma/Saturation: A measure of a color's chromatic purity. Generally, a measure of color /intensity/ (with amounts
   >50 trending toward vivid and <50 trending toward subtle). An achromatic color will thereby be some shade of gray.
++ Hue: This can be thought of as a color's inherent quality. When we say light blue or muted yellow, the hue describes
+  the way our eyes /perceive/ a given color. Hue is adjusted in terms of a wheel (where ±360 changes nothing and 180
+  shifts hue to its opposite).
++ Alpha: A measure of how much light a color allows to pass through it (with amounts >50 trending toward solid and <50
+  trending toward total transparency).
+
+***** Perceptually Uniform Color Adjustment
+
+Many color libraries allow you to choose the color space you want to adjust colors through or otherwise default to sRGB
+as it's the most familiar to developers and digital designers.
+
+This is the point where I emphasize that QuarkSuite is not a general purpose color manipulation library. QuarkSuite
+allows color manipulation /only to the extent needed/ for practical color palette creation and modification. The sRGB
+color space has some quirks that made it unreliable for sequential, predictable palette building.
+
+Color properties in the sRGB space are not /orthogonal/. That is, a hue shift is also a lightness shift. Adjusting
+lightness sometimes influences hue. Adjusting chroma sometimes made a color darker.
+
+It's one of those things that didn't bother me much as a designer but became an immediate problem when developing a
+tool; these small, subtle shifts led to weird behavior when replicated at scale. It also made predictable color blending
+an exercise in frustration.
+
+***** Color Adjustment Through OKLCH
+
+OKLab solved the above issues. As an offshoot of CIELAB, perceptual uniformity is baked into its calculations. As an
+/improvement/ on CIELAB, these calculations were adjusted for increased practicality and predictability. In short, it
+made sequential palette building both possible and simpler.
+
+Its OKLCH polar form is also vastly more intuitive for color property adjustment than its raw OKLab scalar form.
+
+The approach in steps:
+
+1. Convert the input color to OKLCH equivalent
+2. Adjust its target properties
+3. Convert result back to its input format
+
+#+BEGIN_SRC js
+function extractOklchValues(color) {
+  const convertedOklch = serializeOklch(convert(color, "oklch"));
+  const [, components] = extractor(["oklch", convertedOklch]);
+
+  return components.map((V) => parseFloat(V));
+}
+
+function adjustColorProperties(
+  { lightness, chroma, hue, alpha },
+  [l, c, h, a],
+) {
+  // Adjust properties only if defined, make values parseable
+  let L = numberFromPercentage(lightness ? l + lightness : l);
+  let C = chroma ? c + numberFromPercentage(chroma) * 0.5 * 0.5 : c;
+  let H = radiansFromDegrees(hue ? hueCorrection(h + hue) : h);
+  let A = alpha ? (a ?? 1) + numberFromPercentage(alpha) : a ?? 1;
+
+  // Return adjusted values
+  return [L, C, H, A];
+}
+
+function serializeInput([format, values]) {
+  const SERIALIZATION_TARGETS = {
+    hex: serializeHex,
+    rgb: serializeRgb,
+    hsl: serializeHsl,
+    cmyk: serializeCmyk,
+    hwb: serializeHwb,
+    cielab: serializeCielab,
+    cielch: serializeCielch,
+    oklab: serializeOklab,
+    oklch: serializeOklch,
+  };
+
+  return SERIALIZATION_TARGETS[format]([format, values]);
+}
+
+function colorAdjustment(
+  { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
+  color,
+) {
+  // Ensure color is valid and store its format
+  const [format] = validator(color);
+
+  // Extract its OKLCH values
+  const values = extractOklchValues(color);
+
+  // Adjust target properties
+  const [L, C, H, A] = adjustColorProperties(
+    { lightness, chroma, hue, alpha },
+    values,
+  );
+
+  // Serialize oklch result
+  const oklch = serializeOklch(["oklch", [L, C, H, A]]);
+
+  // If input format is named, convert to hex
+  if (format === "named") {
+    return serializeInput(convert(oklch, "hex"));
+  }
+
+  // Otherwise use input format
+  return serializeInput(convert(oklch, format));
+}
+#+END_SRC
 
 *** Modular Scale Internals
 
