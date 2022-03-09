@@ -92,6 +92,131 @@ export function color_as_oklch(color) {
 }
 // color_as_oklch Implementation:1 ends here
 
+// color_as_dyad Implementation
+
+// [[file:../Notebook.org::*color_as_dyad Implementation][color_as_dyad Implementation:1]]
+export function color_as_dyad(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 90 }, color),
+  ];
+}
+// color_as_dyad Implementation:1 ends here
+
+// color_as_complementary Implementation
+
+// [[file:../Notebook.org::*color_as_complementary Implementation][color_as_complementary Implementation:1]]
+export function color_as_complementary(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 180 }, color),
+  ];
+}
+// color_as_complementary Implementation:1 ends here
+
+// color_as_analogous Implementation
+
+// [[file:../Notebook.org::*color_as_analogous Implementation][color_as_analogous Implementation:1]]
+export function color_as_analogous(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 45 }, color),
+    colorAdjustment({ hue: 45 * 2 }, color),
+  ];
+}
+// color_as_analogous Implementation:1 ends here
+
+// color_as_split Implementation
+
+// [[file:../Notebook.org::*color_as_split Implementation][color_as_split Implementation:1]]
+export function color_as_split(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 180 - 30 }, color),
+    colorAdjustment({ hue: 180 + 30 }, color),
+  ];
+}
+// color_as_split Implementation:1 ends here
+
+// color_as_clash Implementation
+
+// [[file:../Notebook.org::*color_as_clash Implementation][color_as_clash Implementation:1]]
+export function color_as_clash(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 90 }, color),
+    colorAdjustment({ hue: 90 * 3 }, color),
+  ];
+}
+// color_as_clash Implementation:1 ends here
+
+// color_as_triad Implementation
+
+// [[file:../Notebook.org::*color_as_triad Implementation][color_as_triad Implementation:1]]
+export function color_as_triad(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 120 }, color),
+    colorAdjustment({ hue: 120 * 2 }, color),
+  ];
+}
+// color_as_triad Implementation:1 ends here
+
+// color_as_tetrad Implementation
+
+// [[file:../Notebook.org::*color_as_tetrad Implementation][color_as_tetrad Implementation:1]]
+export function color_as_tetrad(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 45 }, color),
+    colorAdjustment({ hue: 180 }, color),
+    colorAdjustment({ hue: 180 + 45 }, color),
+  ];
+}
+// color_as_tetrad Implementation:1 ends here
+
+// color_as_square Implementation
+
+// [[file:../Notebook.org::*color_as_square Implementation][color_as_square Implementation:1]]
+export function color_as_square(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 90 }, color),
+    colorAdjustment({ hue: 90 * 2 }, color),
+    colorAdjustment({ hue: 90 * 3 }, color),
+  ];
+}
+// color_as_square Implementation:1 ends here
+
+// color_as_star Implementation
+
+// [[file:../Notebook.org::*color_as_star Implementation][color_as_star Implementation:1]]
+export function color_as_star(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 72 }, color),
+    colorAdjustment({ hue: 72 * 2 }, color),
+    colorAdjustment({ hue: 72 * 3 }, color),
+    colorAdjustment({ hue: 72 * 4 }, color),
+  ];
+}
+// color_as_star Implementation:1 ends here
+
+// color_as_hexagon Implementation
+
+// [[file:../Notebook.org::*color_as_hexagon Implementation][color_as_hexagon Implementation:1]]
+export function color_as_hexagon(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 60 }, color),
+    colorAdjustment({ hue: 60 * 2 }, color),
+    colorAdjustment({ hue: 60 * 3 }, color),
+    colorAdjustment({ hue: 60 * 4 }, color),
+    colorAdjustment({ hue: 60 * 5 }, color),
+  ];
+}
+// color_as_hexagon Implementation:1 ends here
+
 // Tokenization
 
 // Color format tokenization follows the spec as closely as possible.

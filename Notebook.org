@@ -78,15 +78,45 @@
         - [[#color_as_oklch-implementation][color_as_oklch Implementation]]
         - [[#color_as_oklch-tests][color_as_oklch Tests]]
       - [[#color_as_dyad][color_as_dyad]]
+        - [[#color_as_dyad-examples][color_as_dyad Examples]]
+        - [[#color_as_dyad-implementation][color_as_dyad Implementation]]
+        - [[#color_as_dyad-tests][color_as_dyad Tests]]
       - [[#color_as_complementary][color_as_complementary]]
+        - [[#color_as_complementary-examples][color_as_complementary Examples]]
+        - [[#color_as_complementary-implementation][color_as_complementary Implementation]]
+        - [[#color_as_complementary-tests][color_as_complementary Tests]]
       - [[#color_as_analogous][color_as_analogous]]
+        - [[#color_as_analogous-examples][color_as_analogous Examples]]
+        - [[#color_as_analogous-implementation][color_as_analogous Implementation]]
+        - [[#color_as_analogous-tests][color_as_analogous Tests]]
       - [[#color_as_split][color_as_split]]
+        - [[#color_as_split-examples][color_as_split Examples]]
+        - [[#color_as_split-implementation][color_as_split Implementation]]
+        - [[#color_as_split-tests][color_as_split Tests]]
       - [[#color_as_clash][color_as_clash]]
+        - [[#color_as_clash-examples][color_as_clash Examples]]
+        - [[#color_as_clash-implementation][color_as_clash Implementation]]
+        - [[#color_as_clash-tests][color_as_clash Tests]]
       - [[#color_as_triad][color_as_triad]]
+        - [[#color_as_triad-examples][color_as_triad Examples]]
+        - [[#color_as_triad-implementation][color_as_triad Implementation]]
+        - [[#color_as_triad-tests][color_as_triad Tests]]
       - [[#color_as_tetrad][color_as_tetrad]]
+        - [[#color_as_tetrad-examples][color_as_tetrad Examples]]
+        - [[#color_as_tetrad-implementation][color_as_tetrad Implementation]]
+        - [[#color_as_tetrad-tests][color_as_tetrad Tests]]
       - [[#color_as_square][color_as_square]]
+        - [[#color_as_square-examples][color_as_square Examples]]
+        - [[#color_as_square-implementation][color_as_square Implementation]]
+        - [[#color_as_square-tests][color_as_square Tests]]
       - [[#color_as_star][color_as_star]]
+        - [[#color_as_star-examples][color_as_star Examples]]
+        - [[#color_as_star-implementation][color_as_star Implementation]]
+        - [[#color_as_star-tests][color_as_star Tests]]
       - [[#color_as_hexagon][color_as_hexagon]]
+        - [[#color_as_hexagon-examples][color_as_hexagon Examples]]
+        - [[#color_as_hexagon-implementation][color_as_hexagon Implementation]]
+        - [[#color_as_hexagon-tests][color_as_hexagon Tests]]
       - [[#color_as_tints][color_as_tints]]
       - [[#color_as_tones][color_as_tones]]
       - [[#color_as_shades][color_as_shades]]
@@ -1295,23 +1325,750 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms
 
 **** color_as_dyad
 
+An emitter that accepts any valid CSS color and outputs a dyadic color scheme.
+
++ =color_as_dyad(color) => [string, string]=
+  - =color: string=: the input color
+
+***** color_as_dyad Examples
+
+***** color_as_dyad Implementation
+
+#+BEGIN_SRC js
+export function color_as_dyad(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 90 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_dyad Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_dyad_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_dyad } from "../color.js";
+
+describe("color_as_dyad(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#7b9900"]],
+    ["orange", ["#ffa500", "#23dc96"]],
+    ["yellow", ["#ffff00", "#00ffff"]],
+    ["lime", ["#00ff00", "#00e9ff"]],
+    ["cyan", ["#00ffff", "#d5d0ff"]],
+    ["blue", ["#0000ff", "#c00061"]],
+    ["purple", ["#800080", "#931700"]],
+    ["magenta", ["#ff00ff", "#ff3800"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_dyad("invalid")).toThrow();
+  });
+
+  it("should correctly emit dyads from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_dyad(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_dyad_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_dyad(color)
+  • should reject invalid colors
+  • should correctly emit dyads from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_dyad_test.js
+test color_as_dyad(color) > should reject invalid colors ... ok (23ms)
+test color_as_dyad(color) > should correctly emit dyads from samples ... ok (40ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (109ms)
+
+#+end_src
+
 **** color_as_complementary
+
+An emitter that accepts any valid CSS color and outputs a complementary color scheme.
+
++ =color_as_complementary(color) => [string, string]=
+  - =color: string=: the input color
+
+***** color_as_complementary Examples
+
+***** color_as_complementary Implementation
+
+#+BEGIN_SRC js
+export function color_as_complementary(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 180 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_complementary Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_complementary_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_complementary } from "../color.js";
+
+describe("color_as_complementary(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#00a9db"]],
+    ["orange", ["#ffa500", "#5bc0ff"]],
+    ["yellow", ["#ffff00", "#f4d8ff"]],
+    ["lime", ["#00ff00", "#ff7dff"]],
+    ["cyan", ["#00ffff", "#ffb3bf"]],
+    ["blue", ["#0000ff", "#a02000"]],
+    ["purple", ["#800080", "#006600"]],
+    ["magenta", ["#ff00ff", "#00cd00"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_complementary("invalid")).toThrow();
+  });
+
+  it("should correctly emit complementary schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_complementary(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_complementary_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_complementary(color)
+  • should reject invalid colors
+  • should correctly emit complementary schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_complementary_test.js
+test color_as_complementary(color) > should reject invalid colors ... ok (14ms)
+test color_as_complementary(color) > should correctly emit complementary schemes from samples ... ok (37ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (96ms)
+
+#+end_src
 
 **** color_as_analogous
 
+An emitter that accepts any valid CSS color and outputs an analogous color scheme.
+
++ =color_as_analogous(color) => [string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_analogous Examples
+
+***** color_as_analogous Implementation
+
+#+BEGIN_SRC js
+export function color_as_analogous(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 45 }, color),
+    colorAdjustment({ hue: 45 * 2 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_analogous Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_analogous_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_analogous } from "../color.js";
+
+describe("color_as_analogous(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#de5f00", "#7b9900"]],
+    ["orange", ["#ffa500", "#b7c826", "#23dc96"]],
+    ["yellow", ["#ffff00", "#5bffb3", "#00ffff"]],
+    ["lime", ["#00ff00", "#00fff5", "#00e9ff"]],
+    ["cyan", ["#00ffff", "#72edff", "#d5d0ff"]],
+    ["blue", ["#0000ff", "#8800d3", "#c00061"]],
+    ["purple", ["#800080", "#9b002d", "#931700"]],
+    ["magenta", ["#ff00ff", "#ff0061", "#ff3800"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_analogous("invalid")).toThrow();
+  });
+
+  it("should correctly emit analogous schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_analogous(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_analogous_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_analogous(color)
+  • should reject invalid colors
+  • should correctly emit analogous schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_analogous_test.js
+test color_as_analogous(color) > should reject invalid colors ... ok (16ms)
+test color_as_analogous(color) > should correctly emit analogous schemes from samples ... ok (42ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (103ms)
+
+#+end_src
+
 **** color_as_split
+
+An emitter that accepts any valid CSS color and outputs a split complementary color scheme.
+
++ =color_as_split(color) => [string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_split Examples
+
+***** color_as_split Implementation
+
+#+BEGIN_SRC js
+export function color_as_split(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 180 - 30 }, color),
+    colorAdjustment({ hue: 180 + 30 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_split Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_split_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_split } from "../color.js";
+
+describe("color_as_split(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#00b48c", "#0090ff"]],
+    ["orange", ["#ffa500", "#00d2ff", "#a9acff"]],
+    ["yellow", ["#ffff00", "#9cf3ff", "#ffc2ff"]],
+    ["lime", ["#00ff00", "#df9eff", "#ff62e5"]],
+    ["cyan", ["#00ffff", "#ffb4f8", "#ffbd87"]],
+    ["blue", ["#0000ff", "#c50000", "#5d5c00"]],
+    ["purple", ["#800080", "#475700", "#006a4e"]],
+    ["magenta", ["#ff00ff", "#92b100", "#00d5a0"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_split("invalid")).toThrow();
+  });
+
+  it("should correctly emit split complementary schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_split(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_split_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_split(color)
+  • should reject invalid colors
+  • should correctly emit split complementary schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_split_test.js
+test color_as_split(color) > should reject invalid colors ... ok (16ms)
+test color_as_split(color) > should correctly emit split complementary schemes from samples ... ok (42ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (104ms)
+
+#+end_src
 
 **** color_as_clash
 
+
+An emitter that accepts any valid CSS color and outputs a clash color scheme.
+
++ =color_as_clash(color) => [string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_clash Examples
+
+***** color_as_clash Implementation
+
+#+BEGIN_SRC js
+export function color_as_clash(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 90 }, color),
+    colorAdjustment({ hue: 90 * 3 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_clash Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_clash_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_clash } from "../color.js";
+
+describe("color_as_clash(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#7b9900", "#a34fff"]],
+    ["orange", ["#ffa500", "#23dc96", "#ff8cdc"]],
+    ["yellow", ["#ffff00", "#00ffff", "#ffb3b9"]],
+    ["lime", ["#00ff00", "#00e9ff", "#ff8300"]],
+    ["cyan", ["#00ffff", "#d5d0ff", "#f0e55d"]],
+    ["blue", ["#0000ff", "#c00061", "#008048"]],
+    ["purple", ["#800080", "#931700", "#0051a8"]],
+    ["magenta", ["#ff00ff", "#ff3800", "#00a6ff"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_clash("invalid")).toThrow();
+  });
+
+  it("should correctly emit clashing schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_clash(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_clash_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_clash(color)
+  • should reject invalid colors
+  • should correctly emit clashing schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_clash_test.js
+test color_as_clash(color) > should reject invalid colors ... ok (15ms)
+test color_as_clash(color) > should correctly emit clashing schemes from samples ... ok (42ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (104ms)
+
+#+end_src
+
 **** color_as_triad
+
+An emitter that accepts any valid CSS color and outputs a triadic color scheme.
+
++ =color_as_triad(color) => [string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_triad Examples
+
+***** color_as_triad Implementation
+
+#+BEGIN_SRC js
+export function color_as_triad(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 120 }, color),
+    colorAdjustment({ hue: 120 * 2 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_triad Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_triad_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_triad } from "../color.js";
+
+describe("color_as_triad(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#00ae00", "#4f6fff"]],
+    ["orange", ["#ffa500", "#00dcd5", "#de99ff"]],
+    ["yellow", ["#ffff00", "#00ffff", "#ffb3ff"]],
+    ["lime", ["#00ff00", "#61c4ff", "#ff6072"]],
+    ["cyan", ["#00ffff", "#ffbfff", "#ffd05c"]],
+    ["blue", ["#0000ff", "#ce0000", "#007700"]],
+    ["purple", ["#800080", "#773e00", "#006384"]],
+    ["magenta", ["#ff00ff", "#ef8200", "#00c8ff"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_triad("invalid")).toThrow();
+  });
+
+  it("should correctly emit triadic schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_triad(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_triad_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_triad(color)
+  • should reject invalid colors
+  • should correctly emit triadic schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_triad_test.js
+test color_as_triad(color) > should reject invalid colors ... ok (16ms)
+test color_as_triad(color) > should correctly emit triadic schemes from samples ... ok (43ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (105ms)
+
+#+end_src
 
 **** color_as_tetrad
 
+An emitter that accepts any valid CSS color and outputs a tetradic color scheme.
+
++ =color_as_tetrad(color) => [string, string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_tetrad Examples
+
+***** color_as_tetrad Implementation
+
+#+BEGIN_SRC js
+export function color_as_tetrad(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 45 }, color),
+    colorAdjustment({ hue: 180 }, color),
+    colorAdjustment({ hue: 180 + 45 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_tetrad Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_tetrad_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_tetrad } from "../color.js";
+
+describe("color_as_tetrad(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#de5f00", "#00a9db", "#0080ff"]],
+    ["orange", ["#ffa500", "#b7c826", "#5bc0ff", "#c5a2ff"]],
+    ["yellow", ["#ffff00", "#5bffb3", "#f4d8ff", "#ffb9ff"]],
+    ["lime", ["#00ff00", "#00fff5", "#ff7dff", "#ff5cb0"]],
+    ["cyan", ["#00ffff", "#72edff", "#ffb3bf", "#ffc56e"]],
+    ["blue", ["#0000ff", "#8800d3", "#a02000", "#016c00"]],
+    ["purple", ["#800080", "#9b002d", "#006600", "#00686b"]],
+    ["magenta", ["#ff00ff", "#ff0061", "#00cd00", "#00d1d7"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_tetrad("invalid")).toThrow();
+  });
+
+  it("should correctly emit tetradic schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_tetrad(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_tetrad_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_tetrad(color)
+  • should reject invalid colors
+  • should correctly emit tetradic schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_tetrad_test.js
+test color_as_tetrad(color) > should reject invalid colors ... ok (16ms)
+test color_as_tetrad(color) > should correctly emit tetradic schemes from samples ... ok (48ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (111ms)
+
+#+end_src
+
 **** color_as_square
+
+An emitter that accepts any valid CSS color and outputs a square color scheme.
+
++ =color_as_square(color) => [string, string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_square Examples
+
+***** color_as_square Implementation
+
+#+BEGIN_SRC js
+export function color_as_square(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 90 }, color),
+    colorAdjustment({ hue: 90 * 2 }, color),
+    colorAdjustment({ hue: 90 * 3 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_square Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_square_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_square } from "../color.js";
+
+describe("color_as_square(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#7b9900", "#00a9db", "#a34fff"]],
+    ["orange", ["#ffa500", "#23dc96", "#5bc0ff", "#ff8cdc"]],
+    ["yellow", ["#ffff00", "#00ffff", "#f4d8ff", "#ffb3b9"]],
+    ["lime", ["#00ff00", "#00e9ff", "#ff7dff", "#ff8300"]],
+    ["cyan", ["#00ffff", "#d5d0ff", "#ffb3bf", "#f0e55d"]],
+    ["blue", ["#0000ff", "#c00061", "#a02000", "#008048"]],
+    ["purple", ["#800080", "#931700", "#006600", "#0051a8"]],
+    ["magenta", ["#ff00ff", "#ff3800", "#00cd00", "#00a6ff"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_square("invalid")).toThrow();
+  });
+
+  it("should correctly emit square schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_square(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_square_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_square(color)
+  • should reject invalid colors
+  • should correctly emit square schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_square_test.js
+test color_as_square(color) > should reject invalid colors ... ok (16ms)
+test color_as_square(color) > should correctly emit square schemes from samples ... ok (48ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (109ms)
+
+#+end_src
 
 **** color_as_star
 
+An emitter that accepts any valid CSS color and outputs a star color scheme.
+
++ =color_as_star(color) => [string, string, string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_star Examples
+
+***** color_as_star Implementation
+
+#+BEGIN_SRC js
+export function color_as_star(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 72 }, color),
+    colorAdjustment({ hue: 72 * 2 }, color),
+    colorAdjustment({ hue: 72 * 3 }, color),
+    colorAdjustment({ hue: 72 * 4 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_star Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_star_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_star } from "../color.js";
+
+describe("color_as_star(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#ac8500", "#00b47a", "#008aff", "#c43deb"]],
+    ["orange", ["#ffa500", "#73d66d", "#00d5ff", "#b5a8ff", "#ff88ba"]],
+    ["yellow", ["#ffff00", "#00ffff", "#85f8ff", "#ffbeff", "#ffbb85"]],
+    ["lime", ["#00ff00", "#00faff", "#cca5ff", "#ff5fd1", "#ffa000"]],
+    ["cyan", ["#00ffff", "#b1dcff", "#ffb6ff", "#ffc07c", "#cdf076"]],
+    ["blue", ["#0000ff", "#ad0094", "#c90000", "#476300", "#007c82"]],
+    ["purple", ["#800080", "#9a0000", "#535300", "#00695a", "#0043b3"]],
+    ["magenta", ["#ff00ff", "#ff0000", "#aaa900", "#00d4b7", "#008cff"]],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_star("invalid")).toThrow();
+  });
+
+  it("should correctly emit star schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_star(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_star_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_star(color)
+  • should reject invalid colors
+  • should correctly emit star schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_star_test.js
+test color_as_star(color) > should reject invalid colors ... ok (15ms)
+test color_as_star(color) > should correctly emit star schemes from samples ... ok (54ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (115ms)
+
+#+end_src
+
 **** color_as_hexagon
+
+An emitter that accepts any valid CSS color and outputs a hexagon color scheme.
+
++ =color_as_hexagon(color) => [string, string, string, string, string]=
+  - =color: string=: the input color
+
+***** color_as_hexagon Examples
+
+***** color_as_hexagon Implementation
+
+#+BEGIN_SRC js
+export function color_as_hexagon(color) {
+  return [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: 60 }, color),
+    colorAdjustment({ hue: 60 * 2 }, color),
+    colorAdjustment({ hue: 60 * 3 }, color),
+    colorAdjustment({ hue: 60 * 4 }, color),
+    colorAdjustment({ hue: 60 * 5 }, color),
+  ];
+}
+#+END_SRC
+
+***** color_as_hexagon Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_as_hexagon_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_as_hexagon } from "../color.js";
+
+describe("color_as_hexagon(color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#c57500", "#00ae00", "#00a9db", "#4f6fff", "#d62fd2"]],
+    [
+      "orange",
+      ["#ffa500", "#95d150", "#00dcd5", "#5bc0ff", "#de99ff", "#ff88a1"],
+    ],
+    [
+      "yellow",
+      ["#ffff00", "#00ffde", "#00ffff", "#f4d8ff", "#ffb3ff", "#ffc461"],
+    ],
+    [
+      "lime",
+      ["#00ff00", "#00ffff", "#61c4ff", "#ff7dff", "#ff6072", "#ffb400"],
+    ],
+    [
+      "cyan",
+      ["#00ffff", "#96e3ff", "#ffbfff", "#ffb3bf", "#ffd05c", "#b3f78b"],
+    ],
+    [
+      "blue",
+      ["#0000ff", "#9e00b2", "#ce0000", "#a02000", "#007700", "#0075a4"],
+    ],
+    [
+      "purple",
+      ["#800080", "#9c0000", "#773e00", "#006600", "#006384", "#253ab4"],
+    ],
+    [
+      "magenta",
+      ["#ff00ff", "#ff0000", "#ef8200", "#00cd00", "#00c8ff", "#527aff"],
+    ],
+  ];
+
+  it("should reject invalid colors", () => {
+    expect(() => color_as_hexagon("invalid")).toThrow();
+  });
+
+  it("should correctly emit hexagon schemes from samples", () => {
+    samples.forEach(([input, output]) => {
+      expect(color_as_hexagon(input)).toEqual(output);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_as_hexagon_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_as_hexagon(color)
+  • should reject invalid colors
+  • should correctly emit hexagon schemes from samples
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_hexagon_test.js
+test color_as_hexagon(color) > should reject invalid colors ... ok (16ms)
+test color_as_hexagon(color) > should correctly emit hexagon schemes from samples ... ok (61ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (123ms)
+
+#+end_src
 
 **** color_as_tints
 
