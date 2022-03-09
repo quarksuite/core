@@ -9,6 +9,17 @@ export function color_adjust(properties, color) {
 }
 // color_adjust Implementation:1 ends here
 
+// color_mix Implementation
+
+// [[file:../Notebook.org::*color_mix Implementation][color_mix Implementation:1]]
+export function color_mix(settings, color) {
+  // Do nothing by default
+  const { target = color, strength = 0 } = settings;
+
+  return colorMix(color, target, strength);
+}
+// color_mix Implementation:1 ends here
+
 // color_as_hex Implementation
 
 // [[file:../Notebook.org::*color_as_hex Implementation][color_as_hex Implementation:1]]
@@ -1701,3 +1712,77 @@ function colorAdjustment(
   return serializeInput(convert(oklch, format));
 }
 // Color Adjustment Through OKLCH:1 ends here
+
+// Color Mixture Through OKLab
+
+// In the area of color mixture, raw scalar OKLab is the ideal tool. This is because when we talk about color blending,
+// we're actually talking about /color difference/.
+
+// A color blend is what you get when you calculate the difference of a blending =target= from an input =color= adjusted for the =strength=
+// of the mixture. Returning the difference gives you the point of intersection, which is also the blend result.
+
+// The process goes:
+
+// 1. Convert the blend target and input color to OKLab
+// 2. Parse the OKLab values
+// 3. Calculate the blend result (as =X + (Y - X) * strength=) for the individual components
+// 4. Revert the result to the input color format and return it
+
+// Note that we also added a condition to reverse the mixture direction if =strength= is negative.
+
+// [[file:../Notebook.org::*Color Mixture Through OKLab][Color Mixture Through OKLab:1]]
+function getOklabValues(color) {
+  return convert(color, "oklab");
+}
+
+function calculateMixture(color, target, strength) {
+  // convert blend target and input color to OKLab
+  const [, [$L, $a, $b, $A]] = getOklabValues(color);
+  const [, [$$L, $$a, $$b, $$A]] = getOklabValues(target);
+
+  // calculate the blend result
+  const [L, a, b, A] = [
+    [$L, $$L],
+    [$a, $$a],
+    [$b, $$b],
+    [$A, $$A],
+  ].map(([X, Y]) => {
+    // if -strength, blend FROM target
+    // --------------------------------------------------------------
+    // Note: Object.is() is a handy way to explicitly check for a strength of -0, which
+    // should also trigger a blend inversion. This is not caught by Math.sign() alone,
+    // because the way JS treats signed zeroes is identical.
+    //
+    // Which also means `Math.sign(strength) === -0` didn't work either.
+    if (Math.sign(strength) === -1 || Object.is(strength, -0)) {
+      return Y + (X - Y) * Math.abs(strength);
+    }
+
+    // Otherwise, blend TO target
+    return X + (Y - X) * strength;
+  });
+
+  return [L, a, b, A];
+}
+
+function colorMix(color, target, strength) {
+  // Validate input color and store its format
+  const [format] = validator(color);
+
+  // Calculate blend
+  const [L, a, b, A] = calculateMixture(
+    color,
+    target,
+    numberFromPercentage(strength),
+  );
+
+  // Serialize the blend result
+  const oklab = serializeOklab(["oklab", [L, a, b, A]]);
+
+  if (format === "named") {
+    return serializeInput(convert(oklab, "hex"));
+  }
+
+  return serializeInput(convert(oklab, format));
+}
+// Color Mixture Through OKLab:1 ends here

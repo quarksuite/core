@@ -38,6 +38,9 @@
         - [[#color_adjust-implementation][color_adjust Implementation]]
         - [[#color_adjust-tests][color_adjust Tests]]
       - [[#color_mix][color_mix]]
+        - [[#color_mix-examples][color_mix Examples]]
+        - [[#color_mix-implementation][color_mix Implementation]]
+        - [[#color_mix-tests][color_mix Tests]]
       - [[#color_as_hex][color_as_hex]]
         - [[#color_as_hex-examples][color_as_hex Examples]]
         - [[#color_as_hex-implementation][color_as_hex Implementation]]
@@ -131,6 +134,9 @@
         - [[#target-properties][Target Properties]]
         - [[#perceptually-uniform-color-adjustment][Perceptually Uniform Color Adjustment]]
         - [[#color-adjustment-through-oklch][Color Adjustment Through OKLCH]]
+      - [[#color-mixture][Color Mixture]]
+        - [[#perceptually-uniform-color-mixture][Perceptually Uniform Color Mixture]]
+        - [[#color-mixture-through-oklab][Color Mixture Through OKLab]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
 
@@ -418,8 +424,147 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (133m
 
 #+end_src
 
-
 **** color_mix
+
+An action that mixes an input =color= and a =target= color with a set level of =strength=.
+
++ =color_mix(settings, color) => string=
+  - =settings: {}=: the mixture options to set
+    * =settings.target = color: string=: set the target (any valid CSS color)
+    * =settings.strength = 0: number=: set the strength (as a percentage, negative values reverse the direction)
+  - =color: string=: the color to mix
+
+***** color_mix Examples
+
+***** color_mix Implementation
+
+#+BEGIN_SRC js
+export function color_mix(settings, color) {
+  // Do nothing by default
+  const { target = color, strength = 0 } = settings;
+
+  return colorMix(color, target, strength);
+}
+#+END_SRC
+
+***** color_mix Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_mix_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_adjust, color_mix } from "../color.js";
+
+describe("color_mix(settings, color)", () => {
+  const samples = [
+    ["red", ["#ff0000", "#ff4b00", "#ff6e00", "#ff8b00", "#ffa500"], "orange"],
+    [
+      "orange",
+      ["#ffa500", "#ffbc00", "#ffd200", "#ffe900", "#ffff00"],
+      "yellow",
+    ],
+    ["yellow", ["#ffff00", "#daff00", "#b0ff00", "#7cff00", "#00ff00"], "lime"],
+    ["lime", ["#00ff00", "#00ff74", "#00ffa9", "#00ffd6", "#00ffff"], "cyan"],
+    ["cyan", ["#00ffff", "#00d1ff", "#00a0ff", "#006aff", "#0000ff"], "blue"],
+    ["blue", ["#0000ff", "#381fde", "#5424be", "#6b1e9f", "#800080"], "purple"],
+    [
+      "purple",
+      ["#800080", "#9e009e", "#bd00bd", "#de00de", "#ff00ff"],
+      "magenta",
+    ],
+  ];
+
+  const negations = [
+    [
+      "red",
+      ["#ff0000", "#de5e58", "#b78087", "#8497b2", "#00a9db"],
+      color_adjust({ hue: 180 }, "red"),
+    ],
+    [
+      "orange",
+      ["#ffa500", "#dfb172", "#bbb9a7", "#92bed4", "#5bc0ff"],
+      color_adjust({ hue: 180 }, "orange"),
+    ],
+    [
+      "yellow",
+      ["#ffff00", "#fbf77c", "#f8eeb0", "#f6e4da", "#f4d8ff"],
+      color_adjust({ hue: 180 }, "yellow"),
+    ],
+    [
+      "lime",
+      ["#00ff00", "#8ce77c", "#becbb0", "#e2aada", "#ff7dff"],
+      color_adjust({ hue: 180 }, "lime"),
+    ],
+    [
+      "cyan",
+      ["#00ffff", "#8beeef", "#bddcdf", "#e2c9cf", "#ffb3bf"],
+      color_adjust({ hue: 180 }, "cyan"),
+    ],
+    [
+      "blue",
+      ["#0000ff", "#383cc8", "#5e4592", "#803e5a", "#a02000"],
+      color_adjust({ hue: 180 }, "blue"),
+    ],
+    [
+      "purple",
+      ["#800080", "#6f366a", "#5a4b52", "#3f5a37", "#006600"],
+      color_adjust({ hue: 180 }, "purple"),
+    ],
+    [
+      "magenta",
+      ["#ff00ff", "#de72d5", "#b79ba9", "#85b774", "#00cd00"],
+      color_adjust({ hue: 180 }, "magenta"),
+    ],
+  ];
+
+  it("should reject an invalid color", () => {
+    expect(() => color_mix({ target: "blue" }, "invalid")).toThrow();
+  });
+
+  it("should reject an invalid target", () => {
+    expect(() => color_mix({ target: "invalid" }, "red")).toThrow();
+  });
+
+  it("should correctly mix samples", () => {
+    samples.forEach(([color, results, target]) => {
+      results.forEach((output, index) => {
+        expect(color_mix({ target, strength: index * 25 }, color)).toBe(output);
+      });
+    });
+  });
+
+  it("should correctly negate opposites", () => {
+    negations.forEach(([color, results, target]) => {
+      results.forEach((output, index) => {
+        expect(color_mix({ target, strength: index * 25 }, color)).toBe(output);
+      });
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_mix_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_mix(settings, color)
+  • should reject an invalid color
+  • should reject an invalid target
+  • should correctly mix samples
+  • should correctly negate opposites
+
+running 4 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_mix_test.js
+test color_mix(settings, color) > should reject an invalid color ... ok (12ms)
+test color_mix(settings, color) > should reject an invalid target ... ok (6ms)
+test color_mix(settings, color) > should correctly mix samples ... ok (46ms)
+test color_mix(settings, color) > should correctly negate opposites ... ok (53ms)
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (189ms)
+
+#+end_src
 
 **** color_as_hex
 
@@ -2994,6 +3139,97 @@ function colorAdjustment(
 
   // Otherwise use input format
   return serializeInput(convert(oklch, format));
+}
+#+END_SRC
+
+**** Color Mixture
+
+The second important color action is mixture (or blending). This is when we take a color and, well, mix it with another
+color. This allows us to create colors for serving as natural gradient stops or to create /true/ tints, tones, and
+shades from a color.
+
+***** Perceptually Uniform Color Mixture
+
+Similar to color adjustment, all color mixture happens through the OKLab space. The main advantage of using OKLab in
+this area is that it yields smooth, even blending. This is most evident when blending blue with white.
+
+When I attempted color mixing through the sRGB space, I wouldn't always get the expected results. Especially when mixing
+colors of high chroma with those of low. This often resulted in the high chroma color looking slightly washed out or
+(depending on the strength of the mixture) the low chroma color overwriting the high chroma.
+
+Either way, the results didn't seem like true blends to my eyes (even if they were mathematically correct).
+
+***** Color Mixture Through OKLab
+
+In the area of color mixture, raw scalar OKLab is the ideal tool. This is because when we talk about color blending,
+we're actually talking about /color difference/.
+
+A color blend is what you get when you calculate the difference of a blending =target= from an input =color= adjusted for the =strength=
+of the mixture. Returning the difference gives you the point of intersection, which is also the blend result.
+
+The process goes:
+
+1. Convert the blend target and input color to OKLab
+2. Parse the OKLab values
+3. Calculate the blend result (as =X + (Y - X) * strength=) for the individual components
+4. Revert the result to the input color format and return it
+
+Note that we also added a condition to reverse the mixture direction if =strength= is negative.
+
+#+BEGIN_SRC js
+function getOklabValues(color) {
+  return convert(color, "oklab");
+}
+
+function calculateMixture(color, target, strength) {
+  // convert blend target and input color to OKLab
+  const [, [$L, $a, $b, $A]] = getOklabValues(color);
+  const [, [$$L, $$a, $$b, $$A]] = getOklabValues(target);
+
+  // calculate the blend result
+  const [L, a, b, A] = [
+    [$L, $$L],
+    [$a, $$a],
+    [$b, $$b],
+    [$A, $$A],
+  ].map(([X, Y]) => {
+    // if -strength, blend FROM target
+    // --------------------------------------------------------------
+    // Note: Object.is() is a handy way to explicitly check for a strength of -0, which
+    // should also trigger a blend inversion. This is not caught by Math.sign() alone,
+    // because the way JS treats signed zeroes is identical.
+    //
+    // Which also means `Math.sign(strength) === -0` didn't work either.
+    if (Math.sign(strength) === -1 || Object.is(strength, -0)) {
+      return Y + (X - Y) * Math.abs(strength);
+    }
+
+    // Otherwise, blend TO target
+    return X + (Y - X) * strength;
+  });
+
+  return [L, a, b, A];
+}
+
+function colorMix(color, target, strength) {
+  // Validate input color and store its format
+  const [format] = validator(color);
+
+  // Calculate blend
+  const [L, a, b, A] = calculateMixture(
+    color,
+    target,
+    numberFromPercentage(strength),
+  );
+
+  // Serialize the blend result
+  const oklab = serializeOklab(["oklab", [L, a, b, A]]);
+
+  if (format === "named") {
+    return serializeInput(convert(oklab, "hex"));
+  }
+
+  return serializeInput(convert(oklab, format));
 }
 #+END_SRC
 
