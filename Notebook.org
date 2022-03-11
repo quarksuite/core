@@ -121,7 +121,6 @@
       - [[#color_as_tones][color_as_tones]]
       - [[#color_as_shades][color_as_shades]]
       - [[#color_as_material][color_as_material]]
-      - [[#color_as_blend][color_as_blend]]
       - [[#color_as_token][color_as_token]]
       - [[#color_as_element][color_as_element]]
       - [[#palette_shift][palette_shift]]
@@ -340,7 +339,7 @@ negative values will decrease.
 If =steps= is defined, this triggers the interpolation behavior where the action will instead return the unique
 results of adjusting the defined =properties= color in /sequence/ up to the set number of =steps=.
 
-+ =color_adjust(properties, color) => string=
++ =color_adjust(properties, color) => string | string[]=
   - =properties: {}=: the color properties to adjust
     * =properties.lightness = 0: number=: adjust the color's lightness (as a percentage)
     * =properties.chroma = 0: number=: adjust the color's chroma (as a percentage)
@@ -648,10 +647,14 @@ test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (239m
 
 An action that mixes an input =color= and a =target= color with a set level of =strength=.
 
-+ =color_mix(settings, color) => string=
+If steps is defined, this triggers the blending behavior where the action will instead return the unique results of
+mixing the colors in /sequence/ up to the set number of =steps=.
+
++ =color_mix(settings, color) => string | string[]=
   - =settings: {}=: the mixture options to set
     * =settings.target = color: string=: set the target (any valid CSS color)
     * =settings.strength = 0: number=: set the strength (as a percentage, negative values reverse the direction)
+    * =properties.steps = 0: number=: triggers color blending mode (if greater than 0)
   - =color: string=: the color to mix
 
 ***** color_mix Examples
@@ -661,7 +664,11 @@ An action that mixes an input =color= and a =target= color with a set level of =
 #+BEGIN_SRC js
 export function color_mix(settings, color) {
   // Do nothing by default
-  const { target = color, strength = 0 } = settings;
+  const { target = color, strength = 0, steps } = settings;
+
+  if (steps) {
+    return colorInterpolation(colorMix, { target, strength, steps }, color);
+  }
 
   return colorMix({ target, strength }, color);
 }
@@ -735,6 +742,33 @@ describe("color_mix(settings, color)", () => {
     ],
   ];
 
+  const blends = [
+    ["red", ["#f2674f", "#df957e", "#c3bca9", "#94ded4", "#00ffff"], "cyan"],
+    ["orange", ["#ca9b75", "#978ca2", "#6377c5", "#2e57e3", "#0000ff"], "blue"],
+    [
+      "yellow",
+      ["#e6d25a", "#cda673", "#b47a7e", "#9a4c82", "#800080"],
+      "purple",
+    ],
+    [
+      "lime",
+      ["#87e374", "#b5c4a2", "#d4a1c5", "#ec73e4", "#ff00ff"],
+      "magenta",
+    ],
+    ["cyan", ["#94ded4", "#c3bca9", "#df957e", "#f2674f", "#ff0000"], "red"],
+    ["blue", ["#2e57e3", "#6377c5", "#978ca2", "#ca9b75", "#ffa500"], "orange"],
+    [
+      "purple",
+      ["#9a4c82", "#b47a7e", "#cda673", "#e6d25a", "#ffff00"],
+      "yellow",
+    ],
+    [
+      "magenta",
+      ["#ec73e4", "#d4a1c5", "#b5c4a2", "#87e374", "#00ff00"],
+      "lime",
+    ],
+  ];
+
   it("should reject an invalid color", () => {
     expect(() => color_mix({ target: "blue" }, "invalid")).toThrow();
   });
@@ -758,6 +792,14 @@ describe("color_mix(settings, color)", () => {
       });
     });
   });
+
+  it("should allow blending when settings.steps is defined", () => {
+    blends.forEach(([color, results, target]) => {
+      expect(color_mix({ target, strength: 100, steps: 5 }, color)).toEqual(
+        results,
+      );
+    });
+  });
 });
 
 run();
@@ -775,14 +817,16 @@ NO_COLOR=1 deno test v2/tests/color_mix_test.js
   • should reject an invalid target
   • should correctly mix samples
   • should correctly negate opposites
+  • should allow blending when settings.steps is defined
 
-running 4 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_mix_test.js
+running 5 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_mix_test.js
 test color_mix(settings, color) > should reject an invalid color ... ok (12ms)
 test color_mix(settings, color) > should reject an invalid target ... ok (6ms)
-test color_mix(settings, color) > should correctly mix samples ... ok (46ms)
-test color_mix(settings, color) > should correctly negate opposites ... ok (53ms)
+test color_mix(settings, color) > should correctly mix samples ... ok (47ms)
+test color_mix(settings, color) > should correctly negate opposites ... ok (52ms)
+test color_mix(settings, color) > should allow blending when settings.steps is defined ... ok (63ms)
 
-test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (189ms)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (253ms)
 
 #+end_src
 **** color_as_hex
@@ -2266,8 +2310,6 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (123m
 **** color_as_shades
 
 **** color_as_material
-
-**** color_as_blend
 
 **** color_as_token
 

@@ -66,6 +66,33 @@ describe("color_mix(settings, color)", () => {
     ],
   ];
 
+  const blends = [
+    ["red", ["#f2674f", "#df957e", "#c3bca9", "#94ded4", "#00ffff"], "cyan"],
+    ["orange", ["#ca9b75", "#978ca2", "#6377c5", "#2e57e3", "#0000ff"], "blue"],
+    [
+      "yellow",
+      ["#e6d25a", "#cda673", "#b47a7e", "#9a4c82", "#800080"],
+      "purple",
+    ],
+    [
+      "lime",
+      ["#87e374", "#b5c4a2", "#d4a1c5", "#ec73e4", "#ff00ff"],
+      "magenta",
+    ],
+    ["cyan", ["#94ded4", "#c3bca9", "#df957e", "#f2674f", "#ff0000"], "red"],
+    ["blue", ["#2e57e3", "#6377c5", "#978ca2", "#ca9b75", "#ffa500"], "orange"],
+    [
+      "purple",
+      ["#9a4c82", "#b47a7e", "#cda673", "#e6d25a", "#ffff00"],
+      "yellow",
+    ],
+    [
+      "magenta",
+      ["#ec73e4", "#d4a1c5", "#b5c4a2", "#87e374", "#00ff00"],
+      "lime",
+    ],
+  ];
+
   it("should reject an invalid color", () => {
     expect(() => color_mix({ target: "blue" }, "invalid")).toThrow();
   });
@@ -87,6 +114,14 @@ describe("color_mix(settings, color)", () => {
       results.forEach((output, index) => {
         expect(color_mix({ target, strength: index * 25 }, color)).toBe(output);
       });
+    });
+  });
+
+  it("should allow blending when settings.steps is defined", () => {
+    blends.forEach(([color, results, target]) => {
+      expect(color_mix({ target, strength: 100, steps: 5 }, color)).toEqual(
+        results,
+      );
     });
   });
 });

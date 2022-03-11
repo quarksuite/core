@@ -28,7 +28,11 @@ export function color_adjust(settings, color) {
 // [[file:../Notebook.org::*color_mix Implementation][color_mix Implementation:1]]
 export function color_mix(settings, color) {
   // Do nothing by default
-  const { target = color, strength = 0 } = settings;
+  const { target = color, strength = 0, steps } = settings;
+
+  if (steps) {
+    return colorInterpolation(colorMix, { target, strength, steps }, color);
+  }
 
   return colorMix({ target, strength }, color);
 }
