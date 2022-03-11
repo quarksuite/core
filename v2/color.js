@@ -1,9 +1,23 @@
 // color_adjust Implementation
 
 // [[file:../Notebook.org::*color_adjust Implementation][color_adjust Implementation:1]]
-export function color_adjust(properties, color) {
+export function color_adjust(settings, color) {
   // Do nothing by default
-  const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = properties;
+  const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
+
+  if (steps) {
+    return colorInterpolation(
+      colorAdjustment,
+      {
+        lightness,
+        chroma,
+        hue,
+        alpha,
+        steps,
+      },
+      color,
+    );
+  }
 
   return colorAdjustment({ lightness, chroma, hue, alpha }, color);
 }
@@ -16,7 +30,7 @@ export function color_mix(settings, color) {
   // Do nothing by default
   const { target = color, strength = 0 } = settings;
 
-  return colorMix(color, target, strength);
+  return colorMix({ target, strength }, color);
 }
 // color_mix Implementation:1 ends here
 
@@ -1890,7 +1904,7 @@ function calculateMixture(color, target, strength) {
   return [L, a, b, A];
 }
 
-function colorMix(color, target, strength) {
+function colorMix({ target, strength = 0 }, color) {
   // Validate input color and store its format
   const [format] = validator(color);
 
@@ -1911,3 +1925,62 @@ function colorMix(color, target, strength) {
   return serializeInput(convert(oklab, format));
 }
 // Color Mixture Through OKLab:1 ends here
+
+// Color Interpolation
+
+// Now that the two main actions are defined and implemented, we have almost all the tools required to generate full
+// palettes. The missing ingredient is interpolation. QuarkSuite supports two kinds of interpolation:
+
+// + Interpolating over properties
+// + Interpolating over a mixture
+
+// From this, we'll a helper for actions to generate tints, tones, and shades as well as blends and a few extras. The two
+// action helpers we created so far have a similar call structure with only slight differences in the behavior, so we'll create
+// =colorInterpolation()= as a /higher-order function/.
+
+// Without getting too deeply into it, a higher-order function (or HOF) is a function that accepts another function as one
+// of its arguments. It's a good tool to use in situations where you have related functions with similar call structure but
+// differing internal behavior. Such as this one.
+
+// [[file:../Notebook.org::*Color Interpolation][Color Interpolation:1]]
+function colorInterpolation(action, modifiers, input) {
+  // Set default for shared step property
+  const { steps = 1 } = modifiers;
+
+  // Fill an array with a length of steps with the input color
+  return [
+    ...new Set(
+      Array(steps)
+        .fill(input)
+        .map((color, pos) => {
+          // General interpolation formula
+          const interpolate = (property, index) =>
+            property - (property / steps) * index;
+
+          // Now, we vary the behavior here based on the name of the action
+          if (action.name === "colorMix") {
+            // Destructure unique properties
+            const { strength = 0, target = color } = modifiers;
+
+            return colorMix(
+              { strength: interpolate(strength, pos), target },
+              color,
+            );
+          }
+
+          const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = modifiers;
+
+          return colorAdjustment(
+            {
+              lightness: interpolate(lightness, pos),
+              chroma: interpolate(chroma, pos),
+              hue: interpolate(hue, pos),
+              alpha: interpolate(alpha, pos),
+            },
+            color,
+          );
+        }),
+    ),
+  ].reverse();
+}
+// Color Interpolation:1 ends here

@@ -122,7 +122,6 @@
       - [[#color_as_shades][color_as_shades]]
       - [[#color_as_material][color_as_material]]
       - [[#color_as_blend][color_as_blend]]
-      - [[#color_as_interpolation][color_as_interpolation]]
       - [[#color_as_token][color_as_token]]
       - [[#color_as_element][color_as_element]]
       - [[#palette_shift][palette_shift]]
@@ -167,6 +166,7 @@
       - [[#color-mixture][Color Mixture]]
         - [[#perceptually-uniform-color-mixture][Perceptually Uniform Color Mixture]]
         - [[#color-mixture-through-oklab][Color Mixture Through OKLab]]
+      - [[#color-interpolation][Color Interpolation]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
 
@@ -337,12 +337,16 @@ export function fn_pipeline(x, ...processes) {
 An action that adjusts the =properties= of a given valid CSS =color=. Positive property values will increase while
 negative values will decrease.
 
+If =steps= is defined, this triggers the interpolation behavior where the action will instead return the unique
+results of adjusting the defined =properties= color in /sequence/ up to the set number of =steps=.
+
 + =color_adjust(properties, color) => string=
   - =properties: {}=: the color properties to adjust
     * =properties.lightness = 0: number=: adjust the color's lightness (as a percentage)
     * =properties.chroma = 0: number=: adjust the color's chroma (as a percentage)
     * =properties.hue = 0: number=: adjust the color's hue (in degrees)
     * =properties.alpha = 0: number=: adjust the color's transparency (as a percentage)
+    * =properties.steps = 0: number=: triggers color interpolation mode (if greater than 0)
   - =color: string=: the color to adjust
 
 ***** color_adjust Examples
@@ -350,9 +354,23 @@ negative values will decrease.
 ***** color_adjust Implementation
 
 #+BEGIN_SRC js
-export function color_adjust(properties, color) {
+export function color_adjust(settings, color) {
   // Do nothing by default
-  const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = properties;
+  const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
+
+  if (steps) {
+    return colorInterpolation(
+      colorAdjustment,
+      {
+        lightness,
+        chroma,
+        hue,
+        alpha,
+        steps,
+      },
+      color,
+    );
+  }
 
   return colorAdjustment({ lightness, chroma, hue, alpha }, color);
 }
@@ -364,7 +382,7 @@ export function color_adjust(properties, color) {
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { color_adjust } from "../color.js";
 
-describe("color_adjust(properties, color)", () => {
+describe("color_adjust(settings, color)", () => {
   it("should reject invalid colors", () => {
     expect(() => color_adjust({}, "invalid")).toThrow();
   });
@@ -424,6 +442,176 @@ describe("color_adjust(properties, color)", () => {
     expect(color_adjust({ alpha: -100 }, "purple")).toBe("#80008000");
     expect(color_adjust({ alpha: -110 }, "magenta")).toBe("#ff00ff00");
   });
+
+  it("should allow interpolation when settings.steps is defined", () => {
+    expect(
+      color_adjust({ lightness: -25, chroma: 50, steps: 10 }, "white"),
+    ).toEqual([
+      "#fff3f6",
+      "#fee8ee",
+      "#fddce5",
+      "#fcd1dc",
+      "#fac5d4",
+      "#f8bacc",
+      "#f6aec3",
+      "#f3a3bb",
+      "#f197b3",
+      "#ee8bab",
+    ]);
+    expect(
+      color_adjust({ lightness: 25, chroma: 50, steps: 10 }, "gray"),
+    ).toEqual([
+      "#8e8587",
+      "#9d898e",
+      "#ab8e96",
+      "#ba929d",
+      "#c896a4",
+      "#d69aac",
+      "#e59eb3",
+      "#f3a3bb",
+      "#ffa7c3",
+      "#ffaaca",
+    ]);
+    expect(
+      color_adjust({ lightness: 50, chroma: 75, steps: 10 }, "black"),
+    ).toEqual([
+      "#010000",
+      "#0b0003",
+      "#1c010a",
+      "#2e0215",
+      "#420420",
+      "#56072b",
+      "#6b0b38",
+      "#811044",
+      "#981551",
+      "#b01a5f",
+    ]);
+    expect(
+      color_adjust({ lightness: -25, chroma: -25, hue: 150, steps: 10 }, "red"),
+    ).toEqual([
+      "#ef2200",
+      "#d93900",
+      "#bf4c00",
+      "#a05a00",
+      "#7c6300",
+      "#536900",
+      "#066b00",
+      "#006a00",
+      "#006527",
+      "#005d44",
+    ]);
+    expect(
+      color_adjust(
+        { lightness: 10, chroma: -10, hue: 180, steps: 10 },
+        "orange",
+      ),
+    ).toEqual([
+      "#ebb700",
+      "#cfc824",
+      "#aed754",
+      "#85e27f",
+      "#55eba9",
+      "#01efd0",
+      "#00f0f4",
+      "#1bedff",
+      "#5ee8ff",
+      "#8ee2ff",
+    ]);
+    expect(
+      color_adjust(
+        { lightness: -16, chroma: -16, hue: 210, steps: 10 },
+        "yellow",
+      ),
+    ).toEqual([
+      "#beff67",
+      "#69ffa3",
+      "#00ffd7",
+      "#00ffff",
+      "#00f8ff",
+      "#00e5ff",
+      "#7cd1ff",
+      "#b0bcff",
+      "#d5a9ff",
+      "#f099ff",
+    ]);
+    expect(
+      color_adjust(
+        { lightness: -32, chroma: -32, hue: 240, steps: 10 },
+        "lime",
+      ),
+    ).toEqual([
+      "#00fe9e",
+      "#00f0e8",
+      "#00d7ff",
+      "#00b6ff",
+      "#4192ff",
+      "#9270ff",
+      "#ba52f5",
+      "#cf36ba",
+      "#d71b78",
+      "#d10f2f",
+    ]);
+    expect(
+      color_adjust({ lightness: 16, chroma: -75, hue: 270, steps: 10 }, "cyan"),
+    ).toEqual([
+      "#6af9ff",
+      "#abf1ff",
+      "#ddebff",
+      "#ffe9ff",
+      "#ffecff",
+      "#fff4ff",
+      "#fff9f8",
+      "#fffefc",
+      "#ffffff",
+    ]);
+    expect(
+      color_adjust({ lightness: 32, chroma: 32, hue: 300, steps: 10 }, "blue"),
+    ).toEqual([
+      "#7700fc",
+      "#b700cd",
+      "#eb007e",
+      "#ff0000",
+      "#ee5b00",
+      "#9ea300",
+      "#00d200",
+      "#00eb98",
+      "#00eaff",
+    ]);
+    expect(
+      color_adjust(
+        { lightness: 24, chroma: 24, hue: 330, steps: 10 },
+        "purple",
+      ),
+    ).toEqual([
+      "#a1004d",
+      "#b10000",
+      "#aa3700",
+      "#876400",
+      "#2d8600",
+      "#009b55",
+      "#009fb2",
+      "#0092f9",
+      "#4179ff",
+      "#aa5eff",
+    ]);
+    expect(
+      color_adjust(
+        { lightness: -24, chroma: -24, hue: 360, steps: 10 },
+        "magenta",
+      ),
+    ).toEqual([
+      "#ff0080",
+      "#ff0000",
+      "#e95500",
+      "#8c8a00",
+      "#00a200",
+      "#009f88",
+      "#0082da",
+      "#0050fd",
+      "#6e05e5",
+      "#9c009e",
+    ]);
+  });
 });
 
 run();
@@ -436,21 +624,23 @@ NO_COLOR=1 deno test v2/tests/color_adjust_test.js
 #+RESULTS:
 #+begin_src shell
 
-  color_adjust(properties, color)
+  color_adjust(settings, color)
   • should reject invalid colors
   • should correctly adjust lightness of samples
   • should correctly adjust chroma of samples
   • should correctly adjust hue of samples
   • should correctly adjust alpha of samples
+  • should allow interpolation when settings.steps is defined
 
-running 5 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_adjust_test.js
-test color_adjust(properties, color) > should reject invalid colors ... ok (16ms)
-test color_adjust(properties, color) > should correctly adjust lightness of samples ... ok (30ms)
-test color_adjust(properties, color) > should correctly adjust chroma of samples ... ok (14ms)
-test color_adjust(properties, color) > should correctly adjust hue of samples ... ok (14ms)
-test color_adjust(properties, color) > should correctly adjust alpha of samples ... ok (15ms)
+running 6 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_adjust_test.js
+test color_adjust(settings, color) > should reject invalid colors ... ok (14ms)
+test color_adjust(settings, color) > should correctly adjust lightness of samples ... ok (30ms)
+test color_adjust(settings, color) > should correctly adjust chroma of samples ... ok (14ms)
+test color_adjust(settings, color) > should correctly adjust hue of samples ... ok (15ms)
+test color_adjust(settings, color) > should correctly adjust alpha of samples ... ok (14ms)
+test color_adjust(settings, color) > should allow interpolation when settings.steps is defined ... ok (102ms)
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (133ms)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (239ms)
 
 #+end_src
 
@@ -473,7 +663,7 @@ export function color_mix(settings, color) {
   // Do nothing by default
   const { target = color, strength = 0 } = settings;
 
-  return colorMix(color, target, strength);
+  return colorMix({ target, strength }, color);
 }
 #+END_SRC
 
@@ -595,7 +785,6 @@ test color_mix(settings, color) > should correctly negate opposites ... ok (53ms
 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (189ms)
 
 #+end_src
-
 **** color_as_hex
 
 An emitter that accepts a valid CSS =color= and outputs its hexadecimal equivalent.
@@ -2079,8 +2268,6 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (123m
 **** color_as_material
 
 **** color_as_blend
-
-**** color_as_interpolation
 
 **** color_as_token
 
@@ -3968,7 +4155,7 @@ function calculateMixture(color, target, strength) {
   return [L, a, b, A];
 }
 
-function colorMix(color, target, strength) {
+function colorMix({ target, strength = 0 }, color) {
   // Validate input color and store its format
   const [format] = validator(color);
 
@@ -3987,6 +4174,65 @@ function colorMix(color, target, strength) {
   }
 
   return serializeInput(convert(oklab, format));
+}
+#+END_SRC
+
+**** Color Interpolation
+
+Now that the two main actions are defined and implemented, we have almost all the tools required to generate full
+palettes. The missing ingredient is interpolation. QuarkSuite supports two kinds of interpolation:
+
++ Interpolating over properties
++ Interpolating over a mixture
+
+From this, we'll a helper for actions to generate tints, tones, and shades as well as blends and a few extras. The two
+action helpers we created so far have a similar call structure with only slight differences in the behavior, so we'll create
+=colorInterpolation()= as a /higher-order function/.
+
+Without getting too deeply into it, a higher-order function (or HOF) is a function that accepts another function as one
+of its arguments. It's a good tool to use in situations where you have related functions with similar call structure but
+differing internal behavior. Such as this one.
+
+#+BEGIN_SRC js
+function colorInterpolation(action, modifiers, input) {
+  // Set default for shared step property
+  const { steps = 1 } = modifiers;
+
+  // Fill an array with a length of steps with the input color
+  return [
+    ...new Set(
+      Array(steps)
+        .fill(input)
+        .map((color, pos) => {
+          // General interpolation formula
+          const interpolate = (property, index) =>
+            property - (property / steps) * index;
+
+          // Now, we vary the behavior here based on the name of the action
+          if (action.name === "colorMix") {
+            // Destructure unique properties
+            const { strength = 0, target = color } = modifiers;
+
+            return colorMix(
+              { strength: interpolate(strength, pos), target },
+              color,
+            );
+          }
+
+          const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = modifiers;
+
+          return colorAdjustment(
+            {
+              lightness: interpolate(lightness, pos),
+              chroma: interpolate(chroma, pos),
+              hue: interpolate(hue, pos),
+              alpha: interpolate(alpha, pos),
+            },
+            color,
+          );
+        }),
+    ),
+  ].reverse();
 }
 #+END_SRC
 
