@@ -117,10 +117,6 @@
         - [[#color_as_hexagon-examples][color_as_hexagon Examples]]
         - [[#color_as_hexagon-implementation][color_as_hexagon Implementation]]
         - [[#color_as_hexagon-tests][color_as_hexagon Tests]]
-      - [[#color_as_tints][color_as_tints]]
-      - [[#color_as_tones][color_as_tones]]
-      - [[#color_as_shades][color_as_shades]]
-      - [[#color_as_material][color_as_material]]
       - [[#color_as_token][color_as_token]]
       - [[#color_as_element][color_as_element]]
       - [[#palette_shift][palette_shift]]
@@ -166,6 +162,9 @@
         - [[#perceptually-uniform-color-mixture][Perceptually Uniform Color Mixture]]
         - [[#color-mixture-through-oklab][Color Mixture Through OKLab]]
       - [[#color-interpolation][Color Interpolation]]
+      - [[#palette-configurations][Palette Configurations]]
+        - [[#material-configuration][Material Configuration]]
+        - [[#artistic-configuration][Artistic Configuration]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
 
@@ -2303,14 +2302,6 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (123m
 
 #+end_src
 
-**** color_as_tints
-
-**** color_as_tones
-
-**** color_as_shades
-
-**** color_as_material
-
 **** color_as_token
 
 **** color_as_element
@@ -4275,6 +4266,188 @@ function colorInterpolation(action, modifiers, input) {
         }),
     ),
   ].reverse();
+}
+#+END_SRC
+
+**** Palette Configurations
+
+We made it, y'all. We finally have the full set of color generation helpers to create palettes suitable for web design.
+
+To this end, QuarkSuite supports two main palette configurations:
+
++ Material-esque: This is a palette composed of a scale =[ui[], variants[], states[]]=. This is configured
+  similar to the way Material Design palettes are configured (but not exactly, so material-/esque/).
++ Artistic: This is a classical palette where you can create a scale of =[base, variants[][], states[]]=
+  with set levels of contrast between your variants.
+
+***** Material Configuration
+
+For the material configuration, we're going to allow the user to define the overall light and dark contrast as well as
+place the accent palette behind an =accented= boolean. If defined, it will add in the accents to the end of the variant collection.
+The same occurs for the interface states if =stated= is true.
+
+#+BEGIN_SRC js
+function materialConfiguration(
+  { light = 100, dark = 100, accented = false, stated = false },
+  color,
+) {
+  // [bg, fg]
+  const ui = [
+    colorMix(
+      { target: "#fff", strength: 100 * numberFromPercentage(light) },
+      color,
+    ),
+    colorMix(
+      { target: "#111", strength: 100 * numberFromPercentage(dark) },
+      color,
+    ),
+  ];
+
+  // [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
+  const variants = [
+    ...colorInterpolation(
+      colorMix,
+      {
+        target: "#fff",
+        strength: 85 * numberFromPercentage(light),
+        steps: 6,
+      },
+      color,
+    ).reverse(),
+    ...colorInterpolation(
+      colorMix,
+      {
+        target: "#111",
+        strength: 70 * numberFromPercentage(dark),
+        steps: 4,
+      },
+      color,
+    ),
+  ];
+
+  // [A100, A200, A400, A700]
+  const accents = [
+    colorAdjustment(
+      {
+        lightness: 25 * numberFromPercentage(light),
+        chroma: -50,
+        hue: -15,
+      },
+      color,
+    ),
+    colorAdjustment(
+      { chroma: -25 * numberFromPercentage(dark), hue: -15 },
+      color,
+    ),
+    colorAdjustment(
+      {
+        lightness: 25 * numberFromPercentage(light),
+        chroma: 50,
+        hue: -15,
+      },
+      color,
+    ),
+    colorAdjustment(
+      {
+        lightness: -25 * numberFromPercentage(dark),
+        chroma: 50,
+        hue: 15,
+      },
+      color,
+    ),
+  ];
+
+  // [SUCCESS, WARNING, ERROR]
+  const states = [
+    colorMix({ target: "forestgreen", strength: 75 }, color),
+    colorMix({ target: "goldenrod", strength: 75 }, color),
+    colorMix({ target: "firebrick", strength: 75 }, color),
+  ];
+
+  return [
+    ui,
+    [variants, ...(accented ? [accents] : [])],
+    ...(stated ? [states] : []),
+  ];
+}
+#+END_SRC
+
+***** Artistic Configuration
+
+For the artistic configuration, we're going to allow the user to set =contrast= and =count= for each individual
+variant. =stated= is also allowed here and works identically to the material-esque config.
+
+#+BEGIN_SRC js
+function artisticConfiguration(
+  { tints, tones, shades, stated = false },
+  color,
+) {
+  // Create an array to store variant results
+  let variants = [];
+
+  if (tints) {
+    const { contrast = 100, count = 3 } = tints;
+
+    variants.push(
+      colorInterpolation(
+        colorMix,
+        {
+          target: "#fff",
+          strength: contrast,
+          steps: count,
+        },
+        color,
+      ),
+    );
+  }
+
+  if (tones) {
+    const { contrast = 100, count = 3 } = tones;
+
+    variants.push(
+      colorInterpolation(
+        colorMix,
+        {
+          target: "#aaa",
+          strength: contrast,
+          steps: count,
+        },
+        color,
+      ),
+    );
+  }
+
+  if (shades) {
+    const { contrast = 100, count = 3 } = shades;
+
+    variants.push(
+      colorInterpolation(
+        colorMix,
+        {
+          target: "#111",
+          strength: contrast,
+          steps: count,
+        },
+        color,
+      ),
+     );
+  }
+
+  // Filter out any empty scales
+  variants = variants.filter((scale) => scale.length);
+
+  // [SUCCESS, WARNING, ERROR]
+  const states = [
+    colorMix({ target: "forestgreen", strength: 75 }, color),
+    colorMix({ target: "goldenrod", strength: 75 }, color),
+    colorMix({ target: "firebrick", strength: 75 }, color),
+  ];
+
+  return [
+    colorAdjustment({}, color),
+    ...(variants.length ? [variants] : []),
+    ...(stated ? [states] : []),
+  ];
 }
 #+END_SRC
 

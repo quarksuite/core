@@ -1988,3 +1988,174 @@ function colorInterpolation(action, modifiers, input) {
   ].reverse();
 }
 // Color Interpolation:1 ends here
+
+// Material Configuration
+
+// For the material configuration, we're going to allow the user to define the overall light and dark contrast as well as
+// place the accent palette behind an =accented= boolean. If defined, it will add in the accents to the end of the variant collection.
+// The same occurs for the interface states if =stated= is true.
+
+// [[file:../Notebook.org::*Material Configuration][Material Configuration:1]]
+function materialConfiguration(
+  { light = 100, dark = 100, accented = false, stated = false },
+  color,
+) {
+  // [bg, fg]
+  const ui = [
+    colorMix(
+      { target: "#fff", strength: 100 * numberFromPercentage(light) },
+      color,
+    ),
+    colorMix(
+      { target: "#111", strength: 100 * numberFromPercentage(dark) },
+      color,
+    ),
+  ];
+
+  // [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
+  const variants = [
+    ...colorInterpolation(
+      colorMix,
+      {
+        target: "#fff",
+        strength: 85 * numberFromPercentage(light),
+        steps: 6,
+      },
+      color,
+    ).reverse(),
+    ...colorInterpolation(
+      colorMix,
+      {
+        target: "#111",
+        strength: 70 * numberFromPercentage(dark),
+        steps: 4,
+      },
+      color,
+    ),
+  ];
+
+  // [A100, A200, A400, A700]
+  const accents = [
+    colorAdjustment(
+      {
+        lightness: 25 * numberFromPercentage(light),
+        chroma: -50,
+        hue: -15,
+      },
+      color,
+    ),
+    colorAdjustment(
+      { chroma: -25 * numberFromPercentage(dark), hue: -15 },
+      color,
+    ),
+    colorAdjustment(
+      {
+        lightness: 25 * numberFromPercentage(light),
+        chroma: 50,
+        hue: -15,
+      },
+      color,
+    ),
+    colorAdjustment(
+      {
+        lightness: -25 * numberFromPercentage(dark),
+        chroma: 50,
+        hue: 15,
+      },
+      color,
+    ),
+  ];
+
+  // [SUCCESS, WARNING, ERROR]
+  const states = [
+    colorMix({ target: "forestgreen", strength: 75 }, color),
+    colorMix({ target: "goldenrod", strength: 75 }, color),
+    colorMix({ target: "firebrick", strength: 75 }, color),
+  ];
+
+  return [
+    ui,
+    [variants, ...(accented ? [accents] : [])],
+    ...(stated ? [states] : []),
+  ];
+}
+// Material Configuration:1 ends here
+
+// Artistic Configuration
+
+// For the artistic configuration, we're going to allow the user to set =contrast= and =count= for each individual
+// variant. =stated= is also allowed here and works identically to the material-esque config.
+
+// [[file:../Notebook.org::*Artistic Configuration][Artistic Configuration:1]]
+function artisticConfiguration(
+  { tints, tones, shades, stated = false },
+  color,
+) {
+  // Create an array to store variant results
+  let variants = [];
+
+  if (tints) {
+    const { contrast = 100, count = 3 } = tints;
+
+    variants.push(
+      colorInterpolation(
+        colorMix,
+        {
+          target: "#fff",
+          strength: contrast,
+          steps: count,
+        },
+        color,
+      ),
+    );
+  }
+
+  if (tones) {
+    const { contrast = 100, count = 3 } = tones;
+
+    variants.push(
+      colorInterpolation(
+        colorMix,
+        {
+          target: "#aaa",
+          strength: contrast,
+          steps: count,
+        },
+        color,
+      ),
+    );
+  }
+
+  if (shades) {
+    const { contrast = 100, count = 3 } = shades;
+
+    variants.push(
+      colorInterpolation(
+        colorMix,
+        {
+          target: "#111",
+          strength: contrast,
+          steps: count,
+        },
+        color,
+      ),
+    );
+  }
+
+  // Filter out any empty scales
+  variants = variants.filter((scale) => scale.length);
+
+  // [SUCCESS, WARNING, ERROR]
+  const states = [
+    colorMix({ target: "forestgreen", strength: 75 }, color),
+    colorMix({ target: "goldenrod", strength: 75 }, color),
+    colorMix({ target: "firebrick", strength: 75 }, color),
+  ];
+
+  return [
+    colorAdjustment({}, color),
+    ...(variants.length ? [variants] : []),
+    ...(stated ? [states] : []),
+  ];
+}
+// Artistic Configuration:1 ends here
