@@ -235,6 +235,30 @@ export function color_as_hexagon(color) {
 }
 // color_as_hexagon Implementation:1 ends here
 
+// palette_create Implementation
+
+// [[file:../Notebook.org::*palette_create Implementation][palette_create Implementation:1]]
+export function palette_create(settings, color) {
+  // Set default type and settings and exclude interface states until requested
+  const {
+    type = "material",
+    light = 100,
+    dark = 100,
+    accented = false,
+    stated = false,
+  } = settings;
+
+  // Generate from material-esque or artistic configuration depending on type
+  if (type === "artistic") {
+    const { tints, tones, shades } = settings;
+
+    return artisticConfiguration({ tints, tones, shades, stated }, color);
+  }
+
+  return materialConfiguration({ light, dark, accented, stated }, color);
+}
+// palette_create Implementation:1 ends here
+
 // Tokenization
 
 // Color format tokenization follows the spec as closely as possible.
