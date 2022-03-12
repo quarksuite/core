@@ -3,12 +3,14 @@
   "name": "quarksuite:core",
   "description": "Quarks System Core is a library for creating, assembling, and distributing foundational design tokens using web technologies.",
   "homepage": "https://github.com/quarksuite/core",
-  "version": "2.0.0-0",
-  "releaseType": "premajor",
+  "version": "2.0.0-1",
+  "releaseType": "pre",
   "stable": "true",
   "unlisted": true,
   "entry": "./v2/mod.js",
-  "files": ["./v2/*.js"],
+  "files": [
+    "./v2/*.js"
+  ],
   "checkFormat": false,
   "checkTests": false,
   "checkInstallation": false,
