@@ -21,17 +21,18 @@
         - [[#fn_process-examples][fn_process Examples]]
         - [[#fn_process-implementation][fn_process Implementation]]
         - [[#fn_process-tests][fn_process Tests]]
-        - [[#fn_process-errors][fn_process Errors]]
       - [[#fn_preset][fn_preset]]
         - [[#fn_preset-examples][fn_preset Examples]]
         - [[#fn_preset-implementation][fn_preset Implementation]]
         - [[#fn_preset-tests][fn_preset Tests]]
-        - [[#fn_preset-errors][fn_preset Errors]]
       - [[#fn_pipeline][fn_pipeline]]
         - [[#fn_pipeline-examples][fn_pipeline Examples]]
         - [[#fn_pipeline-implementation][fn_pipeline Implementation]]
         - [[#fn_pipeline-tests][fn_pipeline Tests]]
-        - [[#fn_pipeline-errors][fn_pipeline Errors]]
+      - [[#fn_propagate][fn_propagate]]
+        - [[#fn_propagate-examples][fn_propagate Examples]]
+        - [[#fn_propagate-implementation][fn_propagate Implementation]]
+        - [[#fn_propagate-tests][fn_propagate Tests]]
     - [[#color][Color]]
       - [[#color_adjust][color_adjust]]
         - [[#color_adjust-examples][color_adjust Examples]]
@@ -283,8 +284,6 @@ export function fn_process(...emitters) {
 
 ***** fn_process Tests
 
-***** fn_process Errors
-
 **** fn_preset
 
 A functional utility that accepts an action and its modifiers and converts it to an emitter.
@@ -304,8 +303,6 @@ export function fn_preset(action, y) {
 #+END_SRC
 
 ***** fn_preset Tests
-
-***** fn_preset Errors
 
 **** fn_pipeline
 
@@ -327,7 +324,25 @@ export function fn_pipeline(x, ...processes) {
 
 ***** fn_pipeline Tests
 
-***** fn_pipeline Errors
+**** fn_propagate
+
+A functional utility that allows an =emitter= to propagate over a collection of =xs=.
+
++ =fn_propagate(emitter, xs) => unknown=
+  + =emitter: (x) => unknown=: the emitter to use
+  + =xs: unknown[]=: the data collection to map over
+
+***** fn_propagate Examples
+
+***** fn_propagate Implementation
+
+#+BEGIN_SRC js
+export function fn_propagate(emitter, xs) {
+  return xs.map((x) => emitter(x));
+}
+#+END_SRC
+
+***** fn_propagate Tests
 
 *** Color
 :PROPERTIES:
