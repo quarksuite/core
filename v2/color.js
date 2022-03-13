@@ -250,9 +250,12 @@ export function palette_create(settings, color) {
 
   // Generate from material-esque or artistic configuration depending on type
   if (type === "artistic") {
-    const { tints, tones, shades } = settings;
+    const { contrast = 100, tints = 3, tones = 3, shades = 3 } = settings;
 
-    return artisticConfiguration({ tints, tones, shades, stated }, color);
+    return artisticConfiguration(
+      { contrast, tints, tones, shades, stated },
+      color,
+    );
   }
 
   return materialConfiguration({ light, dark, accented, stated }, color);
@@ -2042,7 +2045,7 @@ function materialConfiguration(
       colorMix,
       {
         target: "#fff",
-        strength: 85 * numberFromPercentage(light),
+        strength: 80 * numberFromPercentage(light),
         steps: 6,
       },
       color,
@@ -2051,7 +2054,7 @@ function materialConfiguration(
       colorMix,
       {
         target: "#111",
-        strength: 70 * numberFromPercentage(dark),
+        strength: 85 * numberFromPercentage(dark),
         steps: 4,
       },
       color,
@@ -2059,49 +2062,49 @@ function materialConfiguration(
   ];
 
   // [A100, A200, A400, A700]
-  const accents = [
-    colorAdjustment(
-      {
-        lightness: 25 * numberFromPercentage(light),
-        chroma: -50,
-        hue: -15,
-      },
-      color,
-    ),
-    colorAdjustment(
-      { chroma: -25 * numberFromPercentage(dark), hue: -15 },
-      color,
-    ),
-    colorAdjustment(
-      {
-        lightness: 25 * numberFromPercentage(light),
-        chroma: 50,
-        hue: -15,
-      },
-      color,
-    ),
-    colorAdjustment(
-      {
-        lightness: -25 * numberFromPercentage(dark),
-        chroma: 50,
-        hue: 15,
-      },
-      color,
-    ),
-  ];
+  const accents = accented
+    ? [
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(light),
+          chroma: -50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        { chroma: -25 * numberFromPercentage(dark), hue: -15 },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(light),
+          chroma: 50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: -25 * numberFromPercentage(dark),
+          chroma: 50,
+          hue: 15,
+        },
+        color,
+      ),
+    ]
+    : [];
 
   // [SUCCESS, WARNING, ERROR]
-  const states = [
-    colorMix({ target: "forestgreen", strength: 75 }, color),
-    colorMix({ target: "goldenrod", strength: 75 }, color),
-    colorMix({ target: "firebrick", strength: 75 }, color),
-  ];
+  const states = stated
+    ? [
+      colorMix({ target: "forestgreen", strength: 75 }, color),
+      colorMix({ target: "goldenrod", strength: 75 }, color),
+      colorMix({ target: "firebrick", strength: 75 }, color),
+    ]
+    : [];
 
-  return [
-    ui,
-    [variants, ...(accented ? [accents] : [])],
-    ...(stated ? [states] : []),
-  ];
+  return [ui, [variants, accents], states];
 }
 // Material Configuration:1 ends here
 
@@ -2112,74 +2115,67 @@ function materialConfiguration(
 
 // [[file:../Notebook.org::*Artistic Configuration][Artistic Configuration:1]]
 function artisticConfiguration(
-  { tints, tones, shades, stated = false },
+  { contrast = 100, tints = 3, tones = 3, shades = 3, stated = false },
   color,
 ) {
-  // Create an array to store variant results
-  let variants = [];
+  // [bg, fg]
+  const ui = [
+    colorMix(
+      { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
+      color,
+    ),
+    colorMix(
+      { target: "#111", strength: 100 * numberFromPercentage(contrast) },
+      color,
+    ),
+  ];
 
-  if (tints) {
-    const { contrast = 100, count = 3 } = tints;
-
-    variants.push(
-      colorInterpolation(
+  // [tints[], tones[], shades[]]
+  const variants = [
+    tints
+      ? colorInterpolation(
         colorMix,
         {
           target: "#fff",
-          strength: contrast,
-          steps: count,
+          strength: 95 * numberFromPercentage(contrast),
+          steps: tints,
         },
         color,
-      ),
-    );
-  }
-
-  if (tones) {
-    const { contrast = 100, count = 3 } = tones;
-
-    variants.push(
-      colorInterpolation(
+      )
+      : [],
+    tones
+      ? colorInterpolation(
         colorMix,
         {
           target: "#aaa",
-          strength: contrast,
-          steps: count,
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tones,
         },
         color,
-      ),
-    );
-  }
-
-  if (shades) {
-    const { contrast = 100, count = 3 } = shades;
-
-    variants.push(
-      colorInterpolation(
+      )
+      : [],
+    shades
+      ? colorInterpolation(
         colorMix,
         {
           target: "#111",
-          strength: contrast,
-          steps: count,
+          strength: 80 * numberFromPercentage(contrast),
+          steps: shades,
         },
         color,
-      ),
-    );
-  }
-
-  // Filter out any empty scales
-  variants = variants.filter((scale) => scale.length);
+      )
+      : [],
+  ];
 
   // [SUCCESS, WARNING, ERROR]
-  const states = [
-    colorMix({ target: "forestgreen", strength: 75 }, color),
-    colorMix({ target: "goldenrod", strength: 75 }, color),
-    colorMix({ target: "firebrick", strength: 75 }, color),
-  ];
+  const states = stated
+    ? [
+      colorMix({ target: "forestgreen", strength: 75 }, color),
+      colorMix({ target: "goldenrod", strength: 75 }, color),
+      colorMix({ target: "firebrick", strength: 75 }, color),
+    ]
+    : [];
 
-  return [
-    colorAdjustment({}, color),
-    ...(variants.length ? [variants] : []),
-    ...(stated ? [states] : []),
-  ];
+  return [ui, variants, states];
 }
 // Artistic Configuration:1 ends here
