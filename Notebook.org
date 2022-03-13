@@ -10,7 +10,7 @@
   - [[#concrete-idioms][Concrete Idioms]]
   - [[#settled-types][Settled Types]]
   - [[#simple-data-rendering][Simple Data Rendering]]
-  - [[#wtcg-design-token-spec][WTCG Design Token Spec]]
+  - [[#transition-to-dtcg-spec][Transition to DTCG Spec]]
   - [[#improved-performance][Improved Performance]]
   - [[#internal-simplicity][Internal Simplicity]]
   - [[#improved-modularity][Improved Modularity]]
@@ -210,7 +210,7 @@ After fiddling with a lot of approaches for a UI library, I realized that QuarkS
 so much as ways to render data to a view. =type_as_element= is a new emitter in v2 that indicates the output will be
 HTML rendered or a web component.
 
-** WTCG Design Token Spec
+** Transition to DTCG Spec
 
 #+BEGIN_QUOTE
 UPDATE: This part is not yet determined. The editor draft is brand new, so it might be best to hold off on adopting it
