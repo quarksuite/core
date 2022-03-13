@@ -212,6 +212,17 @@ HTML rendered or a web component.
 
 ** WTCG Design Token Spec
 
+#+BEGIN_QUOTE
+UPDATE: This part is not yet determined. The editor draft is brand new, so it might be best to hold off on adopting it
+until it's a little more settled. I'm really excited to see this being worked on, but for now I'll continue using the
+Quarks System Dictionary spec until I see further development.
+
+The authors themselves note that it currently shouldn't be cited as anything but a /work in progress/, so I'll hold off
+on adoption for now.
+
+That said, I will monitor continued development of the spec and switch when the time is right.
+#+END_QUOTE
+
 I can transition away from my own Quarks System Dictionary spec in favor of [[https://design-tokens.github.io/community-group/format/][adopting an emerging community spec]]. You
 love to see it.
 
