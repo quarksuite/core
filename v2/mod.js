@@ -7,8 +7,8 @@
 // [[file:../Notebook.org::*Spec][Spec:1]]
 // Package all utility types
 
-export * as fn from "./fn.js";
-export * as color from "./color.js";
-export * as ms from "./ms.js";
-export * as tokens from "./tokens.js";
+export * from "./fn.js";
+export * from "./color.js";
+export * from "./ms.js";
+export * from "./tokens.js";
 // Spec:1 ends here

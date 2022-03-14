@@ -1,5 +1,6 @@
 // palette_create Tests
 
+
 // [[file:../../Notebook.org::*palette_create Tests][palette_create Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette_create } from "../color.js";
@@ -182,7 +183,7 @@ describe("palette_create(settings, color)", () => {
           ["#d4595e", "#c67f7f", "#b3a09f"],
           ["#a12131", "#692126", "#361a1a"],
         ],
-        ["#707d2a", "#de8a2d", "#bc2029"],
+        ["#e4b4b3", "#707d2a", "#de8a2d", "#bc2029"],
       ]);
       expect(palette_create({ type: "artistic", stated: true }, green)).toEqual(
         [
@@ -192,7 +193,7 @@ describe("palette_create(settings, color)", () => {
             ["#91e664", "#9ecd88", "#a8b3a3"],
             ["#60b824", "#437526", "#26391d"],
           ],
-          ["#3ba721", "#cdbd1d", "#b86724"],
+          ["#c9e7bb", "#3ba721", "#cdbd1d", "#b86724"],
         ],
       );
       expect(palette_create({ type: "artistic", stated: true }, blue)).toEqual([
@@ -202,7 +203,7 @@ describe("palette_create(settings, color)", () => {
           ["#589be7", "#7ea3ce", "#9fa8b4"],
           ["#236bb8", "#214976", "#192839"],
         ],
-        ["#109069", "#b5a678", "#a15061"],
+        ["#b3cbe7", "#109069", "#b5a678", "#a15061"],
       ]);
     });
   });

@@ -262,6 +262,14 @@ export function palette_create(settings, color) {
 }
 // palette_create Implementation:1 ends here
 
+// palette_as_tokens Implementation
+
+// [[file:../Notebook.org::*palette_as_tokens Implementation][palette_as_tokens Implementation:1]]
+export function palette_as_tokens(palette) {
+  return tokenizePalette(palette);
+}
+// palette_as_tokens Implementation:1 ends here
+
 // Tokenization
 
 // Color format tokenization follows the spec as closely as possible.
@@ -2061,7 +2069,7 @@ function materialConfiguration(
     ),
   ];
 
-  // [A100, A200, A400, A700]
+  // [A100, A200, A300, A400]
   const accents = accented
     ? [
       colorAdjustment(
@@ -2095,9 +2103,10 @@ function materialConfiguration(
     ]
     : [];
 
-  // [SUCCESS, WARNING, ERROR]
+  // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
+      colorMix({ target: "gainsboro", strength: 75 }, color),
       colorMix({ target: "forestgreen", strength: 75 }, color),
       colorMix({ target: "goldenrod", strength: 75 }, color),
       colorMix({ target: "firebrick", strength: 75 }, color),
@@ -2167,9 +2176,10 @@ function artisticConfiguration(
       : [],
   ];
 
-  // [SUCCESS, WARNING, ERROR]
+  // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
+      colorMix({ target: "gainsboro", strength: 75 }, color),
       colorMix({ target: "forestgreen", strength: 75 }, color),
       colorMix({ target: "goldenrod", strength: 75 }, color),
       colorMix({ target: "firebrick", strength: 75 }, color),
@@ -2179,3 +2189,83 @@ function artisticConfiguration(
   return [ui, variants, states];
 }
 // Artistic Configuration:1 ends here
+
+// Palette Formatting
+
+// Now that we've generated our palettes, we'll need a way to assemble them into a dictionary of color tokens. At this
+// point, we know palette configurations output one of two standard data sets, so we'll only need to concern ourselves
+// with what's /different/ between them.
+
+// We'll need two helpers: =tokenizeMaterialVariants()= and =tokenizeArtisticVariants= to handle these special cases.
+
+// Finally, we contain the whole token assembly process in its own =tokenizePalette()= function
+
+// [[file:../Notebook.org::*Palette Formatting][Palette Formatting:1]]
+function tokenizeMaterialVariants(variants) {
+  // Extract [main[], accents[]]
+  const [main, accents] = variants;
+
+  return {
+    // 50-900
+    ...main.reduce((acc, color, index) => {
+      if (index === 0) return { ...acc, 50: color };
+      return { ...acc, [`${index}00`]: color };
+    }, {}),
+    // a100-a400
+    ...(accents.length
+      ? accents.reduce((acc, color, index) => {
+        return { ...acc, [`a${++index}00`]: color };
+      }, {})
+      : {}),
+  };
+}
+
+function tokenizeArtisticVariants(variants) {
+  const [tints, tones, shades] = variants;
+
+  // Here, we check the variants that contain data and filter out any that don't before assembling the tokens
+  return Object.entries({ light: tints, muted: tones, dark: shades })
+    .filter(([, data]) => data.length)
+    .reduce((acc, [category, data]) => {
+      return {
+        ...acc,
+        [category]: data.reduce((a, color, i) => {
+          return { ...a, [`${++i}00`]: color };
+        }, {}),
+      };
+    }, {});
+}
+
+function tokenizePalette(palette) {
+  // Standard palettes share internal structure
+  const [[bg, fg], variants, states] = palette;
+
+  let variations = {};
+
+  // Material palettes contain two kinds of variants
+  if (variants.length === 2) {
+    variations = tokenizeMaterialVariants(variants);
+  }
+
+  // Otherwise it's artistic
+  if (variants.length === 3) {
+    variations = tokenizeArtisticVariants(variants);
+  }
+
+  return {
+    bg,
+    fg,
+    ...variations,
+    ...(states.length
+      ? {
+        state: {
+          pending: states[0],
+          success: states[1],
+          warning: states[2],
+          error: states[3],
+        },
+      }
+      : {}),
+  };
+}
+// Palette Formatting:1 ends here
