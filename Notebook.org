@@ -2998,6 +2998,39 @@ describe("palette_as_tokens(palette)", () => {
 run();
 #+END_SRC
 
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/palette_as_tokens_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  palette_as_tokens(palette)
+  • should reject an invalid color
+    material palette configuration
+    • should work with default settings
+    • should work with light/dark contrast settings
+    • should append accents when toggled
+    artistic palette configuration
+    • should work with default settings
+    • should work with overall contrast setting
+    • should add and remove variants based on tints/tones/shades settings
+  • should append interface states when defined for either type
+
+running 8 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/palette_as_tokens_test.js
+test palette_as_tokens(palette) > should reject an invalid color ... ok (13ms)
+test palette_as_tokens(palette) > material palette configuration > should work with default settings ... ok (64ms)
+test palette_as_tokens(palette) > material palette configuration > should work with light/dark contrast settings ... ok (46ms)
+test palette_as_tokens(palette) > material palette configuration > should append accents when toggled ... ok (69ms)
+test palette_as_tokens(palette) > artistic palette configuration > should work with default settings ... ok (59ms)
+test palette_as_tokens(palette) > artistic palette configuration > should work with overall contrast setting ... ok (54ms)
+test palette_as_tokens(palette) > artistic palette configuration > should add and remove variants based on tints/tones/shades settings ... ok (68ms)
+test palette_as_tokens(palette) > should append interface states when defined for either type ... ok (71ms)
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (505ms)
+
+#+end_src
+
 *** Modular Scale
 :PROPERTIES:
 :header-args:js: :tangle "./v2/ms.js" :comments both
