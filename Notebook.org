@@ -123,10 +123,10 @@
         - [[#palette_create-examples][palette_create Examples]]
         - [[#palette_create-implementation][palette_create Implementation]]
         - [[#palette_create-tests][palette_create Tests]]
-      - [[#palette_shift][palette_shift]]
-      - [[#palette_sort][palette_sort]]
-      - [[#palette_filter][palette_filter]]
       - [[#palette_contrast][palette_contrast]]
+        - [[#palette_contrast-examples][palette_contrast Examples]]
+        - [[#palette_contrast-implementation][palette_contrast Implementation]]
+        - [[#palette_contrast-tests][palette_contrast Tests]]
       - [[#palette_daltonize][palette_daltonize]]
       - [[#palette_as_tokens][palette_as_tokens]]
         - [[#palette_as_tokens-examples][palette_as_tokens Examples]]
@@ -173,6 +173,9 @@
       - [[#palette-configurations][Palette Configurations]]
         - [[#material-configuration][Material Configuration]]
         - [[#artistic-configuration][Artistic Configuration]]
+      - [[#palette-accessibility][Palette Accessibility]]
+        - [[#wcag-color-contrast-ratios][WCAG Color Contrast Ratios]]
+        - [[#colorimetric-contrast][Colorimetric Contrast]]
       - [[#palette-formatting][Palette Formatting]]
     - [[#modular-scale-internals][Modular Scale Internals]]
     - [[#design-token-internals][Design Token Internals]]
@@ -2625,13 +2628,289 @@ run();
 NO_COLOR=1 deno test v2/tests/palette_create_test.js
 #+END_SRC
 
-**** palette_shift
+#+RESULTS:
+#+begin_src shell
 
-**** palette_sort
+  palette_create(settings, color)
+  • should reject invalid colors
+    settings.type = 'material'
+    • should activate settings.accented
+    settings.type = 'artistic'
+    • should activate settings.tints
+    • should activate settings.tones
+    • should activate settings.shades
+    settings.contrast
+    • should be active with either type
+    settings.stated
+    • should be active with either type
 
-**** palette_filter
+running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/palette_create_test.js
+test palette_create(settings, color) > should reject invalid colors ... ok (14ms)
+test palette_create(settings, color) > settings.type = 'material' > should activate settings.accented ... ok (75ms)
+test palette_create(settings, color) > settings.type = 'artistic' > should activate settings.tints ... ok (29ms)
+test palette_create(settings, color) > settings.type = 'artistic' > should activate settings.tones ... ok (33ms)
+test palette_create(settings, color) > settings.type = 'artistic' > should activate settings.shades ... ok (37ms)
+test palette_create(settings, color) > settings.contrast > should be active with either type ... ok (59ms)
+test palette_create(settings, color) > settings.stated > should be active with either type ... ok (72ms)
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (391ms)
+
+#+end_src
 
 **** palette_contrast
+
+An action that accepts a =palette= and filters its variants based on how much they contrast from the background
+context. The two contrast =modes= are =standard= and =custom= with their own settings.
+
+The modes share a =dark= toggle that will check the contrast against a dark theme (through inverting the UI colors).
+
++ =palette_contrast(settings, palette)=
+  - =settings: {}=: palette contrast settings
+    * =settings.mode = "standard": "standard" | "custom"=: set the contrast calculation mode
+    * =settings.rating = "AA": "AA" | "AAA"= : set the desired WCAG contrast rating (active with =standard=)
+    * =settings.large = false: boolean=: the palette will be used with large text? (active with =standard=)
+    * =settings.min = 85: number=: the minimum perceptual difference from background (active with =custom=)
+    * =settings.max = undefined: number=: optionally set maximum perceptual difference from background (active with =custom=)
+    * =settings.dark = false: boolean=: will the contrast be checked for a dark theme? (active with both modes)
+  - =palette: string[][]=: the palette to use
+
+***** palette_contrast Examples
+
+***** palette_contrast Implementation
+
+#+BEGIN_SRC js
+export function palette_contrast(settings, palette) {
+  // Set action defaults
+  const {
+    mode = "standard",
+    rating = "AA",
+    large = false,
+    dark = false,
+  } = settings;
+
+  // If mode is custom
+  if (mode === "custom") {
+    const { min = 85, max } = settings;
+
+    return paletteColorimetricContrast({ min, max, dark }, palette);
+  }
+
+  return paletteWcagContrast({ rating, large, dark }, palette);
+}
+#+END_SRC
+
+***** palette_contrast Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/palette_contrast_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { palette_contrast, palette_create } from "../color.js";
+
+describe("palette_contrast(settings, palette)", () => {
+  it("should reject invalid colors", () => {
+    expect(() => palette_contrast({}, palette_create({}, "invalid"))).toThrow();
+  });
+
+  const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
+
+  describe("settings.mode = 'standard'", () => {
+    it("should work with default settings", () => {
+      expect(palette_contrast({}, palette_create({}, red))).toEqual([
+        ["#ffffff", "#111111"],
+        [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
+        [],
+      ]);
+      expect(
+        palette_contrast({}, palette_create({ type: "artistic" }, green)),
+      ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625", "#1c2418"]], []]);
+      expect(palette_contrast({}, palette_create({}, blue))).toEqual([
+        ["#ffffff", "#111111"],
+        [["#2371c3", "#22538a", "#1d3755", "#161c25"], []],
+        [],
+      ]);
+    });
+
+    it("should activate settings.rating", () => {
+      expect(
+        palette_contrast(
+          { rating: "AAA" },
+          palette_create(
+            { type: "artistic", tints: 15, tones: 8, shades: 15 },
+            red,
+          ),
+        ),
+      ).toEqual([
+        ["#ffffff", "#111111"],
+        [
+          [],
+          [],
+          [
+            "#a72032",
+            "#9a2130",
+            "#8d222d",
+            "#81222b",
+            "#742128",
+            "#682125",
+            "#5c2023",
+            "#501e20",
+            "#451d1e",
+            "#391b1b",
+            "#2e1818",
+            "#231616",
+          ],
+        ],
+        [],
+      ]);
+      expect(
+        palette_contrast({ rating: "AA" }, palette_create({}, green)),
+      ).toEqual([["#ffffff", "#111111"], [["#345422", "#1c2418"], []], []]);
+      expect(
+        palette_contrast(
+          { rating: "AAA" },
+          palette_create(
+            { type: "artistic", tints: 16, tones: 8, shades: 8 },
+            blue,
+          ),
+        ),
+      ).toEqual([
+        ["#ffffff", "#111111"],
+        [[], [], ["#22538a", "#20456f", "#1d3755", "#1a2a3c", "#161c25"]],
+        [],
+      ]);
+    });
+    it("should activate settings.large", () => {
+      expect(
+        palette_contrast(
+          { large: true },
+          palette_create({ contrast: 90 }, red),
+        ),
+      ).toEqual([
+        ["#ffebeb", "#231616"],
+        [["#e54956", "#af1f34", "#84222b", "#5b1f23", "#34191a"], []],
+        [],
+      ]);
+      expect(
+        palette_contrast(
+          { large: true },
+          palette_create({ type: "artistic", contrast: 85 }, green),
+        ),
+      ).toEqual([["#eeffe6", "#212f1a"], [[], [], ["#467b26", "#2a411f"]], []]);
+      expect(
+        palette_contrast(
+          { large: true },
+          palette_create({ contrast: 80 }, blue),
+        ),
+      ).toEqual([
+        ["#d7eaff", "#192839"],
+        [["#2277cf", "#235fa0", "#214874", "#1c324b"], []],
+        [],
+      ]);
+    });
+  });
+  describe("settings.mode = 'custom'", () => {
+    it("should activate settings.min", () => {
+      expect(
+        palette_contrast({ mode: "custom", min: 50 }, palette_create({}, red)),
+      ).toEqual([
+        ["#ffffff", "#111111"],
+        [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
+        [],
+      ]);
+      expect(
+        palette_contrast(
+          { mode: "custom", min: 64 },
+          palette_create({ type: "artistic" }, green),
+        ),
+      ).toEqual([["#ffffff", "#111111"], [[], [], ["#1c2418"]], []]);
+      expect(
+        palette_contrast({ mode: "custom", min: 80 }, palette_create({}, blue)),
+      ).toEqual([["#ffffff", "#111111"], [[], []], []]);
+    });
+    it("should activate settings.max", () => {
+      expect(
+        palette_contrast(
+          { mode: "custom", min: 50, max: 70 },
+          palette_create({}, red),
+        ),
+      ).toEqual([
+        ["#ffffff", "#111111"],
+        [["#aa2033", "#7a2229", "#4d1e20"], []],
+        [],
+      ]);
+      expect(
+        palette_contrast(
+          { mode: "custom", min: 50, max: 75 },
+          palette_create({ type: "artistic" }, green),
+        ),
+      ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625"]], []]);
+      expect(
+        palette_contrast(
+          { mode: "custom", min: 50, max: 80 },
+          palette_create({}, blue),
+        ),
+      ).toEqual([
+        ["#ffffff", "#111111"],
+        [["#22538a", "#1d3755", "#161c25"], []],
+        [],
+      ]);
+    });
+  });
+  it("settings.dark active for both modes", () => {
+    expect(palette_contrast({ dark: true }, palette_create({}, red))).toEqual([
+      ["#111111", "#ffffff"],
+      [["#ffebeb", "#ffcecc", "#fbb0af", "#f69292", "#ef7175", "#e64d59"], []],
+      [],
+    ]);
+    expect(
+      palette_contrast(
+        { mode: "custom", min: 64, dark: true },
+        palette_create({ type: "artistic" }, green),
+      ),
+    ).toEqual([
+      ["#111111", "#ffffff"],
+      [["#abff7e", "#d1ffba", "#f4ffee"], ["#91e664"], []],
+      [],
+    ]);
+    expect(palette_contrast({ dark: true }, palette_create({}, blue))).toEqual([
+      ["#111111", "#ffffff"],
+      [["#ebf5ff", "#cde5ff", "#aed5ff", "#90c4ff", "#70b4ff", "#4da2ff"], []],
+      [],
+    ]);
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/palette_contrast_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  palette_contrast(settings, palette)
+  • should reject invalid colors
+    settings.mode = 'standard'
+    • should work with default settings
+    • should activate settings.rating
+    • should activate settings.large
+    settings.mode = 'custom'
+    • should activate settings.min
+    • should activate settings.max
+  • settings.dark active for both modes
+
+running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/palette_contrast_test.js
+test palette_contrast(settings, palette) > should reject invalid colors ... ok (15ms)
+test palette_contrast(settings, palette) > settings.mode = 'standard' > should work with default settings ... ok (84ms)
+test palette_contrast(settings, palette) > settings.mode = 'standard' > should activate settings.rating ... ok (198ms)
+test palette_contrast(settings, palette) > settings.mode = 'standard' > should activate settings.large ... ok (78ms)
+test palette_contrast(settings, palette) > settings.mode = 'custom' > should activate settings.min ... ok (80ms)
+test palette_contrast(settings, palette) > settings.mode = 'custom' > should activate settings.max ... ok (75ms)
+test palette_contrast(settings, palette) > settings.dark active for both modes ... ok (73ms)
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (654ms)
+
+#+end_src
 
 **** palette_daltonize
 
@@ -5132,6 +5411,187 @@ function artisticConfiguration(
     : [];
 
   return [ui, variants, states];
+}
+#+END_SRC
+
+**** Palette Accessibility
+
+Before formatting our palette as a color token dictionary, we're going to provide a means for handling color
+accessibility. The core targets are our palette =variants=, because =ui= and =states= remain constant. In addition, the
+contrast context is the background color of our palette.
+
+QuarkSuite determines color accessibility through two methods:
+
++ Standard WCAG Color Contrast Ratings
++ Colorimetric contrast calculations
+
+***** WCAG Color Contrast Ratios
+
+This is the way that most of us as front-end designers/developers are familiar with. If you've ever used a [[https://contrast-ratio.com/][contrast
+ratio calculator]] on the internet, you know what this is about. For those who don't, the [[https://webaim.org/articles/contrast/][WebAIM article on it]] is a great
+overview.
+
+For the implementation, we'll be doing a few things in the following order:
+
+1. Calculate the relative luminance between a background and foreground color (in the sRGB space)
+2. Filtering out any =variants= that fail the user-defined contrast requirements against the background
+3. Returning the altered palette
+
+You'll see also that we've accounted for situations where we might want to calculate the most accessible colors from a
+dark theme.
+
+#+BEGIN_SRC js
+function calculateRelativeLuminance(color) {
+  const [, [R, G, B]] = parser(
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+  );
+
+  const [LR, LG, LB] = rgbToLrgb([R, G, B]);
+
+  return 0.2126 * LR + 0.7152 * LG + 0.0722 * LB;
+}
+
+function calculateWCAGContrastRatio(a, b) {
+  return [a, b]
+    .map((color) => calculateRelativeLuminance(color))
+    .sort((a, b) => b - a)
+    .map((LUM) => LUM + 0.05)
+    .reduce((L1, L2) => L1 / L2);
+}
+
+function wcagContrastCriteria({ rating, large }, ratio) {
+  return new Map([
+    // minimum
+    ["AA", large ? ratio >= 3.1 : ratio >= 4.5],
+    // enhanced
+    ["AAA", large ? ratio >= 4.5 : ratio > 7.1],
+  ]).get(rating);
+}
+
+function variantContrastWcag({ rating, large, background }, variants) {
+  const valid = (collection) =>
+    collection.filter((foreground) => {
+      const ratio = calculateWCAGContrastRatio(background, foreground);
+      return wcagContrastCriteria({ rating, large }, ratio);
+    });
+
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
+
+  if (variants.length === 2) {
+    const [main, accents] = variants;
+
+    return [valid(main), optional(valid, accents)];
+  }
+
+  const [tints, tones, shades] = variants;
+
+  return [
+    optional(valid, tints),
+    optional(valid, tones),
+    optional(valid, shades),
+  ];
+}
+
+function paletteWcagContrast({ rating = "AA", large, dark = false }, palette) {
+  // Extract palette datasets
+  const [ui, variants, state] = palette;
+  const [bg, fg] = ui;
+
+  if (dark) {
+    // Invert order of [bg, fg]
+    const [fg, bg] = ui;
+    return [
+      [bg, fg],
+      variantContrastWcag({ rating, large, background: bg }, variants),
+      state,
+    ];
+  }
+
+  return [
+    [bg, fg],
+    variantContrastWcag({ rating, large, background: bg }, variants),
+    state,
+  ];
+}
+#+END_SRC
+
+***** Colorimetric Contrast
+
+The second method of determining contrast uses the colorimetric data of the background itself. The process here is:
+
+1. Convert background and foreground to OKLCH
+2. Check the /perceptual/ lightness difference and filter out any colors that don't meet user-determined requirements
+3. Return the altered palette
+
+Much like the standard method, we account for the possibility of a dark theme.
+
+/Only use this method if you need the precision./ The WCAG standard should be your choice for the majority of use cases.
+
+#+BEGIN_SRC js
+function comparePerceptualLightness(bg, fg) {
+  const [, bgValues] = extractor([
+    "oklch",
+    serializeOklch(convert(bg, "oklch")),
+  ]);
+  const [, fgValues] = extractor([
+    "oklch",
+    serializeOklch(convert(fg, "oklch")),
+  ]);
+
+  const [bL] = bgValues.map((V) => parseFloat(V));
+  const [fL] = fgValues.map((V) => parseFloat(V));
+
+  return numberToPercentage(Math.abs((bL - fL) / 100));
+}
+
+function filterCondition({ min, max }, difference) {
+  return max ? difference >= min && difference <= max : difference >= min;
+}
+
+function variantsColorimetricContrast({ min, max, background }, variants) {
+  const valid = (collection) =>
+    collection.filter((foreground) => {
+      const difference = comparePerceptualLightness(background, foreground);
+
+      return filterCondition({ min, max }, difference);
+    });
+
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
+
+  if (variants.length === 2) {
+    const [main, accents] = variants;
+
+    return [valid(main), optional(valid, accents)];
+  }
+
+  const [tints, tones, shades] = variants;
+
+  return [
+    optional(valid, tints),
+    optional(valid, tones),
+    optional(valid, shades),
+  ];
+}
+
+function paletteColorimetricContrast({ min = 75, max, dark = false }, palette) {
+  const [ui, variants, state] = palette;
+  const [bg, fg] = ui;
+
+  if (dark) {
+    const [fg, bg] = ui;
+
+    return [
+      [bg, fg],
+      variantsColorimetricContrast({ min, max, background: bg }, variants),
+      state,
+    ];
+  }
+
+  return [
+    [bg, fg],
+    variantsColorimetricContrast({ min, max, background: bg }, variants),
+    state,
+  ];
 }
 #+END_SRC
 

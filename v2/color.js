@@ -2212,6 +2212,176 @@ function artisticConfiguration(
 }
 // Artistic Configuration:1 ends here
 
+// WCAG Color Contrast Ratios
+
+// This is the way that most of us as front-end designers/developers are familiar with. If you've ever used a [[https://contrast-ratio.com/][contrast
+// ratio calculator]] on the internet, you know what this is about. For those who don't, the [[https://webaim.org/articles/contrast/][WebAIM article on it]] is a great
+// overview.
+
+// For the implementation, we'll be doing a few things in the following order:
+
+// 1. Calculate the relative luminance between a background and foreground color (in the sRGB space)
+// 2. Filtering out any =variants= that fail the user-defined contrast requirements against the background
+// 3. Returning the altered palette
+
+// You'll see also that we've accounted for situations where we might want to calculate the most accessible colors from a
+// dark theme.
+
+// [[file:../Notebook.org::*WCAG Color Contrast Ratios][WCAG Color Contrast Ratios:1]]
+function calculateRelativeLuminance(color) {
+  const [, [R, G, B]] = parser(
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+  );
+
+  const [LR, LG, LB] = rgbToLrgb([R, G, B]);
+
+  return 0.2126 * LR + 0.7152 * LG + 0.0722 * LB;
+}
+
+function calculateWCAGContrastRatio(a, b) {
+  return [a, b]
+    .map((color) => calculateRelativeLuminance(color))
+    .sort((a, b) => b - a)
+    .map((LUM) => LUM + 0.05)
+    .reduce((L1, L2) => L1 / L2);
+}
+
+function wcagContrastCriteria({ rating, large }, ratio) {
+  return new Map([
+    // minimum
+    ["AA", large ? ratio >= 3.1 : ratio >= 4.5],
+    // enhanced
+    ["AAA", large ? ratio >= 4.5 : ratio > 7.1],
+  ]).get(rating);
+}
+
+function variantContrastWcag({ rating, large, background }, variants) {
+  const valid = (collection) =>
+    collection.filter((foreground) => {
+      const ratio = calculateWCAGContrastRatio(background, foreground);
+      return wcagContrastCriteria({ rating, large }, ratio);
+    });
+
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
+
+  if (variants.length === 2) {
+    const [main, accents] = variants;
+
+    return [valid(main), optional(valid, accents)];
+  }
+
+  const [tints, tones, shades] = variants;
+
+  return [
+    optional(valid, tints),
+    optional(valid, tones),
+    optional(valid, shades),
+  ];
+}
+
+function paletteWcagContrast({ rating = "AA", large, dark = false }, palette) {
+  // Extract palette datasets
+  const [ui, variants, state] = palette;
+  const [bg, fg] = ui;
+
+  if (dark) {
+    // Invert order of [bg, fg]
+    const [fg, bg] = ui;
+    return [
+      [bg, fg],
+      variantContrastWcag({ rating, large, background: bg }, variants),
+      state,
+    ];
+  }
+
+  return [
+    [bg, fg],
+    variantContrastWcag({ rating, large, background: bg }, variants),
+    state,
+  ];
+}
+// WCAG Color Contrast Ratios:1 ends here
+
+// Colorimetric Contrast
+
+// The second method of determining contrast uses the colorimetric data of the background itself. The process here is:
+
+// 1. Convert background and foreground to OKLCH
+// 2. Check the /perceptual/ lightness difference and filter out any colors that don't meet user-determined requirements
+// 3. Return the altered palette
+
+// Much like the standard method, we account for the possibility of a dark theme.
+
+// /Only use this method if you need the precision./ The WCAG standard should be your choice for the majority of use cases.
+
+// [[file:../Notebook.org::*Colorimetric Contrast][Colorimetric Contrast:1]]
+function comparePerceptualLightness(bg, fg) {
+  const [, bgValues] = extractor([
+    "oklch",
+    serializeOklch(convert(bg, "oklch")),
+  ]);
+  const [, fgValues] = extractor([
+    "oklch",
+    serializeOklch(convert(fg, "oklch")),
+  ]);
+
+  const [bL] = bgValues.map((V) => parseFloat(V));
+  const [fL] = fgValues.map((V) => parseFloat(V));
+
+  return numberToPercentage(Math.abs((bL - fL) / 100));
+}
+
+function filterCondition({ min, max }, difference) {
+  return max ? difference >= min && difference <= max : difference >= min;
+}
+
+function variantsColorimetricContrast({ min, max, background }, variants) {
+  const valid = (collection) =>
+    collection.filter((foreground) => {
+      const difference = comparePerceptualLightness(background, foreground);
+
+      return filterCondition({ min, max }, difference);
+    });
+
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
+
+  if (variants.length === 2) {
+    const [main, accents] = variants;
+
+    return [valid(main), optional(valid, accents)];
+  }
+
+  const [tints, tones, shades] = variants;
+
+  return [
+    optional(valid, tints),
+    optional(valid, tones),
+    optional(valid, shades),
+  ];
+}
+
+function paletteColorimetricContrast({ min = 75, max, dark = false }, palette) {
+  const [ui, variants, state] = palette;
+  const [bg, fg] = ui;
+
+  if (dark) {
+    const [fg, bg] = ui;
+
+    return [
+      [bg, fg],
+      variantsColorimetricContrast({ min, max, background: bg }, variants),
+      state,
+    ];
+  }
+
+  return [
+    [bg, fg],
+    variantsColorimetricContrast({ min, max, background: bg }, variants),
+    state,
+  ];
+}
+// Colorimetric Contrast:1 ends here
+
 // Palette Formatting
 
 // Now that we've generated our palettes, we'll need a way to assemble them into a dictionary of color tokens. At this
