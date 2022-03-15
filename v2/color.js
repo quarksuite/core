@@ -242,15 +242,14 @@ export function palette_create(settings, color) {
   // Set default type and settings and exclude interface states until requested
   const {
     type = "material",
-    light = 100,
-    dark = 100,
+    contrast = 100,
     accented = false,
     stated = false,
   } = settings;
 
   // Generate from material-esque or artistic configuration depending on type
   if (type === "artistic") {
-    const { contrast = 100, tints = 3, tones = 3, shades = 3 } = settings;
+    const { tints = 3, tones = 3, shades = 3 } = settings;
 
     return artisticConfiguration(
       { contrast, tints, tones, shades, stated },
@@ -258,9 +257,32 @@ export function palette_create(settings, color) {
     );
   }
 
-  return materialConfiguration({ light, dark, accented, stated }, color);
+  return materialConfiguration({ contrast, accented, stated }, color);
 }
 // palette_create Implementation:1 ends here
+
+// palette_contrast Implementation
+
+// [[file:../Notebook.org::*palette_contrast Implementation][palette_contrast Implementation:1]]
+export function palette_contrast(settings, palette) {
+  // Set action defaults
+  const {
+    mode = "standard",
+    rating = "AA",
+    large = false,
+    dark = false,
+  } = settings;
+
+  // If mode is custom
+  if (mode === "custom") {
+    const { min = 85, max } = settings;
+
+    return paletteColorimetricContrast({ min, max, dark }, palette);
+  }
+
+  return paletteWcagContrast({ rating, large, dark }, palette);
+}
+// palette_contrast Implementation:1 ends here
 
 // palette_as_tokens Implementation
 
@@ -2032,17 +2054,17 @@ function colorInterpolation(action, modifiers, input) {
 
 // [[file:../Notebook.org::*Material Configuration][Material Configuration:1]]
 function materialConfiguration(
-  { light = 100, dark = 100, accented = false, stated = false },
+  { contrast = 100, accented = false, stated = false },
   color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
-      { target: "#fff", strength: 100 * numberFromPercentage(light) },
+      { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
       color,
     ),
     colorMix(
-      { target: "#111", strength: 100 * numberFromPercentage(dark) },
+      { target: "#111", strength: 100 * numberFromPercentage(contrast) },
       color,
     ),
   ];
@@ -2053,7 +2075,7 @@ function materialConfiguration(
       colorMix,
       {
         target: "#fff",
-        strength: 80 * numberFromPercentage(light),
+        strength: 90 * numberFromPercentage(contrast),
         steps: 6,
       },
       color,
@@ -2062,7 +2084,7 @@ function materialConfiguration(
       colorMix,
       {
         target: "#111",
-        strength: 85 * numberFromPercentage(dark),
+        strength: 90 * numberFromPercentage(contrast),
         steps: 4,
       },
       color,
@@ -2074,19 +2096,19 @@ function materialConfiguration(
     ? [
       colorAdjustment(
         {
-          lightness: 25 * numberFromPercentage(light),
+          lightness: 25 * numberFromPercentage(contrast),
           chroma: -50,
           hue: -15,
         },
         color,
       ),
       colorAdjustment(
-        { chroma: -25 * numberFromPercentage(dark), hue: -15 },
+        { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
         color,
       ),
       colorAdjustment(
         {
-          lightness: 25 * numberFromPercentage(light),
+          lightness: 25 * numberFromPercentage(contrast),
           chroma: 50,
           hue: -15,
         },
@@ -2094,7 +2116,7 @@ function materialConfiguration(
       ),
       colorAdjustment(
         {
-          lightness: -25 * numberFromPercentage(dark),
+          lightness: -25 * numberFromPercentage(contrast),
           chroma: 50,
           hue: 15,
         },
@@ -2106,10 +2128,10 @@ function materialConfiguration(
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-      colorMix({ target: "gainsboro", strength: 75 }, color),
-      colorMix({ target: "forestgreen", strength: 75 }, color),
-      colorMix({ target: "goldenrod", strength: 75 }, color),
-      colorMix({ target: "firebrick", strength: 75 }, color),
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
     ]
     : [];
 
@@ -2146,7 +2168,7 @@ function artisticConfiguration(
         colorMix,
         {
           target: "#fff",
-          strength: 95 * numberFromPercentage(contrast),
+          strength: 90 * numberFromPercentage(contrast),
           steps: tints,
         },
         color,
@@ -2168,7 +2190,7 @@ function artisticConfiguration(
         colorMix,
         {
           target: "#111",
-          strength: 80 * numberFromPercentage(contrast),
+          strength: 90 * numberFromPercentage(contrast),
           steps: shades,
         },
         color,
@@ -2179,10 +2201,10 @@ function artisticConfiguration(
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-      colorMix({ target: "gainsboro", strength: 75 }, color),
-      colorMix({ target: "forestgreen", strength: 75 }, color),
-      colorMix({ target: "goldenrod", strength: 75 }, color),
-      colorMix({ target: "firebrick", strength: 75 }, color),
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
     ]
     : [];
 
