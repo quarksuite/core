@@ -42,6 +42,10 @@
         - [[#color_mix-examples][color_mix Examples]]
         - [[#color_mix-implementation][color_mix Implementation]]
         - [[#color_mix-tests][color_mix Tests]]
+      - [[#color_simulate][color_simulate]]
+        - [[#color_simulate-examples][color_simulate Examples]]
+        - [[#color_simulate-implementation][color_simulate Implementation]]
+        - [[#color_simulate-tests][color_simulate Tests]]
       - [[#color_as_hex][color_as_hex]]
         - [[#color_as_hex-examples][color_as_hex Examples]]
         - [[#color_as_hex-implementation][color_as_hex Implementation]]
@@ -127,7 +131,6 @@
         - [[#palette_contrast-examples][palette_contrast Examples]]
         - [[#palette_contrast-implementation][palette_contrast Implementation]]
         - [[#palette_contrast-tests][palette_contrast Tests]]
-      - [[#palette_daltonize][palette_daltonize]]
       - [[#palette_as_tokens][palette_as_tokens]]
         - [[#palette_as_tokens-examples][palette_as_tokens Examples]]
         - [[#palette_as_tokens-implementation][palette_as_tokens Implementation]]
@@ -212,14 +215,18 @@ relationship between functions and their purpose. The API now follows a simple, 
 + =fn=: functional helpers
 + =color=: individual colors (of any valid CSS format)
 + =palette=: generated color palettes
-+ =ms=: modular scales
++ =ms=: raw modular scales
 + =tokens=: token collections
 
 ** Simple Data Rendering
 
 After fiddling with a lot of approaches for a UI library, I realized that QuarkSuite doesn't really need a full library
-so much as ways to render data to a view. =type_as_element= is a new emitter in v2 that indicates the output will be
-HTML rendered or a web component.
+so much as ways to render data to a view. QuarkSuite v2 will introduce vanilla
+web components that use the following naming convention:
+
++ =<type-token>=: this element renders an individual token
++ =<type-dictionary>=: this element renders a dictionary of tokens
++ =<type-view>=: this element renders
 
 ** Transition to DTCG Spec
 
@@ -407,7 +414,7 @@ export function color_adjust(settings, color) {
         alpha,
         steps,
       },
-      color
+      color,
     );
   }
 
@@ -860,15 +867,432 @@ NO_COLOR=1 deno test v2/tests/color_mix_test.js
   • should allow blending when settings.steps is defined
 
 running 5 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_mix_test.js
-test color_mix(settings, color) > should reject an invalid color ... ok (12ms)
-test color_mix(settings, color) > should reject an invalid target ... ok (6ms)
-test color_mix(settings, color) > should correctly mix samples ... ok (47ms)
-test color_mix(settings, color) > should correctly negate opposites ... ok (52ms)
+test color_mix(settings, color) > should reject an invalid color ... ok (11ms)
+test color_mix(settings, color) > should reject an invalid target ... ok (8ms)
+test color_mix(settings, color) > should correctly mix samples ... ok (48ms)
+test color_mix(settings, color) > should correctly negate opposites ... ok (56ms)
 test color_mix(settings, color) > should allow blending when settings.steps is defined ... ok (63ms)
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (253ms)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (261ms)
 
 #+end_src
+
+**** color_simulate
+
+An action that accepts a =color= and a =condition= setting and simulates an approximation of how a person might perceive
+the color under that condition. Each =condition= has its own settings, but all share the =strength= setting.
+
+Like the =color_adjust()= and =color_mix()= actions you can activate interpolation over a number of =steps= and it will
+return as an array of results.
+
++ =color_simulate(settings, color)=
+  - =settings: {}=: the simulation settings
+    * =settings.condition = 'colorblindness': 'colorblindness' | 'sensitivity' | 'illuminant'=: the perceptual condition
+      to simulate (with their own active settings)
+    * =settings.method = 'brettel': 'brettel' | 'vienot'=: the colorblindness simulation algorithm to use
+    * =settings.type = 'protanopia': 'prot(anomaly|anopia)' | 'deuter(anomaly|anopia)' | 'trit(anopia|anope)' |
+      'achromatopsia'=: the type of colorblindness to simulate (strength can be set for anomalous trichromacy types, but
+      has /no/ effect on achromatopsia or dichromacy types)
+    * =settings.contrast = 0: number=: the level of (contrast) sensitivity to simulate (as a percentage, where ~0~ is
+      black and ~100~ is white)
+    * =settings.temperature = 1000: number=: the color temperature of the illuminant (light source) to simulate (in
+      Kelvin, where ~1800~ is candlelight and ~6500~ is daylight)
+    * =settings.strength = 0: number=: the strength of the simulation (where ~0~ is no change and ~100~ is a complete overlay)
+    * =settings.steps = 0: number=: activates interpolation mode which returns the result of excuting the simulation in
+      /sequence/ up to the number of steps
+
+***** color_simulate Examples
+
+***** color_simulate Implementation
+
+#+BEGIN_SRC js
+export function color_simulate(settings, color) {
+  // Set immediate defaults
+  const {
+    condition = "colorblindness",
+    method = "brettel",
+    type = "protanopia",
+    strength = 0,
+    steps = 0,
+  } = settings;
+
+  // If simulating contrast sensivity
+  if (condition === "sensitivity") {
+    // Set unique defaults
+    const { contrast = 0 } = settings;
+
+    if (steps) {
+      return colorInterpolation(
+        simulateSensitivity,
+        {
+          contrast,
+          strength,
+          steps,
+        },
+        color,
+      );
+    }
+
+    return simulateSensitivity({ contrast, strength, steps }, color);
+  }
+
+  // If simulating a light source
+  if (condition === "illuminant") {
+    const { temperature = 1000 } = settings;
+
+    if (steps) {
+      return colorInterpolation(
+        simulateIlluminant,
+        {
+          temperature,
+          strength,
+          steps,
+        },
+        color,
+      );
+    }
+
+    return simulateIlluminant({ temperature, strength, steps }, color);
+  }
+
+  // Otherwise handle colorblindness
+
+  // Simulated through reducing the chroma to zero while adjusting no other properties.
+  if (type === "achromatopsia") {
+    const chroma = -100;
+
+    if (steps) {
+      return colorInterpolation(colorAdjustment, { chroma, steps }, color);
+    }
+
+    return colorAdjustment({ chroma }, color);
+  }
+
+  // Protanomaly, Deuteranomaly, and Tritanomaly have a strength adjustment
+  if (type.endsWith("anomaly")) {
+    let $type = type.replace(/anomaly/g, "anope");
+
+    if (steps) {
+      return colorInterpolation(
+        simulateColorblindness,
+        { method, type: $type, strength, steps },
+        color,
+      );
+    }
+
+    return simulateColorblindness(
+      { method, type: $type, strength, steps },
+      color,
+    );
+  }
+
+  // Protanopia, Deuteranopia, Tritanopia by definition do not
+  const $type = type.replace(/ia/g, "e");
+
+  if (steps) {
+    return colorInterpolation(
+      simulateColorblindness,
+      { method, type: $type, strength: 100, steps },
+      color,
+    );
+  }
+
+  return simulateColorblindness(
+    { method, type: $type, strength: 100, steps },
+    color,
+  );
+}
+#+END_SRC
+
+***** color_simulate Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color_simulate_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { color_simulate } from "../color.js";
+
+describe("color_simulate(settings, color)", () => {
+  it("should reject invalid colors", () => {
+    expect(() => color_simulate({}, "invalid")).toThrow();
+  });
+
+  const [red, green, blue, purple] = [
+    "crimson",
+    "chartreuse",
+    "dodgerblue",
+    "rebeccapurple",
+  ];
+
+  const colorblindness = {
+    achromatopsia: {
+      red: [red, "#787878"],
+      green: [green, "#d6ddd4"],
+      blue: [blue, "#909090"],
+      purple: [purple, "#525252"],
+    },
+    protanomaly: {
+      brettel: {
+        red: [red, ["#dc143c", "#c62d3c", "#ab3d3d", "#8a483d"]],
+        green: [green, ["#7fff00", "#b6fb00", "#ddf800", "#fcf400"]],
+        blue: [blue, ["#1e90ff", "#2090ff", "#2290ff", "#2390ff"]],
+        purple: [purple, ["#663399", "#543799", "#3d3b99", "#0a3f99"]],
+      },
+      vienot: {
+        red: [red, ["#dc143c", "#c52e3c", "#aa3d3d", "#87493d"]],
+        green: [green, ["#7fff00", "#a7fd00", "#c6fa00", "#dff700"]],
+        blue: [blue, ["#1e90ff", "#4c8eff", "#658cff", "#798bff"]],
+        purple: [purple, ["#663399", "#5e3599", "#543799", "#493999"]],
+      },
+    },
+    protanopia: {
+      brettel: {
+        red: [red, ["#59523e"]],
+        green: [green, ["#fff000"]],
+        blue: [blue, ["#2590ff"]],
+        purple: [purple, ["#004299"]],
+      },
+      vienot: {
+        red: [red, ["#53533e"]],
+        green: [green, ["#f5f500"]],
+        blue: [blue, ["#8989ff"]],
+        purple: [purple, ["#3b3b99"]],
+      },
+    },
+    deuteranomaly: {
+      brettel: {
+        red: [red, ["#dc143c", "#cc4239", "#ba5937", "#a56b34"]],
+        green: [green, ["#7fff00", "#aaf612", "#c9ed1c", "#e4e324"]],
+        blue: [blue, ["#1e90ff", "#1f90ff", "#2190ff", "#2290ff"]],
+        purple: [purple, ["#663399", "#593d99", "#4a4599", "#364c98"]],
+      },
+      vienot: {
+        red: [red, ["#dc143c", "#ca4539", "#b65e36", "#9e7033"]],
+        green: [green, ["#7fff00", "#a0f80e", "#baf217", "#d0eb1e"]],
+        blue: [blue, ["#1e90ff", "#458bff", "#5c86ff", "#6d81ff"]],
+        purple: [purple, ["#663399", "#5f3999", "#583e99", "#504299"]],
+      },
+    },
+    deuteranopia: {
+      brettel: {
+        red: [red, ["#8c7a31"]],
+        green: [green, ["#fbd82a"]],
+        blue: [blue, ["#2390ff"]],
+        purple: [purple, ["#0e5398"]],
+      },
+      vienot: {
+        red: [red, ["#808030"]],
+        green: [green, ["#e3e324"]],
+        blue: [blue, ["#7c7cff"]],
+        purple: [purple, ["#474799"]],
+      },
+    },
+    // Brettel 1997 is the only known accurate tritanope simulating algorithm, so both
+    // methods use it by default.
+    tritanomaly: {
+      brettel: {
+        red: [red, ["#dc143c", "#dc123f", "#dc1042", "#dc0e45"]],
+        green: [green, ["#7fff00", "#8bfa8c", "#95f5bf", "#9ff0e5"]],
+        blue: [blue, ["#1e90ff", "#0094f2", "#0098e4", "#009cd5"]],
+        purple: [purple, ["#663399", "#623b8b", "#5e417b", "#5a4767"]],
+      },
+      vienot: {
+        red: [red, ["#dc143c", "#dc123f", "#dc1042", "#dc0e45"]],
+        green: [green, ["#7fff00", "#8bfa8c", "#95f5bf", "#9ff0e5"]],
+        blue: [blue, ["#1e90ff", "#0094f2", "#0098e4", "#009cd5"]],
+        purple: [purple, ["#663399", "#623b8b", "#5e417b", "#5a4767"]],
+      },
+    },
+    tritanopia: {
+      brettel: {
+        red: [red, ["#dc0c48"]],
+        green: [green, ["#a7ebff"]],
+        blue: [blue, ["#00a0c5"]],
+        purple: [purple, ["#554c4d"]],
+      },
+      vienot: {
+        red: [red, ["#dc0c48"]],
+        green: [green, ["#a7ebff"]],
+        blue: [blue, ["#00a0c5"]],
+        purple: [purple, ["#554c4d"]],
+      },
+    },
+  };
+
+  describe("settings.condition = 'colorblindness'", () => {
+    describe("settings.type = 'achromatopsia'", () => {
+      it("should correctly simulate achromatopsia", () => {
+        Object.values(colorblindness.achromatopsia).forEach(
+          ([input, output]) => {
+            expect(
+              color_simulate(
+                {
+                  condition: "colorblindness",
+                  type: "achromatopsia",
+                },
+                input,
+              ),
+            ).toBe(output);
+          },
+        );
+      });
+    });
+    Object.entries(colorblindness)
+      .filter(([category]) => category !== "achromatopsia")
+      .forEach(([type, data]) => {
+        describe(`settings.type = '${type}'`, () => {
+          Object.entries(data).forEach(([method, $data]) => {
+            it(`should correctly simulate ${type} with ${method} method from samples`, () => {
+              Object.values($data).forEach(([input, results]) => {
+                results.forEach((output, pos) => {
+                  expect(
+                    color_simulate(
+                      {
+                        condition: "colorblindness",
+                        method,
+                        type,
+                        strength: 25 * pos,
+                      },
+                      input,
+                    ),
+                  ).toBe(output);
+                });
+              });
+            });
+          });
+        });
+      });
+  });
+
+  const sensitivity = {
+    0: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    25: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    50: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    75: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    100: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+  };
+
+  const illuminant = {
+    1000: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    1200: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    1400: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    1800: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    2400: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    3600: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    4800: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    6400: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+    7200: {
+      red: [red, []],
+      green: [green, []],
+      blue: [blue, []],
+    },
+  };
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color_simulate_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  color_simulate(settings, color)
+  • should reject invalid colors
+    settings.condition = 'colorblindness'
+      settings.type = 'achromatopsia'
+      • should correctly simulate achromatopsia
+      settings.type = 'protanomaly'
+      • should correctly simulate protanomaly with brettel method from samples
+      • should correctly simulate protanomaly with vienot method from samples
+      settings.type = 'protanopia'
+      • should correctly simulate protanopia with brettel method from samples
+      • should correctly simulate protanopia with vienot method from samples
+      settings.type = 'deuteranomaly'
+      • should correctly simulate deuteranomaly with brettel method from samples
+      • should correctly simulate deuteranomaly with vienot method from samples
+      settings.type = 'deuteranopia'
+      • should correctly simulate deuteranopia with brettel method from samples
+      • should correctly simulate deuteranopia with vienot method from samples
+      settings.type = 'tritanomaly'
+      • should correctly simulate tritanomaly with brettel method from samples
+      • should correctly simulate tritanomaly with vienot method from samples
+      settings.type = 'tritanopia'
+      • should correctly simulate tritanopia with brettel method from samples
+      • should correctly simulate tritanopia with vienot method from samples
+
+running 14 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_simulate_test.js
+test color_simulate(settings, color) > should reject invalid colors ... ok (14ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'achromatopsia' > should correctly simulate achromatopsia ... ok (22ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with brettel method from samples ... ok (25ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with vienot method from samples ... ok (20ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with brettel method from samples ... ok (9ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with vienot method from samples ... ok (9ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with brettel method from samples ... ok (17ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with vienot method from samples ... ok (17ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with brettel method from samples ... ok (8ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with vienot method from samples ... ok (8ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with brettel method from samples ... ok (19ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with vienot method from samples ... ok (25ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with brettel method from samples ... ok (8ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with vienot method from samples ... ok (12ms)
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (281ms)
+
+#+end_src
+
 **** color_as_hex
 
 An emitter that accepts a valid CSS =color= and outputs its hexadecimal equivalent.
@@ -2382,7 +2806,7 @@ export function palette_create(settings, color) {
 
     return artisticConfiguration(
       { contrast, tints, tones, shades, stated },
-      color
+      color,
     );
   }
 
@@ -2916,8 +3340,6 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (654m
 
 #+end_src
 
-**** palette_daltonize
-
 **** palette_as_tokens
 
 An emitter that accepts a =palette= and assembles it into a dictionary of color tokens.
@@ -3371,23 +3793,23 @@ QuarkSuite supports.
 #+BEGIN_SRC js
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "%)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "%)"].join(""),
 );
 
 const LEGACY_DELIMITER = /(?:[\s,]+)/;
 const LEGACY_ALPHA_DELIMITER = new RegExp(
-  LEGACY_DELIMITER.source.replace(",", ",/")
+  LEGACY_DELIMITER.source.replace(",", ",/"),
 );
 const MODERN_DELIMITER = new RegExp(LEGACY_DELIMITER.source.replace(",", ""));
 const MODERN_ALPHA_DELIMITER = new RegExp(
-  LEGACY_ALPHA_DELIMITER.source.replace(",", "")
+  LEGACY_ALPHA_DELIMITER.source.replace(",", ""),
 );
 
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join("")
+  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
 );
 const HUE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
 );
 #+END_SRC
 
@@ -3594,8 +4016,8 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       VALUES.join(DELIMITER),
-      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`
-    )
+      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`,
+    ),
   );
 }
 #+END_SRC
@@ -3609,7 +4031,7 @@ prefix. As you'll see, some tokens repeat and others have to be slotted individu
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
-    Array(3).fill(COMPONENT_TOKEN)
+    Array(3).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 #+END_SRC
@@ -3634,7 +4056,7 @@ to CSS Color Module 5, but I implemented it before I found that out.
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(COMPONENT_TOKEN)
+    Array(4).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 #+END_SRC
@@ -4359,11 +4781,11 @@ function ciexyzToLrgb([X, Y, Z]) {
   ];
 
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
   );
 
   const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
-    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
   );
 
   return [LR, LG, LB];
@@ -4379,7 +4801,7 @@ function cielabToRgb([, values]) {
   const [L, a, b, A] = values;
 
   const [R, G, B] = lrgbToRgb(ciexyzToLrgb(cielabToCiexyz([L, a, b]))).map(
-    (n) => numberToChannel(n)
+    (n) => numberToChannel(n),
   );
 
   return ["rgb", [R, G, B, A]];
@@ -4492,7 +4914,7 @@ function hslFromRgb([, rgbValues]) {
 
   const L = calculateLightness(cmin, cmax);
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
   const S = calculateSaturation(delta, L);
 
@@ -4532,7 +4954,7 @@ function hwbFromRgb([, rgbValues]) {
   const delta = cmax - cmin;
 
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
 
   const [W, BLK] = [cmin, 1 - cmax];
@@ -4572,11 +4994,11 @@ function lrgbToCiexyz([LR, LG, LB]) {
   ];
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
-    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
   );
 
   const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
   );
 
   return [X, Y, Z];
@@ -4632,7 +5054,7 @@ function lrgbToOklab([LR, LG, LB]) {
   ];
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
-    ([L, M, S]) => L * LR + M * LG + S * LB
+    ([L, M, S]) => L * LR + M * LG + S * LB,
   ).map((V) => Math.cbrt(V));
 
   return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
@@ -4799,7 +5221,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
     values.join(DELIMITER),
     isOpaque ? "" : ALPHA_DELIMITER.concat(alpha),
-    ")"
+    ")",
   );
 }
 #+END_SRC
@@ -4812,7 +5234,7 @@ function serializeRgb([, rgbResult]) {
 
   // Clamp RGB channels 0-255
   const [R, G, B] = [r, g, b].map(
-    (component) => +clamp(component, 0, 255).toFixed(3)
+    (component) => +clamp(component, 0, 255).toFixed(3),
   );
 
   return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
@@ -4843,7 +5265,8 @@ function serializeCmyk([, cmykResult]) {
 
   // Convert to percentage, cap at 0-100
   const [C, M, Y, K] = [c, m, y, k].map(
-    (n) => `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`
+    (n) =>
+      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
   );
 
   return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
@@ -5033,7 +5456,7 @@ function extractOklchValues(color) {
 
 function adjustColorProperties(
   { lightness, chroma, hue, alpha },
-  [l, c, h, a]
+  [l, c, h, a],
 ) {
   // Adjust properties only if defined, make values parseable
   let L = numberFromPercentage(lightness ? l + lightness : l);
@@ -5063,7 +5486,7 @@ function serializeInput([format, values]) {
 
 function colorAdjustment(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  color
+  color,
 ) {
   // Ensure color is valid and store its format
   const [format] = validator(color);
@@ -5074,7 +5497,7 @@ function colorAdjustment(
   // Adjust target properties
   const [L, C, H, A] = adjustColorProperties(
     { lightness, chroma, hue, alpha },
-    values
+    values,
   );
 
   // Serialize oklch result
@@ -5167,7 +5590,7 @@ function colorMix({ target, strength = 0 }, color) {
   const [L, a, b, A] = calculateMixture(
     color,
     target,
-    numberFromPercentage(strength)
+    numberFromPercentage(strength),
   );
 
   // Serialize the blend result
@@ -5195,8 +5618,8 @@ QuarkSuite's color API.
 
 ***** Color Vision Deficiency (Colorblindness)
 
-If you want a full introduction to what color vision deficiency is and why it's important,
-[[http://www.color-blindness.com/what-is-color-blindness/][this article on the phenomenon]] will get you caught up.
+If you want a full introduction to what color vision deficiency is and why it's important, [[http://www.color-blindness.com/what-is-color-blindness/][this article on the
+phenomenon]] will get you caught up.
 
 What I want to focus on is the technical details of simulating colorblindness (or daltonization) so we can troubleshoot
 and analyze the viability of the colors we use.
@@ -5209,7 +5632,7 @@ has a JavaScript implementation. That wide availability can be double-edged, how
 After some additional research, I eventually landed on this DaltonLens article [[https://daltonlens.org/opensource-cvd-simulation/][assessing the different approaches]] to
 color vision deficiency simulation.
 
-Now I know that Brettel 1997 and Vienot 1999 are the most accurate for calculating protan and deutan deficiency. Vienot has
+Now I know that Brettel 1997 and Vienot 1999 are the most accurate for calculating protan and deuteran deficiency. Vienot has
 a slight performance benefit over Brettel—which is slightly more accurate. I'm not sure how much difference that will
 make in a browser environment, so I'll do some profiling.
 
@@ -5233,7 +5656,7 @@ JavaScript. It takes care of the aforementioned sRGB adaptation as well.
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
@@ -5241,35 +5664,77 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 
   // Set up the Brettel simulation matrices
   const brettel = {
-    protan: {
+    protanope: {
       a: [
-        0.1498, 1.19548, -0.34528, 0.10764, 0.84864, 0.04372, 0.00384, -0.0054,
+        0.1498,
+        1.19548,
+        -0.34528,
+        0.10764,
+        0.84864,
+        0.04372,
+        0.00384,
+        -0.0054,
         1.00156,
       ],
       b: [
-        0.1457, 1.16172, -0.30742, 0.10816, 0.85291, 0.03892, 0.00386, -0.00524,
+        0.1457,
+        1.16172,
+        -0.30742,
+        0.10816,
+        0.85291,
+        0.03892,
+        0.00386,
+        -0.00524,
         1.00139,
       ],
       n: [0.00048, 0.00393, -0.00441],
     },
-    deutan: {
+    deuteranope: {
       a: [
-        0.36477, 0.86381, -0.22858, 0.26294, 0.64245, 0.09462, -0.02006,
-        0.02728, 0.99278,
+        0.36477,
+        0.86381,
+        -0.22858,
+        0.26294,
+        0.64245,
+        0.09462,
+        -0.02006,
+        0.02728,
+        0.99278,
       ],
       b: [
-        0.37298, 0.88166, -0.25464, 0.25954, 0.63506, 0.1054, -0.0198, 0.02784,
+        0.37298,
+        0.88166,
+        -0.25464,
+        0.25954,
+        0.63506,
+        0.1054,
+        -0.0198,
+        0.02784,
         0.99196,
       ],
       n: [-0.00281, -0.00611, 0.00892],
     },
-    tritan: {
+    tritanope: {
       a: [
-        1.01277, 0.13548, -0.14826, -0.01243, 0.86812, 0.14431, 0.07589, 0.805,
+        1.01277,
+        0.13548,
+        -0.14826,
+        -0.01243,
+        0.86812,
+        0.14431,
+        0.07589,
+        0.805,
         0.11911,
       ],
       b: [
-        0.93678, 0.18979, -0.12657, 0.06154, 0.81526, 0.1232, -0.37562, 1.12767,
+        0.93678,
+        0.18979,
+        -0.12657,
+        0.06154,
+        0.81526,
+        0.1232,
+        -0.37562,
+        1.12767,
         0.24796,
       ],
       n: [0.03901, -0.02788, -0.01113],
@@ -5292,7 +5757,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
@@ -5305,25 +5770,41 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
   const [LR, LG, LB] = rgbToLrgb([r, g, b]);
 
-  // Right off the bat, if the type is "tritan", use the Brettel method
-  if (type === "tritan") {
+  // Right off the bat, if the type is "tritanope", use the Brettel method
+  if (type === "tritanope") {
     return cvdBrettelSimulation({ type, strength }, color);
   }
 
   // Otherwise use the correct transformation matrix
 
   const vienot = {
-    protan: [
-      0.11238, 0.88762, 0.0, 0.11238, 0.88762, -0.0, 0.00401, -0.00401, 1.0,
+    protanope: [
+      0.11238,
+      0.88762,
+      0.0,
+      0.11238,
+      0.88762,
+      -0.0,
+      0.00401,
+      -0.00401,
+      1.0,
     ],
-    deutan: [
-      0.29275, 0.70725, 0.0, 0.29275, 0.70725, -0.0, -0.02234, 0.02234, 1.0,
+    deuteranope: [
+      0.29275,
+      0.70725,
+      0.0,
+      0.29275,
+      0.70725,
+      -0.0,
+      -0.02234,
+      0.02234,
+      1.0,
     ],
   };
 
@@ -5341,7 +5822,7 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
@@ -5359,8 +5840,8 @@ The main purpose of it in this library, however, is to help designers and develo
 
 #+BEGIN_SRC js
 function simulateColorblindness(
-  { method = "brettel", type, strength = 100 },
-  color
+  { method = "brettel", type, strength = 0 },
+  color,
 ) {
   // Validate input color and store result
   const [format] = validator(color);
@@ -5406,14 +5887,14 @@ This leads to the following process:
 That's all.
 
 #+BEGIN_SRC js
-function simulateContrastSensitivity({ contrast = 0, strength = 0 }, color) {
+function simulateSensitivity({ contrast = 0, strength = 0 }, color) {
   // Derive contrast from a shade of gray
   const GRAY = colorMix(
     {
       target: "white",
       strength: 100 * numberFromPercentage(contrast),
     },
-    "black"
+    "black",
   );
 
   // Mix resultant gray with input color
@@ -5422,7 +5903,7 @@ function simulateContrastSensitivity({ contrast = 0, strength = 0 }, color) {
       target: GRAY,
       strength: 100 * numberFromPercentage(strength),
     },
-    color
+    color,
   );
 }
 #+END_SRC
@@ -5474,7 +5955,7 @@ function kelvinToRgb(temperature) {
   return serializeRgb(["rgb", [R, G, B, 1]]);
 }
 
-function simulateTemperature({ temperature = 6500, strength = 0 }, color) {
+function simulateIlluminant({ temperature = 1000, strength = 0 }, color) {
   const target = kelvinToRgb(temperature);
 
   return colorMix({ target, strength }, color);
@@ -5483,11 +5964,12 @@ function simulateTemperature({ temperature = 6500, strength = 0 }, color) {
 
 **** Color Interpolation
 
-Now that the two main actions are defined and implemented, we have almost all the tools required to generate full
-palettes. The missing ingredient is interpolation. QuarkSuite supports two kinds of interpolation:
+Now that the main color actions are defined and implemented, we have almost all the tools required to generate full
+palettes. The missing ingredient is interpolation. QuarkSuite supports three kinds of interpolation:
 
 + Interpolating over properties
 + Interpolating over a mixture
++ Interpolating over simulation output
 
 From this, we'll a helper for actions to generate tints, tones, and shades as well as blends and a few extras. The two
 action helpers we created so far have a similar call structure with only slight differences in the behavior, so we'll create
@@ -5498,9 +5980,9 @@ of its arguments. It's a good tool to use in situations where you have related f
 differing internal behavior. Such as this one.
 
 #+BEGIN_SRC js
-function colorInterpolation(action, modifiers, input) {
+function colorInterpolation(action, settings, input) {
   // Set default for shared step property
-  const { steps = 1 } = modifiers;
+  const { steps = 1 } = settings;
 
   // Fill an array with a length of steps with the input color
   return [
@@ -5512,29 +5994,74 @@ function colorInterpolation(action, modifiers, input) {
           const interpolate = (property, index) =>
             property - (property / steps) * index;
 
-          // Now, we vary the behavior here based on the name of the action
-          if (action.name === "colorMix") {
-            // Destructure unique properties
-            const { strength = 0, target = color } = modifiers;
+          // Store result
+          let result = "";
 
-            return colorMix(
-              { strength: interpolate(strength, pos), target },
-              color
+          // Now, we vary the behavior here based on the name of the action
+          if (action.name === "colorAdjustment") {
+            // Destructure unique properties
+            const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = settings;
+
+            result = colorAdjustment(
+              {
+                lightness: interpolate(lightness, pos),
+                chroma: interpolate(chroma, pos),
+                hue: interpolate(hue, pos),
+                alpha: interpolate(alpha, pos),
+              },
+              color,
             );
           }
 
-          const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = modifiers;
+          if (action.name === "colorMix") {
+            // Destructure unique properties
+            const { strength = 0, target = color } = settings;
 
-          return colorAdjustment(
-            {
-              lightness: interpolate(lightness, pos),
-              chroma: interpolate(chroma, pos),
-              hue: interpolate(hue, pos),
-              alpha: interpolate(alpha, pos),
-            },
-            color
-          );
-        })
+            result = colorMix(
+              { strength: interpolate(strength, pos), target },
+              color,
+            );
+          }
+
+          if (action.name === "simulateColorblindness") {
+            const { method = "brettel", type, strength = 0 } = settings;
+
+            result = simulateColorblindness(
+              {
+                method,
+                type,
+                strength: interpolate(strength, pos),
+              },
+              color,
+            );
+          }
+
+          if (action.name === "simulateSensitivity") {
+            const { contrast = 0, strength = 0 } = settings;
+
+            result = simulateSensitivity(
+              {
+                contrast: interpolate(contrast, pos),
+                strength: interpolate(strength, pos),
+              },
+              color,
+            );
+          }
+
+          if (action.name === "simulateIlluminant") {
+            const { temperature = 1000, strength = 0 } = settings;
+
+            result = simulateIlluminant(
+              {
+                temperature: interpolate(temperature, pos),
+                strength: interpolate(strength, pos),
+              },
+              color,
+            );
+          }
+
+          return result;
+        }),
     ),
   ].reverse();
 }
@@ -5560,17 +6087,17 @@ The same occurs for the interface states if =stated= is true.
 #+BEGIN_SRC js
 function materialConfiguration(
   { contrast = 100, accented = false, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -5583,7 +6110,7 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 6,
       },
-      color
+      color,
     ).reverse(),
     ...colorInterpolation(
       colorMix,
@@ -5592,52 +6119,52 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 4,
       },
-      color
+      color,
     ),
   ];
 
   // [A100, A200, A300, A400]
   const accents = accented
     ? [
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: -50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: -25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: 15,
-          },
-          color
-        ),
-      ]
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: -50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: -25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: 15,
+        },
+        color,
+      ),
+    ]
     : [];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, [variants, accents], states];
@@ -5646,23 +6173,23 @@ function materialConfiguration(
 
 ***** Artistic Configuration
 
-For the artistic configuration, we're going to allow the user to set =contrast= and =count= for each individual
+For the artistic configuration, we're going to allow the user to set overall =contrast= and an output limit for each
 variant. =stated= is also allowed here and works identically to the material-esque config.
 
 #+BEGIN_SRC js
 function artisticConfiguration(
   { contrast = 100, tints = 3, tones = 3, shades = 3, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -5670,47 +6197,47 @@ function artisticConfiguration(
   const variants = [
     tints
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#fff",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tints,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#fff",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tints,
+        },
+        color,
+      )
       : [],
     tones
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#aaa",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tones,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#aaa",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tones,
+        },
+        color,
+      )
       : [],
     shades
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#111",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: shades,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#111",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: shades,
+        },
+        color,
+      )
       : [],
   ];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, variants, states];
@@ -5746,7 +6273,7 @@ dark theme.
 #+BEGIN_SRC js
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -5778,8 +6305,7 @@ function variantContrastWcag({ rating, large, background }, variants) {
       return wcagContrastCriteria({ rating, large }, ratio);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -5860,8 +6386,7 @@ function variantsColorimetricContrast({ min, max, background }, variants) {
       return filterCondition({ min, max }, difference);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -5924,8 +6449,8 @@ function tokenizeMaterialVariants(variants) {
     // a100-a400
     ...(accents.length
       ? accents.reduce((acc, color, index) => {
-          return { ...acc, [`a${++index}00`]: color };
-        }, {})
+        return { ...acc, [`a${++index}00`]: color };
+      }, {})
       : {}),
   };
 }
@@ -5968,13 +6493,13 @@ function tokenizePalette(palette) {
     ...variations,
     ...(states.length
       ? {
-          state: {
-            pending: states[0],
-            success: states[1],
-            warning: states[2],
-            error: states[3],
-          },
-        }
+        state: {
+          pending: states[0],
+          success: states[1],
+          warning: states[2],
+          error: states[3],
+        },
+      }
       : {}),
   };
 }

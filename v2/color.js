@@ -15,7 +15,7 @@ export function color_adjust(settings, color) {
         alpha,
         steps,
       },
-      color
+      color,
     );
   }
 
@@ -37,6 +37,107 @@ export function color_mix(settings, color) {
   return colorMix({ target, strength }, color);
 }
 // color_mix Implementation:1 ends here
+
+// color_simulate Implementation
+
+// [[file:../Notebook.org::*color_simulate Implementation][color_simulate Implementation:1]]
+export function color_simulate(settings, color) {
+  // Set immediate defaults
+  const {
+    condition = "colorblindness",
+    method = "brettel",
+    type = "protanopia",
+    strength = 0,
+    steps = 0,
+  } = settings;
+
+  // If simulating contrast sensivity
+  if (condition === "sensitivity") {
+    // Set unique defaults
+    const { contrast = 0 } = settings;
+
+    if (steps) {
+      return colorInterpolation(
+        simulateSensitivity,
+        {
+          contrast,
+          strength,
+          steps,
+        },
+        color,
+      );
+    }
+
+    return simulateSensitivity({ contrast, strength, steps }, color);
+  }
+
+  // If simulating a light source
+  if (condition === "illuminant") {
+    const { temperature = 1000 } = settings;
+
+    if (steps) {
+      return colorInterpolation(
+        simulateIlluminant,
+        {
+          temperature,
+          strength,
+          steps,
+        },
+        color,
+      );
+    }
+
+    return simulateIlluminant({ temperature, strength, steps }, color);
+  }
+
+  // Otherwise handle colorblindness
+
+  // Simulated through reducing the chroma to zero while adjusting no other properties.
+  if (type === "achromatopsia") {
+    const chroma = -100;
+
+    if (steps) {
+      return colorInterpolation(colorAdjustment, { chroma, steps }, color);
+    }
+
+    return colorAdjustment({ chroma }, color);
+  }
+
+  // Protanomaly, Deuteranomaly, and Tritanomaly have a strength adjustment
+  if (type.endsWith("anomaly")) {
+    let $type = type.replace(/anomaly/g, "anope");
+
+    if (steps) {
+      return colorInterpolation(
+        simulateColorblindness,
+        { method, type: $type, strength, steps },
+        color,
+      );
+    }
+
+    return simulateColorblindness(
+      { method, type: $type, strength, steps },
+      color,
+    );
+  }
+
+  // Protanopia, Deuteranopia, Tritanopia by definition do not
+  const $type = type.replace(/ia/g, "e");
+
+  if (steps) {
+    return colorInterpolation(
+      simulateColorblindness,
+      { method, type: $type, strength: 100, steps },
+      color,
+    );
+  }
+
+  return simulateColorblindness(
+    { method, type: $type, strength: 100, steps },
+    color,
+  );
+}
+// color_simulate Implementation:1 ends here
 
 // color_as_hex Implementation
 
@@ -253,7 +354,7 @@ export function palette_create(settings, color) {
 
     return artisticConfiguration(
       { contrast, tints, tones, shades, stated },
-      color
+      color,
     );
   }
 
@@ -303,23 +404,23 @@ export function palette_as_tokens(palette) {
 // [[file:../Notebook.org::*Tokenization][Tokenization:1]]
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "%)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "%)"].join(""),
 );
 
 const LEGACY_DELIMITER = /(?:[\s,]+)/;
 const LEGACY_ALPHA_DELIMITER = new RegExp(
-  LEGACY_DELIMITER.source.replace(",", ",/")
+  LEGACY_DELIMITER.source.replace(",", ",/"),
 );
 const MODERN_DELIMITER = new RegExp(LEGACY_DELIMITER.source.replace(",", ""));
 const MODERN_ALPHA_DELIMITER = new RegExp(
-  LEGACY_ALPHA_DELIMITER.source.replace(",", "")
+  LEGACY_ALPHA_DELIMITER.source.replace(",", ""),
 );
 
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join("")
+  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
 );
 const HUE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
 );
 // Tokenization:1 ends here
 
@@ -521,8 +622,8 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       VALUES.join(DELIMITER),
-      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`
-    )
+      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`,
+    ),
   );
 }
 // Validating Functional Formats:1 ends here
@@ -536,7 +637,7 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
-    Array(3).fill(COMPONENT_TOKEN)
+    Array(3).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 // RGB Validation:1 ends here
@@ -561,7 +662,7 @@ function hslValidator(color) {
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(COMPONENT_TOKEN)
+    Array(4).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 // CMYK Validation:1 ends here
@@ -1232,11 +1333,11 @@ function ciexyzToLrgb([X, Y, Z]) {
   ];
 
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
   );
 
   const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
-    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
   );
 
   return [LR, LG, LB];
@@ -1252,7 +1353,7 @@ function cielabToRgb([, values]) {
   const [L, a, b, A] = values;
 
   const [R, G, B] = lrgbToRgb(ciexyzToLrgb(cielabToCiexyz([L, a, b]))).map(
-    (n) => numberToChannel(n)
+    (n) => numberToChannel(n),
   );
 
   return ["rgb", [R, G, B, A]];
@@ -1361,7 +1462,7 @@ function hslFromRgb([, rgbValues]) {
 
   const L = calculateLightness(cmin, cmax);
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
   const S = calculateSaturation(delta, L);
 
@@ -1401,7 +1502,7 @@ function hwbFromRgb([, rgbValues]) {
   const delta = cmax - cmin;
 
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
 
   const [W, BLK] = [cmin, 1 - cmax];
@@ -1441,11 +1542,11 @@ function lrgbToCiexyz([LR, LG, LB]) {
   ];
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
-    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
   );
 
   const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
   );
 
   return [X, Y, Z];
@@ -1501,7 +1602,7 @@ function lrgbToOklab([LR, LG, LB]) {
   ];
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
-    ([L, M, S]) => L * LR + M * LG + S * LB
+    ([L, M, S]) => L * LR + M * LG + S * LB,
   ).map((V) => Math.cbrt(V));
 
   return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
@@ -1657,7 +1758,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
     values.join(DELIMITER),
     isOpaque ? "" : ALPHA_DELIMITER.concat(alpha),
-    ")"
+    ")",
   );
 }
 // Serializing Functional Formats:1 ends here
@@ -1670,7 +1771,7 @@ function serializeRgb([, rgbResult]) {
 
   // Clamp RGB channels 0-255
   const [R, G, B] = [r, g, b].map(
-    (component) => +clamp(component, 0, 255).toFixed(3)
+    (component) => +clamp(component, 0, 255).toFixed(3),
   );
 
   return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
@@ -1701,7 +1802,8 @@ function serializeCmyk([, cmykResult]) {
 
   // Convert to percentage, cap at 0-100
   const [C, M, Y, K] = [c, m, y, k].map(
-    (n) => `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`
+    (n) =>
+      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
   );
 
   return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
@@ -1855,7 +1957,7 @@ function extractOklchValues(color) {
 
 function adjustColorProperties(
   { lightness, chroma, hue, alpha },
-  [l, c, h, a]
+  [l, c, h, a],
 ) {
   // Adjust properties only if defined, make values parseable
   let L = numberFromPercentage(lightness ? l + lightness : l);
@@ -1885,7 +1987,7 @@ function serializeInput([format, values]) {
 
 function colorAdjustment(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  color
+  color,
 ) {
   // Ensure color is valid and store its format
   const [format] = validator(color);
@@ -1896,7 +1998,7 @@ function colorAdjustment(
   // Adjust target properties
   const [L, C, H, A] = adjustColorProperties(
     { lightness, chroma, hue, alpha },
-    values
+    values,
   );
 
   // Serialize oklch result
@@ -1972,7 +2074,7 @@ function colorMix({ target, strength = 0 }, color) {
   const [L, a, b, A] = calculateMixture(
     color,
     target,
-    numberFromPercentage(strength)
+    numberFromPercentage(strength),
   );
 
   // Serialize the blend result
@@ -1992,7 +2094,7 @@ function colorMix({ target, strength = 0 }, color) {
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
@@ -2000,35 +2102,77 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 
   // Set up the Brettel simulation matrices
   const brettel = {
-    protan: {
+    protanope: {
       a: [
-        0.1498, 1.19548, -0.34528, 0.10764, 0.84864, 0.04372, 0.00384, -0.0054,
+        0.1498,
+        1.19548,
+        -0.34528,
+        0.10764,
+        0.84864,
+        0.04372,
+        0.00384,
+        -0.0054,
         1.00156,
       ],
       b: [
-        0.1457, 1.16172, -0.30742, 0.10816, 0.85291, 0.03892, 0.00386, -0.00524,
+        0.1457,
+        1.16172,
+        -0.30742,
+        0.10816,
+        0.85291,
+        0.03892,
+        0.00386,
+        -0.00524,
         1.00139,
       ],
       n: [0.00048, 0.00393, -0.00441],
     },
-    deutan: {
+    deuteranope: {
       a: [
-        0.36477, 0.86381, -0.22858, 0.26294, 0.64245, 0.09462, -0.02006,
-        0.02728, 0.99278,
+        0.36477,
+        0.86381,
+        -0.22858,
+        0.26294,
+        0.64245,
+        0.09462,
+        -0.02006,
+        0.02728,
+        0.99278,
       ],
       b: [
-        0.37298, 0.88166, -0.25464, 0.25954, 0.63506, 0.1054, -0.0198, 0.02784,
+        0.37298,
+        0.88166,
+        -0.25464,
+        0.25954,
+        0.63506,
+        0.1054,
+        -0.0198,
+        0.02784,
         0.99196,
       ],
       n: [-0.00281, -0.00611, 0.00892],
     },
-    tritan: {
+    tritanope: {
       a: [
-        1.01277, 0.13548, -0.14826, -0.01243, 0.86812, 0.14431, 0.07589, 0.805,
+        1.01277,
+        0.13548,
+        -0.14826,
+        -0.01243,
+        0.86812,
+        0.14431,
+        0.07589,
+        0.805,
         0.11911,
       ],
       b: [
-        0.93678, 0.18979, -0.12657, 0.06154, 0.81526, 0.1232, -0.37562, 1.12767,
+        0.93678,
+        0.18979,
+        -0.12657,
+        0.06154,
+        0.81526,
+        0.1232,
+        -0.37562,
+        1.12767,
         0.24796,
       ],
       n: [0.03901, -0.02788, -0.01113],
@@ -2051,7 +2195,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
@@ -2064,25 +2208,41 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
   const [LR, LG, LB] = rgbToLrgb([r, g, b]);
 
-  // Right off the bat, if the type is "tritan", use the Brettel method
-  if (type === "tritan") {
+  // Right off the bat, if the type is "tritanope", use the Brettel method
+  if (type === "tritanope") {
     return cvdBrettelSimulation({ type, strength }, color);
   }
 
   // Otherwise use the correct transformation matrix
 
   const vienot = {
-    protan: [
-      0.11238, 0.88762, 0.0, 0.11238, 0.88762, -0.0, 0.00401, -0.00401, 1.0,
+    protanope: [
+      0.11238,
+      0.88762,
+      0.0,
+      0.11238,
+      0.88762,
+      -0.0,
+      0.00401,
+      -0.00401,
+      1.0,
     ],
-    deutan: [
-      0.29275, 0.70725, 0.0, 0.29275, 0.70725, -0.0, -0.02234, 0.02234, 1.0,
+    deuteranope: [
+      0.29275,
+      0.70725,
+      0.0,
+      0.29275,
+      0.70725,
+      -0.0,
+      -0.02234,
+      0.02234,
+      1.0,
     ],
   };
 
@@ -2100,7 +2260,7 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
@@ -2118,8 +2278,8 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
 
 // [[file:../Notebook.org::*Color Vision Deficiency Interface][Color Vision Deficiency Interface:1]]
 function simulateColorblindness(
-  { method = "brettel", type, strength = 100 },
-  color
+  { method = "brettel", type, strength = 0 },
+  color,
 ) {
   // Validate input color and store result
   const [format] = validator(color);
@@ -2165,14 +2325,14 @@ function simulateColorblindness(
 // That's all.
 
 // [[file:../Notebook.org::*Contrast Sensitivity][Contrast Sensitivity:1]]
-function simulateContrastSensitivity({ contrast = 0, strength = 0 }, color) {
+function simulateSensitivity({ contrast = 0, strength = 0 }, color) {
   // Derive contrast from a shade of gray
   const GRAY = colorMix(
     {
       target: "white",
       strength: 100 * numberFromPercentage(contrast),
     },
-    "black"
+    "black",
   );
 
   // Mix resultant gray with input color
@@ -2181,7 +2341,7 @@ function simulateContrastSensitivity({ contrast = 0, strength = 0 }, color) {
       target: GRAY,
       strength: 100 * numberFromPercentage(strength),
     },
-    color
+    color,
   );
 }
 // Contrast Sensitivity:1 ends here
@@ -2233,7 +2393,7 @@ function kelvinToRgb(temperature) {
   return serializeRgb(["rgb", [R, G, B, 1]]);
 }
 
-function simulateTemperature({ temperature = 6500, strength = 0 }, color) {
+function simulateIlluminant({ temperature = 1000, strength = 0 }, color) {
   const target = kelvinToRgb(temperature);
 
   return colorMix({ target, strength }, color);
@@ -2242,11 +2402,12 @@ function simulateTemperature({ temperature = 6500, strength = 0 }, color) {
 
 // Color Interpolation
 
-// Now that the two main actions are defined and implemented, we have almost all the tools required to generate full
-// palettes. The missing ingredient is interpolation. QuarkSuite supports two kinds of interpolation:
+// Now that the main color actions are defined and implemented, we have almost all the tools required to generate full
+// palettes. The missing ingredient is interpolation. QuarkSuite supports three kinds of interpolation:
 
 // + Interpolating over properties
 // + Interpolating over a mixture
+// + Interpolating over simulation output
 
 // From this, we'll a helper for actions to generate tints, tones, and shades as well as blends and a few extras. The two
 // action helpers we created so far have a similar call structure with only slight differences in the behavior, so we'll create
@@ -2257,9 +2418,9 @@ function simulateTemperature({ temperature = 6500, strength = 0 }, color) {
 // differing internal behavior. Such as this one.
 
 // [[file:../Notebook.org::*Color Interpolation][Color Interpolation:1]]
-function colorInterpolation(action, modifiers, input) {
+function colorInterpolation(action, settings, input) {
   // Set default for shared step property
-  const { steps = 1 } = modifiers;
+  const { steps = 1 } = settings;
 
   // Fill an array with a length of steps with the input color
   return [
@@ -2271,29 +2432,74 @@ function colorInterpolation(action, modifiers, input) {
           const interpolate = (property, index) =>
             property - (property / steps) * index;
 
-          // Now, we vary the behavior here based on the name of the action
-          if (action.name === "colorMix") {
-            // Destructure unique properties
-            const { strength = 0, target = color } = modifiers;
+          // Store result
+          let result = "";
 
-            return colorMix(
-              { strength: interpolate(strength, pos), target },
-              color
+          // Now, we vary the behavior here based on the name of the action
+          if (action.name === "colorAdjustment") {
+            // Destructure unique properties
+            const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = settings;
+
+            result = colorAdjustment(
+              {
+                lightness: interpolate(lightness, pos),
+                chroma: interpolate(chroma, pos),
+                hue: interpolate(hue, pos),
+                alpha: interpolate(alpha, pos),
+              },
+              color,
             );
           }
 
-          const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = modifiers;
+          if (action.name === "colorMix") {
+            // Destructure unique properties
+            const { strength = 0, target = color } = settings;
 
-          return colorAdjustment(
-            {
-              lightness: interpolate(lightness, pos),
-              chroma: interpolate(chroma, pos),
-              hue: interpolate(hue, pos),
-              alpha: interpolate(alpha, pos),
-            },
-            color
-          );
-        })
+            result = colorMix(
+              { strength: interpolate(strength, pos), target },
+              color,
+            );
+          }
+
+          if (action.name === "simulateColorblindness") {
+            const { method = "brettel", type, strength = 0 } = settings;
+
+            result = simulateColorblindness(
+              {
+                method,
+                type,
+                strength: interpolate(strength, pos),
+              },
+              color,
+            );
+          }
+
+          if (action.name === "simulateSensitivity") {
+            const { contrast = 0, strength = 0 } = settings;
+
+            result = simulateSensitivity(
+              {
+                contrast: interpolate(contrast, pos),
+                strength: interpolate(strength, pos),
+              },
+              color,
+            );
+          }
+
+          if (action.name === "simulateIlluminant") {
+            const { temperature = 1000, strength = 0 } = settings;
+
+            result = simulateIlluminant(
+              {
+                temperature: interpolate(temperature, pos),
+                strength: interpolate(strength, pos),
+              },
+              color,
+            );
+          }
+
+          return result;
+        }),
     ),
   ].reverse();
 }
@@ -2308,17 +2514,17 @@ function colorInterpolation(action, modifiers, input) {
 // [[file:../Notebook.org::*Material Configuration][Material Configuration:1]]
 function materialConfiguration(
   { contrast = 100, accented = false, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -2331,7 +2537,7 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 6,
       },
-      color
+      color,
     ).reverse(),
     ...colorInterpolation(
       colorMix,
@@ -2340,52 +2546,52 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 4,
       },
-      color
+      color,
     ),
   ];
 
   // [A100, A200, A300, A400]
   const accents = accented
     ? [
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: -50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: -25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: 15,
-          },
-          color
-        ),
-      ]
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: -50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: -25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: 15,
+        },
+        color,
+      ),
+    ]
     : [];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, [variants, accents], states];
@@ -2394,23 +2600,23 @@ function materialConfiguration(
 
 // Artistic Configuration
 
-// For the artistic configuration, we're going to allow the user to set =contrast= and =count= for each individual
+// For the artistic configuration, we're going to allow the user to set overall =contrast= and an output limit for each
 // variant. =stated= is also allowed here and works identically to the material-esque config.
 
 // [[file:../Notebook.org::*Artistic Configuration][Artistic Configuration:1]]
 function artisticConfiguration(
   { contrast = 100, tints = 3, tones = 3, shades = 3, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -2418,47 +2624,47 @@ function artisticConfiguration(
   const variants = [
     tints
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#fff",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tints,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#fff",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tints,
+        },
+        color,
+      )
       : [],
     tones
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#aaa",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tones,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#aaa",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tones,
+        },
+        color,
+      )
       : [],
     shades
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#111",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: shades,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#111",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: shades,
+        },
+        color,
+      )
       : [],
   ];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, variants, states];
@@ -2483,7 +2689,7 @@ function artisticConfiguration(
 // [[file:../Notebook.org::*WCAG Color Contrast Ratios][WCAG Color Contrast Ratios:1]]
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -2515,8 +2721,7 @@ function variantContrastWcag({ rating, large, background }, variants) {
       return wcagContrastCriteria({ rating, large }, ratio);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2597,8 +2802,7 @@ function variantsColorimetricContrast({ min, max, background }, variants) {
       return filterCondition({ min, max }, difference);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2661,8 +2865,8 @@ function tokenizeMaterialVariants(variants) {
     // a100-a400
     ...(accents.length
       ? accents.reduce((acc, color, index) => {
-          return { ...acc, [`a${++index}00`]: color };
-        }, {})
+        return { ...acc, [`a${++index}00`]: color };
+      }, {})
       : {}),
   };
 }
@@ -2705,13 +2909,13 @@ function tokenizePalette(palette) {
     ...variations,
     ...(states.length
       ? {
-          state: {
-            pending: states[0],
-            success: states[1],
-            warning: states[2],
-            error: states[3],
-          },
-        }
+        state: {
+          pending: states[0],
+          success: states[1],
+          warning: states[2],
+          error: states[3],
+        },
+      }
       : {}),
   };
 }
