@@ -1128,10 +1128,10 @@ describe("color_simulate(settings, color)", () => {
                   condition: "colorblindness",
                   type: "achromatopsia",
                 },
-                input,
-              ),
+                input
+              )
             ).toBe(output);
-          },
+          }
         );
       });
     });
@@ -1140,7 +1140,7 @@ describe("color_simulate(settings, color)", () => {
       .forEach(([type, data]) => {
         describe(`settings.type = '${type}'`, () => {
           Object.entries(data).forEach(([method, $data]) => {
-            it(`should correctly simulate ${type} with ${method} method from samples`, () => {
+            it(`should correctly simulate ${type} with ${method} method on samples`, () => {
               Object.values($data).forEach(([input, results]) => {
                 results.forEach((output, pos) => {
                   expect(
@@ -1151,8 +1151,8 @@ describe("color_simulate(settings, color)", () => {
                         type,
                         strength: 25 * pos,
                       },
-                      input,
-                    ),
+                      input
+                    )
                   ).toBe(output);
                 });
               });
@@ -1164,31 +1164,48 @@ describe("color_simulate(settings, color)", () => {
 
   const sensitivity = {
     0: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
+      red: [red, ["#dc143c", "#950a26", "#540311", "#1b0002", "#000000"]],
+      green: [green, ["#7fff00", "#54ae00", "#2d6300", "#0b2200", "#000000"]],
+      blue: [blue, ["#1e90ff", "#1160ae", "#053463", "#010e22", "#000000"]],
     },
     25: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
+      red: [red, ["#dc143c", "#ab2837", "#7c2c31", "#4f2a2a", "#222222"]],
+      green: [green, ["#7fff00", "#68c22c", "#518933", "#3a532e", "#222222"]],
+      blue: [blue, ["#1e90ff", "#2973c2", "#2c5789", "#293c53", "#222222"]],
     },
     50: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
+      red: [red, ["#dc143c", "#c03e48", "#a45052", "#855c5b", "#636363"]],
+      green: [green, ["#7fff00", "#7cd746", "#76af59", "#6e8961", "#636363"]],
+      blue: [blue, ["#1e90ff", "#3e86d7", "#4f7cb0", "#5b7089", "#636363"]],
     },
     75: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
+      red: [red, ["#dc143c", "#d6525a", "#ce7576", "#c19392", "#aeaeae"]],
+      green: [green, ["#7fff00", "#90ec5d", "#9dd880", "#a6c399", "#aeaeae"]],
+      blue: [blue, ["#1e90ff", "#529aec", "#74a2d9", "#92a9c4", "#aeaeae"]],
     },
     100: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
+      red: [red, ["#dc143c", "#ec666c", "#f89c9b", "#ffcecc", "#ffffff"]],
+      green: [green, ["#7fff00", "#a4ff72", "#c4ffa7", "#e2ffd5", "#ffffff"]],
+      blue: [blue, ["#1e90ff", "#65aeff", "#9acaff", "#cde5ff", "#ffffff"]],
     },
   };
+
+  describe("settings.condition = 'sensitivity'", () => {
+    it("should correctly simulate contrast sensitivity on sample data set", () => {
+      Object.entries(sensitivity).forEach(([contrast, data]) => {
+        Object.values(data).forEach(([input, results]) => {
+          results.forEach((output, pos) => {
+            expect(
+              color_simulate(
+                { condition: "sensitivity", contrast, strength: 25 * pos },
+                input
+              )
+            ).toBe(output);
+          });
+        });
+      });
+    });
+  });
 
   const illuminant = {
     1000: {
@@ -1196,27 +1213,7 @@ describe("color_simulate(settings, color)", () => {
       green: [green, []],
       blue: [blue, []],
     },
-    1200: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
-    },
-    1400: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
-    },
-    1800: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
-    },
     2400: {
-      red: [red, []],
-      green: [green, []],
-      blue: [blue, []],
-    },
-    3600: {
       red: [red, []],
       green: [green, []],
       blue: [blue, []],
@@ -1255,41 +1252,44 @@ NO_COLOR=1 deno test v2/tests/color_simulate_test.js
       settings.type = 'achromatopsia'
       • should correctly simulate achromatopsia
       settings.type = 'protanomaly'
-      • should correctly simulate protanomaly with brettel method from samples
-      • should correctly simulate protanomaly with vienot method from samples
+      • should correctly simulate protanomaly with brettel method on samples
+      • should correctly simulate protanomaly with vienot method on samples
       settings.type = 'protanopia'
-      • should correctly simulate protanopia with brettel method from samples
-      • should correctly simulate protanopia with vienot method from samples
+      • should correctly simulate protanopia with brettel method on samples
+      • should correctly simulate protanopia with vienot method on samples
       settings.type = 'deuteranomaly'
-      • should correctly simulate deuteranomaly with brettel method from samples
-      • should correctly simulate deuteranomaly with vienot method from samples
+      • should correctly simulate deuteranomaly with brettel method on samples
+      • should correctly simulate deuteranomaly with vienot method on samples
       settings.type = 'deuteranopia'
-      • should correctly simulate deuteranopia with brettel method from samples
-      • should correctly simulate deuteranopia with vienot method from samples
+      • should correctly simulate deuteranopia with brettel method on samples
+      • should correctly simulate deuteranopia with vienot method on samples
       settings.type = 'tritanomaly'
-      • should correctly simulate tritanomaly with brettel method from samples
-      • should correctly simulate tritanomaly with vienot method from samples
+      • should correctly simulate tritanomaly with brettel method on samples
+      • should correctly simulate tritanomaly with vienot method on samples
       settings.type = 'tritanopia'
-      • should correctly simulate tritanopia with brettel method from samples
-      • should correctly simulate tritanopia with vienot method from samples
+      • should correctly simulate tritanopia with brettel method on samples
+      • should correctly simulate tritanopia with vienot method on samples
+    settings.condition = 'sensitivity'
+    • should correctly simulate contrast sensitivity on sample data set
 
-running 14 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_simulate_test.js
+running 15 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_simulate_test.js
 test color_simulate(settings, color) > should reject invalid colors ... ok (14ms)
 test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'achromatopsia' > should correctly simulate achromatopsia ... ok (22ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with brettel method from samples ... ok (25ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with vienot method from samples ... ok (20ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with brettel method from samples ... ok (9ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with vienot method from samples ... ok (9ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with brettel method from samples ... ok (17ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with vienot method from samples ... ok (17ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with brettel method from samples ... ok (8ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with vienot method from samples ... ok (8ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with brettel method from samples ... ok (19ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with vienot method from samples ... ok (25ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with brettel method from samples ... ok (8ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with vienot method from samples ... ok (12ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with brettel method on samples ... ok (24ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with vienot method on samples ... ok (25ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with brettel method on samples ... ok (8ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with vienot method on samples ... ok (9ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with brettel method on samples ... ok (17ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with vienot method on samples ... ok (17ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with brettel method on samples ... ok (9ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with vienot method on samples ... ok (8ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with brettel method on samples ... ok (21ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with vienot method on samples ... ok (23ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with brettel method on samples ... ok (9ms)
+test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with vienot method on samples ... ok (11ms)
+test color_simulate(settings, color) > settings.condition = 'sensitivity' > should correctly simulate contrast sensitivity on sample data set ... ok (219ms)
 
-test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (281ms)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (502ms)
 
 #+end_src
 
