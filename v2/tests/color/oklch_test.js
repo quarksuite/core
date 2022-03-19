@@ -1,10 +1,11 @@
-// color_as_oklch Tests
+// oklch Tests
 
-// [[file:../../Notebook.org::*color_as_oklch Tests][color_as_oklch Tests:1]]
+
+// [[file:../../../Notebook.org::*oklch Tests][oklch Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_oklch } from "../color.js";
+import { oklch } from "../color.js";
 
-describe("color_as_oklch(color)", () => {
+describe("oklch(color)", () => {
   const controlGroup = [
     ["black", "oklch(0% 0 0)"],
     ["gray", "oklch(59.987% 0 0)"],
@@ -23,20 +24,20 @@ describe("color_as_oklch(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_oklch("invalid")).toThrow();
+    expect(() => oklch("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_oklch(input)).toBe(output);
+      expect(oklch(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_oklch(input)).toBe(output);
+      expect(oklch(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_oklch Tests:1 ends here
+// oklch Tests:1 ends here

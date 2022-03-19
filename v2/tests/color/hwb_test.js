@@ -1,11 +1,11 @@
-// color_as_hwb Tests
+// hwb Tests
 
 
-// [[file:../../Notebook.org::*color_as_hwb Tests][color_as_hwb Tests:1]]
+// [[file:../../../Notebook.org::*hwb Tests][hwb Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hwb } from "../color.js";
+import { hwb } from "../color.js";
 
-describe("color_as_hwb(color)", () => {
+describe("hwb(color)", () => {
   const controlGroup = [
     ["black", "hwb(0 0% 100%)"],
     ["gray", "hwb(0 50.196% 49.804%)"],
@@ -24,20 +24,20 @@ describe("color_as_hwb(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hwb("invalid")).toThrow();
+    expect(() => hwb("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_hwb(input)).toBe(output);
+      expect(hwb(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hwb(input)).toBe(output);
+      expect(hwb(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_hwb Tests:1 ends here
+// hwb Tests:1 ends here

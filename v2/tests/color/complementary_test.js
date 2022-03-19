@@ -1,11 +1,8 @@
-// color_as_complementary Tests
-
-
-// [[file:../../Notebook.org::*color_as_complementary Tests][color_as_complementary Tests:1]]
+// [[file:../../../Notebook.org::*complementary Tests][complementary Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_complementary } from "../color.js";
+import { complementary } from "../color.js";
 
-describe("color_as_complementary(color)", () => {
+describe("complementary(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#00a9db"]],
     ["orange", ["#ffa500", "#5bc0ff"]],
@@ -18,15 +15,15 @@ describe("color_as_complementary(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_complementary("invalid")).toThrow();
+    expect(() => complementary("invalid")).toThrow();
   });
 
   it("should correctly emit complementary schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_complementary(input)).toEqual(output);
+      expect(complementary(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_complementary Tests:1 ends here
+// complementary Tests:1 ends here

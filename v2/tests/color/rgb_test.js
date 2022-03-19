@@ -1,11 +1,11 @@
-// color_as_rgb Tests
+// rgb Tests
 
 
-// [[file:../../Notebook.org::*color_as_rgb Tests][color_as_rgb Tests:1]]
+// [[file:../../../Notebook.org::*rgb Tests][rgb Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_rgb } from "../color.js";
+import { rgb } from "../color.js";
 
-describe("color_as_rgb(color)", () => {
+describe("rgb(color)", () => {
   const controlGroup = [
     ["black", "rgb(0, 0, 0)"],
     ["gray", "rgb(128, 128, 128)"],
@@ -24,20 +24,20 @@ describe("color_as_rgb(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_rgb("invalid")).toThrow();
+    expect(() => rgb("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_rgb(input)).toBe(output);
+      expect(rgb(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_rgb(input)).toBe(output);
+      expect(rgb(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_rgb Tests:1 ends here
+// rgb Tests:1 ends here

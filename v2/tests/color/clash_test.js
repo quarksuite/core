@@ -1,11 +1,8 @@
-// color_as_clash Tests
-
-
-// [[file:../../Notebook.org::*color_as_clash Tests][color_as_clash Tests:1]]
+// [[file:../../../Notebook.org::*clash Tests][clash Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_clash } from "../color.js";
+import { clash } from "../color.js";
 
-describe("color_as_clash(color)", () => {
+describe("clash(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#7b9900", "#a34fff"]],
     ["orange", ["#ffa500", "#23dc96", "#ff8cdc"]],
@@ -18,15 +15,15 @@ describe("color_as_clash(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_clash("invalid")).toThrow();
+    expect(() => clash("invalid")).toThrow();
   });
 
   it("should correctly emit clashing schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_clash(input)).toEqual(output);
+      expect(clash(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_clash Tests:1 ends here
+// clash Tests:1 ends here

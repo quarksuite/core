@@ -1,7 +1,5 @@
-// color_adjust Implementation
-
-// [[file:../Notebook.org::*color_adjust Implementation][color_adjust Implementation:1]]
-export function color_adjust(settings, color) {
+// [[file:../Notebook.org::*adjust Implementation][adjust Implementation:1]]
+export function adjust(settings, color) {
   // Do nothing by default
   const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
 
@@ -15,18 +13,16 @@ export function color_adjust(settings, color) {
         alpha,
         steps,
       },
-      color
+      color,
     );
   }
 
   return colorAdjustment({ lightness, chroma, hue, alpha }, color);
 }
-// color_adjust Implementation:1 ends here
+// adjust Implementation:1 ends here
 
-// color_mix Implementation
-
-// [[file:../Notebook.org::*color_mix Implementation][color_mix Implementation:1]]
-export function color_mix(settings, color) {
+// [[file:../Notebook.org::*mix Implementation][mix Implementation:1]]
+export function mix(settings, color) {
   // Do nothing by default
   const { target = color, strength = 0, steps } = settings;
 
@@ -36,12 +32,10 @@ export function color_mix(settings, color) {
 
   return colorMix({ target, strength }, color);
 }
-// color_mix Implementation:1 ends here
+// mix Implementation:1 ends here
 
-// color_simulate Implementation
-
-// [[file:../Notebook.org::*color_simulate Implementation][color_simulate Implementation:1]]
-export function color_simulate(settings, color) {
+// [[file:../Notebook.org::*check Implementation][check Implementation:1]]
+export function check(settings, color) {
   // Set immediate defaults
   const {
     condition = "colorblindness",
@@ -58,17 +52,17 @@ export function color_simulate(settings, color) {
 
     if (steps) {
       return colorInterpolation(
-        simulateSensitivity,
+        checkSensitivity,
         {
           contrast,
           strength,
           steps,
         },
-        color
+        color,
       );
     }
 
-    return simulateSensitivity({ contrast, strength, steps }, color);
+    return checkSensitivity({ contrast, strength, steps }, color);
   }
 
   // If simulating a light source
@@ -77,22 +71,22 @@ export function color_simulate(settings, color) {
 
     if (steps) {
       return colorInterpolation(
-        simulateIlluminant,
+        checkIlluminant,
         {
           temperature,
           strength,
           steps,
         },
-        color
+        color,
       );
     }
 
-    return simulateIlluminant({ temperature, strength, steps }, color);
+    return checkIlluminant({ temperature, strength, steps }, color);
   }
 
   // Otherwise handle colorblindness
 
-  // Simulated through reducing the chroma to zero while adjusting no other properties.
+  // Checkd through reducing the chroma to zero while adjusting no other properties.
   if (type === "achromatopsia") {
     const chroma = -100;
 
@@ -109,16 +103,13 @@ export function color_simulate(settings, color) {
 
     if (steps) {
       return colorInterpolation(
-        simulateColorblindness,
+        checkColorblindness,
         { method, type: $type, strength, steps },
-        color
+        color,
       );
     }
 
-    return simulateColorblindness(
-      { method, type: $type, strength, steps },
-      color
-    );
+    return checkColorblindness({ method, type: $type, strength, steps }, color);
   }
 
   // Protanopia, Deuteranopia, Tritanopia by definition do not
@@ -126,165 +117,133 @@ export function color_simulate(settings, color) {
 
   if (steps) {
     return colorInterpolation(
-      simulateColorblindness,
+      checkColorblindness,
       { method, type: $type, strength: 100, steps },
-      color
+      color,
     );
   }
 
-  return simulateColorblindness(
+  return checkColorblindness(
     { method, type: $type, strength: 100, steps },
-    color
+    color,
   );
 }
-// color_simulate Implementation:1 ends here
+// check Implementation:1 ends here
 
-// color_as_hex Implementation
-
-// [[file:../Notebook.org::*color_as_hex Implementation][color_as_hex Implementation:1]]
-export function color_as_hex(color) {
+// [[file:../Notebook.org::*hex Implementation][hex Implementation:1]]
+export function hex(color) {
   return serializeHex(convert(color, "hex"));
 }
-// color_as_hex Implementation:1 ends here
+// hex Implementation:1 ends here
 
-// color_as_rgb Implementation
-
-// [[file:../Notebook.org::*color_as_rgb Implementation][color_as_rgb Implementation:1]]
-export function color_as_rgb(color) {
+// [[file:../Notebook.org::*rgb Implementation][rgb Implementation:1]]
+export function rgb(color) {
   return serializeRgb(convert(color, "rgb"));
 }
-// color_as_rgb Implementation:1 ends here
+// rgb Implementation:1 ends here
 
-// color_as_hsl Implementation
-
-// [[file:../Notebook.org::*color_as_hsl Implementation][color_as_hsl Implementation:1]]
-export function color_as_hsl(color) {
+// [[file:../Notebook.org::*hsl Implementation][hsl Implementation:1]]
+export function hsl(color) {
   return serializeHsl(convert(color, "hsl"));
 }
-// color_as_hsl Implementation:1 ends here
+// hsl Implementation:1 ends here
 
-// color_as_cmyk Implementation
-
-// [[file:../Notebook.org::*color_as_cmyk Implementation][color_as_cmyk Implementation:1]]
-export function color_as_cmyk(color) {
+// [[file:../Notebook.org::*cmyk Implementation][cmyk Implementation:1]]
+export function cmyk(color) {
   return serializeCmyk(convert(color, "cmyk"));
 }
-// color_as_cmyk Implementation:1 ends here
+// cmyk Implementation:1 ends here
 
-// color_as_hwb Implementation
-
-// [[file:../Notebook.org::*color_as_hwb Implementation][color_as_hwb Implementation:1]]
-export function color_as_hwb(color) {
+// [[file:../Notebook.org::*hwb Implementation][hwb Implementation:1]]
+export function hwb(color) {
   return serializeHwb(convert(color, "hwb"));
 }
-// color_as_hwb Implementation:1 ends here
+// hwb Implementation:1 ends here
 
-// color_as_cielab Implementation
-
-// [[file:../Notebook.org::*color_as_cielab Implementation][color_as_cielab Implementation:1]]
-export function color_as_cielab(color) {
+// [[file:../Notebook.org::*cielab Implementation][cielab Implementation:1]]
+export function cielab(color) {
   return serializeCielab(convert(color, "cielab"));
 }
-// color_as_cielab Implementation:1 ends here
+// cielab Implementation:1 ends here
 
-// color_as_cielch Implementation
-
-// [[file:../Notebook.org::*color_as_cielch Implementation][color_as_cielch Implementation:1]]
-export function color_as_cielch(color) {
+// [[file:../Notebook.org::*cielch Implementation][cielch Implementation:1]]
+export function cielch(color) {
   return serializeCielch(convert(color, "cielch"));
 }
-// color_as_cielch Implementation:1 ends here
+// cielch Implementation:1 ends here
 
-// color_as_oklab Implementation
-
-// [[file:../Notebook.org::*color_as_oklab Implementation][color_as_oklab Implementation:1]]
-export function color_as_oklab(color) {
+// [[file:../Notebook.org::*oklab Implementation][oklab Implementation:1]]
+export function oklab(color) {
   return serializeOklab(convert(color, "oklab"));
 }
-// color_as_oklab Implementation:1 ends here
+// oklab Implementation:1 ends here
 
-// color_as_oklch Implementation
-
-// [[file:../Notebook.org::*color_as_oklch Implementation][color_as_oklch Implementation:1]]
-export function color_as_oklch(color) {
+// [[file:../Notebook.org::*oklch Implementation][oklch Implementation:1]]
+export function oklch(color) {
   return serializeOklch(convert(color, "oklch"));
 }
-// color_as_oklch Implementation:1 ends here
+// oklch Implementation:1 ends here
 
-// color_as_dyad Implementation
-
-// [[file:../Notebook.org::*color_as_dyad Implementation][color_as_dyad Implementation:1]]
-export function color_as_dyad(color) {
+// [[file:../Notebook.org::*dyad Implementation][dyad Implementation:1]]
+export function dyad(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 90 }, color),
   ];
 }
-// color_as_dyad Implementation:1 ends here
+// dyad Implementation:1 ends here
 
-// color_as_complementary Implementation
-
-// [[file:../Notebook.org::*color_as_complementary Implementation][color_as_complementary Implementation:1]]
-export function color_as_complementary(color) {
+// [[file:../Notebook.org::*complementary Implementation][complementary Implementation:1]]
+export function complementary(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 180 }, color),
   ];
 }
-// color_as_complementary Implementation:1 ends here
+// complementary Implementation:1 ends here
 
-// color_as_analogous Implementation
-
-// [[file:../Notebook.org::*color_as_analogous Implementation][color_as_analogous Implementation:1]]
-export function color_as_analogous(color) {
+// [[file:../Notebook.org::*analogous Implementation][analogous Implementation:1]]
+export function analogous(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 45 }, color),
     colorAdjustment({ hue: 45 * 2 }, color),
   ];
 }
-// color_as_analogous Implementation:1 ends here
+// analogous Implementation:1 ends here
 
-// color_as_split Implementation
-
-// [[file:../Notebook.org::*color_as_split Implementation][color_as_split Implementation:1]]
-export function color_as_split(color) {
+// [[file:../Notebook.org::*split Implementation][split Implementation:1]]
+export function split(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 180 - 30 }, color),
     colorAdjustment({ hue: 180 + 30 }, color),
   ];
 }
-// color_as_split Implementation:1 ends here
+// split Implementation:1 ends here
 
-// color_as_clash Implementation
-
-// [[file:../Notebook.org::*color_as_clash Implementation][color_as_clash Implementation:1]]
-export function color_as_clash(color) {
+// [[file:../Notebook.org::*clash Implementation][clash Implementation:1]]
+export function clash(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 90 }, color),
     colorAdjustment({ hue: 90 * 3 }, color),
   ];
 }
-// color_as_clash Implementation:1 ends here
+// clash Implementation:1 ends here
 
-// color_as_triad Implementation
-
-// [[file:../Notebook.org::*color_as_triad Implementation][color_as_triad Implementation:1]]
-export function color_as_triad(color) {
+// [[file:../Notebook.org::*triad Implementation][triad Implementation:1]]
+export function triad(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 120 }, color),
     colorAdjustment({ hue: 120 * 2 }, color),
   ];
 }
-// color_as_triad Implementation:1 ends here
+// triad Implementation:1 ends here
 
-// color_as_tetrad Implementation
-
-// [[file:../Notebook.org::*color_as_tetrad Implementation][color_as_tetrad Implementation:1]]
-export function color_as_tetrad(color) {
+// [[file:../Notebook.org::*tetrad Implementation][tetrad Implementation:1]]
+export function tetrad(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 45 }, color),
@@ -292,12 +251,10 @@ export function color_as_tetrad(color) {
     colorAdjustment({ hue: 180 + 45 }, color),
   ];
 }
-// color_as_tetrad Implementation:1 ends here
+// tetrad Implementation:1 ends here
 
-// color_as_square Implementation
-
-// [[file:../Notebook.org::*color_as_square Implementation][color_as_square Implementation:1]]
-export function color_as_square(color) {
+// [[file:../Notebook.org::*square Implementation][square Implementation:1]]
+export function square(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 90 }, color),
@@ -305,12 +262,10 @@ export function color_as_square(color) {
     colorAdjustment({ hue: 90 * 3 }, color),
   ];
 }
-// color_as_square Implementation:1 ends here
+// square Implementation:1 ends here
 
-// color_as_star Implementation
-
-// [[file:../Notebook.org::*color_as_star Implementation][color_as_star Implementation:1]]
-export function color_as_star(color) {
+// [[file:../Notebook.org::*star Implementation][star Implementation:1]]
+export function star(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 72 }, color),
@@ -319,12 +274,10 @@ export function color_as_star(color) {
     colorAdjustment({ hue: 72 * 4 }, color),
   ];
 }
-// color_as_star Implementation:1 ends here
+// star Implementation:1 ends here
 
-// color_as_hexagon Implementation
-
-// [[file:../Notebook.org::*color_as_hexagon Implementation][color_as_hexagon Implementation:1]]
-export function color_as_hexagon(color) {
+// [[file:../Notebook.org::*hexagon Implementation][hexagon Implementation:1]]
+export function hexagon(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 60 }, color),
@@ -334,12 +287,10 @@ export function color_as_hexagon(color) {
     colorAdjustment({ hue: 60 * 5 }, color),
   ];
 }
-// color_as_hexagon Implementation:1 ends here
+// hexagon Implementation:1 ends here
 
-// palette_create Implementation
-
-// [[file:../Notebook.org::*palette_create Implementation][palette_create Implementation:1]]
-export function palette_create(settings, color) {
+// [[file:../Notebook.org::*create Implementation][create Implementation:1]]
+export function create(settings, color) {
   // Set default type and settings and exclude interface states until requested
   const {
     type = "material",
@@ -354,18 +305,16 @@ export function palette_create(settings, color) {
 
     return artisticConfiguration(
       { contrast, tints, tones, shades, stated },
-      color
+      color,
     );
   }
 
   return materialConfiguration({ contrast, accented, stated }, color);
 }
-// palette_create Implementation:1 ends here
+// create Implementation:1 ends here
 
-// palette_contrast Implementation
-
-// [[file:../Notebook.org::*palette_contrast Implementation][palette_contrast Implementation:1]]
-export function palette_contrast(settings, palette) {
+// [[file:../Notebook.org::*contrast Implementation][contrast Implementation:1]]
+export function contrast(settings, palette) {
   // Set action defaults
   const {
     mode = "standard",
@@ -383,50 +332,36 @@ export function palette_contrast(settings, palette) {
 
   return paletteWcagContrast({ rating, large, dark }, palette);
 }
-// palette_contrast Implementation:1 ends here
+// contrast Implementation:1 ends here
 
-// palette_as_tokens Implementation
-
-// [[file:../Notebook.org::*palette_as_tokens Implementation][palette_as_tokens Implementation:1]]
-export function palette_as_tokens(palette) {
+// [[file:../Notebook.org::*tokens Implementation][tokens Implementation:1]]
+export function tokens(palette) {
   return tokenizePalette(palette);
 }
-// palette_as_tokens Implementation:1 ends here
-
-// Tokenization
-
-// Color format tokenization follows the spec as closely as possible.
-
-// Then we have basic =NUMBER_TOKENS=, a =PERCENTAGE_TOKEN=, tokens for the legacy and modern =DELIMITERS=, a
-// =COMPONENT_TOKEN= combining the first two, and a =HUE_TOKEN=. That's all that's needed to account for every format
-// QuarkSuite supports.
+// tokens Implementation:1 ends here
 
 // [[file:../Notebook.org::*Tokenization][Tokenization:1]]
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "%)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "%)"].join(""),
 );
 
 const LEGACY_DELIMITER = /(?:[\s,]+)/;
 const LEGACY_ALPHA_DELIMITER = new RegExp(
-  LEGACY_DELIMITER.source.replace(",", ",/")
+  LEGACY_DELIMITER.source.replace(",", ",/"),
 );
 const MODERN_DELIMITER = new RegExp(LEGACY_DELIMITER.source.replace(",", ""));
 const MODERN_ALPHA_DELIMITER = new RegExp(
-  LEGACY_ALPHA_DELIMITER.source.replace(",", "")
+  LEGACY_ALPHA_DELIMITER.source.replace(",", ""),
 );
 
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join("")
+  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
 );
 const HUE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
 );
 // Tokenization:1 ends here
-
-// Named Color Validation
-
-// QuarkSuite supports CSS named colors through to CSS Color Module 4 using an object query.
 
 // [[file:../Notebook.org::*Named Color Validation][Named Color Validation:1]]
 const NAMED_COLOR_KEYWORDS = {
@@ -592,23 +527,11 @@ function namedValidator(color) {
 }
 // Named Color Validation:1 ends here
 
-// RGB Hex Validation
-
-// This can be done with a regular expression.
-
 // [[file:../Notebook.org::*RGB Hex Validation][RGB Hex Validation:1]]
 function hexValidator(color) {
   return /^#([\da-f]{3,4}){1,2}$/i.test(color);
 }
 // RGB Hex Validation:1 ends here
-
-// Validating Functional Formats
-
-// The functional formats require a bit of extra processing. Good thing we created those tokens earlier. Functional formats
-// always have an optional alpha component, so we tack that onto the end. If =legacy= is =true=, then we use the legacy
-// delimiters. Otherwise, we know it's a modern format.
-
-// Each format has varying components, so we map over the tokens we plug in and link them with delimiters.
 
 // [[file:../Notebook.org::*Validating Functional Formats][Validating Functional Formats:1]]
 function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
@@ -622,27 +545,20 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       VALUES.join(DELIMITER),
-      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`
-    )
+      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`,
+    ),
   );
 }
 // Validating Functional Formats:1 ends here
-
-// RGB Validation
-
-// =matchFunctionalFormats= makes validating the remaining CSS formats a matter of slotting in tokens with the right
-// prefix. As you'll see, some tokens repeat and others have to be slotted individually.
 
 // [[file:../Notebook.org::*RGB Validation][RGB Validation:1]]
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
-    Array(3).fill(COMPONENT_TOKEN)
+    Array(3).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 // RGB Validation:1 ends here
-
-// HSL Validation
 
 // [[file:../Notebook.org::*HSL Validation][HSL Validation:1]]
 function hslValidator(color) {
@@ -653,21 +569,14 @@ function hslValidator(color) {
 }
 // HSL Validation:1 ends here
 
-// CMYK Validation
-
-// =device-cmyk= is the first modern format, so the legacy flag will have to be disabled. It's also technically been moved
-// to CSS Color Module 5, but I implemented it before I found that out.
-
 // [[file:../Notebook.org::*CMYK Validation][CMYK Validation:1]]
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(COMPONENT_TOKEN)
+    Array(4).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 // CMYK Validation:1 ends here
-
-// HWB Validation
 
 // [[file:../Notebook.org::*HWB Validation][HWB Validation:1]]
 function hwbValidator(color) {
@@ -677,10 +586,6 @@ function hwbValidator(color) {
   ]).test(color);
 }
 // HWB Validation:1 ends here
-
-// CIELAB/CIELCH Validation
-
-// These two formats are scalar and polar variants of the same color space, so I'll combine their validators.
 
 // [[file:../Notebook.org::*CIELAB/CIELCH Validation][CIELAB/CIELCH Validation:1]]
 function cielabValidator(color) {
@@ -699,10 +604,6 @@ function cielchValidator(color) {
 }
 // CIELAB/CIELCH Validation:1 ends here
 
-// OKLab/OKLCH Validation
-
-// Same with OKLab/OKLCH, which recently became standard so I reimplemented them according to the spec.
-
 // [[file:../Notebook.org::*OKLab/OKLCH Validation][OKLab/OKLCH Validation:1]]
 function oklabValidator(color) {
   return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
@@ -720,11 +621,6 @@ function oklchValidator(color) {
   ]).test(color);
 }
 // OKLab/OKLCH Validation:1 ends here
-
-// Preparing Validation
-
-// From here, we'll implement a =validator()= that accepts input and checks it against all of the available formats. A valid
-// color will match /one of/ the available formats and get slotted in a =[format, color]= tuple.
 
 // [[file:../Notebook.org::*Preparing Validation][Preparing Validation:1]]
 function validator(input) {
@@ -748,10 +644,6 @@ function validator(input) {
   );
 }
 // Preparing Validation:1 ends here
-
-// Invalid Color Handling
-
-// Otherwise, the input does not match any of the available formats and throws a useful error.
 
 // [[file:../Notebook.org::*Invalid Color Handling][Invalid Color Handling:1]]
 class InvalidColor extends Error {
@@ -791,11 +683,6 @@ function InvalidColorError(input) {
 }
 // Invalid Color Handling:1 ends here
 
-// RGB Hex Extractor
-
-// For RGB Hex extraction, we need to consider that RGB colors can also come in the form =#RGB(A)=. So we'll use =expandHex()= to expand
-// those to a full =#RRGGBB(AA)=. And then we have =hexExtractor()= to do the extraction proper.
-
 // [[file:../Notebook.org::*RGB Hex Extractor][RGB Hex Extractor:1]]
 function hexExtractor(color) {
   return expandHex(color).match(/[\da-f]{2}/gi);
@@ -812,28 +699,11 @@ function expandHex(color) {
 }
 // RGB Hex Extractor:1 ends here
 
-// Functional Format Extractor
-
-// Extracting from functional formats requires that the values be picked /with their units attached/. We'll need this
-// information for parsing them prior to format conversion.
-
-// This is done with =componentExtractor()=.
-
 // [[file:../Notebook.org::*Functional Format Extractor][Functional Format Extractor:1]]
 function componentExtractor(color) {
   return color.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 }
 // Functional Format Extractor:1 ends here
-
-// Extraction Preparation
-
-// Now with all the parts in place, we'll create a general =extractor()= that consumes a valid color tuple. If the =format=
-// is =hex=, we'll call =hexExtractor()=, otherwise it's a functional format and must be handled by =componentExtractor()=.
-
-// We also need to do additional work if the =format= is =named=, so we pass its value in =NAMED_COLOR_KEYWORDS= through
-// =hexExtractor()=.
-
-// Note that we're also passing the extraction along in the =[format, components]= tuple form for additional parsing.
 
 // [[file:../Notebook.org::*Extraction Preparation][Extraction Preparation:1]]
 function extractor(validated) {
@@ -851,11 +721,6 @@ function extractor(validated) {
 }
 // Extraction Preparation:1 ends here
 
-// Clamping Values
-
-// Before anything else, we'll need a helper to =clamp()= values between a =min= and =max=. Some values in functional
-// formats are capped, and others are not. We'll see which when we implement the serializer.
-
 // [[file:../Notebook.org::*Clamping Values][Clamping Values:1]]
 function clamp(x, a, b) {
   if (x < a) {
@@ -870,13 +735,6 @@ function clamp(x, a, b) {
 }
 // Clamping Values:1 ends here
 
-// Hex Fragment <-> Channel
-
-// Now, we're going to need to convert hex fragments to and from their RGB channel equivalents.
-
-// =16= is the /radix/ (or base) of hexadecimal, so we use =parseInt()= to convert the hex value to a decimal and
-// =toString()= to convert a decimal to hexadecimal.
-
 // [[file:../Notebook.org::*Hex Fragment <-> Channel][Hex Fragment <-> Channel:1]]
 function hexFragmentToChannel(hex) {
   return parseInt(hex, 16);
@@ -886,10 +744,6 @@ function hexFragmentFromChannel(channel) {
   return clamp(channel, 0, 255).toString(16).padStart(2, "0");
 }
 // Hex Fragment <-> Channel:1 ends here
-
-// Number <-> Percentage
-
-// Some functional formats will need to have their numbers converted to percentages or the reverse.
 
 // [[file:../Notebook.org::*Number <-> Percentage][Number <-> Percentage:1]]
 function numberToPercentage(n) {
@@ -901,11 +755,6 @@ function numberFromPercentage(percentage) {
 }
 // Number <-> Percentage:1 ends here
 
-// Number <-> Channel
-
-// RGB channels need to be converted to a =0-1= range to be useful in calculation. And then they need to be converted back
-// to channels later.
-
 // [[file:../Notebook.org::*Number <-> Channel][Number <-> Channel:1]]
 function numberToChannel(n) {
   return Math.round(n * 255);
@@ -915,13 +764,6 @@ function numberFromChannel(channel) {
   return channel / 255;
 }
 // Number <-> Channel:1 ends here
-
-// Hue Component
-
-// Some of the color conversions require the [[https://www.rapidtables.com/convert/number/how-degrees-to-radians.html][hue as radians]]. And then we need to be able to [[https://www.rapidtables.com/convert/number/how-radians-to-degrees.html][convert back]].
-
-// The hue component also supports gradians and rotations, so we'll have to account for those as well to stay true to the
-// spec.
 
 // [[file:../Notebook.org::*Hue Component][Hue Component:1]]
 function radiansToDegrees(radians) {
@@ -941,13 +783,6 @@ function turnsToDegrees(turns) {
 }
 // Hue Component:1 ends here
 
-// Hue Correction
-
-// A stipulation of the hue component in the spec is that it must support hue values greater than a single revolution.
-
-// However, if it's to be useful in calculation, we must then /correct/ the value to a range =-360-360= or one full
-// rotation clockwise and counterclockwise. Our implmentation of =hueCorrection()= takes care of that.
-
 // [[file:../Notebook.org::*Hue Correction][Hue Correction:1]]
 function hueCorrection(hue) {
   let h = hue;
@@ -963,13 +798,6 @@ function hueCorrection(hue) {
   return clamp(h, -360, 360);
 }
 // Hue Correction:1 ends here
-
-// Parsing RGB Hex
-
-// RGB Hex must be parsed as RGB channels to be mathematically useful. That's what =parseHex()= does.
-
-// If =A= is missing, then we attach it to ensure uniformity. Finally, we convert the hex fragments to RGB. The alpha
-// component needs additional handling.
 
 // [[file:../Notebook.org::*Parsing RGB Hex][Parsing RGB Hex:1]]
 function parseHex([format, components]) {
@@ -987,15 +815,6 @@ function parseHex([format, components]) {
   return [format, [R, G, B, 1]];
 }
 // Parsing RGB Hex:1 ends here
-
-// Parsing Functional RGB
-
-// As stated above, RGB must be converted to a =0-1= range to be mathematically useful. This is a straightforward
-// conversion because of our =numberFromChannel()= helper. Meanwhile, percentage values are valid for =a=.
-
-// We check to see if =a= is a percentage value and convert it or leave it alone.
-
-// This is an operation we'll repeat multiple times during parsing, so it's captured in a =parsePercentage()= helper.
 
 // [[file:../Notebook.org::*Parsing Functional RGB][Parsing Functional RGB:1]]
 function parsePercentage(component) {
@@ -1020,13 +839,6 @@ function parseRgb([format, components]) {
   return [format, [R, G, B, 1]];
 }
 // Parsing Functional RGB:1 ends here
-
-// Parsing Functional HSL
-
-// The =h= component will need special processing depending on its units. And our conversion goal is /degrees/. Other than
-// that, =s= and =l= need conversion to a =0-1= range, and =A= is handled as usual.
-
-// Several formats beyond this point have a hue value, so we'll create a =parseHue()= helper to capture that logic.
 
 // [[file:../Notebook.org::*Parsing Functional HSL][Parsing Functional HSL:1]]
 function parseHue(hue) {
@@ -1064,11 +876,6 @@ function parseHsl([format, components]) {
 }
 // Parsing Functional HSL:1 ends here
 
-// Parsing Functional CMYK
-
-// Functional CMYK is dead simple to parse. We check to see if the components are percentages and convert them. Otherwise,
-// we coerce them to numbers with no additional processing.
-
 // [[file:../Notebook.org::*Parsing Functional CMYK][Parsing Functional CMYK:1]]
 function parseCMYK([format, components]) {
   const [C, M, Y, K, A] = components.map((V) => {
@@ -1083,11 +890,6 @@ function parseCMYK([format, components]) {
   return [format, [C, M, Y, K, 1]];
 }
 // Parsing Functional CMYK:1 ends here
-
-// Parsing Functional CIELAB/CIELCH
-
-// Of these two, the only one that requires any special attention is CIELCH because of that hue component. CIELAB just
-// passes its values through number coercion.
 
 // [[file:../Notebook.org::*Parsing Functional CIELAB/CIELCH][Parsing Functional CIELAB/CIELCH:1]]
 function parseCielab([format, components]) {
@@ -1115,11 +917,6 @@ function parseCielch([format, components]) {
   return [format, [L, C, H, 1]];
 }
 // Parsing Functional CIELAB/CIELCH:1 ends here
-
-// Parsing OKLab/OKLCH
-
-// Parsing OKLab/OKLCH is similar to the above section, but it's important to note that OKLCH calculations expect the hue
-// in /radians/. =L= is also converted to a =0-1= range.
 
 // [[file:../Notebook.org::*Parsing OKLab/OKLCH][Parsing OKLab/OKLCH:1]]
 function parseOklab([format, components]) {
@@ -1150,11 +947,6 @@ function parseOklch([format, components]) {
 }
 // Parsing OKLab/OKLCH:1 ends here
 
-// Parsing Preparation
-
-// Similar to the validator and extractor, the =parser()= will read a color tuple and execute the correct parsing function
-// for a matched format. And then it throws back a transformed tuple of =[format, values]=.
-
 // [[file:../Notebook.org::*Parsing Preparation][Parsing Preparation:1]]
 function parser(extracted) {
   const [format] = extracted;
@@ -1175,10 +967,6 @@ function parser(extracted) {
 }
 // Parsing Preparation:1 ends here
 
-// RGB <-> RGB
-
-// Yes, we do have to account for RGB converting to and from itself, because the parsed RGB can't be serialized.
-
 // [[file:../Notebook.org::*RGB <-> RGB][RGB <-> RGB:1]]
 function rgbInputIdentity([, values]) {
   const [r, g, b, A] = values;
@@ -1193,20 +981,11 @@ function rgbOutputIdentity([, rgbValues]) {
 }
 // RGB <-> RGB:1 ends here
 
-// Hex -> RGB
-
-// If you remember from =parseHex()=, a parsed hexadecimal color is already a valid RGB result. So we mark it as such and pass it
-// through.
-
 // [[file:../Notebook.org::*Hex -> RGB][Hex -> RGB:1]]
 function hexToRgb([, values]) {
   return ["rgb", values];
 }
 // Hex -> RGB:1 ends here
-
-// HSL -> RGB
-
-// To convert HSL to RGB, we use [[https://www.rapidtables.com/convert/color/hsl-to-rgb.html][this conversion formula from RapidTables]].
 
 // [[file:../Notebook.org::*HSL -> RGB][HSL -> RGB:1]]
 function calculateRgb(C, X, H) {
@@ -1237,21 +1016,6 @@ function hslToRgb([, values]) {
 }
 // HSL -> RGB:1 ends here
 
-// CMYK -> RGB
-
-// #+BEGIN_QUOTE
-// IMPORTANT: CSS Color Module 5 will use a device-independent conversion of CMYK through the CIELAB space. This means the
-// below approach is outdated. For practicality and compatibility's sake, I still use the old conversion method through
-// sRGB. Which works today.
-// #+END_QUOTE
-
-// #+BEGIN_QUOTE
-// UPDATE: The below approach is not outdated in CSS Color Module 5, but it is considered a /naive/ conversion. It works
-// well enough for the purposes of this library either way.
-// #+END_QUOTE
-
-// Conversion of CMYK to RGB is [[https://www.rapidtables.com/convert/color/cmyk-to-rgb.html][covered by another RapidTables formula]].
-
 // [[file:../Notebook.org::*CMYK -> RGB][CMYK -> RGB:1]]
 function cmykToRgb([, values]) {
   const [C, M, Y, K, A] = values;
@@ -1261,10 +1025,6 @@ function cmykToRgb([, values]) {
   return ["rgb", [R, G, B, A]];
 }
 // CMYK -> RGB:1 ends here
-
-// HWB -> RGB
-
-// The formula for conversion of HWB to RGB is [[https://www.w3.org/TR/css-color-4/#hwb-to-rgb][adapted from the spec itself]].
 
 // [[file:../Notebook.org::*HWB -> RGB][HWB -> RGB:1]]
 function hwbToRgb([, values]) {
@@ -1286,16 +1046,6 @@ function hwbToRgb([, values]) {
   return ["rgb", [R, G, B, A]];
 }
 // HWB -> RGB:1 ends here
-
-// CIELAB -> RGB
-
-// The steps for the CIELAB to RGB conversion are as follows:
-
-// 1. Convert CIELAB to CIEXYZ
-// 2. Convert CIEXYZ to LRGB
-// 3. Convert LRGB to RGB
-
-// The actual equations are helpfully [[http://www.brucelindbloom.com/index.html?Math.html][provided by Bruce Lindbloom]].
 
 // [[file:../Notebook.org::*CIELAB -> RGB][CIELAB -> RGB:1]]
 function cielabToCiexyz([L, a, b]) {
@@ -1333,11 +1083,11 @@ function ciexyzToLrgb([X, Y, Z]) {
   ];
 
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
   );
 
   const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
-    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
   );
 
   return [LR, LG, LB];
@@ -1353,23 +1103,12 @@ function cielabToRgb([, values]) {
   const [L, a, b, A] = values;
 
   const [R, G, B] = lrgbToRgb(ciexyzToLrgb(cielabToCiexyz([L, a, b]))).map(
-    (n) => numberToChannel(n)
+    (n) => numberToChannel(n),
   );
 
   return ["rgb", [R, G, B, A]];
 }
 // CIELAB -> RGB:1 ends here
-
-// OKLAB -> RGB
-
-// The OKLab to RGB conversion steps are adapted from the creator, Björn Ottosson's, [[https://bottosson.github.io/posts/oklab/][original post about it]].
-
-// The process breaks down to:
-
-// 1. Convert OKLab to LRGB
-// 2. Convert LRGB to RGB
-
-// Simple and direct.
 
 // [[file:../Notebook.org::*OKLAB -> RGB][OKLAB -> RGB:1]]
 function oklabToLrgb([L, a, b]) {
@@ -1411,13 +1150,6 @@ function oklabToRgb([, values]) {
 }
 // OKLAB -> RGB:1 ends here
 
-// RGB -> Hex
-
-// Getting RGB to hexadecimal color output is a similarly stratightforward implementation.
-
-// Rounding the results is necessary because hexadecimal format expects integers. Having reached our target output, we can
-// now forward the result for serializing.
-
 // [[file:../Notebook.org::*RGB -> Hex][RGB -> Hex:1]]
 function hexFromRgb([, rgbValues]) {
   const [r, g, b, a] = rgbValues;
@@ -1428,10 +1160,6 @@ function hexFromRgb([, rgbValues]) {
   return ["hex", [R, G, B, A]];
 }
 // RGB -> Hex:1 ends here
-
-// RGB -> HSL
-
-// Getting RGB to an HSL output color is [[https://www.rapidtables.com/convert/color/rgb-to-hsl.html][handled by another RapidTables formula]].
 
 // [[file:../Notebook.org::*RGB -> HSL][RGB -> HSL:1]]
 function calculateHue(R, G, B, cmax, delta) {
@@ -1462,17 +1190,13 @@ function hslFromRgb([, rgbValues]) {
 
   const L = calculateLightness(cmin, cmax);
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
   const S = calculateSaturation(delta, L);
 
   return ["hsl", [H, S, L, A]];
 }
 // RGB -> HSL:1 ends here
-
-// RGB -> CMYK
-
-// Getting RGB to CMYK output [[https://www.rapidtables.com/convert/color/rgb-to-cmyk.html][requires yet another RapidTables formula]].
 
 // [[file:../Notebook.org::*RGB -> CMYK][RGB -> CMYK:1]]
 function cmykFromRgb([, rgbValues]) {
@@ -1487,10 +1211,6 @@ function cmykFromRgb([, rgbValues]) {
 }
 // RGB -> CMYK:1 ends here
 
-// RGB -> HWB
-
-// The formula for converting RGB to HWB output is also [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][pulled from the spec]].
-
 // [[file:../Notebook.org::*RGB -> HWB][RGB -> HWB:1]]
 function hwbFromRgb([, rgbValues]) {
   const [r, g, b, A] = rgbValues;
@@ -1502,7 +1222,7 @@ function hwbFromRgb([, rgbValues]) {
   const delta = cmax - cmin;
 
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
 
   const [W, BLK] = [cmin, 1 - cmax];
@@ -1510,16 +1230,6 @@ function hwbFromRgb([, rgbValues]) {
   return ["hwb", [H, W, BLK, A]];
 }
 // RGB -> HWB:1 ends here
-
-// RGB -> CIELAB
-
-// For getting CIELAB output from RGB, we'll be leaning on Bruce Lindbloom's equations again.
-
-// The process is as follows:
-
-// 1. RGB to LRGB
-// 2. LRGB to CIEXYZ
-// 3. CIEXYZ to CIELAB
 
 // [[file:../Notebook.org::*RGB -> CIELAB][RGB -> CIELAB:1]]
 function rgbToLrgb([R, G, B]) {
@@ -1542,11 +1252,11 @@ function lrgbToCiexyz([LR, LG, LB]) {
   ];
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
-    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
   );
 
   const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
   );
 
   return [X, Y, Z];
@@ -1578,15 +1288,6 @@ function cielabFromRgb([, rgbValues]) {
 }
 // RGB -> CIELAB:1 ends here
 
-// RGB -> OKLAB
-
-// To get Oklab output from RGB, we're going to use the inversion also documented by its creator.
-
-// That process goes:
-
-// 1. RGB to LRGB
-// 2. LRGB to OKLAB
-
 // [[file:../Notebook.org::*RGB -> OKLAB][RGB -> OKLAB:1]]
 function lrgbToOklab([LR, LG, LB]) {
   const NONLINEAR_LMS_CONE_ACTIVATIONS = [
@@ -1602,7 +1303,7 @@ function lrgbToOklab([LR, LG, LB]) {
   ];
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
-    ([L, M, S]) => L * LR + M * LG + S * LB
+    ([L, M, S]) => L * LR + M * LG + S * LB,
   ).map((V) => Math.cbrt(V));
 
   return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
@@ -1621,15 +1322,6 @@ function oklabFromRgb([, rgbValues]) {
   return ["oklab", [L, a, b, A]];
 }
 // RGB -> OKLAB:1 ends here
-
-// SCALAR <-> POLAR
-
-// The last thing we need to do before wiring everything up is create a bridge to and from CIELAB & OKLab to their polar
-// coordinate alter-egos (CIELCH & OKLCH).
-
-// Since we already have a completed chain of =INPUT -> RGB -> OUTPUT= for both formats, we don't need to do much more.
-
-// The two basically [[https://www.w3.org/TR/css-color-4/#lab-to-lch][share formulas]], so I'm going to create the helpers =scalarToPolar()= and =scalarFromPolar=.
 
 // [[file:../Notebook.org::*SCALAR <-> POLAR][SCALAR <-> POLAR:1]]
 function scalarToPolar([, scalarValues]) {
@@ -1651,8 +1343,6 @@ function scalarFromPolar([, polarValues]) {
 }
 // SCALAR <-> POLAR:1 ends here
 
-// CIELAB <-> CIELCH
-
 // [[file:../Notebook.org::*CIELAB <-> CIELCH][CIELAB <-> CIELCH:1]]
 function cielabToCielch([, cielabValues]) {
   return ["cielch", scalarToPolar(["cielab", cielabValues])];
@@ -1663,8 +1353,6 @@ function cielabFromCielch([, cielchValues]) {
 }
 // CIELAB <-> CIELCH:1 ends here
 
-// OKLab <-> OKLCH
-
 // [[file:../Notebook.org::*OKLab <-> OKLCH][OKLab <-> OKLCH:1]]
 function oklabToOklch([, oklabValues]) {
   return ["oklch", scalarToPolar(["oklab", oklabValues])];
@@ -1674,14 +1362,6 @@ function oklabFromOklch([, oklchValues]) {
   return ["oklab", scalarFromPolar(["oklch", oklchValues])];
 }
 // OKLab <-> OKLCH:1 ends here
-
-// Color Conversion Pipeline
-
-// Phew, now that we've prepared each individual format, it's time to construct the color conversion pipeline.
-
-// This will essentially be composed of two objects: =INPUT_TO_RGB= and =RGB_TO_OUTPUT= inside our main color =convert()=
-// function. You give it a color as input which then gets validated, has its components, extracted, and then parsed. The
-// parsed values are then passed along and converted to a specified output format.
 
 // [[file:../Notebook.org::*Color Conversion Pipeline][Color Conversion Pipeline:1]]
 function convert(color, to) {
@@ -1724,10 +1404,6 @@ function convert(color, to) {
 }
 // Color Conversion Pipeline:1 ends here
 
-// Serializing RGB Hex
-
-// Concatenate the =hexResult= with a =#=. If the alpha channel is =ff=, the color is opaque and alpha should be removed.
-
 // [[file:../Notebook.org::*Serializing RGB Hex][Serializing RGB Hex:1]]
 function serializeHex([, hexResult]) {
   const [R, G, B, A] = hexResult;
@@ -1738,12 +1414,6 @@ function serializeHex([, hexResult]) {
   return "#".concat(R, G, B, A);
 }
 // Serializing RGB Hex:1 ends here
-
-// Serializing Functional Formats
-
-// Functional color formats have an incredibly uniform syntax, so let's create a helper =serializeFunctionalFormat()= to
-// logically assemble the data. It needs to be generic enough for us to simply attach a prefix and plug in values; similar
-// to =matchFunctionalFormat()= above.
 
 // [[file:../Notebook.org::*Serializing Functional Formats][Serializing Functional Formats:1]]
 function serializeFunctionalFormat({ prefix, legacy = true }, components) {
@@ -1758,12 +1428,10 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
     values.join(DELIMITER),
     isOpaque ? "" : ALPHA_DELIMITER.concat(alpha),
-    ")"
+    ")",
   );
 }
 // Serializing Functional Formats:1 ends here
-
-// Serializing RGB
 
 // [[file:../Notebook.org::*Serializing RGB][Serializing RGB:1]]
 function serializeRgb([, rgbResult]) {
@@ -1771,14 +1439,12 @@ function serializeRgb([, rgbResult]) {
 
   // Clamp RGB channels 0-255
   const [R, G, B] = [r, g, b].map(
-    (component) => +clamp(component, 0, 255).toFixed(3)
+    (component) => +clamp(component, 0, 255).toFixed(3),
   );
 
   return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
 }
 // Serializing RGB:1 ends here
-
-// Serializing HSL
 
 // [[file:../Notebook.org::*Serializing HSL][Serializing HSL:1]]
 function serializeHsl([, hslResult]) {
@@ -1794,15 +1460,14 @@ function serializeHsl([, hslResult]) {
 }
 // Serializing HSL:1 ends here
 
-// Serializing CMYK
-
 // [[file:../Notebook.org::*Serializing CMYK][Serializing CMYK:1]]
 function serializeCmyk([, cmykResult]) {
   const [c, m, y, k, A] = cmykResult;
 
   // Convert to percentage, cap at 0-100
   const [C, M, Y, K] = [c, m, y, k].map(
-    (n) => `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`
+    (n) =>
+      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
   );
 
   return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
@@ -1814,8 +1479,6 @@ function serializeCmyk([, cmykResult]) {
   ]);
 }
 // Serializing CMYK:1 ends here
-
-// Serializing HWB
 
 // [[file:../Notebook.org::*Serializing HWB][Serializing HWB:1]]
 function serializeHwb([, hslResult]) {
@@ -1835,8 +1498,6 @@ function serializeHwb([, hslResult]) {
   ]);
 }
 // Serializing HWB:1 ends here
-
-// Serializing CIELAB/CIELCH
 
 // [[file:../Notebook.org::*Serializing CIELAB/CIELCH][Serializing CIELAB/CIELCH:1]]
 function serializeCielab([, cielabValues]) {
@@ -1884,8 +1545,6 @@ function serializeCielch([, cielchValues]) {
 }
 // Serializing CIELAB/CIELCH:1 ends here
 
-// Serializing OKLab/OKLCH
-
 // [[file:../Notebook.org::*Serializing OKLab/OKLCH][Serializing OKLab/OKLCH:1]]
 function serializeOklab([, oklabValues]) {
   const [$L, $a, $b, A] = oklabValues;
@@ -1932,20 +1591,6 @@ function serializeOklch([, oklchValues]) {
 }
 // Serializing OKLab/OKLCH:1 ends here
 
-// Color Adjustment Through OKLCH
-
-// OKLab solved the above issues. As an offshoot of CIELAB, perceptual uniformity is baked into its calculations. As an
-// /improvement/ on CIELAB, these calculations were adjusted for increased practicality and predictability. In short, it
-// made sequential palette building both possible and simpler.
-
-// Its OKLCH polar form is also vastly more intuitive for color property adjustment than its raw OKLab scalar form.
-
-// The approach in steps:
-
-// 1. Convert the input color to OKLCH equivalent
-// 2. Adjust its target properties
-// 3. Convert result back to its input format
-
 // [[file:../Notebook.org::*Color Adjustment Through OKLCH][Color Adjustment Through OKLCH:1]]
 function extractOklchValues(color) {
   const convertedOklch = serializeOklch(convert(color, "oklch"));
@@ -1956,7 +1601,7 @@ function extractOklchValues(color) {
 
 function adjustColorProperties(
   { lightness, chroma, hue, alpha },
-  [l, c, h, a]
+  [l, c, h, a],
 ) {
   // Adjust properties only if defined, make values parseable
   let L = numberFromPercentage(lightness ? l + lightness : l);
@@ -1986,7 +1631,7 @@ function serializeInput([format, values]) {
 
 function colorAdjustment(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  color
+  color,
 ) {
   // Ensure color is valid and store its format
   const [format] = validator(color);
@@ -1997,7 +1642,7 @@ function colorAdjustment(
   // Adjust target properties
   const [L, C, H, A] = adjustColorProperties(
     { lightness, chroma, hue, alpha },
-    values
+    values,
   );
 
   // Serialize oklch result
@@ -2012,23 +1657,6 @@ function colorAdjustment(
   return serializeInput(convert(oklch, format));
 }
 // Color Adjustment Through OKLCH:1 ends here
-
-// Color Mixture Through OKLab
-
-// In the area of color mixture, raw scalar OKLab is the ideal tool. This is because when we talk about color blending,
-// we're actually talking about /color difference/.
-
-// A color blend is what you get when you calculate the difference of a blending =target= from an input =color= adjusted for the =strength=
-// of the mixture. Returning the difference gives you the point of intersection, which is also the blend result.
-
-// The process goes:
-
-// 1. Convert the blend target and input color to OKLab
-// 2. Parse the OKLab values
-// 3. Calculate the blend result (as =X + (Y - X) * strength=) for the individual components
-// 4. Revert the result to the input color format and return it
-
-// Note that we also added a condition to reverse the mixture direction if =strength= is negative.
 
 // [[file:../Notebook.org::*Color Mixture Through OKLab][Color Mixture Through OKLab:1]]
 function getOklabValues(color) {
@@ -2073,7 +1701,7 @@ function colorMix({ target, strength = 0 }, color) {
   const [L, a, b, A] = calculateMixture(
     color,
     target,
-    numberFromPercentage(strength)
+    numberFromPercentage(strength),
   );
 
   // Serialize the blend result
@@ -2087,13 +1715,11 @@ function colorMix({ target, strength = 0 }, color) {
 }
 // Color Mixture Through OKLab:1 ends here
 
-// CVD Brettel Simulation
-
 // [[file:../Notebook.org::*CVD Brettel Simulation][CVD Brettel Simulation:1]]
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
@@ -2103,33 +1729,75 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
   const brettel = {
     protanope: {
       a: [
-        0.1498, 1.19548, -0.34528, 0.10764, 0.84864, 0.04372, 0.00384, -0.0054,
+        0.1498,
+        1.19548,
+        -0.34528,
+        0.10764,
+        0.84864,
+        0.04372,
+        0.00384,
+        -0.0054,
         1.00156,
       ],
       b: [
-        0.1457, 1.16172, -0.30742, 0.10816, 0.85291, 0.03892, 0.00386, -0.00524,
+        0.1457,
+        1.16172,
+        -0.30742,
+        0.10816,
+        0.85291,
+        0.03892,
+        0.00386,
+        -0.00524,
         1.00139,
       ],
       n: [0.00048, 0.00393, -0.00441],
     },
     deuteranope: {
       a: [
-        0.36477, 0.86381, -0.22858, 0.26294, 0.64245, 0.09462, -0.02006,
-        0.02728, 0.99278,
+        0.36477,
+        0.86381,
+        -0.22858,
+        0.26294,
+        0.64245,
+        0.09462,
+        -0.02006,
+        0.02728,
+        0.99278,
       ],
       b: [
-        0.37298, 0.88166, -0.25464, 0.25954, 0.63506, 0.1054, -0.0198, 0.02784,
+        0.37298,
+        0.88166,
+        -0.25464,
+        0.25954,
+        0.63506,
+        0.1054,
+        -0.0198,
+        0.02784,
         0.99196,
       ],
       n: [-0.00281, -0.00611, 0.00892],
     },
     tritanope: {
       a: [
-        1.01277, 0.13548, -0.14826, -0.01243, 0.86812, 0.14431, 0.07589, 0.805,
+        1.01277,
+        0.13548,
+        -0.14826,
+        -0.01243,
+        0.86812,
+        0.14431,
+        0.07589,
+        0.805,
         0.11911,
       ],
       b: [
-        0.93678, 0.18979, -0.12657, 0.06154, 0.81526, 0.1232, -0.37562, 1.12767,
+        0.93678,
+        0.18979,
+        -0.12657,
+        0.06154,
+        0.81526,
+        0.1232,
+        -0.37562,
+        1.12767,
         0.24796,
       ],
       n: [0.03901, -0.02788, -0.01113],
@@ -2152,20 +1820,18 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
 }
 // CVD Brettel Simulation:1 ends here
 
-// CVD Vienot Simulation
-
 // [[file:../Notebook.org::*CVD Vienot Simulation][CVD Vienot Simulation:1]]
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
@@ -2180,10 +1846,26 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
 
   const vienot = {
     protanope: [
-      0.11238, 0.88762, 0.0, 0.11238, 0.88762, -0.0, 0.00401, -0.00401, 1.0,
+      0.11238,
+      0.88762,
+      0.0,
+      0.11238,
+      0.88762,
+      -0.0,
+      0.00401,
+      -0.00401,
+      1.0,
     ],
     deuteranope: [
-      0.29275, 0.70725, 0.0, 0.29275, 0.70725, -0.0, -0.02234, 0.02234, 1.0,
+      0.29275,
+      0.70725,
+      0.0,
+      0.29275,
+      0.70725,
+      -0.0,
+      -0.02234,
+      0.02234,
+      1.0,
     ],
   };
 
@@ -2201,26 +1883,17 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
 }
 // CVD Vienot Simulation:1 ends here
 
-// Color Vision Deficiency Interface
-
-// The interface exposes the two =methods= and allows us to define the =type= and =strength= of the simulation. Color
-// perception is incredibly subjective even without considering dichromacy, so we should adjust the simulation according to
-// our audience.
-
-// The main purpose of it in this library, however, is to help designers and developers create relatively safe and
-// /inclusive/ color schemes.
-
 // [[file:../Notebook.org::*Color Vision Deficiency Interface][Color Vision Deficiency Interface:1]]
-function simulateColorblindness(
+function checkColorblindness(
   { method = "brettel", type, strength = 0 },
-  color
+  color,
 ) {
   // Validate input color and store result
   const [format] = validator(color);
@@ -2253,29 +1926,15 @@ function simulateColorblindness(
 }
 // Color Vision Deficiency Interface:1 ends here
 
-// Contrast Sensitivity
-
-// After all that, simulating [[https://www.vision-and-eye-health.com/contrast-sensitivity.html][contrast sensitivity]] is mercifully simple.
-
-// As the linked article notes: maximum contrast is a comparison between black and white. Shades of gray by definition
-// reduce our ability to discern contrast. And so gray is the anchor of our simulation.
-
-// This leads to the following process:
-
-// 1. Mix black and white together with a user defined =contrast= setting
-// 2. Take the resulting gray, mix in the input color with a given =strength=
-
-// That's all.
-
 // [[file:../Notebook.org::*Contrast Sensitivity][Contrast Sensitivity:1]]
-function simulateSensitivity({ contrast = 0, strength = 0 }, color) {
+function checkSensitivity({ contrast = 0, strength = 0 }, color) {
   // Derive contrast from a shade of gray
   const GRAY = colorMix(
     {
       target: "white",
       strength: 100 * numberFromPercentage(contrast),
     },
-    "black"
+    "black",
   );
 
   // Mix resultant gray with input color
@@ -2284,24 +1943,10 @@ function simulateSensitivity({ contrast = 0, strength = 0 }, color) {
       target: GRAY,
       strength: 100 * numberFromPercentage(strength),
     },
-    color
+    color,
   );
 }
 // Contrast Sensitivity:1 ends here
-
-// Correlated Color Temperature (CCT)
-
-// Correlated color temperature, without getting too technical: a translation of an absolute temperature (expressed in
-// Kelvin) to the /matched chromacity/ of, for example, cooking a black pot. You can [[https://www.olympus-lifescience.com/en/microscope-resource/primer/lightandcolor/colortemp/][read more if you want]] to dig into the
-// meat of it.
-
-// For our purposes, the steps boil down to:
-
-// 1. Convert a temperature (in Kelvin) to RGB
-// 2. Blend the result and the input color with user-defined strength
-
-// Thanks to Tanner Helland, we have a [[https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html][nice and clean algorithm at the ready]]. I'm gonna adapt the code itself from a [[https://github.com/m-lima/temperagb][Rust
-// implementation for this]], because it's clear, concise, and the tests are right there for comparison.
 
 // [[file:../Notebook.org::*Correlated Color Temperature (CCT)][Correlated Color Temperature (CCT):1]]
 function kelvinToRgb(temperature) {
@@ -2336,29 +1981,12 @@ function kelvinToRgb(temperature) {
   return serializeRgb(["rgb", [R, G, B, 1]]);
 }
 
-function simulateIlluminant({ temperature = 1000, strength = 0 }, color) {
+function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
   const target = kelvinToRgb(temperature);
 
   return colorMix({ target, strength }, color);
 }
 // Correlated Color Temperature (CCT):1 ends here
-
-// Color Interpolation
-
-// Now that the main color actions are defined and implemented, we have almost all the tools required to generate full
-// palettes. The missing ingredient is interpolation. QuarkSuite supports three kinds of interpolation:
-
-// + Interpolating over properties
-// + Interpolating over a mixture
-// + Interpolating over simulation output
-
-// From this, we'll a helper for actions to generate tints, tones, and shades as well as blends and a few extras. The two
-// action helpers we created so far have a similar call structure with only slight differences in the behavior, so we'll create
-// =colorInterpolation()= as a /higher-order function/.
-
-// Without getting too deeply into it, a higher-order function (or HOF) is a function that accepts another function as one
-// of its arguments. It's a good tool to use in situations where you have related functions with similar call structure but
-// differing internal behavior. Such as this one.
 
 // [[file:../Notebook.org::*Color Interpolation][Color Interpolation:1]]
 function colorInterpolation(action, settings, input) {
@@ -2390,7 +2018,7 @@ function colorInterpolation(action, settings, input) {
                 hue: interpolate(hue, pos),
                 alpha: interpolate(alpha, pos),
               },
-              color
+              color,
             );
           }
 
@@ -2400,7 +2028,7 @@ function colorInterpolation(action, settings, input) {
 
             result = colorMix(
               { strength: interpolate(strength, pos), target },
-              color
+              color,
             );
           }
 
@@ -2413,7 +2041,7 @@ function colorInterpolation(action, settings, input) {
                 type,
                 strength: interpolate(strength, pos),
               },
-              color
+              color,
             );
           }
 
@@ -2425,7 +2053,7 @@ function colorInterpolation(action, settings, input) {
                 contrast: interpolate(contrast, pos),
                 strength: interpolate(strength, pos),
               },
-              color
+              color,
             );
           }
 
@@ -2437,37 +2065,31 @@ function colorInterpolation(action, settings, input) {
                 temperature: interpolate(temperature, pos),
                 strength: interpolate(strength, pos),
               },
-              color
+              color,
             );
           }
 
           return result;
-        })
+        }),
     ),
   ].reverse();
 }
 // Color Interpolation:1 ends here
 
-// Material Configuration
-
-// For the material configuration, we're going to allow the user to define the overall light and dark contrast as well as
-// place the accent palette behind an =accented= boolean. If defined, it will add in the accents to the end of the variant collection.
-// The same occurs for the interface states if =stated= is true.
-
 // [[file:../Notebook.org::*Material Configuration][Material Configuration:1]]
 function materialConfiguration(
   { contrast = 100, accented = false, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -2480,7 +2102,7 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 6,
       },
-      color
+      color,
     ).reverse(),
     ...colorInterpolation(
       colorMix,
@@ -2489,77 +2111,72 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 4,
       },
-      color
+      color,
     ),
   ];
 
   // [A100, A200, A300, A400]
   const accents = accented
     ? [
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: -50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: -25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: 15,
-          },
-          color
-        ),
-      ]
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: -50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: -25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: 15,
+        },
+        color,
+      ),
+    ]
     : [];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, [variants, accents], states];
 }
 // Material Configuration:1 ends here
 
-// Artistic Configuration
-
-// For the artistic configuration, we're going to allow the user to set overall =contrast= and an output limit for each
-// variant. =stated= is also allowed here and works identically to the material-esque config.
-
 // [[file:../Notebook.org::*Artistic Configuration][Artistic Configuration:1]]
 function artisticConfiguration(
   { contrast = 100, tints = 3, tones = 3, shades = 3, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -2567,72 +2184,57 @@ function artisticConfiguration(
   const variants = [
     tints
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#fff",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tints,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#fff",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tints,
+        },
+        color,
+      )
       : [],
     tones
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#aaa",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tones,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#aaa",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tones,
+        },
+        color,
+      )
       : [],
     shades
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#111",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: shades,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#111",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: shades,
+        },
+        color,
+      )
       : [],
   ];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, variants, states];
 }
 // Artistic Configuration:1 ends here
 
-// WCAG Color Contrast Ratios
-
-// This is the way that most of us as front-end designers/developers are familiar with. If you've ever used a [[https://contrast-ratio.com/][contrast
-// ratio calculator]] on the internet, you know what this is about. For those who don't, the [[https://webaim.org/articles/contrast/][WebAIM article on it]] is a great
-// overview.
-
-// For the implementation, we'll be doing a few things in the following order:
-
-// 1. Calculate the relative luminance between a background and foreground color (in the sRGB space)
-// 2. Filtering out any =variants= that fail the user-defined contrast requirements against the background
-// 3. Returning the altered palette
-
-// You'll see also that we've accounted for situations where we might want to calculate the most accessible colors from a
-// dark theme.
-
 // [[file:../Notebook.org::*WCAG Color Contrast Ratios][WCAG Color Contrast Ratios:1]]
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -2664,8 +2266,7 @@ function variantContrastWcag({ rating, large, background }, variants) {
       return wcagContrastCriteria({ rating, large }, ratio);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2705,18 +2306,6 @@ function paletteWcagContrast({ rating = "AA", large, dark = false }, palette) {
 }
 // WCAG Color Contrast Ratios:1 ends here
 
-// Colorimetric Contrast
-
-// The second method of determining contrast uses the colorimetric data of the background itself. The process here is:
-
-// 1. Convert background and foreground to OKLCH
-// 2. Check the /perceptual/ lightness difference and filter out any colors that don't meet user-determined requirements
-// 3. Return the altered palette
-
-// Much like the standard method, we account for the possibility of a dark theme.
-
-// /Only use this method if you need the precision./ The WCAG standard should be your choice for the majority of use cases.
-
 // [[file:../Notebook.org::*Colorimetric Contrast][Colorimetric Contrast:1]]
 function comparePerceptualLightness(bg, fg) {
   const [, bgValues] = extractor([
@@ -2746,8 +2335,7 @@ function variantsColorimetricContrast({ min, max, background }, variants) {
       return filterCondition({ min, max }, difference);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2786,16 +2374,6 @@ function paletteColorimetricContrast({ min = 75, max, dark = false }, palette) {
 }
 // Colorimetric Contrast:1 ends here
 
-// Palette Formatting
-
-// Now that we've generated our palettes, we'll need a way to assemble them into a dictionary of color tokens. At this
-// point, we know palette configurations output one of two standard data sets, so we'll only need to concern ourselves
-// with what's /different/ between them.
-
-// We'll need two helpers: =tokenizeMaterialVariants()= and =tokenizeArtisticVariants= to handle these special cases.
-
-// Finally, we contain the whole token assembly process in its own =tokenizePalette()= function
-
 // [[file:../Notebook.org::*Palette Formatting][Palette Formatting:1]]
 function tokenizeMaterialVariants(variants) {
   // Extract [main[], accents[]]
@@ -2810,8 +2388,8 @@ function tokenizeMaterialVariants(variants) {
     // a100-a400
     ...(accents.length
       ? accents.reduce((acc, color, index) => {
-          return { ...acc, [`a${++index}00`]: color };
-        }, {})
+        return { ...acc, [`a${++index}00`]: color };
+      }, {})
       : {}),
   };
 }
@@ -2854,13 +2432,13 @@ function tokenizePalette(palette) {
     ...variations,
     ...(states.length
       ? {
-          state: {
-            pending: states[0],
-            success: states[1],
-            warning: states[2],
-            error: states[3],
-          },
-        }
+        state: {
+          pending: states[0],
+          success: states[1],
+          warning: states[2],
+          error: states[3],
+        },
+      }
       : {}),
   };
 }

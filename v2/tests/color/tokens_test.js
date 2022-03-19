@@ -1,19 +1,17 @@
-// palette_as_tokens Tests
-
-// [[file:../../Notebook.org::*palette_as_tokens Tests][palette_as_tokens Tests:1]]
+// [[file:../../../Notebook.org::*tokens Tests][tokens Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { palette_as_tokens, palette_create } from "../color.js";
+import { tokens, create } from "../color.js";
 
-describe("palette_as_tokens(palette)", () => {
+describe("tokens(palette)", () => {
   it("should reject an invalid color", () => {
-    expect(() => palette_as_tokens(palette_create({}, "invalid"))).toThrow();
+    expect(() => tokens(create({}, "invalid"))).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("material palette configuration", () => {
     it("should work with default settings", () => {
-      expect(palette_as_tokens(palette_create({}, red))).toEqual({
+      expect(tokens(create({}, red))).toEqual({
         50: "#ffebeb",
         100: "#ffcecc",
         200: "#fbb0af",
@@ -27,7 +25,7 @@ describe("palette_as_tokens(palette)", () => {
         bg: "#ffffff",
         fg: "#111111",
       });
-      expect(palette_as_tokens(palette_create({}, green))).toEqual({
+      expect(tokens(create({}, green))).toEqual({
         50: "#f4ffee",
         100: "#e2ffd5",
         200: "#d1ffba",
@@ -41,7 +39,7 @@ describe("palette_as_tokens(palette)", () => {
         bg: "#ffffff",
         fg: "#111111",
       });
-      expect(palette_as_tokens(palette_create({}, blue))).toEqual({
+      expect(tokens(create({}, blue))).toEqual({
         50: "#ebf5ff",
         100: "#cde5ff",
         200: "#aed5ff",
@@ -58,7 +56,7 @@ describe("palette_as_tokens(palette)", () => {
     });
     it("should append accents when toggled", () => {
       expect(
-        palette_as_tokens(palette_create({ accented: true }, red)),
+        tokens(create({ accented: true }, red)),
       ).toEqual({
         50: "#ffebeb",
         100: "#ffcecc",
@@ -78,7 +76,7 @@ describe("palette_as_tokens(palette)", () => {
         a400: "#a40000",
       });
       expect(
-        palette_as_tokens(palette_create({ accented: true }, green)),
+        tokens(create({ accented: true }, green)),
       ).toEqual({
         50: "#f4ffee",
         100: "#e2ffd5",
@@ -98,7 +96,7 @@ describe("palette_as_tokens(palette)", () => {
         a400: "#00c100",
       });
       expect(
-        palette_as_tokens(palette_create({ accented: true }, blue)),
+        tokens(create({ accented: true }, blue)),
       ).toEqual({
         50: "#ebf5ff",
         100: "#cde5ff",
@@ -122,7 +120,7 @@ describe("palette_as_tokens(palette)", () => {
   describe("artistic palette configuration", () => {
     it("should work with default settings", () => {
       expect(
-        palette_as_tokens(palette_create({ type: "artistic" }, red)),
+        tokens(create({ type: "artistic" }, red)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -131,7 +129,7 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#9a2130", 200: "#5c2023", 300: "#231616" },
       });
       expect(
-        palette_as_tokens(palette_create({ type: "artistic" }, green)),
+        tokens(create({ type: "artistic" }, green)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -140,7 +138,7 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#5daf25", 200: "#3c6625", 300: "#1c2418" },
       });
       expect(
-        palette_as_tokens(palette_create({ type: "artistic" }, blue)),
+        tokens(create({ type: "artistic" }, blue)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -151,8 +149,8 @@ describe("palette_as_tokens(palette)", () => {
     });
     it("should add and remove variants based on tints/tones/shades settings", () => {
       expect(
-        palette_as_tokens(
-          palette_create(
+        tokens(
+          create(
             { type: "artistic", tints: 6, tones: 0, shades: 3 },
             red,
           ),
@@ -171,8 +169,8 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#9a2130", 200: "#5c2023", 300: "#231616" },
       });
       expect(
-        palette_as_tokens(
-          palette_create(
+        tokens(
+          create(
             { type: "artistic", tints: 4, tones: 2, shades: 3 },
             green,
           ),
@@ -190,8 +188,8 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#5daf25", 200: "#3c6625", 300: "#1c2418" },
       });
       expect(
-        palette_as_tokens(
-          palette_create(
+        tokens(
+          create(
             { type: "artistic", tints: 0, tones: 0, shades: 9 },
             blue,
           ),
@@ -215,7 +213,7 @@ describe("palette_as_tokens(palette)", () => {
   });
 
   it("should respond to contrast setting for either type", () => {
-    expect(palette_as_tokens(palette_create({ contrast: 95 }, red))).toEqual({
+    expect(tokens(create({ contrast: 95 }, red))).toEqual({
       50: "#ffe2e2",
       100: "#fec6c5",
       200: "#fbaaa9",
@@ -230,8 +228,8 @@ describe("palette_as_tokens(palette)", () => {
       fg: "#1a1313",
     });
     expect(
-      palette_as_tokens(
-        palette_create({ type: "artistic", contrast: 85 }, green),
+      tokens(
+        create({ type: "artistic", contrast: 85 }, green),
       ),
     ).toEqual({
       bg: "#eeffe6",
@@ -240,7 +238,7 @@ describe("palette_as_tokens(palette)", () => {
       muted: { 100: "#8fea5c", 200: "#9bd57f", 300: "#a4bf98" },
       dark: { 100: "#62bb23", 200: "#467b26", 300: "#2a411f" },
     });
-    expect(palette_as_tokens(palette_create({ contrast: 95 }, blue))).toEqual({
+    expect(tokens(create({ contrast: 95 }, blue))).toEqual({
       50: "#e2f0ff",
       100: "#c5e1ff",
       200: "#a8d2ff",
@@ -257,7 +255,7 @@ describe("palette_as_tokens(palette)", () => {
   });
 
   it("should append interface states when defined for either type", () => {
-    expect(palette_as_tokens(palette_create({ stated: true }, red))).toEqual({
+    expect(tokens(create({ stated: true }, red))).toEqual({
       50: "#ffebeb",
       100: "#ffcecc",
       200: "#fbb0af",
@@ -278,8 +276,8 @@ describe("palette_as_tokens(palette)", () => {
       },
     });
     expect(
-      palette_as_tokens(
-        palette_create({ type: "artistic", stated: true }, green),
+      tokens(
+        create({ type: "artistic", stated: true }, green),
       ),
     ).toEqual({
       bg: "#ffffff",
@@ -294,7 +292,7 @@ describe("palette_as_tokens(palette)", () => {
         error: "#b54323",
       },
     });
-    expect(palette_as_tokens(palette_create({ stated: true }, blue))).toEqual({
+    expect(tokens(create({ stated: true }, blue))).toEqual({
       50: "#ebf5ff",
       100: "#cde5ff",
       200: "#aed5ff",
@@ -318,4 +316,4 @@ describe("palette_as_tokens(palette)", () => {
 });
 
 run();
-// palette_as_tokens Tests:1 ends here
+// tokens Tests:1 ends here

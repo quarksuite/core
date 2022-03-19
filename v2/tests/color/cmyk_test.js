@@ -1,11 +1,11 @@
-// color_as_cmyk Tests
+// cmyk Tests
 
 
-// [[file:../../Notebook.org::*color_as_cmyk Tests][color_as_cmyk Tests:1]]
+// [[file:../../../Notebook.org::*cmyk Tests][cmyk Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_cmyk } from "../color.js";
+import { cmyk } from "../color.js";
 
-describe("color_as_cmyk(color)", () => {
+describe("cmyk(color)", () => {
   const controlGroup = [
     ["black", "device-cmyk(0% 0% 0% 100%)"],
     ["gray", "device-cmyk(0% 0% 0% 49.804%)"],
@@ -24,20 +24,20 @@ describe("color_as_cmyk(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_cmyk("invalid")).toThrow();
+    expect(() => cmyk("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_cmyk(input)).toBe(output);
+      expect(cmyk(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_cmyk(input)).toBe(output);
+      expect(cmyk(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_cmyk Tests:1 ends here
+// cmyk Tests:1 ends here

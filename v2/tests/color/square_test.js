@@ -1,11 +1,8 @@
-// color_as_square Tests
-
-
-// [[file:../../Notebook.org::*color_as_square Tests][color_as_square Tests:1]]
+// [[file:../../../Notebook.org::*square Tests][square Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_square } from "../color.js";
+import { square } from "../color.js";
 
-describe("color_as_square(color)", () => {
+describe("square(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#7b9900", "#00a9db", "#a34fff"]],
     ["orange", ["#ffa500", "#23dc96", "#5bc0ff", "#ff8cdc"]],
@@ -18,15 +15,15 @@ describe("color_as_square(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_square("invalid")).toThrow();
+    expect(() => square("invalid")).toThrow();
   });
 
   it("should correctly emit square schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_square(input)).toEqual(output);
+      expect(square(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_square Tests:1 ends here
+// square Tests:1 ends here

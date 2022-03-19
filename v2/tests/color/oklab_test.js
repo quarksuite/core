@@ -1,11 +1,11 @@
-// color_as_oklab Tests
+// oklab Tests
 
 
-// [[file:../../Notebook.org::*color_as_oklab Tests][color_as_oklab Tests:1]]
+// [[file:../../../Notebook.org::*oklab Tests][oklab Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_oklab } from "../color.js";
+import { oklab } from "../color.js";
 
-describe("color_as_oklab(color)", () => {
+describe("oklab(color)", () => {
   const controlGroup = [
     ["black", "oklab(0% 0 0)"],
     ["gray", "oklab(59.987% 0 0)"],
@@ -24,20 +24,20 @@ describe("color_as_oklab(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_oklab("invalid")).toThrow();
+    expect(() => oklab("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_oklab(input)).toBe(output);
+      expect(oklab(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_oklab(input)).toBe(output);
+      expect(oklab(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_oklab Tests:1 ends here
+// oklab Tests:1 ends here

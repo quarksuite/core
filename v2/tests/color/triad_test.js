@@ -1,11 +1,8 @@
-// color_as_triad Tests
-
-
-// [[file:../../Notebook.org::*color_as_triad Tests][color_as_triad Tests:1]]
+// [[file:../../../Notebook.org::*triad Tests][triad Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_triad } from "../color.js";
+import { triad } from "../color.js";
 
-describe("color_as_triad(color)", () => {
+describe("triad(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#00ae00", "#4f6fff"]],
     ["orange", ["#ffa500", "#00dcd5", "#de99ff"]],
@@ -18,15 +15,15 @@ describe("color_as_triad(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_triad("invalid")).toThrow();
+    expect(() => triad("invalid")).toThrow();
   });
 
   it("should correctly emit triadic schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_triad(input)).toEqual(output);
+      expect(triad(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_triad Tests:1 ends here
+// triad Tests:1 ends here

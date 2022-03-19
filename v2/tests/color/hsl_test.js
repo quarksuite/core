@@ -1,11 +1,11 @@
-// color_as_hsl Tests
+// hsl Tests
 
 
-// [[file:../../Notebook.org::*color_as_hsl Tests][color_as_hsl Tests:1]]
+// [[file:../../../Notebook.org::*hsl Tests][hsl Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hsl } from "../color.js";
+import { hsl } from "../color.js";
 
-describe("color_as_hsl(color)", () => {
+describe("hsl(color)", () => {
   const controlGroup = [
     ["black", "hsl(0, 0%, 0%)"],
     ["gray", "hsl(0, 0%, 50.196%)"],
@@ -24,20 +24,20 @@ describe("color_as_hsl(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hsl("invalid")).toThrow();
+    expect(() => hsl("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_hsl(input)).toBe(output);
+      expect(hsl(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hsl(input)).toBe(output);
+      expect(hsl(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_hsl Tests:1 ends here
+// hsl Tests:1 ends here

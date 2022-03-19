@@ -1,19 +1,17 @@
-// palette_create Tests
-
-// [[file:../../Notebook.org::*palette_create Tests][palette_create Tests:1]]
+// [[file:../../../Notebook.org::*create Tests][create Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { palette_create } from "../color.js";
+import { create } from "../color.js";
 
-describe("palette_create(settings, color)", () => {
+describe("create(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => palette_create({}, "invalid")).toThrow();
+    expect(() => create({}, "invalid")).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("settings.type = 'material'", () => {
     it("should activate settings.accented", () => {
-      expect(palette_create({ accented: true }, red)).toEqual([
+      expect(create({ accented: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -32,7 +30,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ accented: true }, green)).toEqual([
+      expect(create({ accented: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -51,7 +49,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ accented: true }, blue)).toEqual([
+      expect(create({ accented: true }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -75,7 +73,7 @@ describe("palette_create(settings, color)", () => {
 
   describe("settings.type = 'artistic'", () => {
     it("should activate settings.tints", () => {
-      expect(palette_create({ type: "artistic", tints: 6 }, red)).toEqual([
+      expect(create({ type: "artistic", tints: 6 }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#e64d59", "#ef7175", "#f69292", "#fbb0af", "#ffcecc", "#ffebeb"],
@@ -84,7 +82,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", tints: 0 }, red)).toEqual([
+      expect(create({ type: "artistic", tints: 0 }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [],
@@ -95,7 +93,7 @@ describe("palette_create(settings, color)", () => {
       ]);
     });
     it("should activate settings.tones", () => {
-      expect(palette_create({ type: "artistic", tones: 6 }, green)).toEqual([
+      expect(create({ type: "artistic", tones: 6 }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#abff7e", "#d1ffba", "#f4ffee"],
@@ -104,7 +102,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", tones: 0 }, green)).toEqual([
+      expect(create({ type: "artistic", tones: 0 }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#abff7e", "#d1ffba", "#f4ffee"],
@@ -115,7 +113,7 @@ describe("palette_create(settings, color)", () => {
       ]);
     });
     it("should activate settings.shades", () => {
-      expect(palette_create({ type: "artistic", shades: 6 }, blue)).toEqual([
+      expect(create({ type: "artistic", shades: 6 }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -124,7 +122,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", shades: 0 }, blue)).toEqual([
+      expect(create({ type: "artistic", shades: 0 }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -138,7 +136,7 @@ describe("palette_create(settings, color)", () => {
 
   describe("settings.contrast", () => {
     it("should be active with either type", () => {
-      expect(palette_create({ contrast: 90 }, red)).toEqual([
+      expect(create({ contrast: 90 }, red)).toEqual([
         ["#ffebeb", "#231616"],
         [
           [
@@ -157,7 +155,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", contrast: 80 }, green)).toEqual(
+      expect(create({ type: "artistic", contrast: 80 }, green)).toEqual(
         [
           ["#e8ffdd", "#26391d"],
           [
@@ -168,7 +166,7 @@ describe("palette_create(settings, color)", () => {
           [],
         ],
       );
-      expect(palette_create({ contrast: 70 }, blue)).toEqual([
+      expect(create({ contrast: 70 }, blue)).toEqual([
         ["#c3e0ff", "#1d344f"],
         [
           [
@@ -192,7 +190,7 @@ describe("palette_create(settings, color)", () => {
 
   describe("settings.stated", () => {
     it("should be active with either type", () => {
-      expect(palette_create({ type: "artistic", stated: true }, red)).toEqual([
+      expect(create({ type: "artistic", stated: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#ef7175", "#fbb0af", "#ffebeb"],
@@ -201,7 +199,7 @@ describe("palette_create(settings, color)", () => {
         ],
         ["#e0cccc", "#4c8625", "#dc9a26", "#b62125"],
       ]);
-      expect(palette_create({ stated: true }, green)).toEqual([
+      expect(create({ stated: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -220,7 +218,7 @@ describe("palette_create(settings, color)", () => {
         ],
         ["#d4e0cf", "#2c9622", "#d5af1f", "#b54323"],
       ]);
-      expect(palette_create({ type: "artistic", stated: true }, blue)).toEqual([
+      expect(create({ type: "artistic", stated: true }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -234,4 +232,4 @@ describe("palette_create(settings, color)", () => {
 });
 
 run();
-// palette_create Tests:1 ends here
+// create Tests:1 ends here

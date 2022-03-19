@@ -1,6 +1,4 @@
 #+TITLE: QuarkSuite (v2)
-#+PROPERTY: header-args:deno :tangle yes :mkdirp yes
-#+PROPERTY: header-args:js :tangle yes :mkdirp yes
 #+PROPERTY: header-args:shell :results output code
 
 * Table of Contents :TOC@5:
@@ -14,146 +12,147 @@
   - [[#improved-performance][Improved Performance]]
   - [[#internal-simplicity][Internal Simplicity]]
   - [[#improved-modularity][Improved Modularity]]
+  - [[#trimmed-api][Trimmed API]]
 - [[#spec][Spec]]
   - [[#api][API]]
     - [[#functional-utilities][Functional Utilities]]
-      - [[#fn_process][fn_process]]
-        - [[#fn_process-examples][fn_process Examples]]
-        - [[#fn_process-implementation][fn_process Implementation]]
-        - [[#fn_process-tests][fn_process Tests]]
-      - [[#fn_preset][fn_preset]]
-        - [[#fn_preset-examples][fn_preset Examples]]
-        - [[#fn_preset-implementation][fn_preset Implementation]]
-        - [[#fn_preset-tests][fn_preset Tests]]
-      - [[#fn_pipeline][fn_pipeline]]
-        - [[#fn_pipeline-examples][fn_pipeline Examples]]
-        - [[#fn_pipeline-implementation][fn_pipeline Implementation]]
-        - [[#fn_pipeline-tests][fn_pipeline Tests]]
-      - [[#fn_propagate][fn_propagate]]
-        - [[#fn_propagate-examples][fn_propagate Examples]]
-        - [[#fn_propagate-implementation][fn_propagate Implementation]]
-        - [[#fn_propagate-tests][fn_propagate Tests]]
+      - [[#process][process]]
+        - [[#process-examples][process Examples]]
+        - [[#process-implementation][process Implementation]]
+        - [[#process-tests][process Tests]]
+      - [[#preset][preset]]
+        - [[#preset-examples][preset Examples]]
+        - [[#preset-implementation][preset Implementation]]
+        - [[#preset-tests][preset Tests]]
+      - [[#pipeline][pipeline]]
+        - [[#pipeline-examples][pipeline Examples]]
+        - [[#pipeline-implementation][pipeline Implementation]]
+        - [[#pipeline-tests][pipeline Tests]]
+      - [[#propagate][propagate]]
+        - [[#propagate-examples][propagate Examples]]
+        - [[#propagate-implementation][propagate Implementation]]
+        - [[#propagate-tests][propagate Tests]]
     - [[#color][Color]]
-      - [[#color_adjust][color_adjust]]
-        - [[#color_adjust-examples][color_adjust Examples]]
-        - [[#color_adjust-implementation][color_adjust Implementation]]
-        - [[#color_adjust-tests][color_adjust Tests]]
-      - [[#color_mix][color_mix]]
-        - [[#color_mix-examples][color_mix Examples]]
-        - [[#color_mix-implementation][color_mix Implementation]]
-        - [[#color_mix-tests][color_mix Tests]]
-      - [[#color_simulate][color_simulate]]
-        - [[#color_simulate-examples][color_simulate Examples]]
-        - [[#color_simulate-implementation][color_simulate Implementation]]
-        - [[#color_simulate-tests][color_simulate Tests]]
-      - [[#color_as_hex][color_as_hex]]
-        - [[#color_as_hex-examples][color_as_hex Examples]]
-        - [[#color_as_hex-implementation][color_as_hex Implementation]]
-        - [[#color_as_hex-tests][color_as_hex Tests]]
-      - [[#color_as_rgb][color_as_rgb]]
-        - [[#color_as_rgb-examples][color_as_rgb Examples]]
-        - [[#color_as_rgb-implementation][color_as_rgb Implementation]]
-        - [[#color_as_rgb-tests][color_as_rgb Tests]]
-      - [[#color_as_hsl][color_as_hsl]]
-        - [[#color_as_hsl-examples][color_as_hsl Examples]]
-        - [[#color_as_hsl-implementation][color_as_hsl Implementation]]
-        - [[#color_as_hsl-tests][color_as_hsl Tests]]
-      - [[#color_as_cmyk][color_as_cmyk]]
-        - [[#color_as_cmyk-examples][color_as_cmyk Examples]]
-        - [[#color_as_cmyk-implementation][color_as_cmyk Implementation]]
-        - [[#color_as_cmyk-tests][color_as_cmyk Tests]]
-      - [[#color_as_hwb][color_as_hwb]]
-        - [[#color_as_hwb-examples][color_as_hwb Examples]]
-        - [[#color_as_hwb-implementation][color_as_hwb Implementation]]
-        - [[#color_as_hwb-tests][color_as_hwb Tests]]
-      - [[#color_as_cielab][color_as_cielab]]
-        - [[#color_as_cielab-examples][color_as_cielab Examples]]
-        - [[#color_as_cielab-implementation][color_as_cielab Implementation]]
-        - [[#color_as_cielab-tests][color_as_cielab Tests]]
-      - [[#color_as_cielch][color_as_cielch]]
-        - [[#color_as_cielch-examples][color_as_cielch Examples]]
-        - [[#color_as_cielch-implementation][color_as_cielch Implementation]]
-        - [[#color_as_cielch-tests][color_as_cielch Tests]]
-      - [[#color_as_oklab][color_as_oklab]]
-        - [[#color_as_oklab-examples][color_as_oklab Examples]]
-        - [[#color_as_oklab-implementation][color_as_oklab Implementation]]
-        - [[#color_as_oklab-tests][color_as_oklab Tests]]
-      - [[#color_as_oklch][color_as_oklch]]
-        - [[#color_as_oklch-examples][color_as_oklch Examples]]
-        - [[#color_as_oklch-implementation][color_as_oklch Implementation]]
-        - [[#color_as_oklch-tests][color_as_oklch Tests]]
-      - [[#color_as_dyad][color_as_dyad]]
-        - [[#color_as_dyad-examples][color_as_dyad Examples]]
-        - [[#color_as_dyad-implementation][color_as_dyad Implementation]]
-        - [[#color_as_dyad-tests][color_as_dyad Tests]]
-      - [[#color_as_complementary][color_as_complementary]]
-        - [[#color_as_complementary-examples][color_as_complementary Examples]]
-        - [[#color_as_complementary-implementation][color_as_complementary Implementation]]
-        - [[#color_as_complementary-tests][color_as_complementary Tests]]
-      - [[#color_as_analogous][color_as_analogous]]
-        - [[#color_as_analogous-examples][color_as_analogous Examples]]
-        - [[#color_as_analogous-implementation][color_as_analogous Implementation]]
-        - [[#color_as_analogous-tests][color_as_analogous Tests]]
-      - [[#color_as_split][color_as_split]]
-        - [[#color_as_split-examples][color_as_split Examples]]
-        - [[#color_as_split-implementation][color_as_split Implementation]]
-        - [[#color_as_split-tests][color_as_split Tests]]
-      - [[#color_as_clash][color_as_clash]]
-        - [[#color_as_clash-examples][color_as_clash Examples]]
-        - [[#color_as_clash-implementation][color_as_clash Implementation]]
-        - [[#color_as_clash-tests][color_as_clash Tests]]
-      - [[#color_as_triad][color_as_triad]]
-        - [[#color_as_triad-examples][color_as_triad Examples]]
-        - [[#color_as_triad-implementation][color_as_triad Implementation]]
-        - [[#color_as_triad-tests][color_as_triad Tests]]
-      - [[#color_as_tetrad][color_as_tetrad]]
-        - [[#color_as_tetrad-examples][color_as_tetrad Examples]]
-        - [[#color_as_tetrad-implementation][color_as_tetrad Implementation]]
-        - [[#color_as_tetrad-tests][color_as_tetrad Tests]]
-      - [[#color_as_square][color_as_square]]
-        - [[#color_as_square-examples][color_as_square Examples]]
-        - [[#color_as_square-implementation][color_as_square Implementation]]
-        - [[#color_as_square-tests][color_as_square Tests]]
-      - [[#color_as_star][color_as_star]]
-        - [[#color_as_star-examples][color_as_star Examples]]
-        - [[#color_as_star-implementation][color_as_star Implementation]]
-        - [[#color_as_star-tests][color_as_star Tests]]
-      - [[#color_as_hexagon][color_as_hexagon]]
-        - [[#color_as_hexagon-examples][color_as_hexagon Examples]]
-        - [[#color_as_hexagon-implementation][color_as_hexagon Implementation]]
-        - [[#color_as_hexagon-tests][color_as_hexagon Tests]]
-      - [[#color_as_element][color_as_element]]
-      - [[#palette_create][palette_create]]
-        - [[#palette_create-examples][palette_create Examples]]
-        - [[#palette_create-implementation][palette_create Implementation]]
-        - [[#palette_create-tests][palette_create Tests]]
-      - [[#palette_contrast][palette_contrast]]
-        - [[#palette_contrast-examples][palette_contrast Examples]]
-        - [[#palette_contrast-implementation][palette_contrast Implementation]]
-        - [[#palette_contrast-tests][palette_contrast Tests]]
-      - [[#palette_as_tokens][palette_as_tokens]]
-        - [[#palette_as_tokens-examples][palette_as_tokens Examples]]
-        - [[#palette_as_tokens-implementation][palette_as_tokens Implementation]]
-        - [[#palette_as_tokens-tests][palette_as_tokens Tests]]
+      - [[#adjust][adjust]]
+        - [[#adjust-examples][adjust Examples]]
+        - [[#adjust-implementation][adjust Implementation]]
+        - [[#adjust-tests][adjust Tests]]
+      - [[#mix][mix]]
+        - [[#mix-examples][mix Examples]]
+        - [[#mix-implementation][mix Implementation]]
+        - [[#mix-tests][mix Tests]]
+      - [[#check][check]]
+        - [[#check-examples][check Examples]]
+        - [[#check-implementation][check Implementation]]
+        - [[#check-tests][check Tests]]
+      - [[#hex][hex]]
+        - [[#hex-examples][hex Examples]]
+        - [[#hex-implementation][hex Implementation]]
+        - [[#hex-tests][hex Tests]]
+      - [[#rgb][rgb]]
+        - [[#rgb-examples][rgb Examples]]
+        - [[#rgb-implementation][rgb Implementation]]
+        - [[#rgb-tests][rgb Tests]]
+      - [[#hsl][hsl]]
+        - [[#hsl-examples][hsl Examples]]
+        - [[#hsl-implementation][hsl Implementation]]
+        - [[#hsl-tests][hsl Tests]]
+      - [[#cmyk][cmyk]]
+        - [[#cmyk-examples][cmyk Examples]]
+        - [[#cmyk-implementation][cmyk Implementation]]
+        - [[#cmyk-tests][cmyk Tests]]
+      - [[#hwb][hwb]]
+        - [[#hwb-examples][hwb Examples]]
+        - [[#hwb-implementation][hwb Implementation]]
+        - [[#hwb-tests][hwb Tests]]
+      - [[#cielab][cielab]]
+        - [[#cielab-examples][cielab Examples]]
+        - [[#cielab-implementation][cielab Implementation]]
+        - [[#cielab-tests][cielab Tests]]
+      - [[#cielch][cielch]]
+        - [[#cielch-examples][cielch Examples]]
+        - [[#cielch-implementation][cielch Implementation]]
+        - [[#cielch-tests][cielch Tests]]
+      - [[#oklab][oklab]]
+        - [[#oklab-examples][oklab Examples]]
+        - [[#oklab-implementation][oklab Implementation]]
+        - [[#oklab-tests][oklab Tests]]
+      - [[#oklch][oklch]]
+        - [[#oklch-examples][oklch Examples]]
+        - [[#oklch-implementation][oklch Implementation]]
+        - [[#oklch-tests][oklch Tests]]
+      - [[#dyad][dyad]]
+        - [[#dyad-examples][dyad Examples]]
+        - [[#dyad-implementation][dyad Implementation]]
+        - [[#dyad-tests][dyad Tests]]
+      - [[#complementary][complementary]]
+        - [[#complementary-examples][complementary Examples]]
+        - [[#complementary-implementation][complementary Implementation]]
+        - [[#complementary-tests][complementary Tests]]
+      - [[#analogous][analogous]]
+        - [[#analogous-examples][analogous Examples]]
+        - [[#analogous-implementation][analogous Implementation]]
+        - [[#analogous-tests][analogous Tests]]
+      - [[#split][split]]
+        - [[#split-examples][split Examples]]
+        - [[#split-implementation][split Implementation]]
+        - [[#split-tests][split Tests]]
+      - [[#clash][clash]]
+        - [[#clash-examples][clash Examples]]
+        - [[#clash-implementation][clash Implementation]]
+        - [[#clash-tests][clash Tests]]
+      - [[#triad][triad]]
+        - [[#triad-examples][triad Examples]]
+        - [[#triad-implementation][triad Implementation]]
+        - [[#triad-tests][triad Tests]]
+      - [[#tetrad][tetrad]]
+        - [[#tetrad-examples][tetrad Examples]]
+        - [[#tetrad-implementation][tetrad Implementation]]
+        - [[#tetrad-tests][tetrad Tests]]
+      - [[#square][square]]
+        - [[#square-examples][square Examples]]
+        - [[#square-implementation][square Implementation]]
+        - [[#square-tests][square Tests]]
+      - [[#star][star]]
+        - [[#star-examples][star Examples]]
+        - [[#star-implementation][star Implementation]]
+        - [[#star-tests][star Tests]]
+      - [[#hexagon][hexagon]]
+        - [[#hexagon-examples][hexagon Examples]]
+        - [[#hexagon-implementation][hexagon Implementation]]
+        - [[#hexagon-tests][hexagon Tests]]
+      - [[#create][create]]
+        - [[#create-examples][create Examples]]
+        - [[#create-implementation][create Implementation]]
+        - [[#create-tests][create Tests]]
+      - [[#contrast][contrast]]
+        - [[#contrast-examples][contrast Examples]]
+        - [[#contrast-implementation][contrast Implementation]]
+        - [[#contrast-tests][contrast Tests]]
+      - [[#tokens][tokens]]
+        - [[#tokens-examples][tokens Examples]]
+        - [[#tokens-implementation][tokens Implementation]]
+        - [[#tokens-tests][tokens Tests]]
+      - [[#element][element]]
     - [[#modular-scale][Modular Scale]]
-      - [[#ms_create][ms_create]]
-      - [[#ms_modify][ms_modify]]
-      - [[#ms_split][ms_split]]
-      - [[#ms_format][ms_format]]
-      - [[#ms_as_tokens][ms_as_tokens]]
-      - [[#ms_as_element][ms_as_element]]
+      - [[#create-1][create]]
+      - [[#modify][modify]]
+      - [[#chunk][chunk]]
+      - [[#format][format]]
+      - [[#tokens-1][tokens]]
+      - [[#element-1][element]]
     - [[#design-tokens][Design Tokens]]
-      - [[#tokens_as_css][tokens_as_css]]
-      - [[#tokens_as_scss][tokens_as_scss]]
-      - [[#tokens_as_less][tokens_as_less]]
-      - [[#tokens_as_styl][tokens_as_styl]]
-      - [[#tokens_as_json][tokens_as_json]]
-      - [[#tokens_as_yaml][tokens_as_yaml]]
-      - [[#tokens_as_gpl][tokens_as_gpl]]
-      - [[#tokens_as_sketchpalette][tokens_as_sketchpalette]]
-      - [[#tokens_as_tailwind][tokens_as_tailwind]]
-      - [[#tokens_as_styledict][tokens_as_styledict]]
-      - [[#tokens_as_element][tokens_as_element]]
+      - [[#css][css]]
+      - [[#scss][scss]]
+      - [[#less][less]]
+      - [[#styl][styl]]
+      - [[#json][json]]
+      - [[#yaml][yaml]]
+      - [[#gpl][gpl]]
+      - [[#sketchpalette][sketchpalette]]
+      - [[#tailwind][tailwind]]
+      - [[#styledict][styledict]]
+      - [[#element-2][element]]
   - [[#internals][Internals]]
     - [[#functional][Functional]]
       - [[#composition-internals][Composition Internals]]
@@ -207,8 +206,8 @@ Rather than providing the factory pattern, I've resolved to /further improve/ th
 Where v1 differentiated between its abstractions with a host of naming conventions, v2 reinforces an idiomatic
 relationship between functions and their purpose. The API now follows a simple, explicit naming convention.
 
-+ =type_action(y, x)=: indicates that a function performs an action on =x= with =y= modifying the output
-+ =type_as_output(x)=: indicates that a function emits output /directly from/ =x=
++ =action(y, x)=: indicates that a function performs an action on type =x= with =y= modifying the output
++ =emitter(x)=: indicates that a function emits output /directly from/ =x=
 
 ** Settled Types
 
@@ -263,18 +262,19 @@ available types. This will make it easier to develop and debug while allowing mo
 In addition, the internal library has been expanded so that each utility exposed in the API is truly uncoupled from the
 rest. This means that modern build tools, and environments that support tree shaking, will only pull in what's needed.
 
+** Trimmed API
+
+The concreteness of the =action -> emitter -> process -> pipeline= architecture of QuarkSuite v2 means a lot of existing
+utilities would actually be better off wrapped as an action. For example =color_to_hex()=, =color_to_hsl()= could be
+refactored as a =format()= action of the =color= type.
 * Spec
 
 The library begins with an entry point =mod.js= that aggregates all the functionality to make it easier to experiment
 during development before you've settled on what you need. QuarkSuite v2 separates all functionality by its input type.
 
-#+BEGIN_SRC js :tangle "./v2/mod.js" :comments both
-// Package all utility types
-
-export * from "./fn.js";
-export * from "./color.js";
-export * from "./ms.js";
-export * from "./tokens.js";
+#+BEGIN_SRC js :tangle "./v2/mod.js" :comments link
+export * as fn from "./fn.js";
+export * as color from "./color.js";
 #+END_SRC
 
 ** API
@@ -291,94 +291,94 @@ Example:
 
 *** Functional Utilities
 :PROPERTIES:
-:header-args:js: :tangle "./v2/fn.js" :comments both
+:header-args:js: :tangle "./v2/fn.js" :mkdirp yes :comments link
 :END:
 
-**** fn_process
+**** process
 
 A functional utility that combines emitters into a process.
 
-+ =fn_process(...emitters) => (x)=
++ =process(...emitters) => (x)=
   + =emitters: Array<(x)>=: sequence of emitters to combine
 
-***** fn_process Examples
+***** process Examples
 
-***** fn_process Implementation
+***** process Implementation
 
 #+BEGIN_SRC js
-export function fn_process(...emitters) {
+export function process(...emitters) {
   return compose(...emitters);
 }
 #+END_SRC
 
-***** fn_process Tests
+***** process Tests
 
-**** fn_preset
+**** preset
 
 A functional utility that accepts an action and its modifiers and converts it to an emitter.
 
-+ =fn_preset(action, y) => (x)=
++ =preset(action, y) => (x)=
   + =action: (y, x) => unknown=: the action to transform
   + =y: unknown=: the action's associated modifiers
 
-***** fn_preset Examples
+***** preset Examples
 
-***** fn_preset Implementation
+***** preset Implementation
 
 #+BEGIN_SRC js
-export function fn_preset(action, y) {
+export function preset(action, y) {
   return (x) => action(y, x);
 }
 #+END_SRC
 
-***** fn_preset Tests
+***** preset Tests
 
-**** fn_pipeline
+**** pipeline
 
 A functional utility that shuttles data =x= through a process pipeline.
 
-+ =fn_pipeline(x, ...processes) => unknown=
++ =pipeline(x, ...processes) => unknown=
   + =x: unknown=: data to pipe
   + =processes: Array<(x)>=: sequence of processes to transform data
 
-***** fn_pipeline Examples
+***** pipeline Examples
 
-***** fn_pipeline Implementation
+***** pipeline Implementation
 
 #+BEGIN_SRC js
-export function fn_pipeline(x, ...processes) {
+export function pipeline(x, ...processes) {
   return compose(...processes)(x);
 }
 #+END_SRC
 
-***** fn_pipeline Tests
+***** pipeline Tests
 
-**** fn_propagate
+**** propagate
 
 A functional utility that allows an =emitter= to propagate over a collection of =xs=.
 
-+ =fn_propagate(emitter, xs) => unknown=
++ =propagate(emitter, xs) => unknown=
   + =emitter: (x) => unknown=: the emitter to use
   + =xs: unknown[]=: the data collection to map over
 
-***** fn_propagate Examples
+***** propagate Examples
 
-***** fn_propagate Implementation
+***** propagate Implementation
 
 #+BEGIN_SRC js
-export function fn_propagate(emitter, xs) {
+export function propagate(emitter, xs) {
   return xs.map((x) => emitter(x));
 }
 #+END_SRC
 
-***** fn_propagate Tests
+***** propagate Tests
 
 *** Color
 :PROPERTIES:
-:header-args:js: :tangle "./v2/color.js" :comments both
+:header-args:js: :tangle "./v2/color.js" :mkdirp yes :comments link
 :END:
 
-**** color_adjust
+**** adjust
 
 An action that adjusts the =properties= of a given valid CSS =color=. Positive property values will increase while
 negative values will decrease.
@@ -386,7 +386,7 @@ negative values will decrease.
 If =steps= is defined, this triggers the interpolation behavior where the action will instead return the unique
 results of adjusting the defined =properties= color in /sequence/ up to the set number of =steps=.
 
-+ =color_adjust(properties, color) => string | string[]=
++ =adjust(properties, color) => string | string[]=
   - =properties: {}=: the color properties to adjust
     * =properties.lightness = 0: number=: adjust the color's lightness (as a percentage)
     * =properties.chroma = 0: number=: adjust the color's chroma (as a percentage)
@@ -395,12 +395,12 @@ results of adjusting the defined =properties= color in /sequence/ up to the set 
     * =properties.steps = 0: number=: triggers color interpolation mode (if greater than 0)
   - =color: string=: the color to adjust
 
-***** color_adjust Examples
+***** adjust Examples
 
-***** color_adjust Implementation
+***** adjust Implementation
 
 #+BEGIN_SRC js
-export function color_adjust(settings, color) {
+export function adjust(settings, color) {
   // Do nothing by default
   const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
 
@@ -414,7 +414,7 @@ export function color_adjust(settings, color) {
         alpha,
         steps,
       },
-      color
+      color,
     );
   }
 
@@ -422,76 +422,76 @@ export function color_adjust(settings, color) {
 }
 #+END_SRC
 
-***** color_adjust Tests
+***** adjust Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_adjust_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/adjust_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_adjust } from "../color.js";
+import { adjust } from "../color.js";
 
-describe("color_adjust(settings, color)", () => {
+describe("adjust(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => color_adjust({}, "invalid")).toThrow();
+    expect(() => adjust({}, "invalid")).toThrow();
   });
 
   it("should correctly adjust lightness of samples", () => {
-    expect(color_adjust({ lightness: -25 }, "white")).toBe("#aeaeae");
-    expect(color_adjust({ lightness: 25 }, "gray")).toBe("#cdcdcd");
-    expect(color_adjust({ lightness: 50 }, "black")).toBe("#636363");
-    expect(color_adjust({ lightness: -25 }, "red")).toBe("#a10000");
-    expect(color_adjust({ lightness: 10 }, "orange")).toBe("#ffc644");
-    expect(color_adjust({ lightness: -16 }, "yellow")).toBe("#cbc900");
-    expect(color_adjust({ lightness: -32 }, "lime")).toBe("#009300");
-    expect(color_adjust({ lightness: 16 }, "cyan")).toBe("#54ffff");
-    expect(color_adjust({ lightness: 32 }, "blue")).toBe("#479dff");
-    expect(color_adjust({ lightness: 24 }, "purple")).toBe("#cf5fcc");
-    expect(color_adjust({ lightness: -24 }, "magenta")).toBe("#a900ad");
+    expect(adjust({ lightness: -25 }, "white")).toBe("#aeaeae");
+    expect(adjust({ lightness: 25 }, "gray")).toBe("#cdcdcd");
+    expect(adjust({ lightness: 50 }, "black")).toBe("#636363");
+    expect(adjust({ lightness: -25 }, "red")).toBe("#a10000");
+    expect(adjust({ lightness: 10 }, "orange")).toBe("#ffc644");
+    expect(adjust({ lightness: -16 }, "yellow")).toBe("#cbc900");
+    expect(adjust({ lightness: -32 }, "lime")).toBe("#009300");
+    expect(adjust({ lightness: 16 }, "cyan")).toBe("#54ffff");
+    expect(adjust({ lightness: 32 }, "blue")).toBe("#479dff");
+    expect(adjust({ lightness: 24 }, "purple")).toBe("#cf5fcc");
+    expect(adjust({ lightness: -24 }, "magenta")).toBe("#a900ad");
   });
 
   it("should correctly adjust chroma of samples", () => {
-    expect(color_adjust({ chroma: 50 }, "white")).toBe("#ffdbfc");
-    expect(color_adjust({ chroma: 50 }, "gray")).toBe("#bb5d7d");
-    expect(color_adjust({ chroma: 75 }, "black")).toBe("#060000");
-    expect(color_adjust({ chroma: -25 }, "red")).toBe("#e64a3b");
-    expect(color_adjust({ chroma: -10 }, "orange")).toBe("#f6a941");
-    expect(color_adjust({ chroma: -16 }, "yellow")).toBe("#fcfe66");
-    expect(color_adjust({ chroma: -32 }, "lime")).toBe("#71f56a");
-    expect(color_adjust({ chroma: -75 }, "cyan")).toBe("#e0e0e0");
-    expect(color_adjust({ chroma: 32 }, "blue")).toBe("#1e00ff");
-    expect(color_adjust({ chroma: 24 }, "purple")).toBe("#8d008f");
-    expect(color_adjust({ chroma: -24 }, "magenta")).toBe("#f04bee");
+    expect(adjust({ chroma: 50 }, "white")).toBe("#ffdbfc");
+    expect(adjust({ chroma: 50 }, "gray")).toBe("#bb5d7d");
+    expect(adjust({ chroma: 75 }, "black")).toBe("#060000");
+    expect(adjust({ chroma: -25 }, "red")).toBe("#e64a3b");
+    expect(adjust({ chroma: -10 }, "orange")).toBe("#f6a941");
+    expect(adjust({ chroma: -16 }, "yellow")).toBe("#fcfe66");
+    expect(adjust({ chroma: -32 }, "lime")).toBe("#71f56a");
+    expect(adjust({ chroma: -75 }, "cyan")).toBe("#e0e0e0");
+    expect(adjust({ chroma: 32 }, "blue")).toBe("#1e00ff");
+    expect(adjust({ chroma: 24 }, "purple")).toBe("#8d008f");
+    expect(adjust({ chroma: -24 }, "magenta")).toBe("#f04bee");
   });
 
   it("should correctly adjust hue of samples", () => {
-    expect(color_adjust({ hue: 30 }, "white")).toBe("#ffffff");
-    expect(color_adjust({ hue: 60 }, "gray")).toBe("#808080");
-    expect(color_adjust({ hue: 90 }, "black")).toBe("#000000");
-    expect(color_adjust({ hue: 150 }, "red")).toBe("#00b48c");
-    expect(color_adjust({ hue: 180 }, "orange")).toBe("#5bc0ff");
-    expect(color_adjust({ hue: 210 }, "yellow")).toBe("#ffc2ff");
-    expect(color_adjust({ hue: 240 }, "lime")).toBe("#ff6072");
-    expect(color_adjust({ hue: 270 }, "cyan")).toBe("#f0e55d");
-    expect(color_adjust({ hue: 300 }, "blue")).toBe("#0075a4");
-    expect(color_adjust({ hue: 330 }, "purple")).toBe("#5e21a6");
-    expect(color_adjust({ hue: 360 }, "magenta")).toBe("#ff00ff");
+    expect(adjust({ hue: 30 }, "white")).toBe("#ffffff");
+    expect(adjust({ hue: 60 }, "gray")).toBe("#808080");
+    expect(adjust({ hue: 90 }, "black")).toBe("#000000");
+    expect(adjust({ hue: 150 }, "red")).toBe("#00b48c");
+    expect(adjust({ hue: 180 }, "orange")).toBe("#5bc0ff");
+    expect(adjust({ hue: 210 }, "yellow")).toBe("#ffc2ff");
+    expect(adjust({ hue: 240 }, "lime")).toBe("#ff6072");
+    expect(adjust({ hue: 270 }, "cyan")).toBe("#f0e55d");
+    expect(adjust({ hue: 300 }, "blue")).toBe("#0075a4");
+    expect(adjust({ hue: 330 }, "purple")).toBe("#5e21a6");
+    expect(adjust({ hue: 360 }, "magenta")).toBe("#ff00ff");
   });
 
   it("should correctly adjust alpha of samples", () => {
-    expect(color_adjust({ alpha: -10 }, "white")).toBe("#ffffffe6");
-    expect(color_adjust({ alpha: -20 }, "gray")).toBe("#808080cc");
-    expect(color_adjust({ alpha: -30 }, "black")).toBe("#000000b3");
-    expect(color_adjust({ alpha: -40 }, "red")).toBe("#ff000099");
-    expect(color_adjust({ alpha: -50 }, "orange")).toBe("#ffa50080");
-    expect(color_adjust({ alpha: -60 }, "yellow")).toBe("#ffff0066");
-    expect(color_adjust({ alpha: -70 }, "lime")).toBe("#00ff004d");
-    expect(color_adjust({ alpha: -80 }, "cyan")).toBe("#00ffff33");
-    expect(color_adjust({ alpha: -90 }, "blue")).toBe("#0000ff1a");
-    expect(color_adjust({ alpha: -100 }, "purple")).toBe("#80008000");
-    expect(color_adjust({ alpha: -110 }, "magenta")).toBe("#ff00ff00");
+    expect(adjust({ alpha: -10 }, "white")).toBe("#ffffffe6");
+    expect(adjust({ alpha: -20 }, "gray")).toBe("#808080cc");
+    expect(adjust({ alpha: -30 }, "black")).toBe("#000000b3");
+    expect(adjust({ alpha: -40 }, "red")).toBe("#ff000099");
+    expect(adjust({ alpha: -50 }, "orange")).toBe("#ffa50080");
+    expect(adjust({ alpha: -60 }, "yellow")).toBe("#ffff0066");
+    expect(adjust({ alpha: -70 }, "lime")).toBe("#00ff004d");
+    expect(adjust({ alpha: -80 }, "cyan")).toBe("#00ffff33");
+    expect(adjust({ alpha: -90 }, "blue")).toBe("#0000ff1a");
+    expect(adjust({ alpha: -100 }, "purple")).toBe("#80008000");
+    expect(adjust({ alpha: -110 }, "magenta")).toBe("#ff00ff00");
   });
 
   it("should allow interpolation when settings.steps is defined", () => {
     expect(
-      color_adjust({ lightness: -25, chroma: 50, steps: 10 }, "white"),
+      adjust({ lightness: -25, chroma: 50, steps: 10 }, "white"),
     ).toEqual([
       "#fff3f6",
       "#fee8ee",
@@ -505,7 +505,7 @@ describe("color_adjust(settings, color)", () => {
       "#ee8bab",
     ]);
     expect(
-      color_adjust({ lightness: 25, chroma: 50, steps: 10 }, "gray"),
+      adjust({ lightness: 25, chroma: 50, steps: 10 }, "gray"),
     ).toEqual([
       "#8e8587",
       "#9d898e",
@@ -519,7 +519,7 @@ describe("color_adjust(settings, color)", () => {
       "#ffaaca",
     ]);
     expect(
-      color_adjust({ lightness: 50, chroma: 75, steps: 10 }, "black"),
+      adjust({ lightness: 50, chroma: 75, steps: 10 }, "black"),
     ).toEqual([
       "#010000",
       "#0b0003",
@@ -533,7 +533,7 @@ describe("color_adjust(settings, color)", () => {
       "#b01a5f",
     ]);
     expect(
-      color_adjust({ lightness: -25, chroma: -25, hue: 150, steps: 10 }, "red"),
+      adjust({ lightness: -25, chroma: -25, hue: 150, steps: 10 }, "red"),
     ).toEqual([
       "#ef2200",
       "#d93900",
@@ -547,7 +547,7 @@ describe("color_adjust(settings, color)", () => {
       "#005d44",
     ]);
     expect(
-      color_adjust(
+      adjust(
         { lightness: 10, chroma: -10, hue: 180, steps: 10 },
         "orange",
       ),
@@ -564,7 +564,7 @@ describe("color_adjust(settings, color)", () => {
       "#8ee2ff",
     ]);
     expect(
-      color_adjust(
+      adjust(
         { lightness: -16, chroma: -16, hue: 210, steps: 10 },
         "yellow",
       ),
@@ -581,7 +581,7 @@ describe("color_adjust(settings, color)", () => {
       "#f099ff",
     ]);
     expect(
-      color_adjust(
+      adjust(
         { lightness: -32, chroma: -32, hue: 240, steps: 10 },
         "lime",
       ),
@@ -598,7 +598,7 @@ describe("color_adjust(settings, color)", () => {
       "#d10f2f",
     ]);
     expect(
-      color_adjust({ lightness: 16, chroma: -75, hue: 270, steps: 10 }, "cyan"),
+      adjust({ lightness: 16, chroma: -75, hue: 270, steps: 10 }, "cyan"),
     ).toEqual([
       "#6af9ff",
       "#abf1ff",
@@ -611,7 +611,7 @@ describe("color_adjust(settings, color)", () => {
       "#ffffff",
     ]);
     expect(
-      color_adjust({ lightness: 32, chroma: 32, hue: 300, steps: 10 }, "blue"),
+      adjust({ lightness: 32, chroma: 32, hue: 300, steps: 10 }, "blue"),
     ).toEqual([
       "#7700fc",
       "#b700cd",
@@ -624,7 +624,7 @@ describe("color_adjust(settings, color)", () => {
       "#00eaff",
     ]);
     expect(
-      color_adjust(
+      adjust(
         { lightness: 24, chroma: 24, hue: 330, steps: 10 },
         "purple",
       ),
@@ -641,7 +641,7 @@ describe("color_adjust(settings, color)", () => {
       "#aa5eff",
     ]);
     expect(
-      color_adjust(
+      adjust(
         { lightness: -24, chroma: -24, hue: 360, steps: 10 },
         "magenta",
       ),
@@ -664,13 +664,13 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_adjust_test.js
+NO_COLOR=1 deno test v2/tests/color/adjust_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_adjust(settings, color)
+  adjust(settings, color)
   • should reject invalid colors
   • should correctly adjust lightness of samples
   • should correctly adjust chroma of samples
@@ -678,38 +678,38 @@ NO_COLOR=1 deno test v2/tests/color_adjust_test.js
   • should correctly adjust alpha of samples
   • should allow interpolation when settings.steps is defined
 
-running 6 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_adjust_test.js
-test color_adjust(settings, color) > should reject invalid colors ... ok (14ms)
-test color_adjust(settings, color) > should correctly adjust lightness of samples ... ok (30ms)
-test color_adjust(settings, color) > should correctly adjust chroma of samples ... ok (14ms)
-test color_adjust(settings, color) > should correctly adjust hue of samples ... ok (15ms)
-test color_adjust(settings, color) > should correctly adjust alpha of samples ... ok (14ms)
-test color_adjust(settings, color) > should allow interpolation when settings.steps is defined ... ok (102ms)
+running 6 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/adjust_test.js
+test adjust(settings, color) > should reject invalid colors ... ok (14ms)
+test adjust(settings, color) > should correctly adjust lightness of samples ... ok (30ms)
+test adjust(settings, color) > should correctly adjust chroma of samples ... ok (14ms)
+test adjust(settings, color) > should correctly adjust hue of samples ... ok (15ms)
+test adjust(settings, color) > should correctly adjust alpha of samples ... ok (14ms)
+test adjust(settings, color) > should allow interpolation when settings.steps is defined ... ok (102ms)
 
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (239ms)
 
 #+end_src
 
-**** color_mix
+**** mix
 
 An action that mixes an input =color= and a =target= color with a set level of =strength=.
 
 If steps is defined, this triggers the blending behavior where the action will instead return the unique results of
 mixing the colors in /sequence/ up to the set number of =steps=.
 
-+ =color_mix(settings, color) => string | string[]=
++ =mix(settings, color) => string | string[]=
   - =settings: {}=: the mixture options to set
     * =settings.target = color: string=: set the target (any valid CSS color)
     * =settings.strength = 0: number=: set the strength (as a percentage, negative values reverse the direction)
     * =properties.steps = 0: number=: triggers color blending mode (if greater than 0)
   - =color: string=: the color to mix
 
-***** color_mix Examples
+***** mix Examples
 
-***** color_mix Implementation
+***** mix Implementation
 
 #+BEGIN_SRC js
-export function color_mix(settings, color) {
+export function mix(settings, color) {
   // Do nothing by default
   const { target = color, strength = 0, steps } = settings;
 
@@ -721,13 +721,13 @@ export function color_mix(settings, color) {
 }
 #+END_SRC
 
-***** color_mix Tests
+***** mix Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_mix_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/mix_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_adjust, color_mix } from "../color.js";
+import { adjust, mix } from "../color.js";
 
-describe("color_mix(settings, color)", () => {
+describe("mix(settings, color)", () => {
   const samples = [
     ["red", ["#ff0000", "#ff4b00", "#ff6e00", "#ff8b00", "#ffa500"], "orange"],
     [
@@ -750,42 +750,42 @@ describe("color_mix(settings, color)", () => {
     [
       "red",
       ["#ff0000", "#de5e58", "#b78087", "#8497b2", "#00a9db"],
-      color_adjust({ hue: 180 }, "red"),
+      adjust({ hue: 180 }, "red"),
     ],
     [
       "orange",
       ["#ffa500", "#dfb172", "#bbb9a7", "#92bed4", "#5bc0ff"],
-      color_adjust({ hue: 180 }, "orange"),
+      adjust({ hue: 180 }, "orange"),
     ],
     [
       "yellow",
       ["#ffff00", "#fbf77c", "#f8eeb0", "#f6e4da", "#f4d8ff"],
-      color_adjust({ hue: 180 }, "yellow"),
+      adjust({ hue: 180 }, "yellow"),
     ],
     [
       "lime",
       ["#00ff00", "#8ce77c", "#becbb0", "#e2aada", "#ff7dff"],
-      color_adjust({ hue: 180 }, "lime"),
+      adjust({ hue: 180 }, "lime"),
     ],
     [
       "cyan",
       ["#00ffff", "#8beeef", "#bddcdf", "#e2c9cf", "#ffb3bf"],
-      color_adjust({ hue: 180 }, "cyan"),
+      adjust({ hue: 180 }, "cyan"),
     ],
     [
       "blue",
       ["#0000ff", "#383cc8", "#5e4592", "#803e5a", "#a02000"],
-      color_adjust({ hue: 180 }, "blue"),
+      adjust({ hue: 180 }, "blue"),
     ],
     [
       "purple",
       ["#800080", "#6f366a", "#5a4b52", "#3f5a37", "#006600"],
-      color_adjust({ hue: 180 }, "purple"),
+      adjust({ hue: 180 }, "purple"),
     ],
     [
       "magenta",
       ["#ff00ff", "#de72d5", "#b79ba9", "#85b774", "#00cd00"],
-      color_adjust({ hue: 180 }, "magenta"),
+      adjust({ hue: 180 }, "magenta"),
     ],
   ];
 
@@ -817,17 +817,17 @@ describe("color_mix(settings, color)", () => {
   ];
 
   it("should reject an invalid color", () => {
-    expect(() => color_mix({ target: "blue" }, "invalid")).toThrow();
+    expect(() => mix({ target: "blue" }, "invalid")).toThrow();
   });
 
   it("should reject an invalid target", () => {
-    expect(() => color_mix({ target: "invalid" }, "red")).toThrow();
+    expect(() => mix({ target: "invalid" }, "red")).toThrow();
   });
 
   it("should correctly mix samples", () => {
     samples.forEach(([color, results, target]) => {
       results.forEach((output, index) => {
-        expect(color_mix({ target, strength: index * 25 }, color)).toBe(output);
+        expect(mix({ target, strength: index * 25 }, color)).toBe(output);
       });
     });
   });
@@ -835,14 +835,14 @@ describe("color_mix(settings, color)", () => {
   it("should correctly negate opposites", () => {
     negations.forEach(([color, results, target]) => {
       results.forEach((output, index) => {
-        expect(color_mix({ target, strength: index * 25 }, color)).toBe(output);
+        expect(mix({ target, strength: index * 25 }, color)).toBe(output);
       });
     });
   });
 
   it("should allow blending when settings.steps is defined", () => {
     blends.forEach(([color, results, target]) => {
-      expect(color_mix({ target, strength: 100, steps: 5 }, color)).toEqual(
+      expect(mix({ target, strength: 100, steps: 5 }, color)).toEqual(
         results,
       );
     });
@@ -853,60 +853,60 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_mix_test.js
+NO_COLOR=1 deno test v2/tests/color/mix_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_mix(settings, color)
+  mix(settings, color)
   • should reject an invalid color
   • should reject an invalid target
   • should correctly mix samples
   • should correctly negate opposites
   • should allow blending when settings.steps is defined
 
-running 5 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_mix_test.js
-test color_mix(settings, color) > should reject an invalid color ... ok (11ms)
-test color_mix(settings, color) > should reject an invalid target ... ok (8ms)
-test color_mix(settings, color) > should correctly mix samples ... ok (48ms)
-test color_mix(settings, color) > should correctly negate opposites ... ok (56ms)
-test color_mix(settings, color) > should allow blending when settings.steps is defined ... ok (63ms)
+running 5 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/mix_test.js
+test mix(settings, color) > should reject an invalid color ... ok (11ms)
+test mix(settings, color) > should reject an invalid target ... ok (8ms)
+test mix(settings, color) > should correctly mix samples ... ok (48ms)
+test mix(settings, color) > should correctly negate opposites ... ok (56ms)
+test mix(settings, color) > should allow blending when settings.steps is defined ... ok (63ms)
 
 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (261ms)
 
 #+end_src
 
-**** color_simulate
+**** check
 
 An action that accepts a =color= and a =condition= setting and simulates an approximation of how a person might perceive
 the color under that condition. Each =condition= has its own settings, but all share the =strength= setting.
 
-Like the =color_adjust()= and =color_mix()= actions you can activate interpolation over a number of =steps= and it will
+Like the =adjust()= and =mix()= actions you can activate interpolation over a number of =steps= and it will
 return as an array of results.
 
-+ =color_simulate(settings, color)=
++ =check(settings, color)=
   - =settings: {}=: the simulation settings
     * =settings.condition = 'colorblindness': 'colorblindness' | 'sensitivity' | 'illuminant'=: the perceptual condition
-      to simulate (with their own active settings)
+      to check (with their own active settings)
     * =settings.method = 'brettel': 'brettel' | 'vienot'=: the colorblindness simulation algorithm to use
     * =settings.type = 'protanopia': 'prot(anomaly|anopia)' | 'deuter(anomaly|anopia)' | 'trit(anopia|anope)' |
-      'achromatopsia'=: the type of colorblindness to simulate (strength can be set for anomalous trichromacy types, but
+      'achromatopsia'=: the type of colorblindness to check (strength can be set for anomalous trichromacy types, but
       has /no/ effect on achromatopsia or dichromacy types)
-    * =settings.contrast = 0: number=: the level of (contrast) sensitivity to simulate (as a percentage, where ~0~ is
+    * =settings.contrast = 0: number=: the level of (contrast) sensitivity to check (as a percentage, where ~0~ is
       black and ~100~ is white)
-    * =settings.temperature = 1000: number=: the color temperature of the illuminant (light source) to simulate (in
+    * =settings.temperature = 1000: number=: the color temperature of the illuminant (light source) to check (in
       Kelvin, where ~1800~ is candlelight and ~6500~ is daylight)
     * =settings.strength = 0: number=: the strength of the simulation (where ~0~ is no change and ~100~ is a complete overlay)
     * =settings.steps = 0: number=: activates interpolation mode which returns the result of excuting the simulation in
       /sequence/ up to the number of steps
 
-***** color_simulate Examples
+***** check Examples
 
-***** color_simulate Implementation
+***** check Implementation
 
 #+BEGIN_SRC js
-export function color_simulate(settings, color) {
+export function check(settings, color) {
   // Set immediate defaults
   const {
     condition = "colorblindness",
@@ -923,17 +923,17 @@ export function color_simulate(settings, color) {
 
     if (steps) {
       return colorInterpolation(
-        simulateSensitivity,
+        checkSensitivity,
         {
           contrast,
           strength,
           steps,
         },
-        color
+        color,
       );
     }
 
-    return simulateSensitivity({ contrast, strength, steps }, color);
+    return checkSensitivity({ contrast, strength, steps }, color);
   }
 
   // If simulating a light source
@@ -942,22 +942,22 @@ export function color_simulate(settings, color) {
 
     if (steps) {
       return colorInterpolation(
-        simulateIlluminant,
+        checkIlluminant,
         {
           temperature,
           strength,
           steps,
         },
-        color
+        color,
       );
     }
 
-    return simulateIlluminant({ temperature, strength, steps }, color);
+    return checkIlluminant({ temperature, strength, steps }, color);
   }
 
   // Otherwise handle colorblindness
 
-  // Simulated through reducing the chroma to zero while adjusting no other properties.
+  // Checkd through reducing the chroma to zero while adjusting no other properties.
   if (type === "achromatopsia") {
     const chroma = -100;
 
@@ -974,16 +974,13 @@ export function color_simulate(settings, color) {
 
     if (steps) {
       return colorInterpolation(
-        simulateColorblindness,
+        checkColorblindness,
         { method, type: $type, strength, steps },
-        color
+        color,
       );
     }
 
-    return simulateColorblindness(
-      { method, type: $type, strength, steps },
-      color
-    );
+    return checkColorblindness({ method, type: $type, strength, steps }, color);
   }
 
   // Protanopia, Deuteranopia, Tritanopia by definition do not
@@ -991,28 +988,28 @@ export function color_simulate(settings, color) {
 
   if (steps) {
     return colorInterpolation(
-      simulateColorblindness,
+      checkColorblindness,
       { method, type: $type, strength: 100, steps },
-      color
+      color,
     );
   }
 
-  return simulateColorblindness(
+  return checkColorblindness(
     { method, type: $type, strength: 100, steps },
-    color
+    color,
   );
 }
 #+END_SRC
 
-***** color_simulate Tests
+***** check Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_simulate_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/check_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_simulate } from "../color.js";
+import { check } from "../color.js";
 
-describe("color_simulate(settings, color)", () => {
+describe("check(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => color_simulate({}, "invalid")).toThrow();
+    expect(() => check({}, "invalid")).toThrow();
   });
 
   const [red, green, blue, purple] = [
@@ -1119,11 +1116,11 @@ describe("color_simulate(settings, color)", () => {
 
   describe("settings.condition = 'colorblindness'", () => {
     describe("settings.type = 'achromatopsia'", () => {
-      it("should correctly simulate achromatopsia", () => {
+      it("should correctly check achromatopsia", () => {
         Object.values(colorblindness.achromatopsia).forEach(
           ([input, output]) => {
             expect(
-              color_simulate(
+              check(
                 {
                   condition: "colorblindness",
                   type: "achromatopsia",
@@ -1140,11 +1137,11 @@ describe("color_simulate(settings, color)", () => {
       .forEach(([type, data]) => {
         describe(`settings.type = '${type}'`, () => {
           Object.entries(data).forEach(([method, $data]) => {
-            it(`should correctly simulate ${type} with ${method} method on samples`, () => {
+            it(`should correctly check ${type} with ${method} method on samples`, () => {
               Object.values($data).forEach(([input, results]) => {
                 results.forEach((output, pos) => {
                   expect(
-                    color_simulate(
+                    check(
                       {
                         condition: "colorblindness",
                         method,
@@ -1191,12 +1188,12 @@ describe("color_simulate(settings, color)", () => {
   };
 
   describe("settings.condition = 'sensitivity'", () => {
-    it("should correctly simulate contrast sensitivity on sample data set", () => {
+    it("should correctly check contrast sensitivity on sample data set", () => {
       Object.entries(sensitivity).forEach(([contrast, data]) => {
         Object.values(data).forEach(([input, results]) => {
           results.forEach((output, pos) => {
             expect(
-              color_simulate(
+              check(
                 { condition: "sensitivity", contrast, strength: 25 * pos },
                 input,
               ),
@@ -1236,12 +1233,12 @@ describe("color_simulate(settings, color)", () => {
   };
 
   describe("settings.condition = 'illuminant'", () => {
-    it("should correctly simulate the effects of various light sources on sample data", () => {
+    it("should correctly check the effects of various light sources on sample data", () => {
       Object.entries(illuminant).forEach(([temperature, data]) => {
         Object.values(data).forEach(([input, results]) => {
           results.forEach((output, pos) => {
             expect(
-              color_simulate(
+              check(
                 { condition: "illuminant", temperature, strength: 25 * pos },
                 input,
               ),
@@ -1257,86 +1254,86 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_simulate_test.js
+NO_COLOR=1 deno test v2/tests/color/check_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_simulate(settings, color)
+  check(settings, color)
   • should reject invalid colors
     settings.condition = 'colorblindness'
       settings.type = 'achromatopsia'
-      • should correctly simulate achromatopsia
+      • should correctly check achromatopsia
       settings.type = 'protanomaly'
-      • should correctly simulate protanomaly with brettel method on samples
-      • should correctly simulate protanomaly with vienot method on samples
+      • should correctly check protanomaly with brettel method on samples
+      • should correctly check protanomaly with vienot method on samples
       settings.type = 'protanopia'
-      • should correctly simulate protanopia with brettel method on samples
-      • should correctly simulate protanopia with vienot method on samples
+      • should correctly check protanopia with brettel method on samples
+      • should correctly check protanopia with vienot method on samples
       settings.type = 'deuteranomaly'
-      • should correctly simulate deuteranomaly with brettel method on samples
-      • should correctly simulate deuteranomaly with vienot method on samples
+      • should correctly check deuteranomaly with brettel method on samples
+      • should correctly check deuteranomaly with vienot method on samples
       settings.type = 'deuteranopia'
-      • should correctly simulate deuteranopia with brettel method on samples
-      • should correctly simulate deuteranopia with vienot method on samples
+      • should correctly check deuteranopia with brettel method on samples
+      • should correctly check deuteranopia with vienot method on samples
       settings.type = 'tritanomaly'
-      • should correctly simulate tritanomaly with brettel method on samples
-      • should correctly simulate tritanomaly with vienot method on samples
+      • should correctly check tritanomaly with brettel method on samples
+      • should correctly check tritanomaly with vienot method on samples
       settings.type = 'tritanopia'
-      • should correctly simulate tritanopia with brettel method on samples
-      • should correctly simulate tritanopia with vienot method on samples
+      • should correctly check tritanopia with brettel method on samples
+      • should correctly check tritanopia with vienot method on samples
     settings.condition = 'sensitivity'
-    • should correctly simulate contrast sensitivity on sample data set
+    • should correctly check contrast sensitivity on sample data set
     settings.condition = 'illuminant'
-    • should correctly simulate the effects of various light sources on sample data
+    • should correctly check the effects of various light sources on sample data
 
-running 16 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_simulate_test.js
-test color_simulate(settings, color) > should reject invalid colors ... ok (13ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'achromatopsia' > should correctly simulate achromatopsia ... ok (26ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with brettel method on samples ... ok (26ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly simulate protanomaly with vienot method on samples ... ok (20ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with brettel method on samples ... ok (7ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly simulate protanopia with vienot method on samples ... ok (9ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with brettel method on samples ... ok (18ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly simulate deuteranomaly with vienot method on samples ... ok (18ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with brettel method on samples ... ok (8ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly simulate deuteranopia with vienot method on samples ... ok (8ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with brettel method on samples ... ok (19ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly simulate tritanomaly with vienot method on samples ... ok (23ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with brettel method on samples ... ok (8ms)
-test color_simulate(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly simulate tritanopia with vienot method on samples ... ok (11ms)
-test color_simulate(settings, color) > settings.condition = 'sensitivity' > should correctly simulate contrast sensitivity on sample data set ... ok (217ms)
-test color_simulate(settings, color) > settings.condition = 'illuminant' > should correctly simulate the effects of various light sources on sample data ... ok (107ms)
+running 16 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/check_test.js
+test check(settings, color) > should reject invalid colors ... ok (13ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'achromatopsia' > should correctly check achromatopsia ... ok (26ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly check protanomaly with brettel method on samples ... ok (26ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly check protanomaly with vienot method on samples ... ok (20ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly check protanopia with brettel method on samples ... ok (7ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly check protanopia with vienot method on samples ... ok (9ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly check deuteranomaly with brettel method on samples ... ok (18ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly check deuteranomaly with vienot method on samples ... ok (18ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly check deuteranopia with brettel method on samples ... ok (8ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly check deuteranopia with vienot method on samples ... ok (8ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly check tritanomaly with brettel method on samples ... ok (19ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly check tritanomaly with vienot method on samples ... ok (23ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly check tritanopia with brettel method on samples ... ok (8ms)
+test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly check tritanopia with vienot method on samples ... ok (11ms)
+test check(settings, color) > settings.condition = 'sensitivity' > should correctly check contrast sensitivity on sample data set ... ok (217ms)
+test check(settings, color) > settings.condition = 'illuminant' > should correctly check the effects of various light sources on sample data ... ok (107ms)
 
 test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (595ms)
 
 #+end_src
 
-**** color_as_hex
+**** hex
 
 An emitter that accepts a valid CSS =color= and outputs its hexadecimal equivalent.
 
-+ =color_as_hex(color) => string=
++ =hex(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_hex Examples
+***** hex Examples
 
-***** color_as_hex Implementation
+***** hex Implementation
 
 #+BEGIN_SRC js
-export function color_as_hex(color) {
+export function hex(color) {
   return serializeHex(convert(color, "hex"));
 }
 #+END_SRC
 
-***** color_as_hex Tests
+***** hex Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_hex_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/hex_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hex } from "../color.js";
+import { hex } from "../color.js";
 
-describe("color_as_hex(color)", () => {
+describe("hex(color)", () => {
   const controlGroup = [
     ["black", "#000000"],
     ["gray", "#808080"],
@@ -1355,17 +1352,17 @@ describe("color_as_hex(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hex("invalid")).toThrow();
+    expect(() => hex("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_hex(input)).toBe(output);
+      expect(hex(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hex(input)).toBe(output);
+      expect(hex(input)).toBe(output);
     });
   });
 });
@@ -1374,50 +1371,50 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_hex_test.js
+NO_COLOR=1 deno test v2/tests/color/hex_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_hex(color)
+  hex(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_hex_test.js
-test color_as_hex(color) > should reject invalid colors ... ok (14ms)
-test color_as_hex(color) > should correctly convert the control group ... ok (14ms)
-test color_as_hex(color) > should correctly convert the color samples ... ok (13ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hex_test.js
+test hex(color) > should reject invalid colors ... ok (14ms)
+test hex(color) > should correctly convert the control group ... ok (14ms)
+test hex(color) > should correctly convert the color samples ... ok (13ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (87ms)
 
 #+end_src
 
-**** color_as_rgb
+**** rgb
 
 An emitter that accepts a valid CSS =color= and outputs its RGB equivalent.
 
-+ =color_as_rgb(color) => string=
++ =rgb(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_rgb Examples
+***** rgb Examples
 
-***** color_as_rgb Implementation
+***** rgb Implementation
 
 #+BEGIN_SRC js
-export function color_as_rgb(color) {
+export function rgb(color) {
   return serializeRgb(convert(color, "rgb"));
 }
 #+END_SRC
 
-***** color_as_rgb Tests
+***** rgb Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_rgb_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/rgb_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_rgb } from "../color.js";
+import { rgb } from "../color.js";
 
-describe("color_as_rgb(color)", () => {
+describe("rgb(color)", () => {
   const controlGroup = [
     ["black", "rgb(0, 0, 0)"],
     ["gray", "rgb(128, 128, 128)"],
@@ -1436,17 +1433,17 @@ describe("color_as_rgb(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_rgb("invalid")).toThrow();
+    expect(() => rgb("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_rgb(input)).toBe(output);
+      expect(rgb(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_rgb(input)).toBe(output);
+      expect(rgb(input)).toBe(output);
     });
   });
 });
@@ -1455,50 +1452,50 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_rgb_test.js
+NO_COLOR=1 deno test v2/tests/color/rgb_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_rgb(color)
+  rgb(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_rgb_test.js
-test color_as_rgb(color) > should reject invalid colors ... ok (14ms)
-test color_as_rgb(color) > should correctly convert the control group ... ok (14ms)
-test color_as_rgb(color) > should correctly convert the color samples ... ok (14ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/rgb_test.js
+test rgb(color) > should reject invalid colors ... ok (14ms)
+test rgb(color) > should correctly convert the control group ... ok (14ms)
+test rgb(color) > should correctly convert the color samples ... ok (14ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (87ms)
 
 #+end_src
 
-**** color_as_hsl
+**** hsl
 
 An emitter that accepts a valid CSS =color= and outputs its HSL equivalent.
 
-+ =color_as_hsl(color) => string=
++ =hsl(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_hsl Examples
+***** hsl Examples
 
-***** color_as_hsl Implementation
+***** hsl Implementation
 
 #+BEGIN_SRC js
-export function color_as_hsl(color) {
+export function hsl(color) {
   return serializeHsl(convert(color, "hsl"));
 }
 #+END_SRC
 
-***** color_as_hsl Tests
+***** hsl Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_hsl_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/hsl_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hsl } from "../color.js";
+import { hsl } from "../color.js";
 
-describe("color_as_hsl(color)", () => {
+describe("hsl(color)", () => {
   const controlGroup = [
     ["black", "hsl(0, 0%, 0%)"],
     ["gray", "hsl(0, 0%, 50.196%)"],
@@ -1517,17 +1514,17 @@ describe("color_as_hsl(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hsl("invalid")).toThrow();
+    expect(() => hsl("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_hsl(input)).toBe(output);
+      expect(hsl(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hsl(input)).toBe(output);
+      expect(hsl(input)).toBe(output);
     });
   });
 });
@@ -1536,50 +1533,50 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_hsl_test.js
+NO_COLOR=1 deno test v2/tests/color/hsl_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_hsl(color)
+  hsl(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_hsl_test.js
-test color_as_hsl(color) > should reject invalid colors ... ok (16ms)
-test color_as_hsl(color) > should correctly convert the control group ... ok (14ms)
-test color_as_hsl(color) > should correctly convert the color samples ... ok (15ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hsl_test.js
+test hsl(color) > should reject invalid colors ... ok (16ms)
+test hsl(color) > should correctly convert the control group ... ok (14ms)
+test hsl(color) > should correctly convert the color samples ... ok (15ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (90ms)
 
 #+end_src
 
-**** color_as_cmyk
+**** cmyk
 
 An emitter that accepts a valid CSS =color= and outputs its CMYK equivalent.
 
-+ =color_as_cmyk(color) => string=
++ =cmyk(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_cmyk Examples
+***** cmyk Examples
 
-***** color_as_cmyk Implementation
+***** cmyk Implementation
 
 #+BEGIN_SRC js
-export function color_as_cmyk(color) {
+export function cmyk(color) {
   return serializeCmyk(convert(color, "cmyk"));
 }
 #+END_SRC
 
-***** color_as_cmyk Tests
+***** cmyk Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_cmyk_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/cmyk_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_cmyk } from "../color.js";
+import { cmyk } from "../color.js";
 
-describe("color_as_cmyk(color)", () => {
+describe("cmyk(color)", () => {
   const controlGroup = [
     ["black", "device-cmyk(0% 0% 0% 100%)"],
     ["gray", "device-cmyk(0% 0% 0% 49.804%)"],
@@ -1598,17 +1595,17 @@ describe("color_as_cmyk(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_cmyk("invalid")).toThrow();
+    expect(() => cmyk("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_cmyk(input)).toBe(output);
+      expect(cmyk(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_cmyk(input)).toBe(output);
+      expect(cmyk(input)).toBe(output);
     });
   });
 });
@@ -1617,50 +1614,50 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_cmyk_test.js
+NO_COLOR=1 deno test v2/tests/color/cmyk_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_cmyk(color)
+  cmyk(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_cmyk_test.js
-test color_as_cmyk(color) > should reject invalid colors ... ok (15ms)
-test color_as_cmyk(color) > should correctly convert the control group ... ok (14ms)
-test color_as_cmyk(color) > should correctly convert the color samples ... ok (13ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/cmyk_test.js
+test cmyk(color) > should reject invalid colors ... ok (15ms)
+test cmyk(color) > should correctly convert the control group ... ok (14ms)
+test cmyk(color) > should correctly convert the color samples ... ok (13ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (89ms)
 
 #+end_src
 
-**** color_as_hwb
+**** hwb
 
 An emitter that accepts a valid CSS =color= and outputs its HWB equivalent.
 
-+ =color_as_hwb(color) => string=
++ =hwb(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_hwb Examples
+***** hwb Examples
 
-***** color_as_hwb Implementation
+***** hwb Implementation
 
 #+BEGIN_SRC js
-export function color_as_hwb(color) {
+export function hwb(color) {
   return serializeHwb(convert(color, "hwb"));
 }
 #+END_SRC
 
-***** color_as_hwb Tests
+***** hwb Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_hwb_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/hwb_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hwb } from "../color.js";
+import { hwb } from "../color.js";
 
-describe("color_as_hwb(color)", () => {
+describe("hwb(color)", () => {
   const controlGroup = [
     ["black", "hwb(0 0% 100%)"],
     ["gray", "hwb(0 50.196% 49.804%)"],
@@ -1679,17 +1676,17 @@ describe("color_as_hwb(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hwb("invalid")).toThrow();
+    expect(() => hwb("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_hwb(input)).toBe(output);
+      expect(hwb(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hwb(input)).toBe(output);
+      expect(hwb(input)).toBe(output);
     });
   });
 });
@@ -1698,49 +1695,49 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_hwb_test.js
+NO_COLOR=1 deno test v2/tests/color/hwb_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_hwb(color)
+  hwb(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_hwb_test.js
-test color_as_hwb(color) > should reject invalid colors ... ok (16ms)
-test color_as_hwb(color) > should correctly convert the control group ... ok (14ms)
-test color_as_hwb(color) > should correctly convert the color samples ... ok (14ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hwb_test.js
+test hwb(color) > should reject invalid colors ... ok (16ms)
+test hwb(color) > should correctly convert the control group ... ok (14ms)
+test hwb(color) > should correctly convert the color samples ... ok (14ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
 
 #+end_src
-**** color_as_cielab
+**** cielab
 
 An emitter that accepts a valid CSS =color= and outputs its CIELAB equivalent.
 
-+ =color_as_cielab(color) => string=
++ =cielab(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_cielab Examples
+***** cielab Examples
 
-***** color_as_cielab Implementation
+***** cielab Implementation
 
 #+BEGIN_SRC js
-export function color_as_cielab(color) {
+export function cielab(color) {
   return serializeCielab(convert(color, "cielab"));
 }
 #+END_SRC
 
-***** color_as_cielab Tests
+***** cielab Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_cielab_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/cielab_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_cielab } from "../color.js";
+import { cielab } from "../color.js";
 
-describe("color_as_cielab(color)", () => {
+describe("cielab(color)", () => {
   const controlGroup = [
     ["black", "lab(0% 0 0)"],
     ["gray", "lab(53.585% 0 0)"],
@@ -1759,17 +1756,17 @@ describe("color_as_cielab(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_cielab("invalid")).toThrow();
+    expect(() => cielab("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_cielab(input)).toBe(output);
+      expect(cielab(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_cielab(input)).toBe(output);
+      expect(cielab(input)).toBe(output);
     });
   });
 });
@@ -1778,50 +1775,50 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_cielab_test.js
+NO_COLOR=1 deno test v2/tests/color/cielab_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_cielab(color)
+  cielab(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_cielab_test.js
-test color_as_cielab(color) > should reject invalid colors ... ok (14ms)
-test color_as_cielab(color) > should correctly convert the control group ... ok (14ms)
-test color_as_cielab(color) > should correctly convert the color samples ... ok (14ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/cielab_test.js
+test cielab(color) > should reject invalid colors ... ok (14ms)
+test cielab(color) > should correctly convert the control group ... ok (14ms)
+test cielab(color) > should correctly convert the color samples ... ok (14ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (87ms)
 
 #+end_src
 
-**** color_as_cielch
+**** cielch
 
 An emitter that accepts a valid CSS =color= and outputs its CIELCH equivalent.
 
-+ =color_as_cielch(color) => string=
++ =cielch(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_cielch Examples
+***** cielch Examples
 
-***** color_as_cielch Implementation
+***** cielch Implementation
 
 #+BEGIN_SRC js
-export function color_as_cielch(color) {
+export function cielch(color) {
   return serializeCielch(convert(color, "cielch"));
 }
 #+END_SRC
 
-***** color_as_cielch Tests
+***** cielch Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_cielch_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/cielch_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_cielch } from "../color.js";
+import { cielch } from "../color.js";
 
-describe("color_as_cielch(color)", () => {
+describe("cielch(color)", () => {
   const controlGroup = [
     ["black", "lch(0% 0 0)"],
     ["gray", "lch(53.585% 0 0)"],
@@ -1840,17 +1837,17 @@ describe("color_as_cielch(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_cielch("invalid")).toThrow();
+    expect(() => cielch("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_cielch(input)).toBe(output);
+      expect(cielch(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_cielch(input)).toBe(output);
+      expect(cielch(input)).toBe(output);
     });
   });
 });
@@ -1859,50 +1856,50 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_cielch_test.js
+NO_COLOR=1 deno test v2/tests/color/cielch_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_cielch(color)
+  cielch(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_cielch_test.js
-test color_as_cielch(color) > should reject invalid colors ... ok (14ms)
-test color_as_cielch(color) > should correctly convert the control group ... ok (14ms)
-test color_as_cielch(color) > should correctly convert the color samples ... ok (14ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/cielch_test.js
+test cielch(color) > should reject invalid colors ... ok (14ms)
+test cielch(color) > should correctly convert the control group ... ok (14ms)
+test cielch(color) > should correctly convert the color samples ... ok (14ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
 
 #+end_src
 
-**** color_as_oklab
+**** oklab
 
 An emitter that accepts a valid CSS =color= and outputs its OKLab equivalent.
 
-+ =color_as_oklab(color) => string=
++ =oklab(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_oklab Examples
+***** oklab Examples
 
-***** color_as_oklab Implementation
+***** oklab Implementation
 
 #+BEGIN_SRC js
-export function color_as_oklab(color) {
+export function oklab(color) {
   return serializeOklab(convert(color, "oklab"));
 }
 #+END_SRC
 
-***** color_as_oklab Tests
+***** oklab Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_oklab_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/oklab_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_oklab } from "../color.js";
+import { oklab } from "../color.js";
 
-describe("color_as_oklab(color)", () => {
+describe("oklab(color)", () => {
   const controlGroup = [
     ["black", "oklab(0% 0 0)"],
     ["gray", "oklab(59.987% 0 0)"],
@@ -1921,17 +1918,17 @@ describe("color_as_oklab(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_oklab("invalid")).toThrow();
+    expect(() => oklab("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_oklab(input)).toBe(output);
+      expect(oklab(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_oklab(input)).toBe(output);
+      expect(oklab(input)).toBe(output);
     });
   });
 });
@@ -1940,49 +1937,49 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_oklab_test.js
+NO_COLOR=1 deno test v2/tests/color/oklab_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_oklab(color)
+  oklab(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_oklab_test.js
-test color_as_oklab(color) > should reject invalid colors ... ok (15ms)
-test color_as_oklab(color) > should correctly convert the control group ... ok (14ms)
-test color_as_oklab(color) > should correctly convert the color samples ... ok (14ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/oklab_test.js
+test oklab(color) > should reject invalid colors ... ok (15ms)
+test oklab(color) > should correctly convert the control group ... ok (14ms)
+test oklab(color) > should correctly convert the color samples ... ok (14ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
 
 #+end_src
-**** color_as_oklch
+**** oklch
 
 An emitter that accepts a valid CSS =color= and outputs its OKLCH equivalent.
 
-+ =color_as_oklch(color) => string=
++ =oklch(color) => string=
   + =color: string=: the color to convert
 
-***** color_as_oklch Examples
+***** oklch Examples
 
-***** color_as_oklch Implementation
+***** oklch Implementation
 
 #+BEGIN_SRC js
-export function color_as_oklch(color) {
+export function oklch(color) {
   return serializeOklch(convert(color, "oklch"));
 }
 #+END_SRC
 
-***** color_as_oklch Tests
+***** oklch Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_oklch_test.js" :comments both
+#+BEGIN_SRC js :tangle "./v2/tests/color/oklch_test.js" :comments both
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_oklch } from "../color.js";
+import { oklch } from "../color.js";
 
-describe("color_as_oklch(color)", () => {
+describe("oklch(color)", () => {
   const controlGroup = [
     ["black", "oklch(0% 0 0)"],
     ["gray", "oklch(59.987% 0 0)"],
@@ -2001,17 +1998,17 @@ describe("color_as_oklch(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_oklch("invalid")).toThrow();
+    expect(() => oklch("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_oklch(input)).toBe(output);
+      expect(oklch(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_oklch(input)).toBe(output);
+      expect(oklch(input)).toBe(output);
     });
   });
 });
@@ -2020,39 +2017,39 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_oklch_test.js
+NO_COLOR=1 deno test v2/tests/color/oklch_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_oklch(color)
+  oklch(color)
   • should reject invalid colors
   • should correctly convert the control group
   • should correctly convert the color samples
 
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_oklch_test.js
-test color_as_oklch(color) > should reject invalid colors ... ok (15ms)
-test color_as_oklch(color) > should correctly convert the control group ... ok (14ms)
-test color_as_oklch(color) > should correctly convert the color samples ... ok (14ms)
+running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/oklch_test.js
+test oklch(color) > should reject invalid colors ... ok (15ms)
+test oklch(color) > should correctly convert the control group ... ok (14ms)
+test oklch(color) > should correctly convert the color samples ... ok (14ms)
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
 
 #+end_src
 
-**** color_as_dyad
+**** dyad
 
 An emitter that accepts any valid CSS color and outputs a dyadic color scheme.
 
-+ =color_as_dyad(color) => [string, string]=
++ =dyad(color) => [string, string]=
   - =color: string=: the input color
 
-***** color_as_dyad Examples
+***** dyad Examples
 
-***** color_as_dyad Implementation
+***** dyad Implementation
 
 #+BEGIN_SRC js
-export function color_as_dyad(color) {
+export function dyad(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 90 }, color),
@@ -2060,13 +2057,13 @@ export function color_as_dyad(color) {
 }
 #+END_SRC
 
-***** color_as_dyad Tests
+***** dyad Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_dyad_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/dyad_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_dyad } from "../color.js";
+import { dyad } from "../color.js";
 
-describe("color_as_dyad(color)", () => {
+describe("dyad(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#7b9900"]],
     ["orange", ["#ffa500", "#23dc96"]],
@@ -2079,12 +2076,12 @@ describe("color_as_dyad(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_dyad("invalid")).toThrow();
+    expect(() => dyad("invalid")).toThrow();
   });
 
   it("should correctly emit dyads from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_dyad(input)).toEqual(output);
+      expect(dyad(input)).toEqual(output);
     });
   });
 });
@@ -2093,37 +2090,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_dyad_test.js
+NO_COLOR=1 deno test v2/tests/color/dyad_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_dyad(color)
+  dyad(color)
   • should reject invalid colors
   • should correctly emit dyads from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_dyad_test.js
-test color_as_dyad(color) > should reject invalid colors ... ok (23ms)
-test color_as_dyad(color) > should correctly emit dyads from samples ... ok (40ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/dyad_test.js
+test dyad(color) > should reject invalid colors ... ok (23ms)
+test dyad(color) > should correctly emit dyads from samples ... ok (40ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (109ms)
 
 #+end_src
 
-**** color_as_complementary
+**** complementary
 
 An emitter that accepts any valid CSS color and outputs a complementary color scheme.
 
-+ =color_as_complementary(color) => [string, string]=
++ =complementary(color) => [string, string]=
   - =color: string=: the input color
 
-***** color_as_complementary Examples
+***** complementary Examples
 
-***** color_as_complementary Implementation
+***** complementary Implementation
 
 #+BEGIN_SRC js
-export function color_as_complementary(color) {
+export function complementary(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 180 }, color),
@@ -2131,13 +2128,13 @@ export function color_as_complementary(color) {
 }
 #+END_SRC
 
-***** color_as_complementary Tests
+***** complementary Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_complementary_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/complementary_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_complementary } from "../color.js";
+import { complementary } from "../color.js";
 
-describe("color_as_complementary(color)", () => {
+describe("complementary(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#00a9db"]],
     ["orange", ["#ffa500", "#5bc0ff"]],
@@ -2150,12 +2147,12 @@ describe("color_as_complementary(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_complementary("invalid")).toThrow();
+    expect(() => complementary("invalid")).toThrow();
   });
 
   it("should correctly emit complementary schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_complementary(input)).toEqual(output);
+      expect(complementary(input)).toEqual(output);
     });
   });
 });
@@ -2164,37 +2161,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_complementary_test.js
+NO_COLOR=1 deno test v2/tests/color/complementary_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_complementary(color)
+  complementary(color)
   • should reject invalid colors
   • should correctly emit complementary schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_complementary_test.js
-test color_as_complementary(color) > should reject invalid colors ... ok (14ms)
-test color_as_complementary(color) > should correctly emit complementary schemes from samples ... ok (37ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/complementary_test.js
+test complementary(color) > should reject invalid colors ... ok (14ms)
+test complementary(color) > should correctly emit complementary schemes from samples ... ok (37ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (96ms)
 
 #+end_src
 
-**** color_as_analogous
+**** analogous
 
 An emitter that accepts any valid CSS color and outputs an analogous color scheme.
 
-+ =color_as_analogous(color) => [string, string, string]=
++ =analogous(color) => [string, string, string]=
   - =color: string=: the input color
 
-***** color_as_analogous Examples
+***** analogous Examples
 
-***** color_as_analogous Implementation
+***** analogous Implementation
 
 #+BEGIN_SRC js
-export function color_as_analogous(color) {
+export function analogous(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 45 }, color),
@@ -2203,13 +2200,13 @@ export function color_as_analogous(color) {
 }
 #+END_SRC
 
-***** color_as_analogous Tests
+***** analogous Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_analogous_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/analogous_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_analogous } from "../color.js";
+import { analogous } from "../color.js";
 
-describe("color_as_analogous(color)", () => {
+describe("analogous(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#de5f00", "#7b9900"]],
     ["orange", ["#ffa500", "#b7c826", "#23dc96"]],
@@ -2222,12 +2219,12 @@ describe("color_as_analogous(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_analogous("invalid")).toThrow();
+    expect(() => analogous("invalid")).toThrow();
   });
 
   it("should correctly emit analogous schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_analogous(input)).toEqual(output);
+      expect(analogous(input)).toEqual(output);
     });
   });
 });
@@ -2236,37 +2233,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_analogous_test.js
+NO_COLOR=1 deno test v2/tests/color/analogous_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_analogous(color)
+  analogous(color)
   • should reject invalid colors
   • should correctly emit analogous schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_analogous_test.js
-test color_as_analogous(color) > should reject invalid colors ... ok (16ms)
-test color_as_analogous(color) > should correctly emit analogous schemes from samples ... ok (42ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/analogous_test.js
+test analogous(color) > should reject invalid colors ... ok (16ms)
+test analogous(color) > should correctly emit analogous schemes from samples ... ok (42ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (103ms)
 
 #+end_src
 
-**** color_as_split
+**** split
 
 An emitter that accepts any valid CSS color and outputs a split complementary color scheme.
 
-+ =color_as_split(color) => [string, string, string]=
++ =split(color) => [string, string, string]=
   - =color: string=: the input color
 
-***** color_as_split Examples
+***** split Examples
 
-***** color_as_split Implementation
+***** split Implementation
 
 #+BEGIN_SRC js
-export function color_as_split(color) {
+export function split(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 180 - 30 }, color),
@@ -2275,13 +2272,13 @@ export function color_as_split(color) {
 }
 #+END_SRC
 
-***** color_as_split Tests
+***** split Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_split_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/split_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_split } from "../color.js";
+import { split } from "../color.js";
 
-describe("color_as_split(color)", () => {
+describe("split(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#00b48c", "#0090ff"]],
     ["orange", ["#ffa500", "#00d2ff", "#a9acff"]],
@@ -2294,12 +2291,12 @@ describe("color_as_split(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_split("invalid")).toThrow();
+    expect(() => split("invalid")).toThrow();
   });
 
   it("should correctly emit split complementary schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_split(input)).toEqual(output);
+      expect(split(input)).toEqual(output);
     });
   });
 });
@@ -2308,38 +2305,38 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_split_test.js
+NO_COLOR=1 deno test v2/tests/color/split_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_split(color)
+  split(color)
   • should reject invalid colors
   • should correctly emit split complementary schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_split_test.js
-test color_as_split(color) > should reject invalid colors ... ok (16ms)
-test color_as_split(color) > should correctly emit split complementary schemes from samples ... ok (42ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/split_test.js
+test split(color) > should reject invalid colors ... ok (16ms)
+test split(color) > should correctly emit split complementary schemes from samples ... ok (42ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (104ms)
 
 #+end_src
 
-**** color_as_clash
+**** clash
 
 
 An emitter that accepts any valid CSS color and outputs a clash color scheme.
 
-+ =color_as_clash(color) => [string, string, string]=
++ =clash(color) => [string, string, string]=
   - =color: string=: the input color
 
-***** color_as_clash Examples
+***** clash Examples
 
-***** color_as_clash Implementation
+***** clash Implementation
 
 #+BEGIN_SRC js
-export function color_as_clash(color) {
+export function clash(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 90 }, color),
@@ -2348,13 +2345,13 @@ export function color_as_clash(color) {
 }
 #+END_SRC
 
-***** color_as_clash Tests
+***** clash Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_clash_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/clash_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_clash } from "../color.js";
+import { clash } from "../color.js";
 
-describe("color_as_clash(color)", () => {
+describe("clash(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#7b9900", "#a34fff"]],
     ["orange", ["#ffa500", "#23dc96", "#ff8cdc"]],
@@ -2367,12 +2364,12 @@ describe("color_as_clash(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_clash("invalid")).toThrow();
+    expect(() => clash("invalid")).toThrow();
   });
 
   it("should correctly emit clashing schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_clash(input)).toEqual(output);
+      expect(clash(input)).toEqual(output);
     });
   });
 });
@@ -2381,37 +2378,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_clash_test.js
+NO_COLOR=1 deno test v2/tests/color/clash_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_clash(color)
+  clash(color)
   • should reject invalid colors
   • should correctly emit clashing schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_clash_test.js
-test color_as_clash(color) > should reject invalid colors ... ok (15ms)
-test color_as_clash(color) > should correctly emit clashing schemes from samples ... ok (42ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/clash_test.js
+test clash(color) > should reject invalid colors ... ok (15ms)
+test clash(color) > should correctly emit clashing schemes from samples ... ok (42ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (104ms)
 
 #+end_src
 
-**** color_as_triad
+**** triad
 
 An emitter that accepts any valid CSS color and outputs a triadic color scheme.
 
-+ =color_as_triad(color) => [string, string, string]=
++ =triad(color) => [string, string, string]=
   - =color: string=: the input color
 
-***** color_as_triad Examples
+***** triad Examples
 
-***** color_as_triad Implementation
+***** triad Implementation
 
 #+BEGIN_SRC js
-export function color_as_triad(color) {
+export function triad(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 120 }, color),
@@ -2420,13 +2417,13 @@ export function color_as_triad(color) {
 }
 #+END_SRC
 
-***** color_as_triad Tests
+***** triad Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_triad_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/triad_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_triad } from "../color.js";
+import { triad } from "../color.js";
 
-describe("color_as_triad(color)", () => {
+describe("triad(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#00ae00", "#4f6fff"]],
     ["orange", ["#ffa500", "#00dcd5", "#de99ff"]],
@@ -2439,12 +2436,12 @@ describe("color_as_triad(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_triad("invalid")).toThrow();
+    expect(() => triad("invalid")).toThrow();
   });
 
   it("should correctly emit triadic schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_triad(input)).toEqual(output);
+      expect(triad(input)).toEqual(output);
     });
   });
 });
@@ -2453,37 +2450,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_triad_test.js
+NO_COLOR=1 deno test v2/tests/color/triad_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_triad(color)
+  triad(color)
   • should reject invalid colors
   • should correctly emit triadic schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_triad_test.js
-test color_as_triad(color) > should reject invalid colors ... ok (16ms)
-test color_as_triad(color) > should correctly emit triadic schemes from samples ... ok (43ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/triad_test.js
+test triad(color) > should reject invalid colors ... ok (16ms)
+test triad(color) > should correctly emit triadic schemes from samples ... ok (43ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (105ms)
 
 #+end_src
 
-**** color_as_tetrad
+**** tetrad
 
 An emitter that accepts any valid CSS color and outputs a tetradic color scheme.
 
-+ =color_as_tetrad(color) => [string, string, string, string]=
++ =tetrad(color) => [string, string, string, string]=
   - =color: string=: the input color
 
-***** color_as_tetrad Examples
+***** tetrad Examples
 
-***** color_as_tetrad Implementation
+***** tetrad Implementation
 
 #+BEGIN_SRC js
-export function color_as_tetrad(color) {
+export function tetrad(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 45 }, color),
@@ -2493,13 +2490,13 @@ export function color_as_tetrad(color) {
 }
 #+END_SRC
 
-***** color_as_tetrad Tests
+***** tetrad Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_tetrad_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/tetrad_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_tetrad } from "../color.js";
+import { tetrad } from "../color.js";
 
-describe("color_as_tetrad(color)", () => {
+describe("tetrad(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#de5f00", "#00a9db", "#0080ff"]],
     ["orange", ["#ffa500", "#b7c826", "#5bc0ff", "#c5a2ff"]],
@@ -2512,12 +2509,12 @@ describe("color_as_tetrad(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_tetrad("invalid")).toThrow();
+    expect(() => tetrad("invalid")).toThrow();
   });
 
   it("should correctly emit tetradic schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_tetrad(input)).toEqual(output);
+      expect(tetrad(input)).toEqual(output);
     });
   });
 });
@@ -2526,37 +2523,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_tetrad_test.js
+NO_COLOR=1 deno test v2/tests/color/tetrad_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_tetrad(color)
+  tetrad(color)
   • should reject invalid colors
   • should correctly emit tetradic schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_tetrad_test.js
-test color_as_tetrad(color) > should reject invalid colors ... ok (16ms)
-test color_as_tetrad(color) > should correctly emit tetradic schemes from samples ... ok (48ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/tetrad_test.js
+test tetrad(color) > should reject invalid colors ... ok (16ms)
+test tetrad(color) > should correctly emit tetradic schemes from samples ... ok (48ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (111ms)
 
 #+end_src
 
-**** color_as_square
+**** square
 
 An emitter that accepts any valid CSS color and outputs a square color scheme.
 
-+ =color_as_square(color) => [string, string, string, string]=
++ =square(color) => [string, string, string, string]=
   - =color: string=: the input color
 
-***** color_as_square Examples
+***** square Examples
 
-***** color_as_square Implementation
+***** square Implementation
 
 #+BEGIN_SRC js
-export function color_as_square(color) {
+export function square(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 90 }, color),
@@ -2566,13 +2563,13 @@ export function color_as_square(color) {
 }
 #+END_SRC
 
-***** color_as_square Tests
+***** square Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_square_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/square_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_square } from "../color.js";
+import { square } from "../color.js";
 
-describe("color_as_square(color)", () => {
+describe("square(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#7b9900", "#00a9db", "#a34fff"]],
     ["orange", ["#ffa500", "#23dc96", "#5bc0ff", "#ff8cdc"]],
@@ -2585,12 +2582,12 @@ describe("color_as_square(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_square("invalid")).toThrow();
+    expect(() => square("invalid")).toThrow();
   });
 
   it("should correctly emit square schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_square(input)).toEqual(output);
+      expect(square(input)).toEqual(output);
     });
   });
 });
@@ -2599,37 +2596,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_square_test.js
+NO_COLOR=1 deno test v2/tests/color/square_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_square(color)
+  square(color)
   • should reject invalid colors
   • should correctly emit square schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_square_test.js
-test color_as_square(color) > should reject invalid colors ... ok (16ms)
-test color_as_square(color) > should correctly emit square schemes from samples ... ok (48ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/square_test.js
+test square(color) > should reject invalid colors ... ok (16ms)
+test square(color) > should correctly emit square schemes from samples ... ok (48ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (109ms)
 
 #+end_src
 
-**** color_as_star
+**** star
 
 An emitter that accepts any valid CSS color and outputs a star color scheme.
 
-+ =color_as_star(color) => [string, string, string, string, string]=
++ =star(color) => [string, string, string, string, string]=
   - =color: string=: the input color
 
-***** color_as_star Examples
+***** star Examples
 
-***** color_as_star Implementation
+***** star Implementation
 
 #+BEGIN_SRC js
-export function color_as_star(color) {
+export function star(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 72 }, color),
@@ -2640,13 +2637,13 @@ export function color_as_star(color) {
 }
 #+END_SRC
 
-***** color_as_star Tests
+***** star Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_star_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/star_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_star } from "../color.js";
+import { star } from "../color.js";
 
-describe("color_as_star(color)", () => {
+describe("star(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#ac8500", "#00b47a", "#008aff", "#c43deb"]],
     ["orange", ["#ffa500", "#73d66d", "#00d5ff", "#b5a8ff", "#ff88ba"]],
@@ -2659,12 +2656,12 @@ describe("color_as_star(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_star("invalid")).toThrow();
+    expect(() => star("invalid")).toThrow();
   });
 
   it("should correctly emit star schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_star(input)).toEqual(output);
+      expect(star(input)).toEqual(output);
     });
   });
 });
@@ -2673,37 +2670,37 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_star_test.js
+NO_COLOR=1 deno test v2/tests/color/star_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_star(color)
+  star(color)
   • should reject invalid colors
   • should correctly emit star schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_star_test.js
-test color_as_star(color) > should reject invalid colors ... ok (15ms)
-test color_as_star(color) > should correctly emit star schemes from samples ... ok (54ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/star_test.js
+test star(color) > should reject invalid colors ... ok (15ms)
+test star(color) > should correctly emit star schemes from samples ... ok (54ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (115ms)
 
 #+end_src
 
-**** color_as_hexagon
+**** hexagon
 
 An emitter that accepts any valid CSS color and outputs a hexagon color scheme.
 
-+ =color_as_hexagon(color) => [string, string, string, string, string]=
++ =hexagon(color) => [string, string, string, string, string]=
   - =color: string=: the input color
 
-***** color_as_hexagon Examples
+***** hexagon Examples
 
-***** color_as_hexagon Implementation
+***** hexagon Implementation
 
 #+BEGIN_SRC js
-export function color_as_hexagon(color) {
+export function hexagon(color) {
   return [
     colorAdjustment({ hue: 0 }, color),
     colorAdjustment({ hue: 60 }, color),
@@ -2715,13 +2712,13 @@ export function color_as_hexagon(color) {
 }
 #+END_SRC
 
-***** color_as_hexagon Tests
+***** hexagon Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color_as_hexagon_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/hexagon_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hexagon } from "../color.js";
+import { hexagon } from "../color.js";
 
-describe("color_as_hexagon(color)", () => {
+describe("hexagon(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#c57500", "#00ae00", "#00a9db", "#4f6fff", "#d62fd2"]],
     [
@@ -2755,12 +2752,12 @@ describe("color_as_hexagon(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hexagon("invalid")).toThrow();
+    expect(() => hexagon("invalid")).toThrow();
   });
 
   it("should correctly emit hexagon schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hexagon(input)).toEqual(output);
+      expect(hexagon(input)).toEqual(output);
     });
   });
 });
@@ -2769,33 +2766,31 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color_as_hexagon_test.js
+NO_COLOR=1 deno test v2/tests/color/hexagon_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  color_as_hexagon(color)
+  hexagon(color)
   • should reject invalid colors
   • should correctly emit hexagon schemes from samples
 
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color_as_hexagon_test.js
-test color_as_hexagon(color) > should reject invalid colors ... ok (16ms)
-test color_as_hexagon(color) > should correctly emit hexagon schemes from samples ... ok (61ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hexagon_test.js
+test hexagon(color) > should reject invalid colors ... ok (16ms)
+test hexagon(color) > should correctly emit hexagon schemes from samples ... ok (61ms)
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (123ms)
 
 #+end_src
 
-**** color_as_element
-
-**** palette_create
+**** create
 
 An action that accepts a =color= and creates a palette based on the given =type=.
 
 The defined types are =material= and =artistic=. They have their own settings.
 
-+ =palette_create(settings, color) => string[][]=
++ =create(settings, color) => string[][]=
   - =settings: {}=: palette creation settings
     * =settings.type = "material": "material" | "artistic"=: the palette configuration type (exposes different settings)
     * =settings.accented = false: boolean=: include accented variants? (active with =material=)
@@ -2806,12 +2801,12 @@ The defined types are =material= and =artistic=. They have their own settings.
     * =settings.stated = false: boolean=: include interface states? (active with both types)
   - =color: string=: any valid CSS color
 
-***** palette_create Examples
+***** create Examples
 
-***** palette_create Implementation
+***** create Implementation
 
 #+BEGIN_SRC js
-export function palette_create(settings, color) {
+export function create(settings, color) {
   // Set default type and settings and exclude interface states until requested
   const {
     type = "material",
@@ -2826,7 +2821,7 @@ export function palette_create(settings, color) {
 
     return artisticConfiguration(
       { contrast, tints, tones, shades, stated },
-      color
+      color,
     );
   }
 
@@ -2834,22 +2829,22 @@ export function palette_create(settings, color) {
 }
 #+END_SRC
 
-***** palette_create Tests
+***** create Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/palette_create_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/create_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { palette_create } from "../color.js";
+import { create } from "../color.js";
 
-describe("palette_create(settings, color)", () => {
+describe("create(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => palette_create({}, "invalid")).toThrow();
+    expect(() => create({}, "invalid")).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("settings.type = 'material'", () => {
     it("should activate settings.accented", () => {
-      expect(palette_create({ accented: true }, red)).toEqual([
+      expect(create({ accented: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -2868,7 +2863,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ accented: true }, green)).toEqual([
+      expect(create({ accented: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -2887,7 +2882,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ accented: true }, blue)).toEqual([
+      expect(create({ accented: true }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -2911,7 +2906,7 @@ describe("palette_create(settings, color)", () => {
 
   describe("settings.type = 'artistic'", () => {
     it("should activate settings.tints", () => {
-      expect(palette_create({ type: "artistic", tints: 6 }, red)).toEqual([
+      expect(create({ type: "artistic", tints: 6 }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#e64d59", "#ef7175", "#f69292", "#fbb0af", "#ffcecc", "#ffebeb"],
@@ -2920,7 +2915,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", tints: 0 }, red)).toEqual([
+      expect(create({ type: "artistic", tints: 0 }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [],
@@ -2931,7 +2926,7 @@ describe("palette_create(settings, color)", () => {
       ]);
     });
     it("should activate settings.tones", () => {
-      expect(palette_create({ type: "artistic", tones: 6 }, green)).toEqual([
+      expect(create({ type: "artistic", tones: 6 }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#abff7e", "#d1ffba", "#f4ffee"],
@@ -2940,7 +2935,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", tones: 0 }, green)).toEqual([
+      expect(create({ type: "artistic", tones: 0 }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#abff7e", "#d1ffba", "#f4ffee"],
@@ -2951,7 +2946,7 @@ describe("palette_create(settings, color)", () => {
       ]);
     });
     it("should activate settings.shades", () => {
-      expect(palette_create({ type: "artistic", shades: 6 }, blue)).toEqual([
+      expect(create({ type: "artistic", shades: 6 }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -2960,7 +2955,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", shades: 0 }, blue)).toEqual([
+      expect(create({ type: "artistic", shades: 0 }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -2974,7 +2969,7 @@ describe("palette_create(settings, color)", () => {
 
   describe("settings.contrast", () => {
     it("should be active with either type", () => {
-      expect(palette_create({ contrast: 90 }, red)).toEqual([
+      expect(create({ contrast: 90 }, red)).toEqual([
         ["#ffebeb", "#231616"],
         [
           [
@@ -2993,7 +2988,7 @@ describe("palette_create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette_create({ type: "artistic", contrast: 80 }, green)).toEqual(
+      expect(create({ type: "artistic", contrast: 80 }, green)).toEqual(
         [
           ["#e8ffdd", "#26391d"],
           [
@@ -3004,7 +2999,7 @@ describe("palette_create(settings, color)", () => {
           [],
         ],
       );
-      expect(palette_create({ contrast: 70 }, blue)).toEqual([
+      expect(create({ contrast: 70 }, blue)).toEqual([
         ["#c3e0ff", "#1d344f"],
         [
           [
@@ -3028,7 +3023,7 @@ describe("palette_create(settings, color)", () => {
 
   describe("settings.stated", () => {
     it("should be active with either type", () => {
-      expect(palette_create({ type: "artistic", stated: true }, red)).toEqual([
+      expect(create({ type: "artistic", stated: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#ef7175", "#fbb0af", "#ffebeb"],
@@ -3037,7 +3032,7 @@ describe("palette_create(settings, color)", () => {
         ],
         ["#e0cccc", "#4c8625", "#dc9a26", "#b62125"],
       ]);
-      expect(palette_create({ stated: true }, green)).toEqual([
+      expect(create({ stated: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -3056,7 +3051,7 @@ describe("palette_create(settings, color)", () => {
         ],
         ["#d4e0cf", "#2c9622", "#d5af1f", "#b54323"],
       ]);
-      expect(palette_create({ type: "artistic", stated: true }, blue)).toEqual([
+      expect(create({ type: "artistic", stated: true }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -3073,13 +3068,13 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/palette_create_test.js
+NO_COLOR=1 deno test v2/tests/color/create_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  palette_create(settings, color)
+  create(settings, color)
   • should reject invalid colors
     settings.type = 'material'
     • should activate settings.accented
@@ -3092,27 +3087,27 @@ NO_COLOR=1 deno test v2/tests/palette_create_test.js
     settings.stated
     • should be active with either type
 
-running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/palette_create_test.js
-test palette_create(settings, color) > should reject invalid colors ... ok (14ms)
-test palette_create(settings, color) > settings.type = 'material' > should activate settings.accented ... ok (75ms)
-test palette_create(settings, color) > settings.type = 'artistic' > should activate settings.tints ... ok (29ms)
-test palette_create(settings, color) > settings.type = 'artistic' > should activate settings.tones ... ok (33ms)
-test palette_create(settings, color) > settings.type = 'artistic' > should activate settings.shades ... ok (37ms)
-test palette_create(settings, color) > settings.contrast > should be active with either type ... ok (59ms)
-test palette_create(settings, color) > settings.stated > should be active with either type ... ok (72ms)
+running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/create_test.js
+test create(settings, color) > should reject invalid colors ... ok (14ms)
+test create(settings, color) > settings.type = 'material' > should activate settings.accented ... ok (75ms)
+test create(settings, color) > settings.type = 'artistic' > should activate settings.tints ... ok (29ms)
+test create(settings, color) > settings.type = 'artistic' > should activate settings.tones ... ok (33ms)
+test create(settings, color) > settings.type = 'artistic' > should activate settings.shades ... ok (37ms)
+test create(settings, color) > settings.contrast > should be active with either type ... ok (59ms)
+test create(settings, color) > settings.stated > should be active with either type ... ok (72ms)
 
 test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (391ms)
 
 #+end_src
 
-**** palette_contrast
+**** contrast
 
 An action that accepts a =palette= and filters its variants based on how much they contrast from the background
 context. The two contrast =modes= are =standard= and =custom= with their own settings.
 
 The modes share a =dark= toggle that will check the contrast against a dark theme (through inverting the UI colors).
 
-+ =palette_contrast(settings, palette)=
++ =contrast(settings, palette)=
   - =settings: {}=: palette contrast settings
     * =settings.mode = "standard": "standard" | "custom"=: set the contrast calculation mode
     * =settings.rating = "AA": "AA" | "AAA"= : set the desired WCAG contrast rating (active with =standard=)
@@ -3122,12 +3117,12 @@ The modes share a =dark= toggle that will check the contrast against a dark them
     * =settings.dark = false: boolean=: will the contrast be checked for a dark theme? (active with both modes)
   - =palette: string[][]=: the palette to use
 
-***** palette_contrast Examples
+***** contrast Examples
 
-***** palette_contrast Implementation
+***** contrast Implementation
 
 #+BEGIN_SRC js
-export function palette_contrast(settings, palette) {
+export function contrast(settings, palette) {
   // Set action defaults
   const {
     mode = "standard",
@@ -3147,30 +3142,30 @@ export function palette_contrast(settings, palette) {
 }
 #+END_SRC
 
-***** palette_contrast Tests
+***** contrast Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/palette_contrast_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/contrast_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { palette_contrast, palette_create } from "../color.js";
+import { contrast, create } from "../color.js";
 
-describe("palette_contrast(settings, palette)", () => {
+describe("contrast(settings, palette)", () => {
   it("should reject invalid colors", () => {
-    expect(() => palette_contrast({}, palette_create({}, "invalid"))).toThrow();
+    expect(() => contrast({}, create({}, "invalid"))).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("settings.mode = 'standard'", () => {
     it("should work with default settings", () => {
-      expect(palette_contrast({}, palette_create({}, red))).toEqual([
+      expect(contrast({}, create({}, red))).toEqual([
         ["#ffffff", "#111111"],
         [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
         [],
       ]);
       expect(
-        palette_contrast({}, palette_create({ type: "artistic" }, green)),
+        contrast({}, create({ type: "artistic" }, green)),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625", "#1c2418"]], []]);
-      expect(palette_contrast({}, palette_create({}, blue))).toEqual([
+      expect(contrast({}, create({}, blue))).toEqual([
         ["#ffffff", "#111111"],
         [["#2371c3", "#22538a", "#1d3755", "#161c25"], []],
         [],
@@ -3179,9 +3174,9 @@ describe("palette_contrast(settings, palette)", () => {
 
     it("should activate settings.rating", () => {
       expect(
-        palette_contrast(
+        contrast(
           { rating: "AAA" },
-          palette_create(
+          create(
             { type: "artistic", tints: 15, tones: 8, shades: 15 },
             red,
           ),
@@ -3209,12 +3204,12 @@ describe("palette_contrast(settings, palette)", () => {
         [],
       ]);
       expect(
-        palette_contrast({ rating: "AA" }, palette_create({}, green)),
+        contrast({ rating: "AA" }, create({}, green)),
       ).toEqual([["#ffffff", "#111111"], [["#345422", "#1c2418"], []], []]);
       expect(
-        palette_contrast(
+        contrast(
           { rating: "AAA" },
-          palette_create(
+          create(
             { type: "artistic", tints: 16, tones: 8, shades: 8 },
             blue,
           ),
@@ -3227,9 +3222,9 @@ describe("palette_contrast(settings, palette)", () => {
     });
     it("should activate settings.large", () => {
       expect(
-        palette_contrast(
+        contrast(
           { large: true },
-          palette_create({ contrast: 90 }, red),
+          create({ contrast: 90 }, red),
         ),
       ).toEqual([
         ["#ffebeb", "#231616"],
@@ -3237,15 +3232,15 @@ describe("palette_contrast(settings, palette)", () => {
         [],
       ]);
       expect(
-        palette_contrast(
+        contrast(
           { large: true },
-          palette_create({ type: "artistic", contrast: 85 }, green),
+          create({ type: "artistic", contrast: 85 }, green),
         ),
       ).toEqual([["#eeffe6", "#212f1a"], [[], [], ["#467b26", "#2a411f"]], []]);
       expect(
-        palette_contrast(
+        contrast(
           { large: true },
-          palette_create({ contrast: 80 }, blue),
+          create({ contrast: 80 }, blue),
         ),
       ).toEqual([
         ["#d7eaff", "#192839"],
@@ -3257,27 +3252,27 @@ describe("palette_contrast(settings, palette)", () => {
   describe("settings.mode = 'custom'", () => {
     it("should activate settings.min", () => {
       expect(
-        palette_contrast({ mode: "custom", min: 50 }, palette_create({}, red)),
+        contrast({ mode: "custom", min: 50 }, create({}, red)),
       ).toEqual([
         ["#ffffff", "#111111"],
         [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
         [],
       ]);
       expect(
-        palette_contrast(
+        contrast(
           { mode: "custom", min: 64 },
-          palette_create({ type: "artistic" }, green),
+          create({ type: "artistic" }, green),
         ),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#1c2418"]], []]);
       expect(
-        palette_contrast({ mode: "custom", min: 80 }, palette_create({}, blue)),
+        contrast({ mode: "custom", min: 80 }, create({}, blue)),
       ).toEqual([["#ffffff", "#111111"], [[], []], []]);
     });
     it("should activate settings.max", () => {
       expect(
-        palette_contrast(
+        contrast(
           { mode: "custom", min: 50, max: 70 },
-          palette_create({}, red),
+          create({}, red),
         ),
       ).toEqual([
         ["#ffffff", "#111111"],
@@ -3285,15 +3280,15 @@ describe("palette_contrast(settings, palette)", () => {
         [],
       ]);
       expect(
-        palette_contrast(
+        contrast(
           { mode: "custom", min: 50, max: 75 },
-          palette_create({ type: "artistic" }, green),
+          create({ type: "artistic" }, green),
         ),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625"]], []]);
       expect(
-        palette_contrast(
+        contrast(
           { mode: "custom", min: 50, max: 80 },
-          palette_create({}, blue),
+          create({}, blue),
         ),
       ).toEqual([
         ["#ffffff", "#111111"],
@@ -3303,22 +3298,22 @@ describe("palette_contrast(settings, palette)", () => {
     });
   });
   it("settings.dark active for both modes", () => {
-    expect(palette_contrast({ dark: true }, palette_create({}, red))).toEqual([
+    expect(contrast({ dark: true }, create({}, red))).toEqual([
       ["#111111", "#ffffff"],
       [["#ffebeb", "#ffcecc", "#fbb0af", "#f69292", "#ef7175", "#e64d59"], []],
       [],
     ]);
     expect(
-      palette_contrast(
+      contrast(
         { mode: "custom", min: 64, dark: true },
-        palette_create({ type: "artistic" }, green),
+        create({ type: "artistic" }, green),
       ),
     ).toEqual([
       ["#111111", "#ffffff"],
       [["#abff7e", "#d1ffba", "#f4ffee"], ["#91e664"], []],
       [],
     ]);
-    expect(palette_contrast({ dark: true }, palette_create({}, blue))).toEqual([
+    expect(contrast({ dark: true }, create({}, blue))).toEqual([
       ["#111111", "#ffffff"],
       [["#ebf5ff", "#cde5ff", "#aed5ff", "#90c4ff", "#70b4ff", "#4da2ff"], []],
       [],
@@ -3330,13 +3325,13 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/palette_contrast_test.js
+NO_COLOR=1 deno test v2/tests/color/contrast_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  palette_contrast(settings, palette)
+  contrast(settings, palette)
   • should reject invalid colors
     settings.mode = 'standard'
     • should work with default settings
@@ -3347,52 +3342,52 @@ NO_COLOR=1 deno test v2/tests/palette_contrast_test.js
     • should activate settings.max
   • settings.dark active for both modes
 
-running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/palette_contrast_test.js
-test palette_contrast(settings, palette) > should reject invalid colors ... ok (15ms)
-test palette_contrast(settings, palette) > settings.mode = 'standard' > should work with default settings ... ok (84ms)
-test palette_contrast(settings, palette) > settings.mode = 'standard' > should activate settings.rating ... ok (198ms)
-test palette_contrast(settings, palette) > settings.mode = 'standard' > should activate settings.large ... ok (78ms)
-test palette_contrast(settings, palette) > settings.mode = 'custom' > should activate settings.min ... ok (80ms)
-test palette_contrast(settings, palette) > settings.mode = 'custom' > should activate settings.max ... ok (75ms)
-test palette_contrast(settings, palette) > settings.dark active for both modes ... ok (73ms)
+running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/contrast_test.js
+test contrast(settings, palette) > should reject invalid colors ... ok (15ms)
+test contrast(settings, palette) > settings.mode = 'standard' > should work with default settings ... ok (84ms)
+test contrast(settings, palette) > settings.mode = 'standard' > should activate settings.rating ... ok (198ms)
+test contrast(settings, palette) > settings.mode = 'standard' > should activate settings.large ... ok (78ms)
+test contrast(settings, palette) > settings.mode = 'custom' > should activate settings.min ... ok (80ms)
+test contrast(settings, palette) > settings.mode = 'custom' > should activate settings.max ... ok (75ms)
+test contrast(settings, palette) > settings.dark active for both modes ... ok (73ms)
 
 test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (654ms)
 
 #+end_src
 
-**** palette_as_tokens
+**** tokens
 
 An emitter that accepts a =palette= and assembles it into a dictionary of color tokens.
 
-+ =palette_as_tokens(palette) => object=
++ =tokens(palette) => object=
   - =palette: string[][]=: the generated palette to assemble
 
-***** palette_as_tokens Examples
+***** tokens Examples
 
-***** palette_as_tokens Implementation
+***** tokens Implementation
 
 #+BEGIN_SRC js
-export function palette_as_tokens(palette) {
+export function tokens(palette) {
   return tokenizePalette(palette);
 }
 #+END_SRC
 
-***** palette_as_tokens Tests
+***** tokens Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/palette_as_tokens_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/tokens_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { palette_as_tokens, palette_create } from "../color.js";
+import { tokens, create } from "../color.js";
 
-describe("palette_as_tokens(palette)", () => {
+describe("tokens(palette)", () => {
   it("should reject an invalid color", () => {
-    expect(() => palette_as_tokens(palette_create({}, "invalid"))).toThrow();
+    expect(() => tokens(create({}, "invalid"))).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("material palette configuration", () => {
     it("should work with default settings", () => {
-      expect(palette_as_tokens(palette_create({}, red))).toEqual({
+      expect(tokens(create({}, red))).toEqual({
         50: "#ffebeb",
         100: "#ffcecc",
         200: "#fbb0af",
@@ -3406,7 +3401,7 @@ describe("palette_as_tokens(palette)", () => {
         bg: "#ffffff",
         fg: "#111111",
       });
-      expect(palette_as_tokens(palette_create({}, green))).toEqual({
+      expect(tokens(create({}, green))).toEqual({
         50: "#f4ffee",
         100: "#e2ffd5",
         200: "#d1ffba",
@@ -3420,7 +3415,7 @@ describe("palette_as_tokens(palette)", () => {
         bg: "#ffffff",
         fg: "#111111",
       });
-      expect(palette_as_tokens(palette_create({}, blue))).toEqual({
+      expect(tokens(create({}, blue))).toEqual({
         50: "#ebf5ff",
         100: "#cde5ff",
         200: "#aed5ff",
@@ -3437,7 +3432,7 @@ describe("palette_as_tokens(palette)", () => {
     });
     it("should append accents when toggled", () => {
       expect(
-        palette_as_tokens(palette_create({ accented: true }, red)),
+        tokens(create({ accented: true }, red)),
       ).toEqual({
         50: "#ffebeb",
         100: "#ffcecc",
@@ -3457,7 +3452,7 @@ describe("palette_as_tokens(palette)", () => {
         a400: "#a40000",
       });
       expect(
-        palette_as_tokens(palette_create({ accented: true }, green)),
+        tokens(create({ accented: true }, green)),
       ).toEqual({
         50: "#f4ffee",
         100: "#e2ffd5",
@@ -3477,7 +3472,7 @@ describe("palette_as_tokens(palette)", () => {
         a400: "#00c100",
       });
       expect(
-        palette_as_tokens(palette_create({ accented: true }, blue)),
+        tokens(create({ accented: true }, blue)),
       ).toEqual({
         50: "#ebf5ff",
         100: "#cde5ff",
@@ -3501,7 +3496,7 @@ describe("palette_as_tokens(palette)", () => {
   describe("artistic palette configuration", () => {
     it("should work with default settings", () => {
       expect(
-        palette_as_tokens(palette_create({ type: "artistic" }, red)),
+        tokens(create({ type: "artistic" }, red)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -3510,7 +3505,7 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#9a2130", 200: "#5c2023", 300: "#231616" },
       });
       expect(
-        palette_as_tokens(palette_create({ type: "artistic" }, green)),
+        tokens(create({ type: "artistic" }, green)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -3519,7 +3514,7 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#5daf25", 200: "#3c6625", 300: "#1c2418" },
       });
       expect(
-        palette_as_tokens(palette_create({ type: "artistic" }, blue)),
+        tokens(create({ type: "artistic" }, blue)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -3530,8 +3525,8 @@ describe("palette_as_tokens(palette)", () => {
     });
     it("should add and remove variants based on tints/tones/shades settings", () => {
       expect(
-        palette_as_tokens(
-          palette_create(
+        tokens(
+          create(
             { type: "artistic", tints: 6, tones: 0, shades: 3 },
             red,
           ),
@@ -3550,8 +3545,8 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#9a2130", 200: "#5c2023", 300: "#231616" },
       });
       expect(
-        palette_as_tokens(
-          palette_create(
+        tokens(
+          create(
             { type: "artistic", tints: 4, tones: 2, shades: 3 },
             green,
           ),
@@ -3569,8 +3564,8 @@ describe("palette_as_tokens(palette)", () => {
         dark: { 100: "#5daf25", 200: "#3c6625", 300: "#1c2418" },
       });
       expect(
-        palette_as_tokens(
-          palette_create(
+        tokens(
+          create(
             { type: "artistic", tints: 0, tones: 0, shades: 9 },
             blue,
           ),
@@ -3594,7 +3589,7 @@ describe("palette_as_tokens(palette)", () => {
   });
 
   it("should respond to contrast setting for either type", () => {
-    expect(palette_as_tokens(palette_create({ contrast: 95 }, red))).toEqual({
+    expect(tokens(create({ contrast: 95 }, red))).toEqual({
       50: "#ffe2e2",
       100: "#fec6c5",
       200: "#fbaaa9",
@@ -3609,8 +3604,8 @@ describe("palette_as_tokens(palette)", () => {
       fg: "#1a1313",
     });
     expect(
-      palette_as_tokens(
-        palette_create({ type: "artistic", contrast: 85 }, green),
+      tokens(
+        create({ type: "artistic", contrast: 85 }, green),
       ),
     ).toEqual({
       bg: "#eeffe6",
@@ -3619,7 +3614,7 @@ describe("palette_as_tokens(palette)", () => {
       muted: { 100: "#8fea5c", 200: "#9bd57f", 300: "#a4bf98" },
       dark: { 100: "#62bb23", 200: "#467b26", 300: "#2a411f" },
     });
-    expect(palette_as_tokens(palette_create({ contrast: 95 }, blue))).toEqual({
+    expect(tokens(create({ contrast: 95 }, blue))).toEqual({
       50: "#e2f0ff",
       100: "#c5e1ff",
       200: "#a8d2ff",
@@ -3636,7 +3631,7 @@ describe("palette_as_tokens(palette)", () => {
   });
 
   it("should append interface states when defined for either type", () => {
-    expect(palette_as_tokens(palette_create({ stated: true }, red))).toEqual({
+    expect(tokens(create({ stated: true }, red))).toEqual({
       50: "#ffebeb",
       100: "#ffcecc",
       200: "#fbb0af",
@@ -3657,8 +3652,8 @@ describe("palette_as_tokens(palette)", () => {
       },
     });
     expect(
-      palette_as_tokens(
-        palette_create({ type: "artistic", stated: true }, green),
+      tokens(
+        create({ type: "artistic", stated: true }, green),
       ),
     ).toEqual({
       bg: "#ffffff",
@@ -3673,7 +3668,7 @@ describe("palette_as_tokens(palette)", () => {
         error: "#b54323",
       },
     });
-    expect(palette_as_tokens(palette_create({ stated: true }, blue))).toEqual({
+    expect(tokens(create({ stated: true }, blue))).toEqual({
       50: "#ebf5ff",
       100: "#cde5ff",
       200: "#aed5ff",
@@ -3700,13 +3695,13 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/palette_as_tokens_test.js
+NO_COLOR=1 deno test v2/tests/color/tokens_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  palette_as_tokens(palette)
+  tokens(palette)
   • should reject an invalid color
     material palette configuration
     • should work with default settings
@@ -3717,68 +3712,69 @@ NO_COLOR=1 deno test v2/tests/palette_as_tokens_test.js
   • should respond to contrast setting for either type
   • should append interface states when defined for either type
 
-running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/palette_as_tokens_test.js
-test palette_as_tokens(palette) > should reject an invalid color ... ok (14ms)
-test palette_as_tokens(palette) > material palette configuration > should work with default settings ... ok (63ms)
-test palette_as_tokens(palette) > material palette configuration > should append accents when toggled ... ok (59ms)
-test palette_as_tokens(palette) > artistic palette configuration > should work with default settings ... ok (50ms)
-test palette_as_tokens(palette) > artistic palette configuration > should add and remove variants based on tints/tones/shades settings ... ok (55ms)
-test palette_as_tokens(palette) > should respond to contrast setting for either type ... ok (55ms)
-test palette_as_tokens(palette) > should append interface states when defined for either type ... ok (116ms)
+running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/tokens_test.js
+test tokens(palette) > should reject an invalid color ... ok (14ms)
+test tokens(palette) > material palette configuration > should work with default settings ... ok (63ms)
+test tokens(palette) > material palette configuration > should append accents when toggled ... ok (59ms)
+test tokens(palette) > artistic palette configuration > should work with default settings ... ok (50ms)
+test tokens(palette) > artistic palette configuration > should add and remove variants based on tints/tones/shades settings ... ok (55ms)
+test tokens(palette) > should respond to contrast setting for either type ... ok (55ms)
+test tokens(palette) > should append interface states when defined for either type ... ok (116ms)
 
 test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (488ms)
 
 #+end_src
 
+**** element
 *** Modular Scale
 :PROPERTIES:
-:header-args:js: :tangle "./v2/ms.js" :comments both
+:header-args:js: :tangle "./v2/ms.js" :mkdirp yes :comments link
 :END:
 
-**** ms_create
+**** create
 
-**** ms_modify
+**** modify
 
-**** ms_split
+**** chunk
 
-**** ms_format
+**** format
 
-**** ms_as_tokens
+**** tokens
 
-**** ms_as_element
+**** element
 
 *** Design Tokens
 :PROPERTIES:
-:header-args:js: :tangle "./v2/tokens.js" :comments both
+:header-args:js: :tangle "./v2/tokens.js" :mkdirp yes :comments link
 :END:
 
-**** tokens_as_css
+**** css
 
-**** tokens_as_scss
+**** scss
 
-**** tokens_as_less
+**** less
 
-**** tokens_as_styl
+**** styl
 
-**** tokens_as_json
+**** json
 
-**** tokens_as_yaml
+**** yaml
 
-**** tokens_as_gpl
+**** gpl
 
-**** tokens_as_sketchpalette
+**** sketchpalette
 
-**** tokens_as_tailwind
+**** tailwind
 
-**** tokens_as_styledict
+**** styledict
 
-**** tokens_as_element
+**** element
 
 ** Internals
 
 *** Functional
 :PROPERTIES:
-:header-args:js: :tangle "./v2/fn.js" :comments both
+:header-args:js: :tangle "./v2/fn.js" :mkdirp yes :comments link
 :END:
 
 **** Composition Internals
@@ -3791,7 +3787,7 @@ function compose(...fns) {
 
 *** Color
 :PROPERTIES:
-:header-args:js: :tangle "./v2/color.js" :comments both
+:header-args:js: :tangle "./v2/color.js" :mkdirp yes :comments link
 :END:
 
 QuarkSuite accepts and processes most valid CSS color formats defined in [[https://www.w3.org/TR/css-color-4/][CSS Color Module Level 4]]. There are no color objects
@@ -3813,23 +3809,23 @@ QuarkSuite supports.
 #+BEGIN_SRC js
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "%)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "%)"].join(""),
 );
 
 const LEGACY_DELIMITER = /(?:[\s,]+)/;
 const LEGACY_ALPHA_DELIMITER = new RegExp(
-  LEGACY_DELIMITER.source.replace(",", ",/")
+  LEGACY_DELIMITER.source.replace(",", ",/"),
 );
 const MODERN_DELIMITER = new RegExp(LEGACY_DELIMITER.source.replace(",", ""));
 const MODERN_ALPHA_DELIMITER = new RegExp(
-  LEGACY_ALPHA_DELIMITER.source.replace(",", "")
+  LEGACY_ALPHA_DELIMITER.source.replace(",", ""),
 );
 
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join("")
+  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
 );
 const HUE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
 );
 #+END_SRC
 
@@ -4036,8 +4032,8 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       VALUES.join(DELIMITER),
-      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`
-    )
+      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`,
+    ),
   );
 }
 #+END_SRC
@@ -4051,7 +4047,7 @@ prefix. As you'll see, some tokens repeat and others have to be slotted individu
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
-    Array(3).fill(COMPONENT_TOKEN)
+    Array(3).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 #+END_SRC
@@ -4076,7 +4072,7 @@ to CSS Color Module 5, but I implemented it before I found that out.
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(COMPONENT_TOKEN)
+    Array(4).fill(COMPONENT_TOKEN),
   ).test(color);
 }
 #+END_SRC
@@ -4801,11 +4797,11 @@ function ciexyzToLrgb([X, Y, Z]) {
   ];
 
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
   );
 
   const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
-    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
   );
 
   return [LR, LG, LB];
@@ -4821,7 +4817,7 @@ function cielabToRgb([, values]) {
   const [L, a, b, A] = values;
 
   const [R, G, B] = lrgbToRgb(ciexyzToLrgb(cielabToCiexyz([L, a, b]))).map(
-    (n) => numberToChannel(n)
+    (n) => numberToChannel(n),
   );
 
   return ["rgb", [R, G, B, A]];
@@ -4934,7 +4930,7 @@ function hslFromRgb([, rgbValues]) {
 
   const L = calculateLightness(cmin, cmax);
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
   const S = calculateSaturation(delta, L);
 
@@ -4974,7 +4970,7 @@ function hwbFromRgb([, rgbValues]) {
   const delta = cmax - cmin;
 
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition
+    ([, condition]) => condition,
   );
 
   const [W, BLK] = [cmin, 1 - cmax];
@@ -5014,11 +5010,11 @@ function lrgbToCiexyz([LR, LG, LB]) {
   ];
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
-    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
   );
 
   const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
   );
 
   return [X, Y, Z];
@@ -5074,7 +5070,7 @@ function lrgbToOklab([LR, LG, LB]) {
   ];
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
-    ([L, M, S]) => L * LR + M * LG + S * LB
+    ([L, M, S]) => L * LR + M * LG + S * LB,
   ).map((V) => Math.cbrt(V));
 
   return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
@@ -5241,7 +5237,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
     values.join(DELIMITER),
     isOpaque ? "" : ALPHA_DELIMITER.concat(alpha),
-    ")"
+    ")",
   );
 }
 #+END_SRC
@@ -5254,7 +5250,7 @@ function serializeRgb([, rgbResult]) {
 
   // Clamp RGB channels 0-255
   const [R, G, B] = [r, g, b].map(
-    (component) => +clamp(component, 0, 255).toFixed(3)
+    (component) => +clamp(component, 0, 255).toFixed(3),
   );
 
   return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
@@ -5285,7 +5281,8 @@ function serializeCmyk([, cmykResult]) {
 
   // Convert to percentage, cap at 0-100
   const [C, M, Y, K] = [c, m, y, k].map(
-    (n) => `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`
+    (n) =>
+      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
   );
 
   return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
@@ -5475,7 +5472,7 @@ function extractOklchValues(color) {
 
 function adjustColorProperties(
   { lightness, chroma, hue, alpha },
-  [l, c, h, a]
+  [l, c, h, a],
 ) {
   // Adjust properties only if defined, make values parseable
   let L = numberFromPercentage(lightness ? l + lightness : l);
@@ -5505,7 +5502,7 @@ function serializeInput([format, values]) {
 
 function colorAdjustment(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  color
+  color,
 ) {
   // Ensure color is valid and store its format
   const [format] = validator(color);
@@ -5516,7 +5513,7 @@ function colorAdjustment(
   // Adjust target properties
   const [L, C, H, A] = adjustColorProperties(
     { lightness, chroma, hue, alpha },
-    values
+    values,
   );
 
   // Serialize oklch result
@@ -5609,7 +5606,7 @@ function colorMix({ target, strength = 0 }, color) {
   const [L, a, b, A] = calculateMixture(
     color,
     target,
-    numberFromPercentage(strength)
+    numberFromPercentage(strength),
   );
 
   // Serialize the blend result
@@ -5675,7 +5672,7 @@ JavaScript. It takes care of the aforementioned sRGB adaptation as well.
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
@@ -5685,33 +5682,75 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
   const brettel = {
     protanope: {
       a: [
-        0.1498, 1.19548, -0.34528, 0.10764, 0.84864, 0.04372, 0.00384, -0.0054,
+        0.1498,
+        1.19548,
+        -0.34528,
+        0.10764,
+        0.84864,
+        0.04372,
+        0.00384,
+        -0.0054,
         1.00156,
       ],
       b: [
-        0.1457, 1.16172, -0.30742, 0.10816, 0.85291, 0.03892, 0.00386, -0.00524,
+        0.1457,
+        1.16172,
+        -0.30742,
+        0.10816,
+        0.85291,
+        0.03892,
+        0.00386,
+        -0.00524,
         1.00139,
       ],
       n: [0.00048, 0.00393, -0.00441],
     },
     deuteranope: {
       a: [
-        0.36477, 0.86381, -0.22858, 0.26294, 0.64245, 0.09462, -0.02006,
-        0.02728, 0.99278,
+        0.36477,
+        0.86381,
+        -0.22858,
+        0.26294,
+        0.64245,
+        0.09462,
+        -0.02006,
+        0.02728,
+        0.99278,
       ],
       b: [
-        0.37298, 0.88166, -0.25464, 0.25954, 0.63506, 0.1054, -0.0198, 0.02784,
+        0.37298,
+        0.88166,
+        -0.25464,
+        0.25954,
+        0.63506,
+        0.1054,
+        -0.0198,
+        0.02784,
         0.99196,
       ],
       n: [-0.00281, -0.00611, 0.00892],
     },
     tritanope: {
       a: [
-        1.01277, 0.13548, -0.14826, -0.01243, 0.86812, 0.14431, 0.07589, 0.805,
+        1.01277,
+        0.13548,
+        -0.14826,
+        -0.01243,
+        0.86812,
+        0.14431,
+        0.07589,
+        0.805,
         0.11911,
       ],
       b: [
-        0.93678, 0.18979, -0.12657, 0.06154, 0.81526, 0.1232, -0.37562, 1.12767,
+        0.93678,
+        0.18979,
+        -0.12657,
+        0.06154,
+        0.81526,
+        0.1232,
+        -0.37562,
+        1.12767,
         0.24796,
       ],
       n: [0.03901, -0.02788, -0.01113],
@@ -5734,7 +5773,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
@@ -5747,7 +5786,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   // Convert RGB to linear RGB
@@ -5762,10 +5801,26 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
 
   const vienot = {
     protanope: [
-      0.11238, 0.88762, 0.0, 0.11238, 0.88762, -0.0, 0.00401, -0.00401, 1.0,
+      0.11238,
+      0.88762,
+      0.0,
+      0.11238,
+      0.88762,
+      -0.0,
+      0.00401,
+      -0.00401,
+      1.0,
     ],
     deuteranope: [
-      0.29275, 0.70725, 0.0, 0.29275, 0.70725, -0.0, -0.02234, 0.02234, 1.0,
+      0.29275,
+      0.70725,
+      0.0,
+      0.29275,
+      0.70725,
+      -0.0,
+      -0.02234,
+      0.02234,
+      1.0,
     ],
   };
 
@@ -5783,7 +5838,7 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
       const severity = numberFromPercentage(strength);
 
       return cvdComponent * severity + component * (1 - severity);
-    })
+    }),
   );
 
   return [R, G, B, A];
@@ -5800,9 +5855,9 @@ The main purpose of it in this library, however, is to help designers and develo
 /inclusive/ color schemes.
 
 #+BEGIN_SRC js
-function simulateColorblindness(
+function checkColorblindness(
   { method = "brettel", type, strength = 0 },
-  color
+  color,
 ) {
   // Validate input color and store result
   const [format] = validator(color);
@@ -5850,14 +5905,14 @@ This leads to the following process:
 That's all.
 
 #+BEGIN_SRC js
-function simulateSensitivity({ contrast = 0, strength = 0 }, color) {
+function checkSensitivity({ contrast = 0, strength = 0 }, color) {
   // Derive contrast from a shade of gray
   const GRAY = colorMix(
     {
       target: "white",
       strength: 100 * numberFromPercentage(contrast),
     },
-    "black"
+    "black",
   );
 
   // Mix resultant gray with input color
@@ -5866,7 +5921,7 @@ function simulateSensitivity({ contrast = 0, strength = 0 }, color) {
       target: GRAY,
       strength: 100 * numberFromPercentage(strength),
     },
-    color
+    color,
   );
 }
 #+END_SRC
@@ -5918,7 +5973,7 @@ function kelvinToRgb(temperature) {
   return serializeRgb(["rgb", [R, G, B, 1]]);
 }
 
-function simulateIlluminant({ temperature = 1000, strength = 0 }, color) {
+function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
   const target = kelvinToRgb(temperature);
 
   return colorMix({ target, strength }, color);
@@ -5972,7 +6027,7 @@ function colorInterpolation(action, settings, input) {
                 hue: interpolate(hue, pos),
                 alpha: interpolate(alpha, pos),
               },
-              color
+              color,
             );
           }
 
@@ -5982,7 +6037,7 @@ function colorInterpolation(action, settings, input) {
 
             result = colorMix(
               { strength: interpolate(strength, pos), target },
-              color
+              color,
             );
           }
 
@@ -5995,7 +6050,7 @@ function colorInterpolation(action, settings, input) {
                 type,
                 strength: interpolate(strength, pos),
               },
-              color
+              color,
             );
           }
 
@@ -6007,7 +6062,7 @@ function colorInterpolation(action, settings, input) {
                 contrast: interpolate(contrast, pos),
                 strength: interpolate(strength, pos),
               },
-              color
+              color,
             );
           }
 
@@ -6019,12 +6074,12 @@ function colorInterpolation(action, settings, input) {
                 temperature: interpolate(temperature, pos),
                 strength: interpolate(strength, pos),
               },
-              color
+              color,
             );
           }
 
           return result;
-        })
+        }),
     ),
   ].reverse();
 }
@@ -6050,17 +6105,17 @@ The same occurs for the interface states if =stated= is true.
 #+BEGIN_SRC js
 function materialConfiguration(
   { contrast = 100, accented = false, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -6073,7 +6128,7 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 6,
       },
-      color
+      color,
     ).reverse(),
     ...colorInterpolation(
       colorMix,
@@ -6082,52 +6137,52 @@ function materialConfiguration(
         strength: 90 * numberFromPercentage(contrast),
         steps: 4,
       },
-      color
+      color,
     ),
   ];
 
   // [A100, A200, A300, A400]
   const accents = accented
     ? [
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: -50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: -25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: 15,
-          },
-          color
-        ),
-      ]
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: -50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: 25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: -15,
+        },
+        color,
+      ),
+      colorAdjustment(
+        {
+          lightness: -25 * numberFromPercentage(contrast),
+          chroma: 50,
+          hue: 15,
+        },
+        color,
+      ),
+    ]
     : [];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, [variants, accents], states];
@@ -6142,17 +6197,17 @@ variant. =stated= is also allowed here and works identically to the material-esq
 #+BEGIN_SRC js
 function artisticConfiguration(
   { contrast = 100, tints = 3, tones = 3, shades = 3, stated = false },
-  color
+  color,
 ) {
   // [bg, fg]
   const ui = [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
     colorMix(
       { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
+      color,
     ),
   ];
 
@@ -6160,47 +6215,47 @@ function artisticConfiguration(
   const variants = [
     tints
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#fff",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tints,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#fff",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tints,
+        },
+        color,
+      )
       : [],
     tones
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#aaa",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tones,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#aaa",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tones,
+        },
+        color,
+      )
       : [],
     shades
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#111",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: shades,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#111",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: shades,
+        },
+        color,
+      )
       : [],
   ];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
   const states = stated
     ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
+      colorMix({ target: "gainsboro", strength: 90 }, color),
+      colorMix({ target: "forestgreen", strength: 90 }, color),
+      colorMix({ target: "goldenrod", strength: 90 }, color),
+      colorMix({ target: "firebrick", strength: 90 }, color),
+    ]
     : [];
 
   return [ui, variants, states];
@@ -6236,7 +6291,7 @@ dark theme.
 #+BEGIN_SRC js
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))])
+    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -6268,8 +6323,7 @@ function variantContrastWcag({ rating, large, background }, variants) {
       return wcagContrastCriteria({ rating, large }, ratio);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -6350,8 +6404,7 @@ function variantsColorimetricContrast({ min, max, background }, variants) {
       return filterCondition({ min, max }, difference);
     });
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  const optional = (fn, collection) => collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -6414,8 +6467,8 @@ function tokenizeMaterialVariants(variants) {
     // a100-a400
     ...(accents.length
       ? accents.reduce((acc, color, index) => {
-          return { ...acc, [`a${++index}00`]: color };
-        }, {})
+        return { ...acc, [`a${++index}00`]: color };
+      }, {})
       : {}),
   };
 }
@@ -6458,13 +6511,13 @@ function tokenizePalette(palette) {
     ...variations,
     ...(states.length
       ? {
-          state: {
-            pending: states[0],
-            success: states[1],
-            warning: states[2],
-            error: states[3],
-          },
-        }
+        state: {
+          pending: states[0],
+          success: states[1],
+          warning: states[2],
+          error: states[3],
+        },
+      }
       : {}),
   };
 }

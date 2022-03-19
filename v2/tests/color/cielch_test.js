@@ -1,11 +1,11 @@
-// color_as_cielch Tests
+// cielch Tests
 
 
-// [[file:../../Notebook.org::*color_as_cielch Tests][color_as_cielch Tests:1]]
+// [[file:../../../Notebook.org::*cielch Tests][cielch Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_cielch } from "../color.js";
+import { cielch } from "../color.js";
 
-describe("color_as_cielch(color)", () => {
+describe("cielch(color)", () => {
   const controlGroup = [
     ["black", "lch(0% 0 0)"],
     ["gray", "lch(53.585% 0 0)"],
@@ -24,20 +24,20 @@ describe("color_as_cielch(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_cielch("invalid")).toThrow();
+    expect(() => cielch("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_cielch(input)).toBe(output);
+      expect(cielch(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_cielch(input)).toBe(output);
+      expect(cielch(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_cielch Tests:1 ends here
+// cielch Tests:1 ends here

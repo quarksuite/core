@@ -1,11 +1,8 @@
-// color_as_split Tests
-
-
-// [[file:../../Notebook.org::*color_as_split Tests][color_as_split Tests:1]]
+// [[file:../../../Notebook.org::*split Tests][split Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_split } from "../color.js";
+import { split } from "../color.js";
 
-describe("color_as_split(color)", () => {
+describe("split(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#00b48c", "#0090ff"]],
     ["orange", ["#ffa500", "#00d2ff", "#a9acff"]],
@@ -18,15 +15,15 @@ describe("color_as_split(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_split("invalid")).toThrow();
+    expect(() => split("invalid")).toThrow();
   });
 
   it("should correctly emit split complementary schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_split(input)).toEqual(output);
+      expect(split(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_split Tests:1 ends here
+// split Tests:1 ends here

@@ -1,11 +1,11 @@
-// color_as_cielab Tests
+// cielab Tests
 
 
-// [[file:../../Notebook.org::*color_as_cielab Tests][color_as_cielab Tests:1]]
+// [[file:../../../Notebook.org::*cielab Tests][cielab Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_cielab } from "../color.js";
+import { cielab } from "../color.js";
 
-describe("color_as_cielab(color)", () => {
+describe("cielab(color)", () => {
   const controlGroup = [
     ["black", "lab(0% 0 0)"],
     ["gray", "lab(53.585% 0 0)"],
@@ -24,20 +24,20 @@ describe("color_as_cielab(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_cielab("invalid")).toThrow();
+    expect(() => cielab("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_cielab(input)).toBe(output);
+      expect(cielab(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_cielab(input)).toBe(output);
+      expect(cielab(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_cielab Tests:1 ends here
+// cielab Tests:1 ends here

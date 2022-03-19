@@ -1,11 +1,11 @@
-// color_as_hex Tests
+// hex Tests
 
 
-// [[file:../../Notebook.org::*color_as_hex Tests][color_as_hex Tests:1]]
+// [[file:../../../Notebook.org::*hex Tests][hex Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hex } from "../color.js";
+import { hex } from "../color.js";
 
-describe("color_as_hex(color)", () => {
+describe("hex(color)", () => {
   const controlGroup = [
     ["black", "#000000"],
     ["gray", "#808080"],
@@ -24,20 +24,20 @@ describe("color_as_hex(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hex("invalid")).toThrow();
+    expect(() => hex("invalid")).toThrow();
   });
 
   it("should correctly convert the control group", () => {
     controlGroup.forEach(([input, output]) => {
-      expect(color_as_hex(input)).toBe(output);
+      expect(hex(input)).toBe(output);
     });
   });
   it("should correctly convert the color samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hex(input)).toBe(output);
+      expect(hex(input)).toBe(output);
     });
   });
 });
 
 run();
-// color_as_hex Tests:1 ends here
+// hex Tests:1 ends here

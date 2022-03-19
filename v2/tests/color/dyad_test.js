@@ -1,11 +1,8 @@
-// color_as_dyad Tests
-
-
-// [[file:../../Notebook.org::*color_as_dyad Tests][color_as_dyad Tests:1]]
+// [[file:../../../Notebook.org::*dyad Tests][dyad Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_dyad } from "../color.js";
+import { dyad } from "../color.js";
 
-describe("color_as_dyad(color)", () => {
+describe("dyad(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#7b9900"]],
     ["orange", ["#ffa500", "#23dc96"]],
@@ -18,15 +15,15 @@ describe("color_as_dyad(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_dyad("invalid")).toThrow();
+    expect(() => dyad("invalid")).toThrow();
   });
 
   it("should correctly emit dyads from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_dyad(input)).toEqual(output);
+      expect(dyad(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_dyad Tests:1 ends here
+// dyad Tests:1 ends here

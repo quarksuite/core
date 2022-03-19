@@ -1,11 +1,8 @@
-// color_as_star Tests
-
-
-// [[file:../../Notebook.org::*color_as_star Tests][color_as_star Tests:1]]
+// [[file:../../../Notebook.org::*star Tests][star Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_star } from "../color.js";
+import { star } from "../color.js";
 
-describe("color_as_star(color)", () => {
+describe("star(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#ac8500", "#00b47a", "#008aff", "#c43deb"]],
     ["orange", ["#ffa500", "#73d66d", "#00d5ff", "#b5a8ff", "#ff88ba"]],
@@ -18,15 +15,15 @@ describe("color_as_star(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_star("invalid")).toThrow();
+    expect(() => star("invalid")).toThrow();
   });
 
   it("should correctly emit star schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_star(input)).toEqual(output);
+      expect(star(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_star Tests:1 ends here
+// star Tests:1 ends here

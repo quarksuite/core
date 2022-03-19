@@ -1,11 +1,8 @@
-// color_as_tetrad Tests
-
-
-// [[file:../../Notebook.org::*color_as_tetrad Tests][color_as_tetrad Tests:1]]
+// [[file:../../../Notebook.org::*tetrad Tests][tetrad Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_tetrad } from "../color.js";
+import { tetrad } from "../color.js";
 
-describe("color_as_tetrad(color)", () => {
+describe("tetrad(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#de5f00", "#00a9db", "#0080ff"]],
     ["orange", ["#ffa500", "#b7c826", "#5bc0ff", "#c5a2ff"]],
@@ -18,15 +15,15 @@ describe("color_as_tetrad(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_tetrad("invalid")).toThrow();
+    expect(() => tetrad("invalid")).toThrow();
   });
 
   it("should correctly emit tetradic schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_tetrad(input)).toEqual(output);
+      expect(tetrad(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_tetrad Tests:1 ends here
+// tetrad Tests:1 ends here

@@ -1,12 +1,10 @@
-// color_simulate Tests
-
-// [[file:../../Notebook.org::*color_simulate Tests][color_simulate Tests:1]]
+// [[file:../../../Notebook.org::*check Tests][check Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_simulate } from "../color.js";
+import { check } from "../color.js";
 
-describe("color_simulate(settings, color)", () => {
+describe("check(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => color_simulate({}, "invalid")).toThrow();
+    expect(() => check({}, "invalid")).toThrow();
   });
 
   const [red, green, blue, purple] = [
@@ -113,11 +111,11 @@ describe("color_simulate(settings, color)", () => {
 
   describe("settings.condition = 'colorblindness'", () => {
     describe("settings.type = 'achromatopsia'", () => {
-      it("should correctly simulate achromatopsia", () => {
+      it("should correctly check achromatopsia", () => {
         Object.values(colorblindness.achromatopsia).forEach(
           ([input, output]) => {
             expect(
-              color_simulate(
+              check(
                 {
                   condition: "colorblindness",
                   type: "achromatopsia",
@@ -134,11 +132,11 @@ describe("color_simulate(settings, color)", () => {
       .forEach(([type, data]) => {
         describe(`settings.type = '${type}'`, () => {
           Object.entries(data).forEach(([method, $data]) => {
-            it(`should correctly simulate ${type} with ${method} method on samples`, () => {
+            it(`should correctly check ${type} with ${method} method on samples`, () => {
               Object.values($data).forEach(([input, results]) => {
                 results.forEach((output, pos) => {
                   expect(
-                    color_simulate(
+                    check(
                       {
                         condition: "colorblindness",
                         method,
@@ -185,12 +183,12 @@ describe("color_simulate(settings, color)", () => {
   };
 
   describe("settings.condition = 'sensitivity'", () => {
-    it("should correctly simulate contrast sensitivity on sample data set", () => {
+    it("should correctly check contrast sensitivity on sample data set", () => {
       Object.entries(sensitivity).forEach(([contrast, data]) => {
         Object.values(data).forEach(([input, results]) => {
           results.forEach((output, pos) => {
             expect(
-              color_simulate(
+              check(
                 { condition: "sensitivity", contrast, strength: 25 * pos },
                 input,
               ),
@@ -230,12 +228,12 @@ describe("color_simulate(settings, color)", () => {
   };
 
   describe("settings.condition = 'illuminant'", () => {
-    it("should correctly simulate the effects of various light sources on sample data", () => {
+    it("should correctly check the effects of various light sources on sample data", () => {
       Object.entries(illuminant).forEach(([temperature, data]) => {
         Object.values(data).forEach(([input, results]) => {
           results.forEach((output, pos) => {
             expect(
-              color_simulate(
+              check(
                 { condition: "illuminant", temperature, strength: 25 * pos },
                 input,
               ),
@@ -248,4 +246,4 @@ describe("color_simulate(settings, color)", () => {
 });
 
 run();
-// color_simulate Tests:1 ends here
+// check Tests:1 ends here

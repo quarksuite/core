@@ -1,10 +1,8 @@
-// color_as_hexagon Tests
-
-// [[file:../../Notebook.org::*color_as_hexagon Tests][color_as_hexagon Tests:1]]
+// [[file:../../../Notebook.org::*hexagon Tests][hexagon Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_hexagon } from "../color.js";
+import { hexagon } from "../color.js";
 
-describe("color_as_hexagon(color)", () => {
+describe("hexagon(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#c57500", "#00ae00", "#00a9db", "#4f6fff", "#d62fd2"]],
     [
@@ -38,15 +36,15 @@ describe("color_as_hexagon(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_hexagon("invalid")).toThrow();
+    expect(() => hexagon("invalid")).toThrow();
   });
 
   it("should correctly emit hexagon schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_hexagon(input)).toEqual(output);
+      expect(hexagon(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_hexagon Tests:1 ends here
+// hexagon Tests:1 ends here

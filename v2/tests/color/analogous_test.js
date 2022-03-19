@@ -1,11 +1,8 @@
-// color_as_analogous Tests
-
-
-// [[file:../../Notebook.org::*color_as_analogous Tests][color_as_analogous Tests:1]]
+// [[file:../../../Notebook.org::*analogous Tests][analogous Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { color_as_analogous } from "../color.js";
+import { analogous } from "../color.js";
 
-describe("color_as_analogous(color)", () => {
+describe("analogous(color)", () => {
   const samples = [
     ["red", ["#ff0000", "#de5f00", "#7b9900"]],
     ["orange", ["#ffa500", "#b7c826", "#23dc96"]],
@@ -18,15 +15,15 @@ describe("color_as_analogous(color)", () => {
   ];
 
   it("should reject invalid colors", () => {
-    expect(() => color_as_analogous("invalid")).toThrow();
+    expect(() => analogous("invalid")).toThrow();
   });
 
   it("should correctly emit analogous schemes from samples", () => {
     samples.forEach(([input, output]) => {
-      expect(color_as_analogous(input)).toEqual(output);
+      expect(analogous(input)).toEqual(output);
     });
   });
 });
 
 run();
-// color_as_analogous Tests:1 ends here
+// analogous Tests:1 ends here
