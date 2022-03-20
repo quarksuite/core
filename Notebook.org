@@ -45,10 +45,10 @@
         - [[#mix-examples][mix Examples]]
         - [[#mix-implementation][mix Implementation]]
         - [[#mix-tests][mix Tests]]
-      - [[#harmonize][harmonize]]
-        - [[#harmonize-examples][harmonize Examples]]
-        - [[#harmonize-implementation][harmonize Implementation]]
-        - [[#harmonize-tests][harmonize Tests]]
+      - [[#harmony][harmony]]
+        - [[#harmony-examples][harmony Examples]]
+        - [[#harmony-implementation][harmony Implementation]]
+        - [[#harmony-tests][harmony Tests]]
       - [[#vision][vision]]
         - [[#vision-examples][vision Examples]]
         - [[#vision-implementation][vision Implementation]]
@@ -1038,40 +1038,40 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (261m
 
 #+end_src
 
-**** harmonize
+**** harmony
 
 An action for creating conventional color harmonies from any valid CSS =color=. This action will generate a harmony
-based on its =type= and you can create =accented= versions that include the complement as well.
+based on its =configuration= and you can create =accented= versions that include the complement as well.
 
-+ =harmonize(settings, color) => string[]=
++ =harmony(settings, color) => string[]=
   - =settings: {}=: color harmony settings
-    * =settings.type = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" | "clash" | "double" |
-      "tetradic" | "square"=: the type of color harmony to create
-    * =settings.accented = false: boolean=: do you want to use accented harmonies (where applicable)?
-  - =color: string=: the color to harmonize
+    * =settings.configuration = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" |
+      "clash" | "double" | "tetradic" | "square"=: the color harmony configuration
+    * =settings.accented = false: boolean=: do you want to use the accented form (where applicable)?
+  - =color: string=: the color to harmony
 
-***** harmonize Examples
+***** harmony Examples
 
-***** harmonize Implementation
+***** harmony Implementation
 
 #+BEGIN_SRC js
-export function harmonize(settings, color) {
+export function harmony(settings, color) {
   // Set defaults
-  const { type = "complementary", accented = false } = settings;
+  const { configuration = "complementary", accented = false } = settings;
 
-  return colorHarmonies({ type, accented }, color);
+  return colorHarmonies({ type: configuration, accented }, color);
 }
 #+END_SRC
 
-***** harmonize Tests
+***** harmony Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/harmonize_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/harmony_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { harmonize } from "../../color.js";
+import { harmony } from "../../color.js";
 
-describe("harmonize(settings, color)", () => {
+describe("harmony(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => harmonize({}, "invalid")).toThrow();
+    expect(() => harmony({}, "invalid")).toThrow();
   });
 
   const harmonies = {
@@ -1167,11 +1167,11 @@ describe("harmonize(settings, color)", () => {
     ],
   };
 
-  Object.entries(harmonies).forEach(([type, samples]) => {
-    describe(`type = '${type}'`, () => {
-      it(`should correctly generate a ${type} color harmony from samples`, () => {
+  Object.entries(harmonies).forEach(([configuration, samples]) => {
+    describe(`settings.configuration = '${configuration}'`, () => {
+      it(`should correctly generate a ${configuration} color harmony from samples`, () => {
         samples.forEach(([input, output]) => {
-          expect(harmonize({ type }, input)).toEqual(output);
+          expect(harmony({ configuration }, input)).toEqual(output);
         });
       });
     });
@@ -1220,11 +1220,11 @@ describe("harmonize(settings, color)", () => {
     ],
   };
 
-  Object.entries(harmoniesAccented).forEach(([type, samples]) => {
-    describe(`type = '${type}'`, () => {
-      it(`should correctly generate an accented ${type} color harmony from samples`, () => {
+  Object.entries(harmoniesAccented).forEach(([configuration, samples]) => {
+    describe(`settings.configuration = '${configuration}'`, () => {
+      it(`should correctly generate an accented ${configuration} color harmony from samples`, () => {
         samples.forEach(([input, output]) => {
-          expect(harmonize({ type, accented: true }, input)).toEqual(output);
+          expect(harmony({ configuration, accented: true }, input)).toEqual(output);
         });
       });
     });
@@ -1234,18 +1234,23 @@ describe("harmonize(settings, color)", () => {
 run();
 #+END_SRC
 
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color/harmony_test.js
+#+END_SRC
+
 **** vision
 
-A perception checking color action that simulates the influence of color vision deficiency (or colorblindness) on a =color=.
+A perception checking color action that simulates the influence of color vision deficiency (or colorblindness) on a
+=color=.
 
-The available =methods= are =brettel= and =vienot= and you can set the =severity= when simulating an anomalous trichromacy
-=type= (=protanomaly=, =deuteranonmaly=, =tritanomaly=).
+The available =methods= are =brettel= and =vienot= and you can set the =severity= when simulating an anomalous
+trichromacy =type= (=protanomaly=, =deuteranonmaly=, =tritanomaly=).
 
 In addition, severity is /deactivated/ when =type= simulates dichromacy (=protanopia=, =deuteranopia=, =tritanopia=) or
 =achromatopsia=.
 
-If =steps= is >0 this activates an interpolated simulation sequence. This is
-useful for observing multiple simulation conditions at once.
+If =steps= is >0 this activates an interpolated simulation sequence. This is useful for observing multiple simulation
+conditions at once.
 
 + =vision(settings, color) => string | string[]=
   - =settings: {}=: color vision simulation settings
@@ -1519,7 +1524,6 @@ test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (388
 
 #+end_src
 
-
 **** contrast
 
 A perception checking color action that simulates the influence of contrast sensitivity on a =color=.
@@ -1527,8 +1531,8 @@ A perception checking color action that simulates the influence of contrast sens
 You can set a contrast =factor= as a percentage (with ~0~ translating to pure black, ~50~ to pure gray, and ~100~ to
 pure white) as well as the =severity=.
 
-If =steps= is >0 this activates an interpolated simulation sequence. This is
-useful for observing multiple simulation conditions at once.
+If =steps= is >0 this activates an interpolated simulation sequence. This is useful for observing multiple simulation
+conditions at once.
 
 + =contrast(settings, color)=
   - =settings: {}=: contrast sensitivity settings
@@ -1650,8 +1654,8 @@ A perception checking color action that simulates the influence of an illuminant
 
 You can set the temperature (=K=) of your target light source as well as the =intensity= of its effect.
 
-If =steps= is >0 this activates an interpolated simulation sequence. This is
-useful for observing multiple simulation conditions at once.
+If =steps= is >0 this activates an interpolated simulation sequence. This is useful for observing multiple simulation
+conditions at once.
 
 + =illuminant(settings, color)=
   - =settings: {}= illuminant settings

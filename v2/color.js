@@ -48,14 +48,14 @@ export function mix(settings, color) {
 }
 // mix Implementation:1 ends here
 
-// [[file:../Notebook.org::*harmonize Implementation][harmonize Implementation:1]]
-export function harmonize(settings, color) {
+// [[file:../Notebook.org::*harmony Implementation][harmony Implementation:1]]
+export function harmony(settings, color) {
   // Set defaults
-  const { type = "complementary", accented = false } = settings;
+  const { configuration = "complementary", accented = false } = settings;
 
-  return colorHarmonies({ type, accented }, color);
+  return colorHarmonies({ type: configuration, accented }, color);
 }
-// harmonize Implementation:1 ends here
+// harmony Implementation:1 ends here
 
 // [[file:../Notebook.org::*vision Implementation][vision Implementation:1]]
 export function vision(settings, color) {

@@ -1,10 +1,10 @@
-// [[file:../../../Notebook.org::*harmonize Tests][harmonize Tests:1]]
+// [[file:../../../Notebook.org::*harmony Tests][harmony Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { harmonize } from "../../color.js";
+import { harmony } from "../../color.js";
 
-describe("harmonize(settings, color)", () => {
+describe("harmony(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => harmonize({}, "invalid")).toThrow();
+    expect(() => harmony({}, "invalid")).toThrow();
   });
 
   const harmonies = {
@@ -100,11 +100,11 @@ describe("harmonize(settings, color)", () => {
     ],
   };
 
-  Object.entries(harmonies).forEach(([type, samples]) => {
-    describe(`type = '${type}'`, () => {
-      it(`should correctly generate a ${type} color harmony from samples`, () => {
+  Object.entries(harmonies).forEach(([configuration, samples]) => {
+    describe(`settings.configuration = '${configuration}'`, () => {
+      it(`should correctly generate a ${configuration} color harmony from samples`, () => {
         samples.forEach(([input, output]) => {
-          expect(harmonize({ type }, input)).toEqual(output);
+          expect(harmony({ configuration }, input)).toEqual(output);
         });
       });
     });
@@ -153,11 +153,11 @@ describe("harmonize(settings, color)", () => {
     ],
   };
 
-  Object.entries(harmoniesAccented).forEach(([type, samples]) => {
-    describe(`type = '${type}'`, () => {
-      it(`should correctly generate an accented ${type} color harmony from samples`, () => {
+  Object.entries(harmoniesAccented).forEach(([configuration, samples]) => {
+    describe(`settings.configuration = '${configuration}'`, () => {
+      it(`should correctly generate an accented ${configuration} color harmony from samples`, () => {
         samples.forEach(([input, output]) => {
-          expect(harmonize({ type, accented: true }, input)).toEqual(output);
+          expect(harmony({ configuration, accented: true }, input)).toEqual(output);
         });
       });
     });
@@ -165,4 +165,4 @@ describe("harmonize(settings, color)", () => {
 });
 
 run();
-// harmonize Tests:1 ends here
+// harmony Tests:1 ends here
