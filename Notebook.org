@@ -32,6 +32,10 @@
         - [[#propagate-examples][propagate Examples]]
         - [[#propagate-implementation][propagate Implementation]]
         - [[#propagate-tests][propagate Tests]]
+      - [[#delegate][delegate]]
+        - [[#delegate-examples][delegate Examples]]
+        - [[#delegate-implementation][delegate Implementation]]
+        - [[#delegate-tests][delegate Tests]]
     - [[#color][Color]]
       - [[#convert][convert]]
         - [[#convert-examples][convert Examples]]
@@ -243,7 +247,7 @@ Example:
 A functional utility that combines emitters into a process.
 
 + =process(...emitters) => (x)=
-  + =emitters: Array<(x)>=: sequence of emitters to combine
+  - =emitters: Array<(x)>=: sequence of emitters to combine
 
 ***** process Examples
 
@@ -262,8 +266,8 @@ export function process(...emitters) {
 A functional utility that accepts an action and its modifiers and converts it to an emitter.
 
 + =preset(action, y) => (x)=
-  + =action: (y, x) => unknown=: the action to transform
-  + =y: unknown=: the action's associated modifiers
+  - =action: (y, x) => unknown=: the action to transform
+  - =y: unknown=: the action's associated modifiers
 
 ***** preset Examples
 
@@ -302,8 +306,8 @@ export function pipeline(x, ...processes) {
 A functional utility that allows an =emitter= to propagate over a collection of =xs=.
 
 + =propagate(emitter, xs) => unknown=
-  + =emitter: (x) => unknown=: the emitter to use
-  + =xs: unknown[]=: the data collection to map over
+  - =emitter: (x) => unknown=: the emitter to use
+  - =xs: unknown[]=: the data collection to map over
 
 ***** propagate Examples
 
@@ -316,6 +320,31 @@ export function propagate(emitter, xs) {
 #+END_SRC
 
 ***** propagate Tests
+
+**** delegate
+
+A functional utility that maps a collection of =emitters= to a collection of =xs= inputs.
+
+As a rule, only delegations that match to an input will return output. This means you can /assign/ your delegations
+directly to the inputs in =xs= you actually want to transform. Any unmatched inputs will simply be left out.
+
++ =delegate(emitters, xs) => unknown[]=
+  - =emitters: Array<(x)>=: the collection of emitters to assign
+  - =xs: unknown[]=: the data collection of delegation targets
+
+***** delegate Examples
+
+***** delegate Implementation
+
+#+BEGIN_SRC js
+export function delegate(emitters, xs) {
+  return emitters
+    .map((f, pos) => (xs[pos] ? f(xs[pos]) : undefined))
+    .filter((result) => result !== undefined);
+}
+#+END_SRC
+
+***** delegate Tests
 
 *** Color
 :PROPERTIES:

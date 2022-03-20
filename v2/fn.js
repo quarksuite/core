@@ -22,6 +22,14 @@ export function propagate(emitter, xs) {
 }
 // propagate Implementation:1 ends here
 
+// [[file:../Notebook.org::*delegate Implementation][delegate Implementation:1]]
+export function delegate(emitters, xs) {
+  return emitters
+    .map((f, pos) => (xs[pos] ? f(xs[pos]) : undefined))
+    .filter((result) => result !== undefined);
+}
+// delegate Implementation:1 ends here
+
 // [[file:../Notebook.org::*Composition Internals][Composition Internals:1]]
 function compose(...fns) {
   return (x) => fns.reduce((g, f) => f(g), x);
