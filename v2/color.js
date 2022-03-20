@@ -153,18 +153,18 @@ export function check(settings, color) {
 }
 // check Implementation:1 ends here
 
-// [[file:../Notebook.org::*create Implementation][create Implementation:1]]
-export function create(settings, color) {
-  // Set default type and settings and exclude interface states until requested
+// [[file:../Notebook.org::*palette Implementation][palette Implementation:1]]
+export function palette(settings, color) {
+  // Set default configuration and settings and exclude interface states until requested
   const {
-    type = "material",
+    configuration = "material",
     contrast = 100,
     accented = false,
     stated = false,
   } = settings;
 
-  // Generate from material-esque or artistic configuration depending on type
-  if (type === "artistic") {
+  // Generate from material-esque or artistic configuration depending on configuration
+  if (configuration === "artistic") {
     const { tints = 3, tones = 3, shades = 3 } = settings;
 
     return artisticConfiguration(
@@ -175,10 +175,10 @@ export function create(settings, color) {
 
   return materialConfiguration({ contrast, accented, stated }, color);
 }
-// create Implementation:1 ends here
+// palette Implementation:1 ends here
 
-// [[file:../Notebook.org::*contrast Implementation][contrast Implementation:1]]
-export function contrast(settings, palette) {
+// [[file:../Notebook.org::*accessibility Implementation][accessibility Implementation:1]]
+export function accessibility(settings, palette) {
   // Set action defaults
   const {
     mode = "standard",
@@ -196,7 +196,7 @@ export function contrast(settings, palette) {
 
   return paletteWcagContrast({ rating, large, dark }, palette);
 }
-// contrast Implementation:1 ends here
+// accessibility Implementation:1 ends here
 
 // [[file:../Notebook.org::*tokens Implementation][tokens Implementation:1]]
 export function tokens(palette) {

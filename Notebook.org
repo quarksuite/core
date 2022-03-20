@@ -53,21 +53,21 @@
         - [[#check-examples][check Examples]]
         - [[#check-implementation][check Implementation]]
         - [[#check-tests][check Tests]]
-      - [[#create][create]]
-        - [[#create-examples][create Examples]]
-        - [[#create-implementation][create Implementation]]
-        - [[#create-tests][create Tests]]
-      - [[#contrast][contrast]]
-        - [[#contrast-examples][contrast Examples]]
-        - [[#contrast-implementation][contrast Implementation]]
-        - [[#contrast-tests][contrast Tests]]
+      - [[#palette][palette]]
+        - [[#palette-examples][palette Examples]]
+        - [[#palette-implementation][palette Implementation]]
+        - [[#palette-tests][palette Tests]]
+      - [[#accessibility][accessibility]]
+        - [[#accessibility-examples][accessibility Examples]]
+        - [[#accessibility-implementation][accessibility Implementation]]
+        - [[#accessibility-tests][accessibility Tests]]
       - [[#tokens][tokens]]
         - [[#tokens-examples][tokens Examples]]
         - [[#tokens-implementation][tokens Implementation]]
         - [[#tokens-tests][tokens Tests]]
       - [[#element][element]]
     - [[#modular-scale][Modular Scale]]
-      - [[#create-1][create]]
+      - [[#create][create]]
       - [[#modify][modify]]
       - [[#chunk][chunk]]
       - [[#format][format]]
@@ -1659,39 +1659,39 @@ test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (595
 
 #+end_src
 
-**** create
+**** palette
 
-An action that accepts a =color= and creates a palette based on the given =type=.
+An action that accepts a =color= and creates a palette based on the given =configuration=.
 
-The defined types are =material= and =artistic=. They have their own settings.
+The defined configurations are =material= and =artistic=. They have their own settings.
 
-+ =create(settings, color) => string[][]=
++ =palette(settings, color) => string[][]=
   - =settings: {}=: palette creation settings
-    * =settings.type = "material": "material" | "artistic"=: the palette configuration type (exposes different settings)
+    * =settings.configuration = "material": "material" | "artistic"=: the palette configuration configuration (exposes different settings)
     * =settings.accented = false: boolean=: include accented variants? (active with =material=)
     * =settings.tints = 3: number=: total number of tints to generate (active with =artistic=)
     * =settings.tones = 3: number=: total number of tones to generate (active with =artistic=)
     * =settings.shades = 3: number=: total number of shades to generate (active with =artistic=)
-    * =settings.contrast = 100: number=: overall palette contrast (active with both types)
-    * =settings.stated = false: boolean=: include interface states? (active with both types)
+    * =settings.contrast = 100: number=: overall palette contrast (active with both configurations)
+    * =settings.stated = false: boolean=: include interface states? (active with both configurations)
   - =color: string=: any valid CSS color
 
-***** create Examples
+***** palette Examples
 
-***** create Implementation
+***** palette Implementation
 
 #+BEGIN_SRC js
-export function create(settings, color) {
-  // Set default type and settings and exclude interface states until requested
+export function palette(settings, color) {
+  // Set default configuration and settings and exclude interface states until requested
   const {
-    type = "material",
+    configuration = "material",
     contrast = 100,
     accented = false,
     stated = false,
   } = settings;
 
-  // Generate from material-esque or artistic configuration depending on type
-  if (type === "artistic") {
+  // Generate from material-esque or artistic configuration depending on configuration
+  if (configuration === "artistic") {
     const { tints = 3, tones = 3, shades = 3 } = settings;
 
     return artisticConfiguration(
@@ -1704,22 +1704,22 @@ export function create(settings, color) {
 }
 #+END_SRC
 
-***** create Tests
+***** palette Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/create_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/palette_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { create } from "../../color.js";
+import { palette } from "../../color.js";
 
-describe("create(settings, color)", () => {
+describe("palette(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => create({}, "invalid")).toThrow();
+    expect(() => palette({}, "invalid")).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
-  describe("settings.type = 'material'", () => {
+  describe("settings.configuration = 'material'", () => {
     it("should activate settings.accented", () => {
-      expect(create({ accented: true }, red)).toEqual([
+      expect(palette({ accented: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -1738,7 +1738,7 @@ describe("create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(create({ accented: true }, green)).toEqual([
+      expect(palette({ accented: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -1757,7 +1757,7 @@ describe("create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(create({ accented: true }, blue)).toEqual([
+      expect(palette({ accented: true }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -1779,9 +1779,9 @@ describe("create(settings, color)", () => {
     });
   });
 
-  describe("settings.type = 'artistic'", () => {
+  describe("settings.configuration = 'artistic'", () => {
     it("should activate settings.tints", () => {
-      expect(create({ type: "artistic", tints: 6 }, red)).toEqual([
+      expect(palette({ configuration: "artistic", tints: 6 }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#e64d59", "#ef7175", "#f69292", "#fbb0af", "#ffcecc", "#ffebeb"],
@@ -1790,7 +1790,7 @@ describe("create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(create({ type: "artistic", tints: 0 }, red)).toEqual([
+      expect(palette({ configuration: "artistic", tints: 0 }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [],
@@ -1801,7 +1801,7 @@ describe("create(settings, color)", () => {
       ]);
     });
     it("should activate settings.tones", () => {
-      expect(create({ type: "artistic", tones: 6 }, green)).toEqual([
+      expect(palette({ configuration: "artistic", tones: 6 }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#abff7e", "#d1ffba", "#f4ffee"],
@@ -1810,7 +1810,7 @@ describe("create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(create({ type: "artistic", tones: 0 }, green)).toEqual([
+      expect(palette({ configuration: "artistic", tones: 0 }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#abff7e", "#d1ffba", "#f4ffee"],
@@ -1821,7 +1821,7 @@ describe("create(settings, color)", () => {
       ]);
     });
     it("should activate settings.shades", () => {
-      expect(create({ type: "artistic", shades: 6 }, blue)).toEqual([
+      expect(palette({ configuration: "artistic", shades: 6 }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -1830,7 +1830,7 @@ describe("create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(create({ type: "artistic", shades: 0 }, blue)).toEqual([
+      expect(palette({ configuration: "artistic", shades: 0 }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -1843,8 +1843,8 @@ describe("create(settings, color)", () => {
   });
 
   describe("settings.contrast", () => {
-    it("should be active with either type", () => {
-      expect(create({ contrast: 90 }, red)).toEqual([
+    it("should be active with either configuration", () => {
+      expect(palette({ contrast: 90 }, red)).toEqual([
         ["#ffebeb", "#231616"],
         [
           [
@@ -1863,7 +1863,7 @@ describe("create(settings, color)", () => {
         ],
         [],
       ]);
-      expect(create({ type: "artistic", contrast: 80 }, green)).toEqual(
+      expect(palette({ configuration: "artistic", contrast: 80 }, green)).toEqual(
         [
           ["#e8ffdd", "#26391d"],
           [
@@ -1874,7 +1874,7 @@ describe("create(settings, color)", () => {
           [],
         ],
       );
-      expect(create({ contrast: 70 }, blue)).toEqual([
+      expect(palette({ contrast: 70 }, blue)).toEqual([
         ["#c3e0ff", "#1d344f"],
         [
           [
@@ -1897,8 +1897,8 @@ describe("create(settings, color)", () => {
   });
 
   describe("settings.stated", () => {
-    it("should be active with either type", () => {
-      expect(create({ type: "artistic", stated: true }, red)).toEqual([
+    it("should be active with either configuration", () => {
+      expect(palette({ configuration: "artistic", stated: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#ef7175", "#fbb0af", "#ffebeb"],
@@ -1907,7 +1907,7 @@ describe("create(settings, color)", () => {
         ],
         ["#e0cccc", "#4c8625", "#dc9a26", "#b62125"],
       ]);
-      expect(create({ stated: true }, green)).toEqual([
+      expect(palette({ stated: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -1926,7 +1926,7 @@ describe("create(settings, color)", () => {
         ],
         ["#d4e0cf", "#2c9622", "#d5af1f", "#b54323"],
       ]);
-      expect(create({ type: "artistic", stated: true }, blue)).toEqual([
+      expect(palette({ configuration: "artistic", stated: true }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -1943,61 +1943,61 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/create_test.js
+NO_COLOR=1 deno test v2/tests/color/palette_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  create(settings, color)
+  palette(settings, color)
   • should reject invalid colors
-    settings.type = 'material'
+    settings.configuration = 'material'
     • should activate settings.accented
-    settings.type = 'artistic'
+    settings.configuration = 'artistic'
     • should activate settings.tints
     • should activate settings.tones
     • should activate settings.shades
     settings.contrast
-    • should be active with either type
+    • should be active with either configuration
     settings.stated
-    • should be active with either type
+    • should be active with either configuration
 
-running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/create_test.js
-test create(settings, color) > should reject invalid colors ... ok (14ms)
-test create(settings, color) > settings.type = 'material' > should activate settings.accented ... ok (75ms)
-test create(settings, color) > settings.type = 'artistic' > should activate settings.tints ... ok (29ms)
-test create(settings, color) > settings.type = 'artistic' > should activate settings.tones ... ok (33ms)
-test create(settings, color) > settings.type = 'artistic' > should activate settings.shades ... ok (37ms)
-test create(settings, color) > settings.contrast > should be active with either type ... ok (59ms)
-test create(settings, color) > settings.stated > should be active with either type ... ok (72ms)
+running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/palette_test.js
+test palette(settings, color) > should reject invalid colors ... ok (24ms)
+test palette(settings, color) > settings.configuration = 'material' > should activate settings.accented ... ok (117ms)
+test palette(settings, color) > settings.configuration = 'artistic' > should activate settings.tints ... ok (46ms)
+test palette(settings, color) > settings.configuration = 'artistic' > should activate settings.tones ... ok (78ms)
+test palette(settings, color) > settings.configuration = 'artistic' > should activate settings.shades ... ok (114ms)
+test palette(settings, color) > settings.contrast > should be active with either configuration ... ok (150ms)
+test palette(settings, color) > settings.stated > should be active with either configuration ... ok (167ms)
 
-test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (391ms)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (772ms)
 
 #+end_src
 
-**** contrast
+**** accessibility
 
-An action that accepts a =palette= and filters its variants based on how much they contrast from the background
-context. The two contrast =modes= are =standard= and =custom= with their own settings.
+An action that accepts a =palette= and filters its variants based on how much they accessibility from the background
+context. The two accessibility =modes= are =standard= and =custom= with their own settings.
 
-The modes share a =dark= toggle that will check the contrast against a dark theme (through inverting the UI colors).
+The modes share a =dark= toggle that will check the accessibility against a dark theme (through inverting the UI colors).
 
-+ =contrast(settings, palette)=
-  - =settings: {}=: palette contrast settings
-    * =settings.mode = "standard": "standard" | "custom"=: set the contrast calculation mode
++ =accessibility(settings, palette)=
+  - =settings: {}=: palette accessibility settings
+    * =settings.mode = "standard": "standard" | "custom"=: set the accessibility calculation mode
     * =settings.rating = "AA": "AA" | "AAA"= : set the desired WCAG contrast rating (active with =standard=)
     * =settings.large = false: boolean=: the palette will be used with large text? (active with =standard=)
     * =settings.min = 85: number=: the minimum perceptual difference from background (active with =custom=)
     * =settings.max = undefined: number=: optionally set maximum perceptual difference from background (active with =custom=)
-    * =settings.dark = false: boolean=: will the contrast be checked for a dark theme? (active with both modes)
+    * =settings.dark = false: boolean=: will the accessibility be checked for a dark theme? (active with both modes)
   - =palette: string[][]=: the palette to use
 
-***** contrast Examples
+***** accessibility Examples
 
-***** contrast Implementation
+***** accessibility Implementation
 
 #+BEGIN_SRC js
-export function contrast(settings, palette) {
+export function accessibility(settings, palette) {
   // Set action defaults
   const {
     mode = "standard",
@@ -2017,30 +2017,30 @@ export function contrast(settings, palette) {
 }
 #+END_SRC
 
-***** contrast Tests
+***** accessibility Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/contrast_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/accessibility_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { contrast, create } from "../../color.js";
+import { accessibility, palette } from "../../color.js";
 
-describe("contrast(settings, palette)", () => {
+describe("accessibility(settings, palette)", () => {
   it("should reject invalid colors", () => {
-    expect(() => contrast({}, create({}, "invalid"))).toThrow();
+    expect(() => accessibility({}, palette({}, "invalid"))).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("settings.mode = 'standard'", () => {
     it("should work with default settings", () => {
-      expect(contrast({}, create({}, red))).toEqual([
+      expect(accessibility({}, palette({}, red))).toEqual([
         ["#ffffff", "#111111"],
         [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
         [],
       ]);
       expect(
-        contrast({}, create({ type: "artistic" }, green)),
+        accessibility({}, palette({ configuration: "artistic" }, green)),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625", "#1c2418"]], []]);
-      expect(contrast({}, create({}, blue))).toEqual([
+      expect(accessibility({}, palette({}, blue))).toEqual([
         ["#ffffff", "#111111"],
         [["#2371c3", "#22538a", "#1d3755", "#161c25"], []],
         [],
@@ -2049,10 +2049,10 @@ describe("contrast(settings, palette)", () => {
 
     it("should activate settings.rating", () => {
       expect(
-        contrast(
+        accessibility(
           { rating: "AAA" },
-          create(
-            { type: "artistic", tints: 15, tones: 8, shades: 15 },
+          palette(
+            { configuration: "artistic", tints: 15, tones: 8, shades: 15 },
             red,
           ),
         ),
@@ -2078,14 +2078,16 @@ describe("contrast(settings, palette)", () => {
         ],
         [],
       ]);
+      expect(accessibility({ rating: "AA" }, palette({}, green))).toEqual([
+        ["#ffffff", "#111111"],
+        [["#345422", "#1c2418"], []],
+        [],
+      ]);
       expect(
-        contrast({ rating: "AA" }, create({}, green)),
-      ).toEqual([["#ffffff", "#111111"], [["#345422", "#1c2418"], []], []]);
-      expect(
-        contrast(
+        accessibility(
           { rating: "AAA" },
-          create(
-            { type: "artistic", tints: 16, tones: 8, shades: 8 },
+          palette(
+            { configuration: "artistic", tints: 16, tones: 8, shades: 8 },
             blue,
           ),
         ),
@@ -2097,26 +2099,20 @@ describe("contrast(settings, palette)", () => {
     });
     it("should activate settings.large", () => {
       expect(
-        contrast(
-          { large: true },
-          create({ contrast: 90 }, red),
-        ),
+        accessibility({ large: true }, palette({ contrast: 90 }, red)),
       ).toEqual([
         ["#ffebeb", "#231616"],
         [["#e54956", "#af1f34", "#84222b", "#5b1f23", "#34191a"], []],
         [],
       ]);
       expect(
-        contrast(
+        accessibility(
           { large: true },
-          create({ type: "artistic", contrast: 85 }, green),
+          palette({ configuration: "artistic", contrast: 85 }, green),
         ),
       ).toEqual([["#eeffe6", "#212f1a"], [[], [], ["#467b26", "#2a411f"]], []]);
       expect(
-        contrast(
-          { large: true },
-          create({ contrast: 80 }, blue),
-        ),
+        accessibility({ large: true }, palette({ contrast: 80 }, blue)),
       ).toEqual([
         ["#d7eaff", "#192839"],
         [["#2277cf", "#235fa0", "#214874", "#1c324b"], []],
@@ -2127,44 +2123,38 @@ describe("contrast(settings, palette)", () => {
   describe("settings.mode = 'custom'", () => {
     it("should activate settings.min", () => {
       expect(
-        contrast({ mode: "custom", min: 50 }, create({}, red)),
+        accessibility({ mode: "custom", min: 50 }, palette({}, red)),
       ).toEqual([
         ["#ffffff", "#111111"],
         [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
         [],
       ]);
       expect(
-        contrast(
+        accessibility(
           { mode: "custom", min: 64 },
-          create({ type: "artistic" }, green),
+          palette({ configuration: "artistic" }, green),
         ),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#1c2418"]], []]);
       expect(
-        contrast({ mode: "custom", min: 80 }, create({}, blue)),
+        accessibility({ mode: "custom", min: 80 }, palette({}, blue)),
       ).toEqual([["#ffffff", "#111111"], [[], []], []]);
     });
     it("should activate settings.max", () => {
       expect(
-        contrast(
-          { mode: "custom", min: 50, max: 70 },
-          create({}, red),
-        ),
+        accessibility({ mode: "custom", min: 50, max: 70 }, palette({}, red)),
       ).toEqual([
         ["#ffffff", "#111111"],
         [["#aa2033", "#7a2229", "#4d1e20"], []],
         [],
       ]);
       expect(
-        contrast(
+        accessibility(
           { mode: "custom", min: 50, max: 75 },
-          create({ type: "artistic" }, green),
+          palette({ configuration: "artistic" }, green),
         ),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625"]], []]);
       expect(
-        contrast(
-          { mode: "custom", min: 50, max: 80 },
-          create({}, blue),
-        ),
+        accessibility({ mode: "custom", min: 50, max: 80 }, palette({}, blue)),
       ).toEqual([
         ["#ffffff", "#111111"],
         [["#22538a", "#1d3755", "#161c25"], []],
@@ -2173,22 +2163,22 @@ describe("contrast(settings, palette)", () => {
     });
   });
   it("settings.dark active for both modes", () => {
-    expect(contrast({ dark: true }, create({}, red))).toEqual([
+    expect(accessibility({ dark: true }, palette({}, red))).toEqual([
       ["#111111", "#ffffff"],
       [["#ffebeb", "#ffcecc", "#fbb0af", "#f69292", "#ef7175", "#e64d59"], []],
       [],
     ]);
     expect(
-      contrast(
+      accessibility(
         { mode: "custom", min: 64, dark: true },
-        create({ type: "artistic" }, green),
+        palette({ configuration: "artistic" }, green),
       ),
     ).toEqual([
       ["#111111", "#ffffff"],
       [["#abff7e", "#d1ffba", "#f4ffee"], ["#91e664"], []],
       [],
     ]);
-    expect(contrast({ dark: true }, create({}, blue))).toEqual([
+    expect(accessibility({ dark: true }, palette({}, blue))).toEqual([
       ["#111111", "#ffffff"],
       [["#ebf5ff", "#cde5ff", "#aed5ff", "#90c4ff", "#70b4ff", "#4da2ff"], []],
       [],
@@ -2200,13 +2190,13 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/contrast_test.js
+NO_COLOR=1 deno test v2/tests/color/accessibility_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  contrast(settings, palette)
+  accessibility(settings, palette)
   • should reject invalid colors
     settings.mode = 'standard'
     • should work with default settings
@@ -2217,16 +2207,16 @@ NO_COLOR=1 deno test v2/tests/color/contrast_test.js
     • should activate settings.max
   • settings.dark active for both modes
 
-running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/contrast_test.js
-test contrast(settings, palette) > should reject invalid colors ... ok (15ms)
-test contrast(settings, palette) > settings.mode = 'standard' > should work with default settings ... ok (84ms)
-test contrast(settings, palette) > settings.mode = 'standard' > should activate settings.rating ... ok (198ms)
-test contrast(settings, palette) > settings.mode = 'standard' > should activate settings.large ... ok (78ms)
-test contrast(settings, palette) > settings.mode = 'custom' > should activate settings.min ... ok (80ms)
-test contrast(settings, palette) > settings.mode = 'custom' > should activate settings.max ... ok (75ms)
-test contrast(settings, palette) > settings.dark active for both modes ... ok (73ms)
+running 7 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/accessibility_test.js
+test accessibility(settings, palette) > should reject invalid colors ... ok (22ms)
+test accessibility(settings, palette) > settings.mode = 'standard' > should work with default settings ... ok (150ms)
+test accessibility(settings, palette) > settings.mode = 'standard' > should activate settings.rating ... ok (497ms)
+test accessibility(settings, palette) > settings.mode = 'standard' > should activate settings.large ... ok (195ms)
+test accessibility(settings, palette) > settings.mode = 'custom' > should activate settings.min ... ok (190ms)
+test accessibility(settings, palette) > settings.mode = 'custom' > should activate settings.max ... ok (209ms)
+test accessibility(settings, palette) > settings.dark active for both modes ... ok (194ms)
 
-test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (654ms)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (1s)
 
 #+end_src
 
@@ -2251,18 +2241,18 @@ export function tokens(palette) {
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/tokens_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { tokens, create } from "../../color.js";
+import { tokens, palette } from "../../color.js";
 
 describe("tokens(palette)", () => {
   it("should reject an invalid color", () => {
-    expect(() => tokens(create({}, "invalid"))).toThrow();
+    expect(() => tokens(palette({}, "invalid"))).toThrow();
   });
 
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("material palette configuration", () => {
     it("should work with default settings", () => {
-      expect(tokens(create({}, red))).toEqual({
+      expect(tokens(palette({}, red))).toEqual({
         50: "#ffebeb",
         100: "#ffcecc",
         200: "#fbb0af",
@@ -2276,7 +2266,7 @@ describe("tokens(palette)", () => {
         bg: "#ffffff",
         fg: "#111111",
       });
-      expect(tokens(create({}, green))).toEqual({
+      expect(tokens(palette({}, green))).toEqual({
         50: "#f4ffee",
         100: "#e2ffd5",
         200: "#d1ffba",
@@ -2290,7 +2280,7 @@ describe("tokens(palette)", () => {
         bg: "#ffffff",
         fg: "#111111",
       });
-      expect(tokens(create({}, blue))).toEqual({
+      expect(tokens(palette({}, blue))).toEqual({
         50: "#ebf5ff",
         100: "#cde5ff",
         200: "#aed5ff",
@@ -2307,7 +2297,7 @@ describe("tokens(palette)", () => {
     });
     it("should append accents when toggled", () => {
       expect(
-        tokens(create({ accented: true }, red)),
+        tokens(palette({ accented: true }, red)),
       ).toEqual({
         50: "#ffebeb",
         100: "#ffcecc",
@@ -2327,7 +2317,7 @@ describe("tokens(palette)", () => {
         a400: "#a40000",
       });
       expect(
-        tokens(create({ accented: true }, green)),
+        tokens(palette({ accented: true }, green)),
       ).toEqual({
         50: "#f4ffee",
         100: "#e2ffd5",
@@ -2347,7 +2337,7 @@ describe("tokens(palette)", () => {
         a400: "#00c100",
       });
       expect(
-        tokens(create({ accented: true }, blue)),
+        tokens(palette({ accented: true }, blue)),
       ).toEqual({
         50: "#ebf5ff",
         100: "#cde5ff",
@@ -2371,7 +2361,7 @@ describe("tokens(palette)", () => {
   describe("artistic palette configuration", () => {
     it("should work with default settings", () => {
       expect(
-        tokens(create({ type: "artistic" }, red)),
+        tokens(palette({ configuration: "artistic" }, red)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -2380,7 +2370,7 @@ describe("tokens(palette)", () => {
         dark: { 100: "#9a2130", 200: "#5c2023", 300: "#231616" },
       });
       expect(
-        tokens(create({ type: "artistic" }, green)),
+        tokens(palette({ configuration: "artistic" }, green)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -2389,7 +2379,7 @@ describe("tokens(palette)", () => {
         dark: { 100: "#5daf25", 200: "#3c6625", 300: "#1c2418" },
       });
       expect(
-        tokens(create({ type: "artistic" }, blue)),
+        tokens(palette({ configuration: "artistic" }, blue)),
       ).toEqual({
         bg: "#ffffff",
         fg: "#111111",
@@ -2401,8 +2391,8 @@ describe("tokens(palette)", () => {
     it("should add and remove variants based on tints/tones/shades settings", () => {
       expect(
         tokens(
-          create(
-            { type: "artistic", tints: 6, tones: 0, shades: 3 },
+          palette(
+            { configuration: "artistic", tints: 6, tones: 0, shades: 3 },
             red,
           ),
         ),
@@ -2421,8 +2411,8 @@ describe("tokens(palette)", () => {
       });
       expect(
         tokens(
-          create(
-            { type: "artistic", tints: 4, tones: 2, shades: 3 },
+          palette(
+            { configuration: "artistic", tints: 4, tones: 2, shades: 3 },
             green,
           ),
         ),
@@ -2440,8 +2430,8 @@ describe("tokens(palette)", () => {
       });
       expect(
         tokens(
-          create(
-            { type: "artistic", tints: 0, tones: 0, shades: 9 },
+          palette(
+            { configuration: "artistic", tints: 0, tones: 0, shades: 9 },
             blue,
           ),
         ),
@@ -2463,8 +2453,8 @@ describe("tokens(palette)", () => {
     });
   });
 
-  it("should respond to contrast setting for either type", () => {
-    expect(tokens(create({ contrast: 95 }, red))).toEqual({
+  it("should respond to contrast setting for either configuration", () => {
+    expect(tokens(palette({ contrast: 95 }, red))).toEqual({
       50: "#ffe2e2",
       100: "#fec6c5",
       200: "#fbaaa9",
@@ -2480,7 +2470,7 @@ describe("tokens(palette)", () => {
     });
     expect(
       tokens(
-        create({ type: "artistic", contrast: 85 }, green),
+        palette({ configuration: "artistic", contrast: 85 }, green),
       ),
     ).toEqual({
       bg: "#eeffe6",
@@ -2489,7 +2479,7 @@ describe("tokens(palette)", () => {
       muted: { 100: "#8fea5c", 200: "#9bd57f", 300: "#a4bf98" },
       dark: { 100: "#62bb23", 200: "#467b26", 300: "#2a411f" },
     });
-    expect(tokens(create({ contrast: 95 }, blue))).toEqual({
+    expect(tokens(palette({ contrast: 95 }, blue))).toEqual({
       50: "#e2f0ff",
       100: "#c5e1ff",
       200: "#a8d2ff",
@@ -2505,8 +2495,8 @@ describe("tokens(palette)", () => {
     });
   });
 
-  it("should append interface states when defined for either type", () => {
-    expect(tokens(create({ stated: true }, red))).toEqual({
+  it("should append interface states when defined for either configuration", () => {
+    expect(tokens(palette({ stated: true }, red))).toEqual({
       50: "#ffebeb",
       100: "#ffcecc",
       200: "#fbb0af",
@@ -2528,7 +2518,7 @@ describe("tokens(palette)", () => {
     });
     expect(
       tokens(
-        create({ type: "artistic", stated: true }, green),
+        palette({ configuration: "artistic", stated: true }, green),
       ),
     ).toEqual({
       bg: "#ffffff",
@@ -2543,7 +2533,7 @@ describe("tokens(palette)", () => {
         error: "#b54323",
       },
     });
-    expect(tokens(create({ stated: true }, blue))).toEqual({
+    expect(tokens(palette({ stated: true }, blue))).toEqual({
       50: "#ebf5ff",
       100: "#cde5ff",
       200: "#aed5ff",
