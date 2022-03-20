@@ -1,6 +1,6 @@
 // [[file:../../../Notebook.org::*tokens Tests][tokens Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { tokens, create } from "../color.js";
+import { tokens, create } from "../../color.js";
 
 describe("tokens(palette)", () => {
   it("should reject an invalid color", () => {

@@ -1,6 +1,6 @@
 // [[file:../../../Notebook.org::*contrast Tests][contrast Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { contrast, create } from "../color.js";
+import { contrast, create } from "../../color.js";
 
 describe("contrast(settings, palette)", () => {
   it("should reject invalid colors", () => {

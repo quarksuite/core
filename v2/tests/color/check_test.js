@@ -1,6 +1,6 @@
 // [[file:../../../Notebook.org::*check Tests][check Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { check } from "../color.js";
+import { check } from "../../color.js";
 
 describe("check(settings, color)", () => {
   it("should reject invalid colors", () => {

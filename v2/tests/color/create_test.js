@@ -1,6 +1,6 @@
 // [[file:../../../Notebook.org::*create Tests][create Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { create } from "../color.js";
+import { create } from "../../color.js";
 
 describe("create(settings, color)", () => {
   it("should reject invalid colors", () => {

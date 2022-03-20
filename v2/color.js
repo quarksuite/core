@@ -1,3 +1,17 @@
+// [[file:../Notebook.org::*convert Implementation][convert Implementation:1]]
+export function convert(to, color) {
+  if (to === "lab") {
+    return serialize(_convert(color, "cielab"));
+  }
+
+  if (to === "lch") {
+    return serialize(_convert(color, "cielch"));
+  }
+
+  return serialize(_convert(color, to));
+}
+// convert Implementation:1 ends here
+
 // [[file:../Notebook.org::*adjust Implementation][adjust Implementation:1]]
 export function adjust(settings, color) {
   // Do nothing by default
@@ -33,6 +47,15 @@ export function mix(settings, color) {
   return colorMix({ target, strength }, color);
 }
 // mix Implementation:1 ends here
+
+// [[file:../Notebook.org::*harmonize Implementation][harmonize Implementation:1]]
+export function harmonize(settings, color) {
+  // Set defaults
+  const { type = "complementary", accented = false } = settings;
+
+  return colorHarmonies({ type, accented }, color);
+}
+// harmonize Implementation:1 ends here
 
 // [[file:../Notebook.org::*check Implementation][check Implementation:1]]
 export function check(settings, color) {
@@ -129,165 +152,6 @@ export function check(settings, color) {
   );
 }
 // check Implementation:1 ends here
-
-// [[file:../Notebook.org::*hex Implementation][hex Implementation:1]]
-export function hex(color) {
-  return serializeHex(convert(color, "hex"));
-}
-// hex Implementation:1 ends here
-
-// [[file:../Notebook.org::*rgb Implementation][rgb Implementation:1]]
-export function rgb(color) {
-  return serializeRgb(convert(color, "rgb"));
-}
-// rgb Implementation:1 ends here
-
-// [[file:../Notebook.org::*hsl Implementation][hsl Implementation:1]]
-export function hsl(color) {
-  return serializeHsl(convert(color, "hsl"));
-}
-// hsl Implementation:1 ends here
-
-// [[file:../Notebook.org::*cmyk Implementation][cmyk Implementation:1]]
-export function cmyk(color) {
-  return serializeCmyk(convert(color, "cmyk"));
-}
-// cmyk Implementation:1 ends here
-
-// [[file:../Notebook.org::*hwb Implementation][hwb Implementation:1]]
-export function hwb(color) {
-  return serializeHwb(convert(color, "hwb"));
-}
-// hwb Implementation:1 ends here
-
-// [[file:../Notebook.org::*cielab Implementation][cielab Implementation:1]]
-export function cielab(color) {
-  return serializeCielab(convert(color, "cielab"));
-}
-// cielab Implementation:1 ends here
-
-// [[file:../Notebook.org::*cielch Implementation][cielch Implementation:1]]
-export function cielch(color) {
-  return serializeCielch(convert(color, "cielch"));
-}
-// cielch Implementation:1 ends here
-
-// [[file:../Notebook.org::*oklab Implementation][oklab Implementation:1]]
-export function oklab(color) {
-  return serializeOklab(convert(color, "oklab"));
-}
-// oklab Implementation:1 ends here
-
-// [[file:../Notebook.org::*oklch Implementation][oklch Implementation:1]]
-export function oklch(color) {
-  return serializeOklch(convert(color, "oklch"));
-}
-// oklch Implementation:1 ends here
-
-// [[file:../Notebook.org::*dyad Implementation][dyad Implementation:1]]
-export function dyad(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 90 }, color),
-  ];
-}
-// dyad Implementation:1 ends here
-
-// [[file:../Notebook.org::*complementary Implementation][complementary Implementation:1]]
-export function complementary(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 180 }, color),
-  ];
-}
-// complementary Implementation:1 ends here
-
-// [[file:../Notebook.org::*analogous Implementation][analogous Implementation:1]]
-export function analogous(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 45 }, color),
-    colorAdjustment({ hue: 45 * 2 }, color),
-  ];
-}
-// analogous Implementation:1 ends here
-
-// [[file:../Notebook.org::*split Implementation][split Implementation:1]]
-export function split(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 180 - 30 }, color),
-    colorAdjustment({ hue: 180 + 30 }, color),
-  ];
-}
-// split Implementation:1 ends here
-
-// [[file:../Notebook.org::*clash Implementation][clash Implementation:1]]
-export function clash(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 90 }, color),
-    colorAdjustment({ hue: 90 * 3 }, color),
-  ];
-}
-// clash Implementation:1 ends here
-
-// [[file:../Notebook.org::*triad Implementation][triad Implementation:1]]
-export function triad(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 120 }, color),
-    colorAdjustment({ hue: 120 * 2 }, color),
-  ];
-}
-// triad Implementation:1 ends here
-
-// [[file:../Notebook.org::*tetrad Implementation][tetrad Implementation:1]]
-export function tetrad(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 45 }, color),
-    colorAdjustment({ hue: 180 }, color),
-    colorAdjustment({ hue: 180 + 45 }, color),
-  ];
-}
-// tetrad Implementation:1 ends here
-
-// [[file:../Notebook.org::*square Implementation][square Implementation:1]]
-export function square(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 90 }, color),
-    colorAdjustment({ hue: 90 * 2 }, color),
-    colorAdjustment({ hue: 90 * 3 }, color),
-  ];
-}
-// square Implementation:1 ends here
-
-// [[file:../Notebook.org::*star Implementation][star Implementation:1]]
-export function star(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 72 }, color),
-    colorAdjustment({ hue: 72 * 2 }, color),
-    colorAdjustment({ hue: 72 * 3 }, color),
-    colorAdjustment({ hue: 72 * 4 }, color),
-  ];
-}
-// star Implementation:1 ends here
-
-// [[file:../Notebook.org::*hexagon Implementation][hexagon Implementation:1]]
-export function hexagon(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 60 }, color),
-    colorAdjustment({ hue: 60 * 2 }, color),
-    colorAdjustment({ hue: 60 * 3 }, color),
-    colorAdjustment({ hue: 60 * 4 }, color),
-    colorAdjustment({ hue: 60 * 5 }, color),
-  ];
-}
-// hexagon Implementation:1 ends here
 
 // [[file:../Notebook.org::*create Implementation][create Implementation:1]]
 export function create(settings, color) {
@@ -1364,13 +1228,13 @@ function oklabFromOklch([, oklchValues]) {
 // OKLab <-> OKLCH:1 ends here
 
 // [[file:../Notebook.org::*Color Conversion Pipeline][Color Conversion Pipeline:1]]
-function convert(color, to) {
+function _convert(color, to) {
   // Let's make the pathway explicit
   const valid = validator(color);
   const extraction = extractor(valid);
   const [format, values] = parser(extraction);
 
-  // Takes the input and converts it to RGB depending on format
+  // Takes the input and formats it to RGB depending on format
   const INPUT_TO_RGB = (input) => ({
     named: hexToRgb(input),
     hex: hexToRgb(input),
@@ -1384,7 +1248,7 @@ function convert(color, to) {
     oklch: oklabToRgb(oklabFromOklch(input)),
   });
 
-  // Takes the RGB and converts to output target
+  // Takes the RGB and formats to output target
   const RGB_TO_OUTPUT = (rgb) => ({
     hex: hexFromRgb(rgb),
     rgb: rgbOutputIdentity(rgb), // identity
@@ -1416,7 +1280,7 @@ function serializeHex([, hexResult]) {
 // Serializing RGB Hex:1 ends here
 
 // [[file:../Notebook.org::*Serializing Functional Formats][Serializing Functional Formats:1]]
-function serializeFunctionalFormat({ prefix, legacy = true }, components) {
+function serializeFunctional_Convert({ prefix, legacy = true }, components) {
   const DELIMITER = legacy ? ", " : " ";
   const ALPHA_DELIMITER = legacy ? ", " : " / ";
 
@@ -1442,7 +1306,7 @@ function serializeRgb([, rgbResult]) {
     (component) => +clamp(component, 0, 255).toFixed(3),
   );
 
-  return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
+  return serializeFunctional_Convert({ prefix: "rgb" }, [R, G, B, A]);
 }
 // Serializing RGB:1 ends here
 
@@ -1453,10 +1317,10 @@ function serializeHsl([, hslResult]) {
   // Correct the hue result
   const H = hueCorrection(+h.toFixed(3));
 
-  // convert saturation, lightness to percentages
+  // format saturation, lightness to percentages
   const [S, L] = [s, l].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
 
-  return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
+  return serializeFunctional_Convert({ prefix: "hsl" }, [H, S, L, A]);
 }
 // Serializing HSL:1 ends here
 
@@ -1464,13 +1328,13 @@ function serializeHsl([, hslResult]) {
 function serializeCmyk([, cmykResult]) {
   const [c, m, y, k, A] = cmykResult;
 
-  // Convert to percentage, cap at 0-100
+  // Format to percentage, cap at 0-100
   const [C, M, Y, K] = [c, m, y, k].map(
     (n) =>
       `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
   );
 
-  return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "device-cmyk", legacy: false }, [
     C,
     M,
     Y,
@@ -1487,10 +1351,10 @@ function serializeHwb([, hslResult]) {
   // Correct the hue result
   const H = hueCorrection(+h.toFixed(3));
 
-  // convert white, black to percentages
+  // format white, black to percentages
   const [W, BLK] = [w, blk].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
 
-  return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "hwb", legacy: false }, [
     H,
     W,
     BLK,
@@ -1509,7 +1373,7 @@ function serializeCielab([, cielabValues]) {
   // Clamp a, b at ±127
   const [a, b] = [$a, $b].map((n) => +clamp(n, -127, 127).toFixed(3));
 
-  return serializeFunctionalFormat({ prefix: "lab", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "lab", legacy: false }, [
     L,
     a,
     b,
@@ -1532,11 +1396,11 @@ function serializeCielch([, cielchValues]) {
   if (C === 0) {
     H = 0;
   } else {
-    // Otherwise, convert hue to degrees, correct hue
+    // Otherwise, format hue to degrees, correct hue
     H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
   }
 
-  return serializeFunctionalFormat({ prefix: "lch", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "lch", legacy: false }, [
     L,
     C,
     H,
@@ -1549,13 +1413,13 @@ function serializeCielch([, cielchValues]) {
 function serializeOklab([, oklabValues]) {
   const [$L, $a, $b, A] = oklabValues;
 
-  // Convert number to percentage, clamp at 0-100
+  // Format number to percentage, clamp at 0-100
   const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
 
   // Clamp a, b at ±0.5
   const [a, b] = [$a, $b].map((n) => +clamp(n, -0.5, 0.5).toFixed(5));
 
-  return serializeFunctionalFormat({ prefix: "oklab", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "oklab", legacy: false }, [
     L,
     a,
     b,
@@ -1566,7 +1430,7 @@ function serializeOklab([, oklabValues]) {
 function serializeOklch([, oklchValues]) {
   const [$L, c, h, A] = oklchValues;
 
-  // Convert lightness to percentage, clamp at 0-100
+  // Format lightness to percentage, clamp at 0-100
   const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
 
   // Clamp chroma at 0-0.5
@@ -1578,11 +1442,11 @@ function serializeOklch([, oklchValues]) {
   if (C === 0) {
     H = 0;
   } else {
-    // Otherwise, convert hue to degrees, correct hue
+    // Otherwise, format hue to degrees, correct hue
     H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
   }
 
-  return serializeFunctionalFormat({ prefix: "oklch", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "oklch", legacy: false }, [
     L,
     C,
     H,
@@ -1591,10 +1455,28 @@ function serializeOklch([, oklchValues]) {
 }
 // Serializing OKLab/OKLCH:1 ends here
 
+// [[file:../Notebook.org::*Serialization Interface][Serialization Interface:1]]
+function serialize([format, results]) {
+  const serializers = {
+    hex: serializeHex,
+    rgb: serializeRgb,
+    hsl: serializeHsl,
+    cmyk: serializeCmyk,
+    hwb: serializeHwb,
+    cielab: serializeCielab,
+    cielch: serializeCielch,
+    oklab: serializeOklab,
+    oklch: serializeOklch,
+  };
+
+  return serializers[format]([format, results]);
+}
+// Serialization Interface:1 ends here
+
 // [[file:../Notebook.org::*Color Adjustment Through OKLCH][Color Adjustment Through OKLCH:1]]
 function extractOklchValues(color) {
-  const convertedOklch = serializeOklch(convert(color, "oklch"));
-  const [, components] = extractor(["oklch", convertedOklch]);
+  const formatedOklch = serializeOklch(_convert(color, "oklch"));
+  const [, components] = extractor(["oklch", formatedOklch]);
 
   return components.map((V) => parseFloat(V));
 }
@@ -1648,23 +1530,23 @@ function colorAdjustment(
   // Serialize oklch result
   const oklch = serializeOklch(["oklch", [L, C, H, A]]);
 
-  // If input format is named, convert to hex
+  // If input format is named, format to hex
   if (format === "named") {
-    return serializeInput(convert(oklch, "hex"));
+    return serializeInput(_convert(oklch, "hex"));
   }
 
   // Otherwise use input format
-  return serializeInput(convert(oklch, format));
+  return serializeInput(_convert(oklch, format));
 }
 // Color Adjustment Through OKLCH:1 ends here
 
 // [[file:../Notebook.org::*Color Mixture Through OKLab][Color Mixture Through OKLab:1]]
 function getOklabValues(color) {
-  return convert(color, "oklab");
+  return _convert(color, "oklab");
 }
 
 function calculateMixture(color, target, strength) {
-  // convert blend target and input color to OKLab
+  // format blend target and input color to OKLab
   const [, [$L, $a, $b, $A]] = getOklabValues(color);
   const [, [$$L, $$a, $$b, $$A]] = getOklabValues(target);
 
@@ -1708,10 +1590,10 @@ function colorMix({ target, strength = 0 }, color) {
   const oklab = serializeOklab(["oklab", [L, a, b, A]]);
 
   if (format === "named") {
-    return serializeInput(convert(oklab, "hex"));
+    return serializeInput(_convert(oklab, "hex"));
   }
 
-  return serializeInput(convert(oklab, format));
+  return serializeInput(_convert(oklab, format));
 }
 // Color Mixture Through OKLab:1 ends here
 
@@ -1719,10 +1601,10 @@ function colorMix({ target, strength = 0 }, color) {
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+    extractor(["rgb", serializeRgb(_convert(color, "rgb"))]),
   );
 
-  // Convert RGB to linear RGB
+  // Format RGB to linear RGB
   const [LR, LG, LB] = rgbToLrgb([r, g, b]);
 
   // Set up the Brettel simulation matrices
@@ -1810,7 +1692,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
   const p = dotWithSepPlane >= 0 ? $a : $b;
 
   // Apply the dichromatic confusion line adjusted for severity,
-  // then convert back to sRGB
+  // then format back to sRGB
   const [R, G, B] = lrgbToRgb(
     [
       [p[0] * LR + p[1] * LG + p[2] * LB, LR],
@@ -1831,10 +1713,10 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+    extractor(["rgb", serializeRgb(_convert(color, "rgb"))]),
   );
 
-  // Convert RGB to linear RGB
+  // Format RGB to linear RGB
   const [LR, LG, LB] = rgbToLrgb([r, g, b]);
 
   // Right off the bat, if the type is "tritanope", use the Brettel method
@@ -1873,7 +1755,7 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
   const p = vienot[type];
 
   // Apply the dichromatic confusion line adjusted for severity,
-  // then convert back to sRGB
+  // then format back to sRGB
   const [R, G, B] = lrgbToRgb(
     [
       [p[0] * LR + p[1] * LG + p[2] * LB, LR],
@@ -1919,10 +1801,10 @@ function checkColorblindness(
   ]);
 
   if (format === "named") {
-    return serializeInput(convert(rgb, "hex"));
+    return serializeInput(_convert(rgb, "hex"));
   }
 
-  return serializeInput(convert(rgb, format));
+  return serializeInput(_convert(rgb, format));
 }
 // Color Vision Deficiency Interface:1 ends here
 
@@ -2075,6 +1957,67 @@ function colorInterpolation(action, settings, input) {
   ].reverse();
 }
 // Color Interpolation:1 ends here
+
+// [[file:../Notebook.org::*Color Harmonies][Color Harmonies:1]]
+function colorHarmonies({ type, accented = false }, color) {
+  const withComplement = accented ? [colorAdjustment({ hue: 180 }, color)] : [];
+
+  const harmonies = {
+    dyadic: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 30 }, color),
+      ...withComplement,
+    ],
+    complementary: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 180 }, color),
+    ],
+    analogous: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 30 }, color),
+      colorAdjustment({ hue: 30 * 2 }, color),
+      ...withComplement,
+    ],
+    split: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 180 - 30 }, color),
+      ...withComplement,
+      colorAdjustment({ hue: 180 + 30 }, color),
+    ],
+    clash: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 90 }, color),
+      colorAdjustment({ hue: 90 * 3 }, color),
+    ],
+    triadic: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 120 }, color),
+      ...withComplement,
+      colorAdjustment({ hue: 120 * 2 }, color),
+    ],
+    double: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 30 }, color),
+      colorAdjustment({ hue: 180 }, color),
+      colorAdjustment({ hue: 180 + 30 }, color),
+    ],
+    tetradic: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 45 }, color),
+      colorAdjustment({ hue: 180 }, color),
+      colorAdjustment({ hue: 180 + 45 }, color),
+    ],
+    square: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 90 }, color),
+      colorAdjustment({ hue: 90 * 2 }, color),
+      colorAdjustment({ hue: 90 * 3 }, color),
+    ],
+  };
+
+  return harmonies[type];
+}
+// Color Harmonies:1 ends here
 
 // [[file:../Notebook.org::*Material Configuration][Material Configuration:1]]
 function materialConfiguration(
@@ -2234,7 +2177,7 @@ function artisticConfiguration(
 // [[file:../Notebook.org::*WCAG Color Contrast Ratios][WCAG Color Contrast Ratios:1]]
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+    extractor(["rgb", serializeRgb(_convert(color, "rgb"))]),
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -2310,11 +2253,11 @@ function paletteWcagContrast({ rating = "AA", large, dark = false }, palette) {
 function comparePerceptualLightness(bg, fg) {
   const [, bgValues] = extractor([
     "oklch",
-    serializeOklch(convert(bg, "oklch")),
+    serializeOklch(_convert(bg, "oklch")),
   ]);
   const [, fgValues] = extractor([
     "oklch",
-    serializeOklch(convert(fg, "oklch")),
+    serializeOklch(_convert(fg, "oklch")),
   ]);
 
   const [bL] = bgValues.map((V) => parseFloat(V));

@@ -1,4 +1,4 @@
-#+TITLE: QuarkSuite (v2)
+#+TITLE: QuarkSuite (v2.0.0)
 #+PROPERTY: header-args:shell :results output code
 
 * Table of Contents :TOC@5:
@@ -33,6 +33,10 @@
         - [[#propagate-implementation][propagate Implementation]]
         - [[#propagate-tests][propagate Tests]]
     - [[#color][Color]]
+      - [[#convert][convert]]
+        - [[#convert-examples][convert Examples]]
+        - [[#convert-implementation][convert Implementation]]
+        - [[#convert-tests][convert Tests]]
       - [[#adjust][adjust]]
         - [[#adjust-examples][adjust Examples]]
         - [[#adjust-implementation][adjust Implementation]]
@@ -41,86 +45,14 @@
         - [[#mix-examples][mix Examples]]
         - [[#mix-implementation][mix Implementation]]
         - [[#mix-tests][mix Tests]]
+      - [[#harmonize][harmonize]]
+        - [[#harmonize-examples][harmonize Examples]]
+        - [[#harmonize-implementation][harmonize Implementation]]
+        - [[#harmonize-tests][harmonize Tests]]
       - [[#check][check]]
         - [[#check-examples][check Examples]]
         - [[#check-implementation][check Implementation]]
         - [[#check-tests][check Tests]]
-      - [[#hex][hex]]
-        - [[#hex-examples][hex Examples]]
-        - [[#hex-implementation][hex Implementation]]
-        - [[#hex-tests][hex Tests]]
-      - [[#rgb][rgb]]
-        - [[#rgb-examples][rgb Examples]]
-        - [[#rgb-implementation][rgb Implementation]]
-        - [[#rgb-tests][rgb Tests]]
-      - [[#hsl][hsl]]
-        - [[#hsl-examples][hsl Examples]]
-        - [[#hsl-implementation][hsl Implementation]]
-        - [[#hsl-tests][hsl Tests]]
-      - [[#cmyk][cmyk]]
-        - [[#cmyk-examples][cmyk Examples]]
-        - [[#cmyk-implementation][cmyk Implementation]]
-        - [[#cmyk-tests][cmyk Tests]]
-      - [[#hwb][hwb]]
-        - [[#hwb-examples][hwb Examples]]
-        - [[#hwb-implementation][hwb Implementation]]
-        - [[#hwb-tests][hwb Tests]]
-      - [[#cielab][cielab]]
-        - [[#cielab-examples][cielab Examples]]
-        - [[#cielab-implementation][cielab Implementation]]
-        - [[#cielab-tests][cielab Tests]]
-      - [[#cielch][cielch]]
-        - [[#cielch-examples][cielch Examples]]
-        - [[#cielch-implementation][cielch Implementation]]
-        - [[#cielch-tests][cielch Tests]]
-      - [[#oklab][oklab]]
-        - [[#oklab-examples][oklab Examples]]
-        - [[#oklab-implementation][oklab Implementation]]
-        - [[#oklab-tests][oklab Tests]]
-      - [[#oklch][oklch]]
-        - [[#oklch-examples][oklch Examples]]
-        - [[#oklch-implementation][oklch Implementation]]
-        - [[#oklch-tests][oklch Tests]]
-      - [[#dyad][dyad]]
-        - [[#dyad-examples][dyad Examples]]
-        - [[#dyad-implementation][dyad Implementation]]
-        - [[#dyad-tests][dyad Tests]]
-      - [[#complementary][complementary]]
-        - [[#complementary-examples][complementary Examples]]
-        - [[#complementary-implementation][complementary Implementation]]
-        - [[#complementary-tests][complementary Tests]]
-      - [[#analogous][analogous]]
-        - [[#analogous-examples][analogous Examples]]
-        - [[#analogous-implementation][analogous Implementation]]
-        - [[#analogous-tests][analogous Tests]]
-      - [[#split][split]]
-        - [[#split-examples][split Examples]]
-        - [[#split-implementation][split Implementation]]
-        - [[#split-tests][split Tests]]
-      - [[#clash][clash]]
-        - [[#clash-examples][clash Examples]]
-        - [[#clash-implementation][clash Implementation]]
-        - [[#clash-tests][clash Tests]]
-      - [[#triad][triad]]
-        - [[#triad-examples][triad Examples]]
-        - [[#triad-implementation][triad Implementation]]
-        - [[#triad-tests][triad Tests]]
-      - [[#tetrad][tetrad]]
-        - [[#tetrad-examples][tetrad Examples]]
-        - [[#tetrad-implementation][tetrad Implementation]]
-        - [[#tetrad-tests][tetrad Tests]]
-      - [[#square][square]]
-        - [[#square-examples][square Examples]]
-        - [[#square-implementation][square Implementation]]
-        - [[#square-tests][square Tests]]
-      - [[#star][star]]
-        - [[#star-examples][star Examples]]
-        - [[#star-implementation][star Implementation]]
-        - [[#star-tests][star Tests]]
-      - [[#hexagon][hexagon]]
-        - [[#hexagon-examples][hexagon Examples]]
-        - [[#hexagon-implementation][hexagon Implementation]]
-        - [[#hexagon-tests][hexagon Tests]]
       - [[#create][create]]
         - [[#create-examples][create Examples]]
         - [[#create-implementation][create Implementation]]
@@ -176,6 +108,7 @@
         - [[#contrast-sensitivity][Contrast Sensitivity]]
         - [[#correlated-color-temperature-cct][Correlated Color Temperature (CCT)]]
       - [[#color-interpolation][Color Interpolation]]
+      - [[#color-harmonies][Color Harmonies]]
       - [[#palette-configurations][Palette Configurations]]
         - [[#material-configuration][Material Configuration]]
         - [[#artistic-configuration][Artistic Configuration]]
@@ -190,7 +123,10 @@
 
 This document is my scratchpad/workspace as I further refine QuarkSuite. Literate programming gives me a clear space to
 think, iterate, and speculate on different approaches to my ultimate goal of a more enjoyable, flexible, and powerful
-design token development environment for web projects.
+design token development environment for web projects. It also allows me to automate my directory structure.
+
+ For incremental improvements and function documentation, I work directly with the source code. This document will not
+stay current after everything is locked in.
 
 * What's New in v2?
 
@@ -378,6 +314,223 @@ export function propagate(emitter, xs) {
 :header-args:js: :tangle "./v2/color.js" :mkdirp yes :comments link
 :END:
 
+**** convert
+
+An action that converts a given valid CSS =color= =to= another valid CSS color
+format.
+
++ =convert(to, color) => string=
+  - =to: string | "hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "cielab" | "cielch" | "oklab" | "oklch"=: the target color
+    format
+  - =color: string=: the color to convert
+
+***** convert Examples
+
+***** convert Implementation
+
+#+BEGIN_SRC js
+export function convert(to, color) {
+  if (to === "lab") {
+    return serialize(_convert(color, "cielab"));
+  }
+
+  if (to === "lch") {
+    return serialize(_convert(color, "cielch"));
+  }
+
+  return serialize(_convert(color, to));
+}
+#+END_SRC
+
+***** convert Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color/convert_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { convert } from "../../color.js";
+
+describe("convert(to, color)", () => {
+  it("should reject invalid colors", () => {
+    expect(() => convert("hex", "invalid")).toThrow();
+  });
+
+  const conversions = {
+    hex: [
+      ["black", "#000000"],
+      ["gray", "#808080"],
+      ["white", "#ffffff"],
+      ["red", "#ff0000"],
+      ["orange", "#ffa500"],
+      ["yellow", "#ffff00"],
+      ["lime", "#00ff00"],
+      ["cyan", "#00ffff"],
+      ["blue", "#0000ff"],
+      ["purple", "#800080"],
+      ["magenta", "#ff00ff"],
+    ],
+    rgb: [
+      ["black", "rgb(0, 0, 0)"],
+      ["gray", "rgb(128, 128, 128)"],
+      ["white", "rgb(255, 255, 255)"],
+      ["red", "rgb(255, 0, 0)"],
+      ["orange", "rgb(255, 165, 0)"],
+      ["yellow", "rgb(255, 255, 0)"],
+      ["lime", "rgb(0, 255, 0)"],
+      ["cyan", "rgb(0, 255, 255)"],
+      ["blue", "rgb(0, 0, 255)"],
+      ["purple", "rgb(128, 0, 128)"],
+      ["magenta", "rgb(255, 0, 255)"],
+    ],
+    hsl: [
+      ["black", "hsl(0, 0%, 0%)"],
+      ["gray", "hsl(0, 0%, 50.196%)"],
+      ["white", "hsl(0, 0%, 100%)"],
+      ["red", "hsl(0, 100%, 50%)"],
+      ["orange", "hsl(38.824, 100%, 50%)"],
+      ["yellow", "hsl(60, 100%, 50%)"],
+      ["lime", "hsl(120, 100%, 50%)"],
+      ["cyan", "hsl(180, 100%, 50%)"],
+      ["blue", "hsl(240, 100%, 50%)"],
+      ["purple", "hsl(300, 100%, 25.098%)"],
+      ["magenta", "hsl(300, 100%, 50%)"],
+    ],
+    cmyk: [
+      ["black", "device-cmyk(0% 0% 0% 100%)"],
+      ["gray", "device-cmyk(0% 0% 0% 49.804%)"],
+      ["white", "device-cmyk(0% 0% 0% 0%)"],
+      ["red", "device-cmyk(0% 100% 100% 0%)"],
+      ["orange", "device-cmyk(0% 35.294% 100% 0%)"],
+      ["yellow", "device-cmyk(0% 0% 100% 0%)"],
+      ["lime", "device-cmyk(100% 0% 100% 0%)"],
+      ["cyan", "device-cmyk(100% 0% 0% 0%)"],
+      ["blue", "device-cmyk(100% 100% 0% 0%)"],
+      ["purple", "device-cmyk(0% 100% 0% 49.804%)"],
+      ["magenta", "device-cmyk(0% 100% 0% 0%)"],
+    ],
+    hwb: [
+      ["black", "hwb(0 0% 100%)"],
+      ["gray", "hwb(0 50.196% 49.804%)"],
+      ["white", "hwb(0 100% 0%)"],
+      ["red", "hwb(0 0% 0%)"],
+      ["orange", "hwb(38.824 0% 0%)"],
+      ["yellow", "hwb(60 0% 0%)"],
+      ["lime", "hwb(120 0% 0%)"],
+      ["cyan", "hwb(180 0% 0%)"],
+      ["blue", "hwb(240 0% 0%)"],
+      ["purple", "hwb(300 0% 49.804%)"],
+      ["magenta", "hwb(300 0% 0%)"],
+    ],
+    lab: [
+      ["black", "lab(0% 0 0)"],
+      ["gray", "lab(53.585% 0 0)"],
+      ["white", "lab(100% 0 0)"],
+      ["red", "lab(54.292% 80.812 69.885)"],
+      ["orange", "lab(75.59% 27.519 79.116)"],
+      ["yellow", "lab(97.607% -15.753 93.388)"],
+      ["lime", "lab(87.818% -79.287 80.99)"],
+      ["cyan", "lab(90.665% -50.665 -14.962)"],
+      ["blue", "lab(29.568% 68.299 -112.029)"],
+      ["purple", "lab(29.692% 56.118 -36.291)"],
+      ["magenta", "lab(60.17% 93.55 -60.499)"],
+    ],
+    lch: [
+      ["black", "lch(0% 0 0)"],
+      ["gray", "lch(53.585% 0 0)"],
+      ["white", "lch(100% 0 0)"],
+      ["red", "lch(54.292% 106.839 40.853)"],
+      ["orange", "lch(75.59% 83.766 70.821)"],
+      ["yellow", "lch(97.607% 94.708 99.575)"],
+      ["lime", "lch(87.818% 113.34 134.391)"],
+      ["cyan", "lch(90.665% 52.828 196.452)"],
+      ["blue", "lch(29.568% 131.207 301.369)"],
+      ["purple", "lch(29.692% 66.83 327.109)"],
+      ["magenta", "lch(60.17% 111.408 327.109)"],
+    ],
+    oklab: [
+      ["black", "oklab(0% 0 0)"],
+      ["gray", "oklab(59.987% 0 0)"],
+      ["white", "oklab(100% 0 0)"],
+      ["red", "oklab(62.796% 0.22486 0.12585)"],
+      ["orange", "oklab(79.269% 0.05661 0.16138)"],
+      ["yellow", "oklab(96.798% -0.07137 0.19857)"],
+      ["lime", "oklab(86.644% -0.23389 0.1795)"],
+      ["cyan", "oklab(90.54% -0.14944 -0.0394)"],
+      ["blue", "oklab(45.201% -0.03246 -0.31153)"],
+      ["purple", "oklab(42.091% 0.1647 -0.10147)"],
+      ["magenta", "oklab(70.167% 0.27457 -0.16916)"],
+    ],
+    oklch: [
+      ["black", "oklch(0% 0 0)"],
+      ["gray", "oklch(59.987% 0 0)"],
+      ["white", "oklch(100% 0 0)"],
+      ["red", "oklch(62.796% 0.25768 29.234)"],
+      ["orange", "oklch(79.269% 0.17103 70.67)"],
+      ["yellow", "oklch(96.798% 0.21101 109.769)"],
+      ["lime", "oklch(86.644% 0.29483 142.495)"],
+      ["cyan", "oklch(90.54% 0.15455 194.769)"],
+      ["blue", "oklch(45.201% 0.31321 264.052)"],
+      ["purple", "oklch(42.091% 0.19345 328.363)"],
+      ["magenta", "oklch(70.167% 0.32249 328.363)"],
+    ],
+  };
+
+  Object.entries(conversions).forEach(([format, samples]) => {
+    describe(`to = '${format}'`, () => {
+      it("should correctly convert all color samples", () => {
+        samples.forEach(([input, output]) => {
+          expect(convert(format, input)).toBe(output);
+        });
+      });
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color/convert_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  convert(to, color)
+  • should reject invalid colors
+    to = 'hex'
+    • should correctly convert all color samples
+    to = 'rgb'
+    • should correctly convert all color samples
+    to = 'hsl'
+    • should correctly convert all color samples
+    to = 'cmyk'
+    • should correctly convert all color samples
+    to = 'hwb'
+    • should correctly convert all color samples
+    to = 'lab'
+    • should correctly convert all color samples
+    to = 'lch'
+    • should correctly convert all color samples
+    to = 'oklab'
+    • should correctly convert all color samples
+    to = 'oklch'
+    • should correctly convert all color samples
+
+running 10 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/convert_test.js
+test convert(to, color) > should reject invalid colors ... ok (15ms)
+test convert(to, color) > to = 'hex' > should correctly convert all color samples ... ok (22ms)
+test convert(to, color) > to = 'rgb' > should correctly convert all color samples ... ok (11ms)
+test convert(to, color) > to = 'hsl' > should correctly convert all color samples ... ok (9ms)
+test convert(to, color) > to = 'cmyk' > should correctly convert all color samples ... ok (8ms)
+test convert(to, color) > to = 'hwb' > should correctly convert all color samples ... ok (11ms)
+test convert(to, color) > to = 'lab' > should correctly convert all color samples ... ok (8ms)
+test convert(to, color) > to = 'lch' > should correctly convert all color samples ... ok (9ms)
+test convert(to, color) > to = 'oklab' > should correctly convert all color samples ... ok (8ms)
+test convert(to, color) > to = 'oklch' > should correctly convert all color samples ... ok (10ms)
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (159ms)
+
+#+end_src
+
 **** adjust
 
 An action that adjusts the =properties= of a given valid CSS =color=. Positive property values will increase while
@@ -426,7 +579,7 @@ export function adjust(settings, color) {
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/adjust_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { adjust } from "../color.js";
+import { adjust } from "../../color.js";
 
 describe("adjust(settings, color)", () => {
   it("should reject invalid colors", () => {
@@ -725,7 +878,7 @@ export function mix(settings, color) {
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/mix_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { adjust, mix } from "../color.js";
+import { adjust, mix } from "../../color.js";
 
 describe("mix(settings, color)", () => {
   const samples = [
@@ -877,6 +1030,202 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (261m
 
 #+end_src
 
+**** harmonize
+
+An action for creating conventional color harmonies from any valid CSS =color=. This action will generate a harmony
+based on its =type= and you can create =accented= versions that include the complement as well.
+
++ =harmonize(settings, color)=
+  - =settings: {}=: color harmony settings
+    * =settings.type = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" | "clash" | "double" |
+      "tetradic" | "square"=: the type of color harmony to create
+    * =settings.accented = false: boolean=: do you want to use accented harmonies (where applicable)?
+  - =color: string=: the color to harmonize
+
+***** harmonize Examples
+
+***** harmonize Implementation
+
+#+BEGIN_SRC js
+export function harmonize(settings, color) {
+  // Set defaults
+  const { type = "complementary", accented = false } = settings;
+
+  return colorHarmonies({ type, accented }, color);
+}
+#+END_SRC
+
+***** harmonize Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color/harmonize_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { harmonize } from "../../color.js";
+
+describe("harmonize(settings, color)", () => {
+  it("should reject invalid colors", () => {
+    expect(() => harmonize({}, "invalid")).toThrow();
+  });
+
+  const harmonies = {
+    dyadic: [
+      ["red", ["#ff0000", "#ef4600"]],
+      ["orange", ["#ffa500", "#d4bd00"]],
+      ["yellow", ["#ffff00", "#a2ff86"]],
+      ["lime", ["#00ff00", "#00ffbe"]],
+      ["cyan", ["#00ffff", "#48f5ff"]],
+      ["blue", ["#0000ff", "#6e00ec"]],
+      ["purple", ["#800080", "#95004c"]],
+      ["magenta", ["#ff00ff", "#ff009d"]],
+    ],
+    complementary: [
+      ["red", ["#ff0000", "#00a9db"]],
+      ["orange", ["#ffa500", "#5bc0ff"]],
+      ["yellow", ["#ffff00", "#f4d8ff"]],
+      ["lime", ["#00ff00", "#ff7dff"]],
+      ["cyan", ["#00ffff", "#ffb3bf"]],
+      ["blue", ["#0000ff", "#a02000"]],
+      ["purple", ["#800080", "#006600"]],
+      ["magenta", ["#ff00ff", "#00cd00"]],
+    ],
+    analogous: [
+      ["red", ["#ff0000", "#ef4600", "#c57500"]],
+      ["orange", ["#ffa500", "#d4bd00", "#95d150"]],
+      ["yellow", ["#ffff00", "#a2ff86", "#00ffde"]],
+      ["lime", ["#00ff00", "#00ffbe", "#00ffff"]],
+      ["cyan", ["#00ffff", "#48f5ff", "#96e3ff"]],
+      ["blue", ["#0000ff", "#6e00ec", "#9e00b2"]],
+      ["purple", ["#800080", "#95004c", "#9c0000"]],
+      ["magenta", ["#ff00ff", "#ff009d", "#ff0000"]],
+    ],
+    split: [
+      ["red", ["#ff0000", "#00b48c", "#0090ff"]],
+      ["orange", ["#ffa500", "#00d2ff", "#a9acff"]],
+      ["yellow", ["#ffff00", "#9cf3ff", "#ffc2ff"]],
+      ["lime", ["#00ff00", "#df9eff", "#ff62e5"]],
+      ["cyan", ["#00ffff", "#ffb4f8", "#ffbd87"]],
+      ["blue", ["#0000ff", "#c50000", "#5d5c00"]],
+      ["purple", ["#800080", "#475700", "#006a4e"]],
+      ["magenta", ["#ff00ff", "#92b100", "#00d5a0"]],
+    ],
+    triadic: [
+      ["red", ["#ff0000", "#00ae00", "#4f6fff"]],
+      ["orange", ["#ffa500", "#00dcd5", "#de99ff"]],
+      ["yellow", ["#ffff00", "#00ffff", "#ffb3ff"]],
+      ["lime", ["#00ff00", "#61c4ff", "#ff6072"]],
+      ["cyan", ["#00ffff", "#ffbfff", "#ffd05c"]],
+      ["blue", ["#0000ff", "#ce0000", "#007700"]],
+      ["purple", ["#800080", "#773e00", "#006384"]],
+      ["magenta", ["#ff00ff", "#ef8200", "#00c8ff"]],
+    ],
+    clash: [
+      ["red", ["#ff0000", "#7b9900", "#a34fff"]],
+      ["orange", ["#ffa500", "#23dc96", "#ff8cdc"]],
+      ["yellow", ["#ffff00", "#00ffff", "#ffb3b9"]],
+      ["lime", ["#00ff00", "#00e9ff", "#ff8300"]],
+      ["cyan", ["#00ffff", "#d5d0ff", "#f0e55d"]],
+      ["blue", ["#0000ff", "#c00061", "#008048"]],
+      ["purple", ["#800080", "#931700", "#0051a8"]],
+      ["magenta", ["#ff00ff", "#ff3800", "#00a6ff"]],
+    ],
+    double: [
+      ["red", ["#ff0000", "#ef4600", "#00a9db", "#0090ff"]],
+      ["orange", ["#ffa500", "#d4bd00", "#5bc0ff", "#a9acff"]],
+      ["yellow", ["#ffff00", "#a2ff86", "#f4d8ff", "#ffc2ff"]],
+      ["lime", ["#00ff00", "#00ffbe", "#ff7dff", "#ff62e5"]],
+      ["cyan", ["#00ffff", "#48f5ff", "#ffb3bf", "#ffbd87"]],
+      ["blue", ["#0000ff", "#6e00ec", "#a02000", "#5d5c00"]],
+      ["purple", ["#800080", "#95004c", "#006600", "#006a4e"]],
+      ["magenta", ["#ff00ff", "#ff009d", "#00cd00", "#00d5a0"]],
+    ],
+    tetradic: [
+      ["red", ["#ff0000", "#de5f00", "#00a9db", "#0080ff"]],
+      ["orange", ["#ffa500", "#b7c826", "#5bc0ff", "#c5a2ff"]],
+      ["yellow", ["#ffff00", "#5bffb3", "#f4d8ff", "#ffb9ff"]],
+      ["lime", ["#00ff00", "#00fff5", "#ff7dff", "#ff5cb0"]],
+      ["cyan", ["#00ffff", "#72edff", "#ffb3bf", "#ffc56e"]],
+      ["blue", ["#0000ff", "#8800d3", "#a02000", "#016c00"]],
+      ["purple", ["#800080", "#9b002d", "#006600", "#00686b"]],
+      ["magenta", ["#ff00ff", "#ff0061", "#00cd00", "#00d1d7"]],
+    ],
+    square: [
+      ["red", ["#ff0000", "#7b9900", "#00a9db", "#a34fff"]],
+      ["orange", ["#ffa500", "#23dc96", "#5bc0ff", "#ff8cdc"]],
+      ["yellow", ["#ffff00", "#00ffff", "#f4d8ff", "#ffb3b9"]],
+      ["lime", ["#00ff00", "#00e9ff", "#ff7dff", "#ff8300"]],
+      ["cyan", ["#00ffff", "#d5d0ff", "#ffb3bf", "#f0e55d"]],
+      ["blue", ["#0000ff", "#c00061", "#a02000", "#008048"]],
+      ["purple", ["#800080", "#931700", "#006600", "#0051a8"]],
+      ["magenta", ["#ff00ff", "#ff3800", "#00cd00", "#00a6ff"]],
+    ],
+  };
+
+  Object.entries(harmonies).forEach(([type, samples]) => {
+    describe(`type = '${type}'`, () => {
+      it(`should correctly generate a ${type} color harmony from samples`, () => {
+        samples.forEach(([input, output]) => {
+          expect(harmonize({ type }, input)).toEqual(output);
+        });
+      });
+    });
+  });
+
+  const harmoniesAccented = {
+    dyadic: [
+      ["red", ["#ff0000", "#ef4600", "#00a9db"]],
+      ["orange", ["#ffa500", "#d4bd00", "#5bc0ff"]],
+      ["yellow", ["#ffff00", "#a2ff86", "#f4d8ff"]],
+      ["lime", ["#00ff00", "#00ffbe", "#ff7dff"]],
+      ["cyan", ["#00ffff", "#48f5ff", "#ffb3bf"]],
+      ["blue", ["#0000ff", "#6e00ec", "#a02000"]],
+      ["purple", ["#800080", "#95004c", "#006600"]],
+      ["magenta", ["#ff00ff", "#ff009d", "#00cd00"]],
+    ],
+    analogous: [
+      ["red", ["#ff0000", "#ef4600", "#c57500", "#00a9db"]],
+      ["orange", ["#ffa500", "#d4bd00", "#95d150", "#5bc0ff"]],
+      ["yellow", ["#ffff00", "#a2ff86", "#00ffde", "#f4d8ff"]],
+      ["lime", ["#00ff00", "#00ffbe", "#00ffff", "#ff7dff"]],
+      ["cyan", ["#00ffff", "#48f5ff", "#96e3ff", "#ffb3bf"]],
+      ["blue", ["#0000ff", "#6e00ec", "#9e00b2", "#a02000"]],
+      ["purple", ["#800080", "#95004c", "#9c0000", "#006600"]],
+      ["magenta", ["#ff00ff", "#ff009d", "#ff0000", "#00cd00"]],
+    ],
+    split: [
+      ["red", ["#ff0000", "#00b48c", "#00a9db", "#0090ff"]],
+      ["orange", ["#ffa500", "#00d2ff", "#5bc0ff", "#a9acff"]],
+      ["yellow", ["#ffff00", "#9cf3ff", "#f4d8ff", "#ffc2ff"]],
+      ["lime", ["#00ff00", "#df9eff", "#ff7dff", "#ff62e5"]],
+      ["cyan", ["#00ffff", "#ffb4f8", "#ffb3bf", "#ffbd87"]],
+      ["blue", ["#0000ff", "#c50000", "#a02000", "#5d5c00"]],
+      ["purple", ["#800080", "#475700", "#006600", "#006a4e"]],
+      ["magenta", ["#ff00ff", "#92b100", "#00cd00", "#00d5a0"]],
+    ],
+    triadic: [
+      ["red", ["#ff0000", "#00ae00", "#00a9db", "#4f6fff"]],
+      ["orange", ["#ffa500", "#00dcd5", "#5bc0ff", "#de99ff"]],
+      ["yellow", ["#ffff00", "#00ffff", "#f4d8ff", "#ffb3ff"]],
+      ["lime", ["#00ff00", "#61c4ff", "#ff7dff", "#ff6072"]],
+      ["cyan", ["#00ffff", "#ffbfff", "#ffb3bf", "#ffd05c"]],
+      ["blue", ["#0000ff", "#ce0000", "#a02000", "#007700"]],
+      ["purple", ["#800080", "#773e00", "#006600", "#006384"]],
+      ["magenta", ["#ff00ff", "#ef8200", "#00cd00", "#00c8ff"]],
+    ],
+  };
+
+  Object.entries(harmoniesAccented).forEach(([type, samples]) => {
+    describe(`type = '${type}'`, () => {
+      it(`should correctly generate an accented ${type} color harmony from samples`, () => {
+        samples.forEach(([input, output]) => {
+          expect(harmonize({ type, accented: true }, input)).toEqual(output);
+        });
+      });
+    });
+  });
+});
+
+run();
+#+END_SRC
+
 **** check
 
 An action that accepts a =color= and a =condition= setting and simulates an approximation of how a person might perceive
@@ -1005,7 +1354,7 @@ export function check(settings, color) {
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/check_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { check } from "../color.js";
+import { check } from "../../color.js";
 
 describe("check(settings, color)", () => {
   it("should reject invalid colors", () => {
@@ -1310,1480 +1659,6 @@ test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (595
 
 #+end_src
 
-**** hex
-
-An emitter that accepts a valid CSS =color= and outputs its hexadecimal equivalent.
-
-+ =hex(color) => string=
-  + =color: string=: the color to convert
-
-***** hex Examples
-
-***** hex Implementation
-
-#+BEGIN_SRC js
-export function hex(color) {
-  return serializeHex(convert(color, "hex"));
-}
-#+END_SRC
-
-***** hex Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/hex_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { hex } from "../color.js";
-
-describe("hex(color)", () => {
-  const controlGroup = [
-    ["black", "#000000"],
-    ["gray", "#808080"],
-    ["white", "#ffffff"],
-  ];
-
-  const samples = [
-    ["red", "#ff0000"],
-    ["orange", "#ffa500"],
-    ["yellow", "#ffff00"],
-    ["lime", "#00ff00"],
-    ["cyan", "#00ffff"],
-    ["blue", "#0000ff"],
-    ["purple", "#800080"],
-    ["magenta", "#ff00ff"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => hex("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(hex(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(hex(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/hex_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  hex(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hex_test.js
-test hex(color) > should reject invalid colors ... ok (14ms)
-test hex(color) > should correctly convert the control group ... ok (14ms)
-test hex(color) > should correctly convert the color samples ... ok (13ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (87ms)
-
-#+end_src
-
-**** rgb
-
-An emitter that accepts a valid CSS =color= and outputs its RGB equivalent.
-
-+ =rgb(color) => string=
-  + =color: string=: the color to convert
-
-***** rgb Examples
-
-***** rgb Implementation
-
-#+BEGIN_SRC js
-export function rgb(color) {
-  return serializeRgb(convert(color, "rgb"));
-}
-#+END_SRC
-
-***** rgb Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/rgb_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { rgb } from "../color.js";
-
-describe("rgb(color)", () => {
-  const controlGroup = [
-    ["black", "rgb(0, 0, 0)"],
-    ["gray", "rgb(128, 128, 128)"],
-    ["white", "rgb(255, 255, 255)"],
-  ];
-
-  const samples = [
-    ["red", "rgb(255, 0, 0)"],
-    ["orange", "rgb(255, 165, 0)"],
-    ["yellow", "rgb(255, 255, 0)"],
-    ["lime", "rgb(0, 255, 0)"],
-    ["cyan", "rgb(0, 255, 255)"],
-    ["blue", "rgb(0, 0, 255)"],
-    ["purple", "rgb(128, 0, 128)"],
-    ["magenta", "rgb(255, 0, 255)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => rgb("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(rgb(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(rgb(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/rgb_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  rgb(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/rgb_test.js
-test rgb(color) > should reject invalid colors ... ok (14ms)
-test rgb(color) > should correctly convert the control group ... ok (14ms)
-test rgb(color) > should correctly convert the color samples ... ok (14ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (87ms)
-
-#+end_src
-
-**** hsl
-
-An emitter that accepts a valid CSS =color= and outputs its HSL equivalent.
-
-+ =hsl(color) => string=
-  + =color: string=: the color to convert
-
-***** hsl Examples
-
-***** hsl Implementation
-
-#+BEGIN_SRC js
-export function hsl(color) {
-  return serializeHsl(convert(color, "hsl"));
-}
-#+END_SRC
-
-***** hsl Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/hsl_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { hsl } from "../color.js";
-
-describe("hsl(color)", () => {
-  const controlGroup = [
-    ["black", "hsl(0, 0%, 0%)"],
-    ["gray", "hsl(0, 0%, 50.196%)"],
-    ["white", "hsl(0, 0%, 100%)"],
-  ];
-
-  const samples = [
-    ["red", "hsl(0, 100%, 50%)"],
-    ["orange", "hsl(38.824, 100%, 50%)"],
-    ["yellow", "hsl(60, 100%, 50%)"],
-    ["lime", "hsl(120, 100%, 50%)"],
-    ["cyan", "hsl(180, 100%, 50%)"],
-    ["blue", "hsl(240, 100%, 50%)"],
-    ["purple", "hsl(300, 100%, 25.098%)"],
-    ["magenta", "hsl(300, 100%, 50%)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => hsl("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(hsl(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(hsl(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/hsl_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  hsl(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hsl_test.js
-test hsl(color) > should reject invalid colors ... ok (16ms)
-test hsl(color) > should correctly convert the control group ... ok (14ms)
-test hsl(color) > should correctly convert the color samples ... ok (15ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (90ms)
-
-#+end_src
-
-**** cmyk
-
-An emitter that accepts a valid CSS =color= and outputs its CMYK equivalent.
-
-+ =cmyk(color) => string=
-  + =color: string=: the color to convert
-
-***** cmyk Examples
-
-***** cmyk Implementation
-
-#+BEGIN_SRC js
-export function cmyk(color) {
-  return serializeCmyk(convert(color, "cmyk"));
-}
-#+END_SRC
-
-***** cmyk Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/cmyk_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { cmyk } from "../color.js";
-
-describe("cmyk(color)", () => {
-  const controlGroup = [
-    ["black", "device-cmyk(0% 0% 0% 100%)"],
-    ["gray", "device-cmyk(0% 0% 0% 49.804%)"],
-    ["white", "device-cmyk(0% 0% 0% 0%)"],
-  ];
-
-  const samples = [
-    ["red", "device-cmyk(0% 100% 100% 0%)"],
-    ["orange", "device-cmyk(0% 35.294% 100% 0%)"],
-    ["yellow", "device-cmyk(0% 0% 100% 0%)"],
-    ["lime", "device-cmyk(100% 0% 100% 0%)"],
-    ["cyan", "device-cmyk(100% 0% 0% 0%)"],
-    ["blue", "device-cmyk(100% 100% 0% 0%)"],
-    ["purple", "device-cmyk(0% 100% 0% 49.804%)"],
-    ["magenta", "device-cmyk(0% 100% 0% 0%)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => cmyk("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(cmyk(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(cmyk(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/cmyk_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  cmyk(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/cmyk_test.js
-test cmyk(color) > should reject invalid colors ... ok (15ms)
-test cmyk(color) > should correctly convert the control group ... ok (14ms)
-test cmyk(color) > should correctly convert the color samples ... ok (13ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (89ms)
-
-#+end_src
-
-**** hwb
-
-An emitter that accepts a valid CSS =color= and outputs its HWB equivalent.
-
-+ =hwb(color) => string=
-  + =color: string=: the color to convert
-
-***** hwb Examples
-
-***** hwb Implementation
-
-#+BEGIN_SRC js
-export function hwb(color) {
-  return serializeHwb(convert(color, "hwb"));
-}
-#+END_SRC
-
-***** hwb Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/hwb_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { hwb } from "../color.js";
-
-describe("hwb(color)", () => {
-  const controlGroup = [
-    ["black", "hwb(0 0% 100%)"],
-    ["gray", "hwb(0 50.196% 49.804%)"],
-    ["white", "hwb(0 100% 0%)"],
-  ];
-
-  const samples = [
-    ["red", "hwb(0 0% 0%)"],
-    ["orange", "hwb(38.824 0% 0%)"],
-    ["yellow", "hwb(60 0% 0%)"],
-    ["lime", "hwb(120 0% 0%)"],
-    ["cyan", "hwb(180 0% 0%)"],
-    ["blue", "hwb(240 0% 0%)"],
-    ["purple", "hwb(300 0% 49.804%)"],
-    ["magenta", "hwb(300 0% 0%)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => hwb("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(hwb(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(hwb(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/hwb_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  hwb(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hwb_test.js
-test hwb(color) > should reject invalid colors ... ok (16ms)
-test hwb(color) > should correctly convert the control group ... ok (14ms)
-test hwb(color) > should correctly convert the color samples ... ok (14ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
-
-#+end_src
-**** cielab
-
-An emitter that accepts a valid CSS =color= and outputs its CIELAB equivalent.
-
-+ =cielab(color) => string=
-  + =color: string=: the color to convert
-
-***** cielab Examples
-
-***** cielab Implementation
-
-#+BEGIN_SRC js
-export function cielab(color) {
-  return serializeCielab(convert(color, "cielab"));
-}
-#+END_SRC
-
-***** cielab Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/cielab_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { cielab } from "../color.js";
-
-describe("cielab(color)", () => {
-  const controlGroup = [
-    ["black", "lab(0% 0 0)"],
-    ["gray", "lab(53.585% 0 0)"],
-    ["white", "lab(100% 0 0)"],
-  ];
-
-  const samples = [
-    ["red", "lab(54.292% 80.812 69.885)"],
-    ["orange", "lab(75.59% 27.519 79.116)"],
-    ["yellow", "lab(97.607% -15.753 93.388)"],
-    ["lime", "lab(87.818% -79.287 80.99)"],
-    ["cyan", "lab(90.665% -50.665 -14.962)"],
-    ["blue", "lab(29.568% 68.299 -112.029)"],
-    ["purple", "lab(29.692% 56.118 -36.291)"],
-    ["magenta", "lab(60.17% 93.55 -60.499)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => cielab("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(cielab(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(cielab(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/cielab_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  cielab(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/cielab_test.js
-test cielab(color) > should reject invalid colors ... ok (14ms)
-test cielab(color) > should correctly convert the control group ... ok (14ms)
-test cielab(color) > should correctly convert the color samples ... ok (14ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (87ms)
-
-#+end_src
-
-**** cielch
-
-An emitter that accepts a valid CSS =color= and outputs its CIELCH equivalent.
-
-+ =cielch(color) => string=
-  + =color: string=: the color to convert
-
-***** cielch Examples
-
-***** cielch Implementation
-
-#+BEGIN_SRC js
-export function cielch(color) {
-  return serializeCielch(convert(color, "cielch"));
-}
-#+END_SRC
-
-***** cielch Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/cielch_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { cielch } from "../color.js";
-
-describe("cielch(color)", () => {
-  const controlGroup = [
-    ["black", "lch(0% 0 0)"],
-    ["gray", "lch(53.585% 0 0)"],
-    ["white", "lch(100% 0 0)"],
-  ];
-
-  const samples = [
-    ["red", "lch(54.292% 106.839 40.853)"],
-    ["orange", "lch(75.59% 83.766 70.821)"],
-    ["yellow", "lch(97.607% 94.708 99.575)"],
-    ["lime", "lch(87.818% 113.34 134.391)"],
-    ["cyan", "lch(90.665% 52.828 196.452)"],
-    ["blue", "lch(29.568% 131.207 301.369)"],
-    ["purple", "lch(29.692% 66.83 327.109)"],
-    ["magenta", "lch(60.17% 111.408 327.109)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => cielch("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(cielch(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(cielch(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/cielch_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  cielch(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/cielch_test.js
-test cielch(color) > should reject invalid colors ... ok (14ms)
-test cielch(color) > should correctly convert the control group ... ok (14ms)
-test cielch(color) > should correctly convert the color samples ... ok (14ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
-
-#+end_src
-
-**** oklab
-
-An emitter that accepts a valid CSS =color= and outputs its OKLab equivalent.
-
-+ =oklab(color) => string=
-  + =color: string=: the color to convert
-
-***** oklab Examples
-
-***** oklab Implementation
-
-#+BEGIN_SRC js
-export function oklab(color) {
-  return serializeOklab(convert(color, "oklab"));
-}
-#+END_SRC
-
-***** oklab Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/oklab_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { oklab } from "../color.js";
-
-describe("oklab(color)", () => {
-  const controlGroup = [
-    ["black", "oklab(0% 0 0)"],
-    ["gray", "oklab(59.987% 0 0)"],
-    ["white", "oklab(100% 0 0)"],
-  ];
-
-  const samples = [
-    ["red", "oklab(62.796% 0.22486 0.12585)"],
-    ["orange", "oklab(79.269% 0.05661 0.16138)"],
-    ["yellow", "oklab(96.798% -0.07137 0.19857)"],
-    ["lime", "oklab(86.644% -0.23389 0.1795)"],
-    ["cyan", "oklab(90.54% -0.14944 -0.0394)"],
-    ["blue", "oklab(45.201% -0.03246 -0.31153)"],
-    ["purple", "oklab(42.091% 0.1647 -0.10147)"],
-    ["magenta", "oklab(70.167% 0.27457 -0.16916)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => oklab("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(oklab(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(oklab(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/oklab_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  oklab(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/oklab_test.js
-test oklab(color) > should reject invalid colors ... ok (15ms)
-test oklab(color) > should correctly convert the control group ... ok (14ms)
-test oklab(color) > should correctly convert the color samples ... ok (14ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
-
-#+end_src
-**** oklch
-
-An emitter that accepts a valid CSS =color= and outputs its OKLCH equivalent.
-
-+ =oklch(color) => string=
-  + =color: string=: the color to convert
-
-***** oklch Examples
-
-***** oklch Implementation
-
-#+BEGIN_SRC js
-export function oklch(color) {
-  return serializeOklch(convert(color, "oklch"));
-}
-#+END_SRC
-
-***** oklch Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/oklch_test.js" :comments both
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { oklch } from "../color.js";
-
-describe("oklch(color)", () => {
-  const controlGroup = [
-    ["black", "oklch(0% 0 0)"],
-    ["gray", "oklch(59.987% 0 0)"],
-    ["white", "oklch(100% 0 0)"],
-  ];
-
-  const samples = [
-    ["red", "oklch(62.796% 0.25768 29.234)"],
-    ["orange", "oklch(79.269% 0.17103 70.67)"],
-    ["yellow", "oklch(96.798% 0.21101 109.769)"],
-    ["lime", "oklch(86.644% 0.29483 142.495)"],
-    ["cyan", "oklch(90.54% 0.15455 194.769)"],
-    ["blue", "oklch(45.201% 0.31321 264.052)"],
-    ["purple", "oklch(42.091% 0.19345 328.363)"],
-    ["magenta", "oklch(70.167% 0.32249 328.363)"],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => oklch("invalid")).toThrow();
-  });
-
-  it("should correctly convert the control group", () => {
-    controlGroup.forEach(([input, output]) => {
-      expect(oklch(input)).toBe(output);
-    });
-  });
-  it("should correctly convert the color samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(oklch(input)).toBe(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/oklch_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  oklch(color)
-  • should reject invalid colors
-  • should correctly convert the control group
-  • should correctly convert the color samples
-
-running 3 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/oklch_test.js
-test oklch(color) > should reject invalid colors ... ok (15ms)
-test oklch(color) > should correctly convert the control group ... ok (14ms)
-test oklch(color) > should correctly convert the color samples ... ok (14ms)
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (88ms)
-
-#+end_src
-
-**** dyad
-
-An emitter that accepts any valid CSS color and outputs a dyadic color scheme.
-
-+ =dyad(color) => [string, string]=
-  - =color: string=: the input color
-
-***** dyad Examples
-
-***** dyad Implementation
-
-#+BEGIN_SRC js
-export function dyad(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 90 }, color),
-  ];
-}
-#+END_SRC
-
-***** dyad Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/dyad_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { dyad } from "../color.js";
-
-describe("dyad(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#7b9900"]],
-    ["orange", ["#ffa500", "#23dc96"]],
-    ["yellow", ["#ffff00", "#00ffff"]],
-    ["lime", ["#00ff00", "#00e9ff"]],
-    ["cyan", ["#00ffff", "#d5d0ff"]],
-    ["blue", ["#0000ff", "#c00061"]],
-    ["purple", ["#800080", "#931700"]],
-    ["magenta", ["#ff00ff", "#ff3800"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => dyad("invalid")).toThrow();
-  });
-
-  it("should correctly emit dyads from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(dyad(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/dyad_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  dyad(color)
-  • should reject invalid colors
-  • should correctly emit dyads from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/dyad_test.js
-test dyad(color) > should reject invalid colors ... ok (23ms)
-test dyad(color) > should correctly emit dyads from samples ... ok (40ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (109ms)
-
-#+end_src
-
-**** complementary
-
-An emitter that accepts any valid CSS color and outputs a complementary color scheme.
-
-+ =complementary(color) => [string, string]=
-  - =color: string=: the input color
-
-***** complementary Examples
-
-***** complementary Implementation
-
-#+BEGIN_SRC js
-export function complementary(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 180 }, color),
-  ];
-}
-#+END_SRC
-
-***** complementary Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/complementary_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { complementary } from "../color.js";
-
-describe("complementary(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#00a9db"]],
-    ["orange", ["#ffa500", "#5bc0ff"]],
-    ["yellow", ["#ffff00", "#f4d8ff"]],
-    ["lime", ["#00ff00", "#ff7dff"]],
-    ["cyan", ["#00ffff", "#ffb3bf"]],
-    ["blue", ["#0000ff", "#a02000"]],
-    ["purple", ["#800080", "#006600"]],
-    ["magenta", ["#ff00ff", "#00cd00"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => complementary("invalid")).toThrow();
-  });
-
-  it("should correctly emit complementary schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(complementary(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/complementary_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  complementary(color)
-  • should reject invalid colors
-  • should correctly emit complementary schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/complementary_test.js
-test complementary(color) > should reject invalid colors ... ok (14ms)
-test complementary(color) > should correctly emit complementary schemes from samples ... ok (37ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (96ms)
-
-#+end_src
-
-**** analogous
-
-An emitter that accepts any valid CSS color and outputs an analogous color scheme.
-
-+ =analogous(color) => [string, string, string]=
-  - =color: string=: the input color
-
-***** analogous Examples
-
-***** analogous Implementation
-
-#+BEGIN_SRC js
-export function analogous(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 45 }, color),
-    colorAdjustment({ hue: 45 * 2 }, color),
-  ];
-}
-#+END_SRC
-
-***** analogous Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/analogous_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { analogous } from "../color.js";
-
-describe("analogous(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#de5f00", "#7b9900"]],
-    ["orange", ["#ffa500", "#b7c826", "#23dc96"]],
-    ["yellow", ["#ffff00", "#5bffb3", "#00ffff"]],
-    ["lime", ["#00ff00", "#00fff5", "#00e9ff"]],
-    ["cyan", ["#00ffff", "#72edff", "#d5d0ff"]],
-    ["blue", ["#0000ff", "#8800d3", "#c00061"]],
-    ["purple", ["#800080", "#9b002d", "#931700"]],
-    ["magenta", ["#ff00ff", "#ff0061", "#ff3800"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => analogous("invalid")).toThrow();
-  });
-
-  it("should correctly emit analogous schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(analogous(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/analogous_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  analogous(color)
-  • should reject invalid colors
-  • should correctly emit analogous schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/analogous_test.js
-test analogous(color) > should reject invalid colors ... ok (16ms)
-test analogous(color) > should correctly emit analogous schemes from samples ... ok (42ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (103ms)
-
-#+end_src
-
-**** split
-
-An emitter that accepts any valid CSS color and outputs a split complementary color scheme.
-
-+ =split(color) => [string, string, string]=
-  - =color: string=: the input color
-
-***** split Examples
-
-***** split Implementation
-
-#+BEGIN_SRC js
-export function split(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 180 - 30 }, color),
-    colorAdjustment({ hue: 180 + 30 }, color),
-  ];
-}
-#+END_SRC
-
-***** split Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/split_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { split } from "../color.js";
-
-describe("split(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#00b48c", "#0090ff"]],
-    ["orange", ["#ffa500", "#00d2ff", "#a9acff"]],
-    ["yellow", ["#ffff00", "#9cf3ff", "#ffc2ff"]],
-    ["lime", ["#00ff00", "#df9eff", "#ff62e5"]],
-    ["cyan", ["#00ffff", "#ffb4f8", "#ffbd87"]],
-    ["blue", ["#0000ff", "#c50000", "#5d5c00"]],
-    ["purple", ["#800080", "#475700", "#006a4e"]],
-    ["magenta", ["#ff00ff", "#92b100", "#00d5a0"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => split("invalid")).toThrow();
-  });
-
-  it("should correctly emit split complementary schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(split(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/split_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  split(color)
-  • should reject invalid colors
-  • should correctly emit split complementary schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/split_test.js
-test split(color) > should reject invalid colors ... ok (16ms)
-test split(color) > should correctly emit split complementary schemes from samples ... ok (42ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (104ms)
-
-#+end_src
-
-**** clash
-
-
-An emitter that accepts any valid CSS color and outputs a clash color scheme.
-
-+ =clash(color) => [string, string, string]=
-  - =color: string=: the input color
-
-***** clash Examples
-
-***** clash Implementation
-
-#+BEGIN_SRC js
-export function clash(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 90 }, color),
-    colorAdjustment({ hue: 90 * 3 }, color),
-  ];
-}
-#+END_SRC
-
-***** clash Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/clash_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { clash } from "../color.js";
-
-describe("clash(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#7b9900", "#a34fff"]],
-    ["orange", ["#ffa500", "#23dc96", "#ff8cdc"]],
-    ["yellow", ["#ffff00", "#00ffff", "#ffb3b9"]],
-    ["lime", ["#00ff00", "#00e9ff", "#ff8300"]],
-    ["cyan", ["#00ffff", "#d5d0ff", "#f0e55d"]],
-    ["blue", ["#0000ff", "#c00061", "#008048"]],
-    ["purple", ["#800080", "#931700", "#0051a8"]],
-    ["magenta", ["#ff00ff", "#ff3800", "#00a6ff"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => clash("invalid")).toThrow();
-  });
-
-  it("should correctly emit clashing schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(clash(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/clash_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  clash(color)
-  • should reject invalid colors
-  • should correctly emit clashing schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/clash_test.js
-test clash(color) > should reject invalid colors ... ok (15ms)
-test clash(color) > should correctly emit clashing schemes from samples ... ok (42ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (104ms)
-
-#+end_src
-
-**** triad
-
-An emitter that accepts any valid CSS color and outputs a triadic color scheme.
-
-+ =triad(color) => [string, string, string]=
-  - =color: string=: the input color
-
-***** triad Examples
-
-***** triad Implementation
-
-#+BEGIN_SRC js
-export function triad(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 120 }, color),
-    colorAdjustment({ hue: 120 * 2 }, color),
-  ];
-}
-#+END_SRC
-
-***** triad Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/triad_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { triad } from "../color.js";
-
-describe("triad(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#00ae00", "#4f6fff"]],
-    ["orange", ["#ffa500", "#00dcd5", "#de99ff"]],
-    ["yellow", ["#ffff00", "#00ffff", "#ffb3ff"]],
-    ["lime", ["#00ff00", "#61c4ff", "#ff6072"]],
-    ["cyan", ["#00ffff", "#ffbfff", "#ffd05c"]],
-    ["blue", ["#0000ff", "#ce0000", "#007700"]],
-    ["purple", ["#800080", "#773e00", "#006384"]],
-    ["magenta", ["#ff00ff", "#ef8200", "#00c8ff"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => triad("invalid")).toThrow();
-  });
-
-  it("should correctly emit triadic schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(triad(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/triad_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  triad(color)
-  • should reject invalid colors
-  • should correctly emit triadic schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/triad_test.js
-test triad(color) > should reject invalid colors ... ok (16ms)
-test triad(color) > should correctly emit triadic schemes from samples ... ok (43ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (105ms)
-
-#+end_src
-
-**** tetrad
-
-An emitter that accepts any valid CSS color and outputs a tetradic color scheme.
-
-+ =tetrad(color) => [string, string, string, string]=
-  - =color: string=: the input color
-
-***** tetrad Examples
-
-***** tetrad Implementation
-
-#+BEGIN_SRC js
-export function tetrad(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 45 }, color),
-    colorAdjustment({ hue: 180 }, color),
-    colorAdjustment({ hue: 180 + 45 }, color),
-  ];
-}
-#+END_SRC
-
-***** tetrad Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/tetrad_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { tetrad } from "../color.js";
-
-describe("tetrad(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#de5f00", "#00a9db", "#0080ff"]],
-    ["orange", ["#ffa500", "#b7c826", "#5bc0ff", "#c5a2ff"]],
-    ["yellow", ["#ffff00", "#5bffb3", "#f4d8ff", "#ffb9ff"]],
-    ["lime", ["#00ff00", "#00fff5", "#ff7dff", "#ff5cb0"]],
-    ["cyan", ["#00ffff", "#72edff", "#ffb3bf", "#ffc56e"]],
-    ["blue", ["#0000ff", "#8800d3", "#a02000", "#016c00"]],
-    ["purple", ["#800080", "#9b002d", "#006600", "#00686b"]],
-    ["magenta", ["#ff00ff", "#ff0061", "#00cd00", "#00d1d7"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => tetrad("invalid")).toThrow();
-  });
-
-  it("should correctly emit tetradic schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(tetrad(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/tetrad_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  tetrad(color)
-  • should reject invalid colors
-  • should correctly emit tetradic schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/tetrad_test.js
-test tetrad(color) > should reject invalid colors ... ok (16ms)
-test tetrad(color) > should correctly emit tetradic schemes from samples ... ok (48ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (111ms)
-
-#+end_src
-
-**** square
-
-An emitter that accepts any valid CSS color and outputs a square color scheme.
-
-+ =square(color) => [string, string, string, string]=
-  - =color: string=: the input color
-
-***** square Examples
-
-***** square Implementation
-
-#+BEGIN_SRC js
-export function square(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 90 }, color),
-    colorAdjustment({ hue: 90 * 2 }, color),
-    colorAdjustment({ hue: 90 * 3 }, color),
-  ];
-}
-#+END_SRC
-
-***** square Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/square_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { square } from "../color.js";
-
-describe("square(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#7b9900", "#00a9db", "#a34fff"]],
-    ["orange", ["#ffa500", "#23dc96", "#5bc0ff", "#ff8cdc"]],
-    ["yellow", ["#ffff00", "#00ffff", "#f4d8ff", "#ffb3b9"]],
-    ["lime", ["#00ff00", "#00e9ff", "#ff7dff", "#ff8300"]],
-    ["cyan", ["#00ffff", "#d5d0ff", "#ffb3bf", "#f0e55d"]],
-    ["blue", ["#0000ff", "#c00061", "#a02000", "#008048"]],
-    ["purple", ["#800080", "#931700", "#006600", "#0051a8"]],
-    ["magenta", ["#ff00ff", "#ff3800", "#00cd00", "#00a6ff"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => square("invalid")).toThrow();
-  });
-
-  it("should correctly emit square schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(square(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/square_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  square(color)
-  • should reject invalid colors
-  • should correctly emit square schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/square_test.js
-test square(color) > should reject invalid colors ... ok (16ms)
-test square(color) > should correctly emit square schemes from samples ... ok (48ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (109ms)
-
-#+end_src
-
-**** star
-
-An emitter that accepts any valid CSS color and outputs a star color scheme.
-
-+ =star(color) => [string, string, string, string, string]=
-  - =color: string=: the input color
-
-***** star Examples
-
-***** star Implementation
-
-#+BEGIN_SRC js
-export function star(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 72 }, color),
-    colorAdjustment({ hue: 72 * 2 }, color),
-    colorAdjustment({ hue: 72 * 3 }, color),
-    colorAdjustment({ hue: 72 * 4 }, color),
-  ];
-}
-#+END_SRC
-
-***** star Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/star_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { star } from "../color.js";
-
-describe("star(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#ac8500", "#00b47a", "#008aff", "#c43deb"]],
-    ["orange", ["#ffa500", "#73d66d", "#00d5ff", "#b5a8ff", "#ff88ba"]],
-    ["yellow", ["#ffff00", "#00ffff", "#85f8ff", "#ffbeff", "#ffbb85"]],
-    ["lime", ["#00ff00", "#00faff", "#cca5ff", "#ff5fd1", "#ffa000"]],
-    ["cyan", ["#00ffff", "#b1dcff", "#ffb6ff", "#ffc07c", "#cdf076"]],
-    ["blue", ["#0000ff", "#ad0094", "#c90000", "#476300", "#007c82"]],
-    ["purple", ["#800080", "#9a0000", "#535300", "#00695a", "#0043b3"]],
-    ["magenta", ["#ff00ff", "#ff0000", "#aaa900", "#00d4b7", "#008cff"]],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => star("invalid")).toThrow();
-  });
-
-  it("should correctly emit star schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(star(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/star_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  star(color)
-  • should reject invalid colors
-  • should correctly emit star schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/star_test.js
-test star(color) > should reject invalid colors ... ok (15ms)
-test star(color) > should correctly emit star schemes from samples ... ok (54ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (115ms)
-
-#+end_src
-
-**** hexagon
-
-An emitter that accepts any valid CSS color and outputs a hexagon color scheme.
-
-+ =hexagon(color) => [string, string, string, string, string]=
-  - =color: string=: the input color
-
-***** hexagon Examples
-
-***** hexagon Implementation
-
-#+BEGIN_SRC js
-export function hexagon(color) {
-  return [
-    colorAdjustment({ hue: 0 }, color),
-    colorAdjustment({ hue: 60 }, color),
-    colorAdjustment({ hue: 60 * 2 }, color),
-    colorAdjustment({ hue: 60 * 3 }, color),
-    colorAdjustment({ hue: 60 * 4 }, color),
-    colorAdjustment({ hue: 60 * 5 }, color),
-  ];
-}
-#+END_SRC
-
-***** hexagon Tests
-
-#+BEGIN_SRC js :tangle "./v2/tests/color/hexagon_test.js"
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { hexagon } from "../color.js";
-
-describe("hexagon(color)", () => {
-  const samples = [
-    ["red", ["#ff0000", "#c57500", "#00ae00", "#00a9db", "#4f6fff", "#d62fd2"]],
-    [
-      "orange",
-      ["#ffa500", "#95d150", "#00dcd5", "#5bc0ff", "#de99ff", "#ff88a1"],
-    ],
-    [
-      "yellow",
-      ["#ffff00", "#00ffde", "#00ffff", "#f4d8ff", "#ffb3ff", "#ffc461"],
-    ],
-    [
-      "lime",
-      ["#00ff00", "#00ffff", "#61c4ff", "#ff7dff", "#ff6072", "#ffb400"],
-    ],
-    [
-      "cyan",
-      ["#00ffff", "#96e3ff", "#ffbfff", "#ffb3bf", "#ffd05c", "#b3f78b"],
-    ],
-    [
-      "blue",
-      ["#0000ff", "#9e00b2", "#ce0000", "#a02000", "#007700", "#0075a4"],
-    ],
-    [
-      "purple",
-      ["#800080", "#9c0000", "#773e00", "#006600", "#006384", "#253ab4"],
-    ],
-    [
-      "magenta",
-      ["#ff00ff", "#ff0000", "#ef8200", "#00cd00", "#00c8ff", "#527aff"],
-    ],
-  ];
-
-  it("should reject invalid colors", () => {
-    expect(() => hexagon("invalid")).toThrow();
-  });
-
-  it("should correctly emit hexagon schemes from samples", () => {
-    samples.forEach(([input, output]) => {
-      expect(hexagon(input)).toEqual(output);
-    });
-  });
-});
-
-run();
-#+END_SRC
-
-#+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/hexagon_test.js
-#+END_SRC
-
-#+RESULTS:
-#+begin_src shell
-
-  hexagon(color)
-  • should reject invalid colors
-  • should correctly emit hexagon schemes from samples
-
-running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/hexagon_test.js
-test hexagon(color) > should reject invalid colors ... ok (16ms)
-test hexagon(color) > should correctly emit hexagon schemes from samples ... ok (61ms)
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (123ms)
-
-#+end_src
-
 **** create
 
 An action that accepts a =color= and creates a palette based on the given =type=.
@@ -2833,7 +1708,7 @@ export function create(settings, color) {
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/create_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { create } from "../color.js";
+import { create } from "../../color.js";
 
 describe("create(settings, color)", () => {
   it("should reject invalid colors", () => {
@@ -3146,7 +2021,7 @@ export function contrast(settings, palette) {
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/contrast_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { contrast, create } from "../color.js";
+import { contrast, create } from "../../color.js";
 
 describe("contrast(settings, palette)", () => {
   it("should reject invalid colors", () => {
@@ -3376,7 +2251,7 @@ export function tokens(palette) {
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/tokens_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { tokens, create } from "../color.js";
+import { tokens, create } from "../../color.js";
 
 describe("tokens(palette)", () => {
   it("should reject an invalid color", () => {
@@ -5147,18 +4022,18 @@ function oklabFromOklch([, oklchValues]) {
 
 Phew, now that we've prepared each individual format, it's time to construct the color conversion pipeline.
 
-This will essentially be composed of two objects: =INPUT_TO_RGB= and =RGB_TO_OUTPUT= inside our main color =convert()=
+This will essentially be composed of two objects: =INPUT_TO_RGB= and =RGB_TO_OUTPUT= inside our main color =format()=
 function. You give it a color as input which then gets validated, has its components, extracted, and then parsed. The
 parsed values are then passed along and converted to a specified output format.
 
 #+BEGIN_SRC js
-function convert(color, to) {
+function _convert(color, to) {
   // Let's make the pathway explicit
   const valid = validator(color);
   const extraction = extractor(valid);
   const [format, values] = parser(extraction);
 
-  // Takes the input and converts it to RGB depending on format
+  // Takes the input and formats it to RGB depending on format
   const INPUT_TO_RGB = (input) => ({
     named: hexToRgb(input),
     hex: hexToRgb(input),
@@ -5172,7 +4047,7 @@ function convert(color, to) {
     oklch: oklabToRgb(oklabFromOklch(input)),
   });
 
-  // Takes the RGB and converts to output target
+  // Takes the RGB and formats to output target
   const RGB_TO_OUTPUT = (rgb) => ({
     hex: hexFromRgb(rgb),
     rgb: rgbOutputIdentity(rgb), // identity
@@ -5225,7 +4100,7 @@ logically assemble the data. It needs to be generic enough for us to simply atta
 to =matchFunctionalFormat()= above.
 
 #+BEGIN_SRC js
-function serializeFunctionalFormat({ prefix, legacy = true }, components) {
+function serializeFunctional_Convert({ prefix, legacy = true }, components) {
   const DELIMITER = legacy ? ", " : " ";
   const ALPHA_DELIMITER = legacy ? ", " : " / ";
 
@@ -5253,7 +4128,7 @@ function serializeRgb([, rgbResult]) {
     (component) => +clamp(component, 0, 255).toFixed(3),
   );
 
-  return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
+  return serializeFunctional_Convert({ prefix: "rgb" }, [R, G, B, A]);
 }
 #+END_SRC
 
@@ -5266,10 +4141,10 @@ function serializeHsl([, hslResult]) {
   // Correct the hue result
   const H = hueCorrection(+h.toFixed(3));
 
-  // convert saturation, lightness to percentages
+  // format saturation, lightness to percentages
   const [S, L] = [s, l].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
 
-  return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
+  return serializeFunctional_Convert({ prefix: "hsl" }, [H, S, L, A]);
 }
 #+END_SRC
 
@@ -5279,13 +4154,13 @@ function serializeHsl([, hslResult]) {
 function serializeCmyk([, cmykResult]) {
   const [c, m, y, k, A] = cmykResult;
 
-  // Convert to percentage, cap at 0-100
+  // Format to percentage, cap at 0-100
   const [C, M, Y, K] = [c, m, y, k].map(
     (n) =>
       `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
   );
 
-  return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "device-cmyk", legacy: false }, [
     C,
     M,
     Y,
@@ -5304,10 +4179,10 @@ function serializeHwb([, hslResult]) {
   // Correct the hue result
   const H = hueCorrection(+h.toFixed(3));
 
-  // convert white, black to percentages
+  // format white, black to percentages
   const [W, BLK] = [w, blk].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
 
-  return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "hwb", legacy: false }, [
     H,
     W,
     BLK,
@@ -5328,7 +4203,7 @@ function serializeCielab([, cielabValues]) {
   // Clamp a, b at ±127
   const [a, b] = [$a, $b].map((n) => +clamp(n, -127, 127).toFixed(3));
 
-  return serializeFunctionalFormat({ prefix: "lab", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "lab", legacy: false }, [
     L,
     a,
     b,
@@ -5351,11 +4226,11 @@ function serializeCielch([, cielchValues]) {
   if (C === 0) {
     H = 0;
   } else {
-    // Otherwise, convert hue to degrees, correct hue
+    // Otherwise, format hue to degrees, correct hue
     H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
   }
 
-  return serializeFunctionalFormat({ prefix: "lch", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "lch", legacy: false }, [
     L,
     C,
     H,
@@ -5370,13 +4245,13 @@ function serializeCielch([, cielchValues]) {
 function serializeOklab([, oklabValues]) {
   const [$L, $a, $b, A] = oklabValues;
 
-  // Convert number to percentage, clamp at 0-100
+  // Format number to percentage, clamp at 0-100
   const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
 
   // Clamp a, b at ±0.5
   const [a, b] = [$a, $b].map((n) => +clamp(n, -0.5, 0.5).toFixed(5));
 
-  return serializeFunctionalFormat({ prefix: "oklab", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "oklab", legacy: false }, [
     L,
     a,
     b,
@@ -5387,7 +4262,7 @@ function serializeOklab([, oklabValues]) {
 function serializeOklch([, oklchValues]) {
   const [$L, c, h, A] = oklchValues;
 
-  // Convert lightness to percentage, clamp at 0-100
+  // Format lightness to percentage, clamp at 0-100
   const L = `${+clamp(numberToPercentage($L), 0, 100).toFixed(3)}%`;
 
   // Clamp chroma at 0-0.5
@@ -5399,16 +4274,39 @@ function serializeOklch([, oklchValues]) {
   if (C === 0) {
     H = 0;
   } else {
-    // Otherwise, convert hue to degrees, correct hue
+    // Otherwise, format hue to degrees, correct hue
     H = +hueCorrection(radiansToDegrees(h)).toFixed(3);
   }
 
-  return serializeFunctionalFormat({ prefix: "oklch", legacy: false }, [
+  return serializeFunctional_Convert({ prefix: "oklch", legacy: false }, [
     L,
     C,
     H,
     A,
   ]);
+}
+#+END_SRC
+
+****** Serialization Interface
+
+To clean things up, we'll create a direct interface for serialization. The =serialize()= function will check the format
+of the incoming color calculation results and execute its corresponding serialization function.
+
+#+BEGIN_SRC js
+function serialize([format, results]) {
+  const serializers = {
+    hex: serializeHex,
+    rgb: serializeRgb,
+    hsl: serializeHsl,
+    cmyk: serializeCmyk,
+    hwb: serializeHwb,
+    cielab: serializeCielab,
+    cielch: serializeCielch,
+    oklab: serializeOklab,
+    oklch: serializeOklch,
+  };
+
+  return serializers[format]([format, results]);
 }
 #+END_SRC
 
@@ -5464,8 +4362,8 @@ The approach in steps:
 
 #+BEGIN_SRC js
 function extractOklchValues(color) {
-  const convertedOklch = serializeOklch(convert(color, "oklch"));
-  const [, components] = extractor(["oklch", convertedOklch]);
+  const formatedOklch = serializeOklch(_convert(color, "oklch"));
+  const [, components] = extractor(["oklch", formatedOklch]);
 
   return components.map((V) => parseFloat(V));
 }
@@ -5519,13 +4417,13 @@ function colorAdjustment(
   // Serialize oklch result
   const oklch = serializeOklch(["oklch", [L, C, H, A]]);
 
-  // If input format is named, convert to hex
+  // If input format is named, format to hex
   if (format === "named") {
-    return serializeInput(convert(oklch, "hex"));
+    return serializeInput(_convert(oklch, "hex"));
   }
 
   // Otherwise use input format
-  return serializeInput(convert(oklch, format));
+  return serializeInput(_convert(oklch, format));
 }
 #+END_SRC
 
@@ -5565,11 +4463,11 @@ Note that we also added a condition to reverse the mixture direction if =strengt
 
 #+BEGIN_SRC js
 function getOklabValues(color) {
-  return convert(color, "oklab");
+  return _convert(color, "oklab");
 }
 
 function calculateMixture(color, target, strength) {
-  // convert blend target and input color to OKLab
+  // format blend target and input color to OKLab
   const [, [$L, $a, $b, $A]] = getOklabValues(color);
   const [, [$$L, $$a, $$b, $$A]] = getOklabValues(target);
 
@@ -5613,10 +4511,10 @@ function colorMix({ target, strength = 0 }, color) {
   const oklab = serializeOklab(["oklab", [L, a, b, A]]);
 
   if (format === "named") {
-    return serializeInput(convert(oklab, "hex"));
+    return serializeInput(_convert(oklab, "hex"));
   }
 
-  return serializeInput(convert(oklab, format));
+  return serializeInput(_convert(oklab, format));
 }
 #+END_SRC
 
@@ -5672,10 +4570,10 @@ JavaScript. It takes care of the aforementioned sRGB adaptation as well.
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+    extractor(["rgb", serializeRgb(_convert(color, "rgb"))]),
   );
 
-  // Convert RGB to linear RGB
+  // Format RGB to linear RGB
   const [LR, LG, LB] = rgbToLrgb([r, g, b]);
 
   // Set up the Brettel simulation matrices
@@ -5763,7 +4661,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
   const p = dotWithSepPlane >= 0 ? $a : $b;
 
   // Apply the dichromatic confusion line adjusted for severity,
-  // then convert back to sRGB
+  // then format back to sRGB
   const [R, G, B] = lrgbToRgb(
     [
       [p[0] * LR + p[1] * LG + p[2] * LB, LR],
@@ -5786,10 +4684,10 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+    extractor(["rgb", serializeRgb(_convert(color, "rgb"))]),
   );
 
-  // Convert RGB to linear RGB
+  // Format RGB to linear RGB
   const [LR, LG, LB] = rgbToLrgb([r, g, b]);
 
   // Right off the bat, if the type is "tritanope", use the Brettel method
@@ -5828,7 +4726,7 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
   const p = vienot[type];
 
   // Apply the dichromatic confusion line adjusted for severity,
-  // then convert back to sRGB
+  // then format back to sRGB
   const [R, G, B] = lrgbToRgb(
     [
       [p[0] * LR + p[1] * LG + p[2] * LB, LR],
@@ -5883,10 +4781,10 @@ function checkColorblindness(
   ]);
 
   if (format === "named") {
-    return serializeInput(convert(rgb, "hex"));
+    return serializeInput(_convert(rgb, "hex"));
   }
 
-  return serializeInput(convert(rgb, format));
+  return serializeInput(_convert(rgb, format));
 }
 #+END_SRC
 
@@ -5987,7 +4885,7 @@ palettes. The missing ingredient is interpolation. QuarkSuite supports three kin
 
 + Interpolating over properties
 + Interpolating over a mixture
-+ Interpolating over simulation output
++ Interpolating over perception checks
 
 From this, we'll a helper for actions to generate tints, tones, and shades as well as blends and a few extras. The two
 action helpers we created so far have a similar call structure with only slight differences in the behavior, so we'll create
@@ -6082,6 +4980,91 @@ function colorInterpolation(action, settings, input) {
         }),
     ),
   ].reverse();
+}
+#+END_SRC
+
+**** Color Harmonies
+
+QuarkSuite provides a conventional set of color schemes (or harmonies) to get
+you started on aesthetically pleasing color palettes. When combined with the
+above color perception checks, you can create aesthetically pleasing and
+accessible color schemes.
+
+The following schemes are supported:
+
++ dyadic
++ analogous
++ complementary
++ split (complementary)
++ triadic
++ clash
++ tetradic
++ square
++ five color
++ six color
+
+In addition, where it makes sense, the color harmony action allows an =accented=
+flag that will include the complement in the scheme for those common accented
+variations.
+
+#+BEGIN_SRC js
+function colorHarmonies({ type, accented = false }, color) {
+  const withComplement = accented ? [colorAdjustment({ hue: 180 }, color)] : [];
+
+  const harmonies = {
+    dyadic: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 30 }, color),
+      ...withComplement,
+    ],
+    complementary: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 180 }, color),
+    ],
+    analogous: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 30 }, color),
+      colorAdjustment({ hue: 30 * 2 }, color),
+      ...withComplement,
+    ],
+    split: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 180 - 30 }, color),
+      ...withComplement,
+      colorAdjustment({ hue: 180 + 30 }, color),
+    ],
+    clash: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 90 }, color),
+      colorAdjustment({ hue: 90 * 3 }, color),
+    ],
+    triadic: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 120 }, color),
+      ...withComplement,
+      colorAdjustment({ hue: 120 * 2 }, color),
+    ],
+    double: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 30 }, color),
+      colorAdjustment({ hue: 180 }, color),
+      colorAdjustment({ hue: 180 + 30 }, color),
+    ],
+    tetradic: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 45 }, color),
+      colorAdjustment({ hue: 180 }, color),
+      colorAdjustment({ hue: 180 + 45 }, color),
+    ],
+    square: [
+      colorAdjustment({ hue: 0 }, color),
+      colorAdjustment({ hue: 90 }, color),
+      colorAdjustment({ hue: 90 * 2 }, color),
+      colorAdjustment({ hue: 90 * 3 }, color),
+    ],
+  };
+
+  return harmonies[type];
 }
 #+END_SRC
 
@@ -6291,7 +5274,7 @@ dark theme.
 #+BEGIN_SRC js
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", serializeRgb(convert(color, "rgb"))]),
+    extractor(["rgb", serializeRgb(_convert(color, "rgb"))]),
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -6379,11 +5362,11 @@ Much like the standard method, we account for the possibility of a dark theme.
 function comparePerceptualLightness(bg, fg) {
   const [, bgValues] = extractor([
     "oklch",
-    serializeOklch(convert(bg, "oklch")),
+    serializeOklch(_convert(bg, "oklch")),
   ]);
   const [, fgValues] = extractor([
     "oklch",
-    serializeOklch(convert(fg, "oklch")),
+    serializeOklch(_convert(fg, "oklch")),
   ]);
 
   const [bL] = bgValues.map((V) => parseFloat(V));
