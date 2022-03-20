@@ -49,10 +49,18 @@
         - [[#harmonize-examples][harmonize Examples]]
         - [[#harmonize-implementation][harmonize Implementation]]
         - [[#harmonize-tests][harmonize Tests]]
-      - [[#check][check]]
-        - [[#check-examples][check Examples]]
-        - [[#check-implementation][check Implementation]]
-        - [[#check-tests][check Tests]]
+      - [[#vision][vision]]
+        - [[#vision-examples][vision Examples]]
+        - [[#vision-implementation][vision Implementation]]
+        - [[#vision-tests][vision Tests]]
+      - [[#contrast][contrast]]
+        - [[#contrast-examples][contrast Examples]]
+        - [[#contrast-implementation][contrast Implementation]]
+        - [[#contrast-tests][contrast Tests]]
+      - [[#illuminant][illuminant]]
+        - [[#illuminant-examples][illuminant Examples]]
+        - [[#illuminant-implementation][illuminant Implementation]]
+        - [[#illuminant-tests][illuminant Tests]]
       - [[#palette][palette]]
         - [[#palette-examples][palette Examples]]
         - [[#palette-implementation][palette Implementation]]
@@ -1035,7 +1043,7 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (261m
 An action for creating conventional color harmonies from any valid CSS =color=. This action will generate a harmony
 based on its =type= and you can create =accented= versions that include the complement as well.
 
-+ =harmonize(settings, color)=
++ =harmonize(settings, color) => string[]=
   - =settings: {}=: color harmony settings
     * =settings.type = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" | "clash" | "double" |
       "tetradic" | "square"=: the type of color harmony to create
@@ -1226,88 +1234,41 @@ describe("harmonize(settings, color)", () => {
 run();
 #+END_SRC
 
-**** check
+**** vision
 
-An action that accepts a =color= and a =condition= setting and simulates an approximation of how a person might perceive
-the color under that condition. Each =condition= has its own settings, but all share the =strength= setting.
+A perception checking color action that simulates the influence of color vision deficiency (or colorblindness) on a =color=.
 
-Like the =adjust()= and =mix()= actions you can activate interpolation over a number of =steps= and it will
-return as an array of results.
+The available =methods= are =brettel= and =vienot= and you can set the =severity= when simulating an anomalous trichromacy
+=type= (=protanomaly=, =deuteranonmaly=, =tritanomaly=).
 
-+ =check(settings, color)=
-  - =settings: {}=: the simulation settings
-    * =settings.condition = 'colorblindness': 'colorblindness' | 'sensitivity' | 'illuminant'=: the perceptual condition
-      to check (with their own active settings)
-    * =settings.method = 'brettel': 'brettel' | 'vienot'=: the colorblindness simulation algorithm to use
-    * =settings.type = 'protanopia': 'prot(anomaly|anopia)' | 'deuter(anomaly|anopia)' | 'trit(anopia|anope)' |
-      'achromatopsia'=: the type of colorblindness to check (strength can be set for anomalous trichromacy types, but
-      has /no/ effect on achromatopsia or dichromacy types)
-    * =settings.contrast = 0: number=: the level of (contrast) sensitivity to check (as a percentage, where ~0~ is
-      black and ~100~ is white)
-    * =settings.temperature = 1000: number=: the color temperature of the illuminant (light source) to check (in
-      Kelvin, where ~1800~ is candlelight and ~6500~ is daylight)
-    * =settings.strength = 0: number=: the strength of the simulation (where ~0~ is no change and ~100~ is a complete overlay)
-    * =settings.steps = 0: number=: activates interpolation mode which returns the result of excuting the simulation in
-      /sequence/ up to the number of steps
+In addition, severity is /deactivated/ when =type= simulates dichromacy (=protanopia=, =deuteranopia=, =tritanopia=) or
+=achromatopsia=.
 
-***** check Examples
+If =steps= is >0 this activates an interpolated simulation sequence. This is
+useful for observing multiple simulation conditions at once.
 
-***** check Implementation
++ =vision(settings, color) => string | string[]=
+  - =settings: {}=: color vision simulation settings
+    * =settings.as = "protanopia": "achromatopsia" | "protanomaly" | "protanopia" | "deuteranomaly" | "deuteranopia" |
+      "tritanomaly" | "tritanopia"=: set the type of colorblindness to simulate
+    * =settings.method = "brettel": "brettel" | "vienot"=: selects the simulation method (~"brettel"~ is active for
+      ~tritanomaly~, ~tritanopia~ regardless of method because it's the only known accurate method for those.
+    * =settings.severity = 50: number=: set the severity for anomalous
+      trichromacy types (as a percentage)
+    * =settings.steps = 0: number=: activates interpolated simulation when >0
+  - =color: string=: the color to influence
+
+***** vision Examples
+
+***** vision Implementation
 
 #+BEGIN_SRC js
-export function check(settings, color) {
-  // Set immediate defaults
-  const {
-    condition = "colorblindness",
-    method = "brettel",
-    type = "protanopia",
-    strength = 0,
-    steps = 0,
-  } = settings;
+export function vision(settings, color) {
+  // Set defaults
+  const { as = "protanopia", method = "brettel", steps = 0 } = settings;
 
-  // If simulating contrast sensivity
-  if (condition === "sensitivity") {
-    // Set unique defaults
-    const { contrast = 0 } = settings;
-
-    if (steps) {
-      return colorInterpolation(
-        checkSensitivity,
-        {
-          contrast,
-          strength,
-          steps,
-        },
-        color,
-      );
-    }
-
-    return checkSensitivity({ contrast, strength, steps }, color);
-  }
-
-  // If simulating a light source
-  if (condition === "illuminant") {
-    const { temperature = 1000 } = settings;
-
-    if (steps) {
-      return colorInterpolation(
-        checkIlluminant,
-        {
-          temperature,
-          strength,
-          steps,
-        },
-        color,
-      );
-    }
-
-    return checkIlluminant({ temperature, strength, steps }, color);
-  }
-
-  // Otherwise handle colorblindness
-
-  // Checkd through reducing the chroma to zero while adjusting no other properties.
-  if (type === "achromatopsia") {
+  // Achromatopsia through reducing the chroma to zero
+  if (as === "achromatopsia") {
     const chroma = -100;
 
     if (steps) {
@@ -1317,48 +1278,49 @@ export function check(settings, color) {
     return colorAdjustment({ chroma }, color);
   }
 
-  // Protanomaly, Deuteranomaly, and Tritanomaly have a strength adjustment
-  if (type.endsWith("anomaly")) {
-    let $type = type.replace(/anomaly/g, "anope");
+  // Protanomaly, Deuteranomaly, and Tritanomaly have a severity setting
+  if (as.endsWith("anomaly")) {
+    let type = as.replace(/anomaly/g, "anope");
+    const { severity = 50 } = settings;
 
     if (steps) {
       return colorInterpolation(
         checkColorblindness,
-        { method, type: $type, strength, steps },
+        { method, type, strength: severity, steps },
         color,
       );
     }
 
-    return checkColorblindness({ method, type: $type, strength, steps }, color);
-  }
-
-  // Protanopia, Deuteranopia, Tritanopia by definition do not
-  const $type = type.replace(/ia/g, "e");
-
-  if (steps) {
-    return colorInterpolation(
-      checkColorblindness,
-      { method, type: $type, strength: 100, steps },
+    return checkColorblindness(
+      { method, type, strength: severity, steps },
       color,
     );
   }
 
-  return checkColorblindness(
-    { method, type: $type, strength: 100, steps },
-    color,
-  );
+  // Protanopia, Deuteranopia, Tritanopia by definition do not
+  const type = as.replace(/anopia/g, "anope");
+
+  if (steps) {
+    return colorInterpolation(
+      checkColorblindness,
+      { method, type, strength: 100, steps },
+      color,
+    );
+  }
+
+  return checkColorblindness({ method, type, strength: 100, steps }, color);
 }
 #+END_SRC
 
-***** check Tests
+***** vision Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/check_test.js"
+#+BEGIN_SRC js :tangle "./v2/tests/color/vision_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { check } from "../../color.js";
+import { vision } from "../../color.js";
 
-describe("check(settings, color)", () => {
+describe("vision(settings, color)", () => {
   it("should reject invalid colors", () => {
-    expect(() => check({}, "invalid")).toThrow();
+    expect(() => vision({}, "invalid")).toThrow();
   });
 
   const [red, green, blue, purple] = [
@@ -1368,7 +1330,7 @@ describe("check(settings, color)", () => {
     "rebeccapurple",
   ];
 
-  const colorblindness = {
+  const visionSamples = {
     achromatopsia: {
       red: [red, "#787878"],
       green: [green, "#d6ddd4"],
@@ -1463,52 +1425,165 @@ describe("check(settings, color)", () => {
     },
   };
 
-  describe("settings.condition = 'colorblindness'", () => {
-    describe("settings.type = 'achromatopsia'", () => {
-      it("should correctly check achromatopsia", () => {
-        Object.values(colorblindness.achromatopsia).forEach(
-          ([input, output]) => {
-            expect(
-              check(
-                {
-                  condition: "colorblindness",
-                  type: "achromatopsia",
-                },
-                input,
-              ),
-            ).toBe(output);
-          },
-        );
+  describe("settings.as = 'achromatopsia'", () => {
+    it("should correctly simulate achromatopsia", () => {
+      Object.values(visionSamples.achromatopsia).forEach(([input, output]) => {
+        expect(
+          vision(
+            {
+              as: "achromatopsia",
+            },
+            input,
+          ),
+        ).toBe(output);
       });
     });
-    Object.entries(colorblindness)
-      .filter(([category]) => category !== "achromatopsia")
-      .forEach(([type, data]) => {
-        describe(`settings.type = '${type}'`, () => {
-          Object.entries(data).forEach(([method, $data]) => {
-            it(`should correctly check ${type} with ${method} method on samples`, () => {
-              Object.values($data).forEach(([input, results]) => {
-                results.forEach((output, pos) => {
-                  expect(
-                    check(
-                      {
-                        condition: "colorblindness",
-                        method,
-                        type,
-                        strength: 25 * pos,
-                      },
-                      input,
-                    ),
-                  ).toBe(output);
-                });
+  });
+
+  Object.entries(visionSamples)
+    .filter(([category]) => category !== "achromatopsia")
+    .forEach(([as, data]) => {
+      describe(`settings.as = '${as}'`, () => {
+        Object.entries(data).forEach(([method, $data]) => {
+          it(`should correctly simulate ${as} with ${method} method on samples`, () => {
+            Object.values($data).forEach(([input, results]) => {
+              results.forEach((output, pos) => {
+                expect(
+                  vision(
+                    {
+                      method,
+                      as,
+                      severity: 25 * pos,
+                    },
+                    input,
+                  ),
+                ).toBe(output);
               });
             });
           });
         });
       });
+    });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color/vision_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  vision(settings, color)
+  • should reject invalid colors
+    settings.as = 'achromatopsia'
+    • should correctly simulate achromatopsia
+    settings.as = 'protanomaly'
+    • should correctly simulate protanomaly with brettel method on samples
+    • should correctly simulate protanomaly with vienot method on samples
+    settings.as = 'protanopia'
+    • should correctly simulate protanopia with brettel method on samples
+    • should correctly simulate protanopia with vienot method on samples
+    settings.as = 'deuteranomaly'
+    • should correctly simulate deuteranomaly with brettel method on samples
+    • should correctly simulate deuteranomaly with vienot method on samples
+    settings.as = 'deuteranopia'
+    • should correctly simulate deuteranopia with brettel method on samples
+    • should correctly simulate deuteranopia with vienot method on samples
+    settings.as = 'tritanomaly'
+    • should correctly simulate tritanomaly with brettel method on samples
+    • should correctly simulate tritanomaly with vienot method on samples
+    settings.as = 'tritanopia'
+    • should correctly simulate tritanopia with brettel method on samples
+    • should correctly simulate tritanopia with vienot method on samples
+
+running 14 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/vision_test.js
+test vision(settings, color) > should reject invalid colors ... ok (22ms)
+test vision(settings, color) > settings.as = 'achromatopsia' > should correctly simulate achromatopsia ... ok (27ms)
+test vision(settings, color) > settings.as = 'protanomaly' > should correctly simulate protanomaly with brettel method on samples ... ok (32ms)
+test vision(settings, color) > settings.as = 'protanomaly' > should correctly simulate protanomaly with vienot method on samples ... ok (27ms)
+test vision(settings, color) > settings.as = 'protanopia' > should correctly simulate protanopia with brettel method on samples ... ok (10ms)
+test vision(settings, color) > settings.as = 'protanopia' > should correctly simulate protanopia with vienot method on samples ... ok (12ms)
+test vision(settings, color) > settings.as = 'deuteranomaly' > should correctly simulate deuteranomaly with brettel method on samples ... ok (27ms)
+test vision(settings, color) > settings.as = 'deuteranomaly' > should correctly simulate deuteranomaly with vienot method on samples ... ok (26ms)
+test vision(settings, color) > settings.as = 'deuteranopia' > should correctly simulate deuteranopia with brettel method on samples ... ok (10ms)
+test vision(settings, color) > settings.as = 'deuteranopia' > should correctly simulate deuteranopia with vienot method on samples ... ok (12ms)
+test vision(settings, color) > settings.as = 'tritanomaly' > should correctly simulate tritanomaly with brettel method on samples ... ok (27ms)
+test vision(settings, color) > settings.as = 'tritanomaly' > should correctly simulate tritanomaly with vienot method on samples ... ok (33ms)
+test vision(settings, color) > settings.as = 'tritanopia' > should correctly simulate tritanopia with brettel method on samples ... ok (11ms)
+test vision(settings, color) > settings.as = 'tritanopia' > should correctly simulate tritanopia with vienot method on samples ... ok (23ms)
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (388ms)
+
+#+end_src
+
+
+**** contrast
+
+A perception checking color action that simulates the influence of contrast sensitivity on a =color=.
+
+You can set a contrast =factor= as a percentage (with ~0~ translating to pure black, ~50~ to pure gray, and ~100~ to
+pure white) as well as the =severity=.
+
+If =steps= is >0 this activates an interpolated simulation sequence. This is
+useful for observing multiple simulation conditions at once.
+
++ =contrast(settings, color)=
+  - =settings: {}=: contrast sensitivity settings
+    * =settings.factor = 0: number=: set the contrast factor to simulate (as a percentage from black to gray to white)
+    * =settings.severity = 50: number=: set the severity of the contrast loss
+    * =settings.steps = 0: number=: activates interpolated simulation when >0
+  - =color: string=: the color to influence
+
+***** contrast Examples
+
+***** contrast Implementation
+
+#+BEGIN_SRC js
+export function contrast(settings, color) {
+  // Set defaults
+  const { factor = 0, severity = 50, steps = 0 } = settings;
+
+  if (steps) {
+    return colorInterpolation(
+      checkSensitivity,
+      {
+        contrast: factor,
+        strength: severity,
+        steps,
+      },
+      color,
+    );
+  }
+
+  return checkSensitivity(
+    { contrast: factor, strength: severity, steps },
+    color,
+  );
+}
+#+END_SRC
+
+***** contrast Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color/contrast_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { contrast } from "../../color.js";
+
+describe("contrast(settings, color)", () => {
+  it("should reject invalid colors", () => {
+    expect(() => contrast({}, "invalid")).toThrow();
   });
 
-  const sensitivity = {
+  const [red, green, blue, purple] = [
+    "crimson",
+    "chartreuse",
+    "dodgerblue",
+    "rebeccapurple",
+  ];
+
+  const contrastSamples = {
     0: {
       red: [red, ["#dc143c", "#950a26", "#540311", "#1b0002", "#000000"]],
       green: [green, ["#7fff00", "#54ae00", "#2d6300", "#0b2200", "#000000"]],
@@ -1536,24 +1611,101 @@ describe("check(settings, color)", () => {
     },
   };
 
-  describe("settings.condition = 'sensitivity'", () => {
-    it("should correctly check contrast sensitivity on sample data set", () => {
-      Object.entries(sensitivity).forEach(([contrast, data]) => {
-        Object.values(data).forEach(([input, results]) => {
-          results.forEach((output, pos) => {
-            expect(
-              check(
-                { condition: "sensitivity", contrast, strength: 25 * pos },
-                input,
-              ),
-            ).toBe(output);
-          });
+  it("should correctly simulate contrast sensitivity on sample data set", () => {
+    Object.entries(contrastSamples).forEach(([factor, data]) => {
+      Object.values(data).forEach(([input, results]) => {
+        results.forEach((output, pos) => {
+          expect(contrast({ factor, severity: 25 * pos }, input)).toBe(output);
         });
       });
     });
   });
+});
 
-  const illuminant = {
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/color/contrast_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  contrast(settings, color)
+  • should reject invalid colors
+  • should correctly simulate contrast sensitivity on sample data set
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/contrast_test.js
+test contrast(settings, color) > should reject invalid colors ... ok (37ms)
+test contrast(settings, color) > should correctly simulate contrast sensitivity on sample data set ... ok (311ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (415ms)
+
+#+end_src
+
+**** illuminant
+
+A perception checking color action that simulates the influence of an illuminant (or light source) on a =color=.
+
+You can set the temperature (=K=) of your target light source as well as the =intensity= of its effect.
+
+If =steps= is >0 this activates an interpolated simulation sequence. This is
+useful for observing multiple simulation conditions at once.
+
++ =illuminant(settings, color)=
+  - =settings: {}= illuminant settings
+    * =settings.K = 1850: number=: the temperature of the light source in kelvin (candlelight at ~1850~ by default)
+    * =settings.intensity = 50: number=: the intensity of the light source
+    * =settings.steps = 0: number=: activates interpolated simulation when >0
+  - =color: string=: the color to influence
+
+***** illuminant Examples
+
+***** illuminant Implementation
+
+#+BEGIN_SRC js
+export function illuminant(settings, color) {
+  // Set defaults
+  const { K = 1850, intensity = 50, steps = 0 } = settings;
+
+  const { temperature = 1000 } = settings;
+
+  if (steps) {
+    return colorInterpolation(
+      checkIlluminant,
+      {
+        temperature: K,
+        strength: intensity,
+        steps,
+      },
+      color,
+    );
+  }
+
+  return checkIlluminant({ temperature: K, strength: intensity, steps }, color);
+}
+#+END_SRC
+
+***** illuminant Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/color/illuminant_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { illuminant } from "../../color.js";
+
+describe("illuminant(settings, color)", () => {
+  it("should reject invalid colors", () => {
+    expect(() => illuminant({}, "invalid")).toThrow();
+  });
+
+  const [red, green, blue, purple] = [
+    "crimson",
+    "chartreuse",
+    "dodgerblue",
+    "rebeccapurple",
+  ];
+
+  const illuminantSamples = {
     1000: {
       red: [red, ["#dc143c", "#e52435", "#ed302c", "#f63a1e", "#ff4400"]],
       green: [green, ["#7fff00", "#bbd900", "#dcb000", "#f18200", "#ff4400"]],
@@ -1581,18 +1733,11 @@ describe("check(settings, color)", () => {
     },
   };
 
-  describe("settings.condition = 'illuminant'", () => {
-    it("should correctly check the effects of various light sources on sample data", () => {
-      Object.entries(illuminant).forEach(([temperature, data]) => {
-        Object.values(data).forEach(([input, results]) => {
-          results.forEach((output, pos) => {
-            expect(
-              check(
-                { condition: "illuminant", temperature, strength: 25 * pos },
-                input,
-              ),
-            ).toBe(output);
-          });
+  it("should correctly simulate the effects of various light sources on sample data", () => {
+    Object.entries(illuminantSamples).forEach(([K, data]) => {
+      Object.values(data).forEach(([input, results]) => {
+        results.forEach((output, pos) => {
+          expect(illuminant({ K, intensity: 25 * pos }, input)).toBe(output);
         });
       });
     });
@@ -1603,59 +1748,21 @@ run();
 #+END_SRC
 
 #+BEGIN_SRC shell
-NO_COLOR=1 deno test v2/tests/color/check_test.js
+NO_COLOR=1 deno test v2/tests/color/illuminant_test.js
 #+END_SRC
 
 #+RESULTS:
 #+begin_src shell
 
-  check(settings, color)
+  illuminant(settings, color)
   • should reject invalid colors
-    settings.condition = 'colorblindness'
-      settings.type = 'achromatopsia'
-      • should correctly check achromatopsia
-      settings.type = 'protanomaly'
-      • should correctly check protanomaly with brettel method on samples
-      • should correctly check protanomaly with vienot method on samples
-      settings.type = 'protanopia'
-      • should correctly check protanopia with brettel method on samples
-      • should correctly check protanopia with vienot method on samples
-      settings.type = 'deuteranomaly'
-      • should correctly check deuteranomaly with brettel method on samples
-      • should correctly check deuteranomaly with vienot method on samples
-      settings.type = 'deuteranopia'
-      • should correctly check deuteranopia with brettel method on samples
-      • should correctly check deuteranopia with vienot method on samples
-      settings.type = 'tritanomaly'
-      • should correctly check tritanomaly with brettel method on samples
-      • should correctly check tritanomaly with vienot method on samples
-      settings.type = 'tritanopia'
-      • should correctly check tritanopia with brettel method on samples
-      • should correctly check tritanopia with vienot method on samples
-    settings.condition = 'sensitivity'
-    • should correctly check contrast sensitivity on sample data set
-    settings.condition = 'illuminant'
-    • should correctly check the effects of various light sources on sample data
+  • should correctly simulate the effects of various light sources on sample data
 
-running 16 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/check_test.js
-test check(settings, color) > should reject invalid colors ... ok (13ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'achromatopsia' > should correctly check achromatopsia ... ok (26ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly check protanomaly with brettel method on samples ... ok (26ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanomaly' > should correctly check protanomaly with vienot method on samples ... ok (20ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly check protanopia with brettel method on samples ... ok (7ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'protanopia' > should correctly check protanopia with vienot method on samples ... ok (9ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly check deuteranomaly with brettel method on samples ... ok (18ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranomaly' > should correctly check deuteranomaly with vienot method on samples ... ok (18ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly check deuteranopia with brettel method on samples ... ok (8ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'deuteranopia' > should correctly check deuteranopia with vienot method on samples ... ok (8ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly check tritanomaly with brettel method on samples ... ok (19ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanomaly' > should correctly check tritanomaly with vienot method on samples ... ok (23ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly check tritanopia with brettel method on samples ... ok (8ms)
-test check(settings, color) > settings.condition = 'colorblindness' > settings.type = 'tritanopia' > should correctly check tritanopia with vienot method on samples ... ok (11ms)
-test check(settings, color) > settings.condition = 'sensitivity' > should correctly check contrast sensitivity on sample data set ... ok (217ms)
-test check(settings, color) > settings.condition = 'illuminant' > should correctly check the effects of various light sources on sample data ... ok (107ms)
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/color/illuminant_test.js
+test illuminant(settings, color) > should reject invalid colors ... ok (24ms)
+test illuminant(settings, color) > should correctly simulate the effects of various light sources on sample data ... ok (162ms)
 
-test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (595ms)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (252ms)
 
 #+end_src
 

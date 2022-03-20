@@ -57,60 +57,13 @@ export function harmonize(settings, color) {
 }
 // harmonize Implementation:1 ends here
 
-// [[file:../Notebook.org::*check Implementation][check Implementation:1]]
-export function check(settings, color) {
-  // Set immediate defaults
-  const {
-    condition = "colorblindness",
-    method = "brettel",
-    type = "protanopia",
-    strength = 0,
-    steps = 0,
-  } = settings;
+// [[file:../Notebook.org::*vision Implementation][vision Implementation:1]]
+export function vision(settings, color) {
+  // Set defaults
+  const { as = "protanopia", method = "brettel", steps = 0 } = settings;
 
-  // If simulating contrast sensivity
-  if (condition === "sensitivity") {
-    // Set unique defaults
-    const { contrast = 0 } = settings;
-
-    if (steps) {
-      return colorInterpolation(
-        checkSensitivity,
-        {
-          contrast,
-          strength,
-          steps,
-        },
-        color,
-      );
-    }
-
-    return checkSensitivity({ contrast, strength, steps }, color);
-  }
-
-  // If simulating a light source
-  if (condition === "illuminant") {
-    const { temperature = 1000 } = settings;
-
-    if (steps) {
-      return colorInterpolation(
-        checkIlluminant,
-        {
-          temperature,
-          strength,
-          steps,
-        },
-        color,
-      );
-    }
-
-    return checkIlluminant({ temperature, strength, steps }, color);
-  }
-
-  // Otherwise handle colorblindness
-
-  // Checkd through reducing the chroma to zero while adjusting no other properties.
-  if (type === "achromatopsia") {
+  // Achromatopsia through reducing the chroma to zero
+  if (as === "achromatopsia") {
     const chroma = -100;
 
     if (steps) {
@@ -120,38 +73,86 @@ export function check(settings, color) {
     return colorAdjustment({ chroma }, color);
   }
 
-  // Protanomaly, Deuteranomaly, and Tritanomaly have a strength adjustment
-  if (type.endsWith("anomaly")) {
-    let $type = type.replace(/anomaly/g, "anope");
+  // Protanomaly, Deuteranomaly, and Tritanomaly have a severity setting
+  if (as.endsWith("anomaly")) {
+    let type = as.replace(/anomaly/g, "anope");
+    const { severity = 50 } = settings;
 
     if (steps) {
       return colorInterpolation(
         checkColorblindness,
-        { method, type: $type, strength, steps },
+        { method, type, strength: severity, steps },
         color,
       );
     }
 
-    return checkColorblindness({ method, type: $type, strength, steps }, color);
-  }
-
-  // Protanopia, Deuteranopia, Tritanopia by definition do not
-  const $type = type.replace(/ia/g, "e");
-
-  if (steps) {
-    return colorInterpolation(
-      checkColorblindness,
-      { method, type: $type, strength: 100, steps },
+    return checkColorblindness(
+      { method, type, strength: severity, steps },
       color,
     );
   }
 
-  return checkColorblindness(
-    { method, type: $type, strength: 100, steps },
+  // Protanopia, Deuteranopia, Tritanopia by definition do not
+  const type = as.replace(/anopia/g, "anope");
+
+  if (steps) {
+    return colorInterpolation(
+      checkColorblindness,
+      { method, type, strength: 100, steps },
+      color,
+    );
+  }
+
+  return checkColorblindness({ method, type, strength: 100, steps }, color);
+}
+// vision Implementation:1 ends here
+
+// [[file:../Notebook.org::*contrast Implementation][contrast Implementation:1]]
+export function contrast(settings, color) {
+  // Set defaults
+  const { factor = 0, severity = 50, steps = 0 } = settings;
+
+  if (steps) {
+    return colorInterpolation(
+      checkSensitivity,
+      {
+        contrast: factor,
+        strength: severity,
+        steps,
+      },
+      color,
+    );
+  }
+
+  return checkSensitivity(
+    { contrast: factor, strength: severity, steps },
     color,
   );
 }
-// check Implementation:1 ends here
+// contrast Implementation:1 ends here
+
+// [[file:../Notebook.org::*illuminant Implementation][illuminant Implementation:1]]
+export function illuminant(settings, color) {
+  // Set defaults
+  const { K = 1850, intensity = 50, steps = 0 } = settings;
+
+  const { temperature = 1000 } = settings;
+
+  if (steps) {
+    return colorInterpolation(
+      checkIlluminant,
+      {
+        temperature: K,
+        strength: intensity,
+        steps,
+      },
+      color,
+    );
+  }
+
+  return checkIlluminant({ temperature: K, strength: intensity, steps }, color);
+}
+// illuminant Implementation:1 ends here
 
 // [[file:../Notebook.org::*palette Implementation][palette Implementation:1]]
 export function palette(settings, color) {
