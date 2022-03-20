@@ -1977,7 +1977,7 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (772m
 
 **** accessibility
 
-An action that accepts a =palette= and filters its variants based on how much they accessibility from the background
+An action that accepts a =palette= and filters its variants based on how much they contrast from the background
 context. The two accessibility =modes= are =standard= and =custom= with their own settings.
 
 The modes share a =dark= toggle that will check the accessibility against a dark theme (through inverting the UI colors).
