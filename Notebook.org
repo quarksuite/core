@@ -5,131 +5,66 @@
 - [[#summary][Summary]]
 - [[#whats-new-in-v2][What's New in v2?]]
   - [[#workflows][Workflows]]
-  - [[#concrete-idioms][Concrete Idioms]]
+    - [[#core][Core]]
+    - [[#dsl][DSL]]
   - [[#settled-types][Settled Types]]
-  - [[#simple-data-rendering][Simple Data Rendering]]
   - [[#transition-to-dtcg-spec][Transition to DTCG Spec]]
   - [[#improved-performance][Improved Performance]]
   - [[#internal-simplicity][Internal Simplicity]]
   - [[#improved-modularity][Improved Modularity]]
-  - [[#trimmed-api][Trimmed API]]
 - [[#spec][Spec]]
   - [[#api][API]]
-    - [[#functional-utilities][Functional Utilities]]
-      - [[#process][process]]
-        - [[#process-examples][process Examples]]
-        - [[#process-implementation][process Implementation]]
-        - [[#process-tests][process Tests]]
-      - [[#preset][preset]]
-        - [[#preset-examples][preset Examples]]
-        - [[#preset-implementation][preset Implementation]]
-        - [[#preset-tests][preset Tests]]
-      - [[#pipeline][pipeline]]
-        - [[#pipeline-examples][pipeline Examples]]
-        - [[#pipeline-implementation][pipeline Implementation]]
-        - [[#pipeline-tests][pipeline Tests]]
-      - [[#propagate][propagate]]
-        - [[#propagate-examples][propagate Examples]]
-        - [[#propagate-implementation][propagate Implementation]]
-        - [[#propagate-tests][propagate Tests]]
-      - [[#delegate][delegate]]
-        - [[#delegate-examples][delegate Examples]]
-        - [[#delegate-implementation][delegate Implementation]]
-        - [[#delegate-tests][delegate Tests]]
-    - [[#color][Color]]
-      - [[#convert][convert]]
-        - [[#convert-examples][convert Examples]]
-        - [[#convert-implementation][convert Implementation]]
-        - [[#convert-tests][convert Tests]]
-      - [[#adjust][adjust]]
-        - [[#adjust-examples][adjust Examples]]
-        - [[#adjust-implementation][adjust Implementation]]
-        - [[#adjust-tests][adjust Tests]]
-      - [[#mix][mix]]
-        - [[#mix-examples][mix Examples]]
-        - [[#mix-implementation][mix Implementation]]
-        - [[#mix-tests][mix Tests]]
-      - [[#harmony][harmony]]
-        - [[#harmony-examples][harmony Examples]]
-        - [[#harmony-implementation][harmony Implementation]]
-        - [[#harmony-tests][harmony Tests]]
-      - [[#vision][vision]]
-        - [[#vision-examples][vision Examples]]
-        - [[#vision-implementation][vision Implementation]]
-        - [[#vision-tests][vision Tests]]
-      - [[#contrast][contrast]]
-        - [[#contrast-examples][contrast Examples]]
-        - [[#contrast-implementation][contrast Implementation]]
-        - [[#contrast-tests][contrast Tests]]
-      - [[#illuminant][illuminant]]
-        - [[#illuminant-examples][illuminant Examples]]
-        - [[#illuminant-implementation][illuminant Implementation]]
-        - [[#illuminant-tests][illuminant Tests]]
-      - [[#palette][palette]]
-        - [[#palette-examples][palette Examples]]
-        - [[#palette-implementation][palette Implementation]]
-        - [[#palette-tests][palette Tests]]
-      - [[#accessibility][accessibility]]
-        - [[#accessibility-examples][accessibility Examples]]
-        - [[#accessibility-implementation][accessibility Implementation]]
-        - [[#accessibility-tests][accessibility Tests]]
-      - [[#tokens][tokens]]
-        - [[#tokens-examples][tokens Examples]]
-        - [[#tokens-implementation][tokens Implementation]]
-        - [[#tokens-tests][tokens Tests]]
-      - [[#element][element]]
-    - [[#modular-scale][Modular Scale]]
-      - [[#create][create]]
-      - [[#modify][modify]]
-      - [[#chunk][chunk]]
-      - [[#format][format]]
-      - [[#tokens-1][tokens]]
-      - [[#element-1][element]]
-    - [[#design-tokens][Design Tokens]]
-      - [[#css][css]]
-      - [[#scss][scss]]
-      - [[#less][less]]
-      - [[#styl][styl]]
-      - [[#json][json]]
-      - [[#yaml][yaml]]
-      - [[#gpl][gpl]]
-      - [[#sketchpalette][sketchpalette]]
-      - [[#tailwind][tailwind]]
-      - [[#styledict][styledict]]
-      - [[#element-2][element]]
+    - [[#core-1][Core]]
+      - [[#functional-utilities][Functional Utilities]]
+        - [[#process][process]]
+        - [[#preset][preset]]
+        - [[#pipeline][pipeline]]
+        - [[#propagate][propagate]]
+        - [[#delegate][delegate]]
+      - [[#color][Color]]
+        - [[#convert][convert]]
+        - [[#adjust][adjust]]
+        - [[#mix][mix]]
+        - [[#harmony][harmony]]
+        - [[#vision][vision]]
+        - [[#contrast][contrast]]
+        - [[#illuminant][illuminant]]
+        - [[#palette][palette]]
+        - [[#accessibility][accessibility]]
+        - [[#tokens][tokens]]
+      - [[#modular-scale][Modular Scale]]
+        - [[#create][create]]
+        - [[#modify][modify]]
+        - [[#chunk][chunk]]
+        - [[#format][format]]
+        - [[#tokens-1][tokens]]
+        - [[#element][element]]
+      - [[#design-tokens][Design Tokens]]
+        - [[#css][css]]
+        - [[#scss][scss]]
+        - [[#less][less]]
+        - [[#styl][styl]]
+        - [[#json][json]]
+        - [[#yaml][yaml]]
+        - [[#gpl][gpl]]
+        - [[#sketchpalette][sketchpalette]]
+        - [[#tailwind][tailwind]]
+        - [[#styledict][styledict]]
+        - [[#element-1][element]]
   - [[#internals][Internals]]
-    - [[#functional][Functional]]
-      - [[#composition-internals][Composition Internals]]
-    - [[#color-1][Color]]
-      - [[#conversion][Conversion]]
-        - [[#tokenization][Tokenization]]
-        - [[#validation][Validation]]
-        - [[#extraction][Extraction]]
-        - [[#parsing][Parsing]]
-        - [[#calculation][Calculation]]
-        - [[#serialization][Serialization]]
-      - [[#color-adjustment][Color Adjustment]]
-        - [[#target-properties][Target Properties]]
-        - [[#perceptually-uniform-color-adjustment][Perceptually Uniform Color Adjustment]]
-        - [[#color-adjustment-through-oklch][Color Adjustment Through OKLCH]]
-      - [[#color-mixture][Color Mixture]]
-        - [[#perceptually-uniform-color-mixture][Perceptually Uniform Color Mixture]]
-        - [[#color-mixture-through-oklab][Color Mixture Through OKLab]]
-      - [[#color-perception][Color Perception]]
-        - [[#color-vision-deficiency-colorblindness][Color Vision Deficiency (Colorblindness)]]
-        - [[#contrast-sensitivity][Contrast Sensitivity]]
-        - [[#correlated-color-temperature-cct][Correlated Color Temperature (CCT)]]
-      - [[#color-interpolation][Color Interpolation]]
-      - [[#color-harmonies][Color Harmonies]]
-      - [[#palette-configurations][Palette Configurations]]
-        - [[#material-configuration][Material Configuration]]
-        - [[#artistic-configuration][Artistic Configuration]]
-      - [[#palette-accessibility][Palette Accessibility]]
-        - [[#wcag-color-contrast-ratios][WCAG Color Contrast Ratios]]
-        - [[#colorimetric-contrast][Colorimetric Contrast]]
-      - [[#palette-formatting][Palette Formatting]]
-    - [[#modular-scale-internals][Modular Scale Internals]]
-    - [[#design-token-internals][Design Token Internals]]
+    - [[#core-2][Core]]
+      - [[#functional][Functional]]
+        - [[#composition-internals][Composition Internals]]
+      - [[#color-1][Color]]
+        - [[#conversion][Conversion]]
+        - [[#color-adjustment][Color Adjustment]]
+        - [[#color-mixture][Color Mixture]]
+        - [[#color-perception][Color Perception]]
+        - [[#color-interpolation][Color Interpolation]]
+        - [[#color-harmonies][Color Harmonies]]
+        - [[#palette-configurations][Palette Configurations]]
+        - [[#palette-accessibility][Palette Accessibility]]
+        - [[#palette-formatting][Palette Formatting]]
 
 * Summary
 
@@ -144,18 +79,40 @@ stay current after everything is locked in.
 
 ** Workflows
 
-v1 focused on utilities as the base API and built abstractions (formulas, bootstrappers) on top of it. v2 focuses
-*exclusively* on the relationship between types, their available actions, and output emitters.
+*** Core
 
-Rather than providing the factory pattern, I've resolved to /further improve/ the functional workflow.
+v2 focuses *exclusively* on the relationship between types, their available actions, and output emitters. This means the
+workflow has been refined and tightened for even greater functional flexibility and the object factory pattern is retired.
 
-** Concrete Idioms
-
-Where v1 differentiated between its abstractions with a host of naming conventions, v2 reinforces an idiomatic
-relationship between functions and their purpose. The API now follows a simple, explicit naming convention.
+The API now follows a simple, explicit architecture:
 
 + =action(y, x)=: indicates that a function performs an action on type =x= with =y= modifying the output
 + =emitter(x)=: indicates that a function emits output /directly from/ =x=
+
+The functional helpers provided are a small subset optimized for the values and collections generated by QuarkSuite. You
+should absolutely not use them for general data handling.
+
+*** DSL
+
+QuarkSuite v2 provides a brand new DSL (domain specific language) around vanilla web components.
+
+Rather than using them solely to /render/ data generated by the core library, they will instead /translate/ the
+functions of the core as a declarative workflow embedded in your markup.
+
+The reason why the DSL is built around web components is for the semantic benefits and the undeniable portability of
+using HTML as the *entire workspace* of your design token development environment.
+
+It means you can work with a technology that you or everyone on your team probably knows or uses. And because the DSL is
+realized through your markup, it *doesn't change unless you change it*.
+
+The available elements will match equivalent actions and emitters in the core. For example: the =vision= action of the =color=
+module becomes the =<color-vision>= element used declaratively. Some
+
+The other difference from the core workflow is that an =<x-define>= element is provided for each =x= type which translates
+the initial value assignment. So =<color-define>= allows you to create an initial color declaratively.
+
+As the DSL is derived from functions in the core, you can use their output interchangeably to translate or transmit as
+needed. You'll end up with the same results regardless.
 
 ** Settled Types
 
@@ -164,16 +121,6 @@ relationship between functions and their purpose. The API now follows a simple, 
 + =palette=: generated color palettes
 + =ms=: raw modular scales
 + =tokens=: token collections
-
-** Simple Data Rendering
-
-After fiddling with a lot of approaches for a UI library, I realized that QuarkSuite doesn't really need a full library
-so much as ways to render data to a view. QuarkSuite v2 will introduce vanilla
-web components that use the following naming convention:
-
-+ =<type-token>=: this element renders an individual token
-+ =<type-dictionary>=: this element renders a dictionary of tokens
-+ =<type-view>=: this element renders
 
 ** Transition to DTCG Spec
 
@@ -210,11 +157,6 @@ available types. This will make it easier to develop and debug while allowing mo
 In addition, the internal library has been expanded so that each utility exposed in the API is truly uncoupled from the
 rest. This means that modern build tools, and environments that support tree shaking, will only pull in what's needed.
 
-** Trimmed API
-
-The concreteness of the =action -> emitter -> process -> pipeline= architecture of QuarkSuite v2 means a lot of existing
-utilities would actually be better off wrapped as an action. For example =color_to_hex()=, =color_to_hsl()= could be
-refactored as a =format()= action of the =color= type.
 * Spec
 
 The library begins with an entry point =mod.js= that aggregates all the functionality to make it easier to experiment
@@ -227,7 +169,9 @@ export * as color from "./color.js";
 
 ** API
 
-The API documentation follows specific formatting that will hopefully make it easier to understand.
+*** Core
+
+The core documentation follows specific formatting that will hopefully make it easier to understand.
 
 #+BEGIN_QUOTE
 Example:
@@ -237,21 +181,21 @@ Example:
 + =x: unknown=: data description
 #+END_QUOTE
 
-*** Functional Utilities
+**** Functional Utilities
 :PROPERTIES:
 :header-args:js: :tangle "./v2/fn.js" :mkdirp yes :comments link
 :END:
 
-**** process
+***** process
 
 A functional utility that combines emitters into a process.
 
 + =process(...emitters) => (x)=
   - =emitters: Array<(x)>=: sequence of emitters to combine
 
-***** process Examples
+****** process Examples
 
-***** process Implementation
+****** process Implementation
 
 #+BEGIN_SRC js
 export function process(...emitters) {
@@ -259,9 +203,9 @@ export function process(...emitters) {
 }
 #+END_SRC
 
-***** process Tests
+****** process Tests
 
-**** preset
+***** preset
 
 A functional utility that accepts an action and its modifiers and converts it to an emitter.
 
@@ -269,9 +213,9 @@ A functional utility that accepts an action and its modifiers and converts it to
   - =action: (y, x) => unknown=: the action to transform
   - =y: unknown=: the action's associated modifiers
 
-***** preset Examples
+****** preset Examples
 
-***** preset Implementation
+****** preset Implementation
 
 #+BEGIN_SRC js
 export function preset(action, y) {
@@ -279,9 +223,9 @@ export function preset(action, y) {
 }
 #+END_SRC
 
-***** preset Tests
+****** preset Tests
 
-**** pipeline
+***** pipeline
 
 A functional utility that shuttles data =x= through a process pipeline.
 
@@ -289,9 +233,9 @@ A functional utility that shuttles data =x= through a process pipeline.
   + =x: unknown=: data to pipe
   + =processes: Array<(x)>=: sequence of processes to transform data
 
-***** pipeline Examples
+****** pipeline Examples
 
-***** pipeline Implementation
+****** pipeline Implementation
 
 #+BEGIN_SRC js
 export function pipeline(x, ...processes) {
@@ -299,9 +243,9 @@ export function pipeline(x, ...processes) {
 }
 #+END_SRC
 
-***** pipeline Tests
+****** pipeline Tests
 
-**** propagate
+***** propagate
 
 A functional utility that allows an =emitter= to propagate over a collection of =xs=.
 
@@ -309,9 +253,9 @@ A functional utility that allows an =emitter= to propagate over a collection of 
   - =emitter: (x) => unknown=: the emitter to use
   - =xs: unknown[]=: the data collection to map over
 
-***** propagate Examples
+****** propagate Examples
 
-***** propagate Implementation
+****** propagate Implementation
 
 #+BEGIN_SRC js
 export function propagate(emitter, xs) {
@@ -319,9 +263,9 @@ export function propagate(emitter, xs) {
 }
 #+END_SRC
 
-***** propagate Tests
+****** propagate Tests
 
-**** delegate
+***** delegate
 
 A functional utility that maps a collection of =emitters= to a collection of =xs= inputs.
 
@@ -332,9 +276,9 @@ directly to the inputs in =xs= you actually want to transform. Any unmatched inp
   - =emitters: Array<(x)>=: the collection of emitters to assign
   - =xs: unknown[]=: the data collection of delegation targets
 
-***** delegate Examples
+****** delegate Examples
 
-***** delegate Implementation
+****** delegate Implementation
 
 #+BEGIN_SRC js
 export function delegate(emitters, xs) {
@@ -344,14 +288,14 @@ export function delegate(emitters, xs) {
 }
 #+END_SRC
 
-***** delegate Tests
+****** delegate Tests
 
-*** Color
+**** Color
 :PROPERTIES:
 :header-args:js: :tangle "./v2/color.js" :mkdirp yes :comments link
 :END:
 
-**** convert
+***** convert
 
 An action that converts a given valid CSS =color= =to= another valid CSS color
 format.
@@ -361,9 +305,9 @@ format.
     format
   - =color: string=: the color to convert
 
-***** convert Examples
+****** convert Examples
 
-***** convert Implementation
+****** convert Implementation
 
 #+BEGIN_SRC js
 export function convert(to, color) {
@@ -379,7 +323,7 @@ export function convert(to, color) {
 }
 #+END_SRC
 
-***** convert Tests
+****** convert Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/convert_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -568,7 +512,7 @@ test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (159
 
 #+end_src
 
-**** adjust
+***** adjust
 
 An action that adjusts the =properties= of a given valid CSS =color=. Positive property values will increase while
 negative values will decrease.
@@ -585,9 +529,9 @@ results of adjusting the defined =properties= color in /sequence/ up to the set 
     * =properties.steps = 0: number=: triggers color interpolation mode (if greater than 0)
   - =color: string=: the color to adjust
 
-***** adjust Examples
+****** adjust Examples
 
-***** adjust Implementation
+****** adjust Implementation
 
 #+BEGIN_SRC js
 export function adjust(settings, color) {
@@ -612,7 +556,7 @@ export function adjust(settings, color) {
 }
 #+END_SRC
 
-***** adjust Tests
+****** adjust Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/adjust_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -880,7 +824,7 @@ test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (239m
 
 #+end_src
 
-**** mix
+***** mix
 
 An action that mixes an input =color= and a =target= color with a set level of =strength=.
 
@@ -894,9 +838,9 @@ mixing the colors in /sequence/ up to the set number of =steps=.
     * =properties.steps = 0: number=: triggers color blending mode (if greater than 0)
   - =color: string=: the color to mix
 
-***** mix Examples
+****** mix Examples
 
-***** mix Implementation
+****** mix Implementation
 
 #+BEGIN_SRC js
 export function mix(settings, color) {
@@ -911,7 +855,7 @@ export function mix(settings, color) {
 }
 #+END_SRC
 
-***** mix Tests
+****** mix Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/mix_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -1067,7 +1011,7 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (261m
 
 #+end_src
 
-**** harmony
+***** harmony
 
 An action for creating conventional color harmonies from any valid CSS =color=. This action will generate a harmony
 based on its =configuration= and you can create =accented= versions that include the complement as well.
@@ -1079,9 +1023,9 @@ based on its =configuration= and you can create =accented= versions that include
     * =settings.accented = false: boolean=: do you want to use the accented form (where applicable)?
   - =color: string=: the color to harmony
 
-***** harmony Examples
+****** harmony Examples
 
-***** harmony Implementation
+****** harmony Implementation
 
 #+BEGIN_SRC js
 export function harmony(settings, color) {
@@ -1092,7 +1036,7 @@ export function harmony(settings, color) {
 }
 #+END_SRC
 
-***** harmony Tests
+****** harmony Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/harmony_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -1267,7 +1211,7 @@ run();
 NO_COLOR=1 deno test v2/tests/color/harmony_test.js
 #+END_SRC
 
-**** vision
+***** vision
 
 A perception checking color action that simulates the influence of color vision deficiency (or colorblindness) on a
 =color=.
@@ -1292,9 +1236,9 @@ conditions at once.
     * =settings.steps = 0: number=: activates interpolated simulation when >0
   - =color: string=: the color to influence
 
-***** vision Examples
+****** vision Examples
 
-***** vision Implementation
+****** vision Implementation
 
 #+BEGIN_SRC js
 export function vision(settings, color) {
@@ -1346,7 +1290,7 @@ export function vision(settings, color) {
 }
 #+END_SRC
 
-***** vision Tests
+****** vision Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/vision_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -1553,7 +1497,7 @@ test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (388
 
 #+end_src
 
-**** contrast
+***** contrast
 
 A perception checking color action that simulates the influence of contrast sensitivity on a =color=.
 
@@ -1570,9 +1514,9 @@ conditions at once.
     * =settings.steps = 0: number=: activates interpolated simulation when >0
   - =color: string=: the color to influence
 
-***** contrast Examples
+****** contrast Examples
 
-***** contrast Implementation
+****** contrast Implementation
 
 #+BEGIN_SRC js
 export function contrast(settings, color) {
@@ -1598,7 +1542,7 @@ export function contrast(settings, color) {
 }
 #+END_SRC
 
-***** contrast Tests
+****** contrast Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/contrast_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -1677,7 +1621,7 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (415m
 
 #+end_src
 
-**** illuminant
+***** illuminant
 
 A perception checking color action that simulates the influence of an illuminant (or light source) on a =color=.
 
@@ -1693,9 +1637,9 @@ conditions at once.
     * =settings.steps = 0: number=: activates interpolated simulation when >0
   - =color: string=: the color to influence
 
-***** illuminant Examples
+****** illuminant Examples
 
-***** illuminant Implementation
+****** illuminant Implementation
 
 #+BEGIN_SRC js
 export function illuminant(settings, color) {
@@ -1720,7 +1664,7 @@ export function illuminant(settings, color) {
 }
 #+END_SRC
 
-***** illuminant Tests
+****** illuminant Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/illuminant_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -1799,7 +1743,7 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (252m
 
 #+end_src
 
-**** palette
+***** palette
 
 An action that accepts a =color= and creates a palette based on the given =configuration=.
 
@@ -1816,9 +1760,9 @@ The defined configurations are =material= and =artistic=. They have their own se
     * =settings.stated = false: boolean=: include interface states? (active with both configurations)
   - =color: string=: any valid CSS color
 
-***** palette Examples
+****** palette Examples
 
-***** palette Implementation
+****** palette Implementation
 
 #+BEGIN_SRC js
 export function palette(settings, color) {
@@ -1844,7 +1788,7 @@ export function palette(settings, color) {
 }
 #+END_SRC
 
-***** palette Tests
+****** palette Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/palette_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -2115,7 +2059,7 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (772m
 
 #+end_src
 
-**** accessibility
+***** accessibility
 
 An action that accepts a =palette= and filters its variants based on how much they contrast from the background
 context. The two accessibility =modes= are =standard= and =custom= with their own settings.
@@ -2132,9 +2076,9 @@ The modes share a =dark= toggle that will check the accessibility against a dark
     * =settings.dark = false: boolean=: will the accessibility be checked for a dark theme? (active with both modes)
   - =palette: string[][]=: the palette to use
 
-***** accessibility Examples
+****** accessibility Examples
 
-***** accessibility Implementation
+****** accessibility Implementation
 
 #+BEGIN_SRC js
 export function accessibility(settings, palette) {
@@ -2157,7 +2101,7 @@ export function accessibility(settings, palette) {
 }
 #+END_SRC
 
-***** accessibility Tests
+****** accessibility Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/accessibility_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -2360,16 +2304,16 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (1s)
 
 #+end_src
 
-**** tokens
+***** tokens
 
 An emitter that accepts a =palette= and assembles it into a dictionary of color tokens.
 
 + =tokens(palette) => object=
   - =palette: string[][]=: the generated palette to assemble
 
-***** tokens Examples
+****** tokens Examples
 
-***** tokens Implementation
+****** tokens Implementation
 
 #+BEGIN_SRC js
 export function tokens(palette) {
@@ -2377,7 +2321,7 @@ export function tokens(palette) {
 }
 #+END_SRC
 
-***** tokens Tests
+****** tokens Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/tokens_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -2730,59 +2674,58 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (488m
 
 #+end_src
 
-**** element
-*** Modular Scale
+**** Modular Scale
 :PROPERTIES:
 :header-args:js: :tangle "./v2/ms.js" :mkdirp yes :comments link
 :END:
 
-**** create
+***** create
 
-**** modify
+***** modify
 
-**** chunk
+***** chunk
 
-**** format
+***** format
 
-**** tokens
+***** tokens
 
-**** element
+***** element
 
-*** Design Tokens
+**** Design Tokens
 :PROPERTIES:
 :header-args:js: :tangle "./v2/tokens.js" :mkdirp yes :comments link
 :END:
 
-**** css
+***** css
 
-**** scss
+***** scss
 
-**** less
+***** less
 
-**** styl
+***** styl
 
-**** json
+***** json
 
-**** yaml
+***** yaml
 
-**** gpl
+***** gpl
 
-**** sketchpalette
+***** sketchpalette
 
-**** tailwind
+***** tailwind
 
-**** styledict
+***** styledict
 
-**** element
+***** element
 
 ** Internals
-
-*** Functional
+*** Core
+**** Functional
 :PROPERTIES:
 :header-args:js: :tangle "./v2/fn.js" :mkdirp yes :comments link
 :END:
 
-**** Composition Internals
+***** Composition Internals
 
 #+BEGIN_SRC js :tangle "./v2/fn.js"
 function compose(...fns) {
@@ -2790,7 +2733,7 @@ function compose(...fns) {
 }
 #+END_SRC
 
-*** Color
+**** Color
 :PROPERTIES:
 :header-args:js: :tangle "./v2/color.js" :mkdirp yes :comments link
 :END:
@@ -2798,12 +2741,12 @@ function compose(...fns) {
 QuarkSuite accepts and processes most valid CSS color formats defined in [[https://www.w3.org/TR/css-color-4/][CSS Color Module Level 4]]. There are no color objects
 to pass around, you just use the colors themselves and get colors back.
 
-**** Conversion
+***** Conversion
 
 Under the hood, a sequence of tokenization, validation, extraction, parsing, conversion, and serialization (mostly)
 guarantees correct color input /and/ output. So wield those colors with confidence.
 
-***** Tokenization
+****** Tokenization
 
 Color format tokenization follows the spec as closely as possible.
 
@@ -2834,12 +2777,12 @@ const HUE_TOKEN = new RegExp(
 );
 #+END_SRC
 
-***** Validation
+****** Validation
 
 Defining tokens will make validation of the functional color formats incredibly simple as the tokens can be combined
 with the correct format prefix to create a full color string.
 
-****** Named Color Validation
+******* Named Color Validation
 
 QuarkSuite supports CSS named colors through to CSS Color Module 4 using an object query.
 
@@ -3007,7 +2950,7 @@ function namedValidator(color) {
 }
 #+END_SRC
 
-****** RGB Hex Validation
+******* RGB Hex Validation
 
 This can be done with a regular expression.
 
@@ -3017,7 +2960,7 @@ function hexValidator(color) {
 }
 #+END_SRC
 
-****** Validating Functional Formats
+******* Validating Functional Formats
 
 The functional formats require a bit of extra processing. Good thing we created those tokens earlier. Functional formats
 always have an optional alpha component, so we tack that onto the end. If =legacy= is =true=, then we use the legacy
@@ -3043,7 +2986,7 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
 }
 #+END_SRC
 
-******* RGB Validation
+******** RGB Validation
 
 =matchFunctionalFormats= makes validating the remaining CSS formats a matter of slotting in tokens with the right
 prefix. As you'll see, some tokens repeat and others have to be slotted individually.
@@ -3057,7 +3000,7 @@ function rgbValidator(color) {
 }
 #+END_SRC
 
-******* HSL Validation
+******** HSL Validation
 
 #+BEGIN_SRC js
 function hslValidator(color) {
@@ -3068,7 +3011,7 @@ function hslValidator(color) {
 }
 #+END_SRC
 
-******* CMYK Validation
+******** CMYK Validation
 
 =device-cmyk= is the first modern format, so the legacy flag will have to be disabled. It's also technically been moved
 to CSS Color Module 5, but I implemented it before I found that out.
@@ -3082,7 +3025,7 @@ function cmykValidator(color) {
 }
 #+END_SRC
 
-******* HWB Validation
+******** HWB Validation
 
 #+BEGIN_SRC js
 function hwbValidator(color) {
@@ -3093,7 +3036,7 @@ function hwbValidator(color) {
 }
 #+END_SRC
 
-******* CIELAB/CIELCH Validation
+******** CIELAB/CIELCH Validation
 
 These two formats are scalar and polar variants of the same color space, so I'll combine their validators.
 
@@ -3114,7 +3057,7 @@ function cielchValidator(color) {
 }
 #+END_SRC
 
-******* OKLab/OKLCH Validation
+******** OKLab/OKLCH Validation
 
 Same with OKLab/OKLCH, which recently became standard so I reimplemented them according to the spec.
 
@@ -3136,7 +3079,7 @@ function oklchValidator(color) {
 }
 #+END_SRC
 
-****** Preparing Validation
+******* Preparing Validation
 
 From here, we'll implement a =validator()= that accepts input and checks it against all of the available formats. A valid
 color will match /one of/ the available formats and get slotted in a =[format, color]= tuple.
@@ -3164,7 +3107,7 @@ function validator(input) {
 }
 #+END_SRC
 
-****** Invalid Color Handling
+******* Invalid Color Handling
 
 Otherwise, the input does not match any of the available formats and throws a useful error.
 
@@ -3206,12 +3149,12 @@ function InvalidColorError(input) {
 }
 #+END_SRC
 
-***** Extraction
+****** Extraction
 
 Once we're sure we have a valid color, we need to extract its components. Since CSS color formats really have just two
 forms (hexadecimal and functional), that's how many extractors we need.
 
-****** RGB Hex Extractor
+******* RGB Hex Extractor
 
 For RGB Hex extraction, we need to consider that RGB colors can also come in the form =#RGB(A)=. So we'll use =expandHex()= to expand
 those to a full =#RRGGBB(AA)=. And then we have =hexExtractor()= to do the extraction proper.
@@ -3232,7 +3175,7 @@ function expandHex(color) {
 }
 #+END_SRC
 
-****** Functional Format Extractor
+******* Functional Format Extractor
 
 Extracting from functional formats requires that the values be picked /with their units attached/. We'll need this
 information for parsing them prior to format conversion.
@@ -3245,7 +3188,7 @@ function componentExtractor(color) {
 }
 #+END_SRC
 
-****** Extraction Preparation
+******* Extraction Preparation
 
 Now with all the parts in place, we'll create a general =extractor()= that consumes a valid color tuple. If the =format=
 is =hex=, we'll call =hexExtractor()=, otherwise it's a functional format and must be handled by =componentExtractor()=.
@@ -3271,7 +3214,7 @@ function extractor(validated) {
 }
 #+END_SRC
 
-***** Parsing
+****** Parsing
 
 Before we get into actual color conversion, we're going to parse the extracted values according to their format. In
 other words, we're going break them down into a calculable state that we can pass along to each conversion function.
@@ -3280,11 +3223,11 @@ We're going to use the extraction tuple and create a parser for each format so t
 
 But first...
 
-****** Math
+******* Math
 
 We're going to prepare some helpers for the necessary value conversions we'll need to perform.
 
-******* Clamping Values
+******** Clamping Values
 
 Before anything else, we'll need a helper to =clamp()= values between a =min= and =max=. Some values in functional
 formats are capped, and others are not. We'll see which when we implement the serializer.
@@ -3303,7 +3246,7 @@ function clamp(x, a, b) {
 }
 #+END_SRC
 
-******* Hex Fragment <-> Channel
+******** Hex Fragment <-> Channel
 
 Now, we're going to need to convert hex fragments to and from their RGB channel equivalents.
 
@@ -3320,7 +3263,7 @@ function hexFragmentFromChannel(channel) {
 }
 #+END_SRC
 
-******* Number <-> Percentage
+******** Number <-> Percentage
 
 Some functional formats will need to have their numbers converted to percentages or the reverse.
 
@@ -3334,7 +3277,7 @@ function numberFromPercentage(percentage) {
 }
 #+END_SRC
 
-******* Number <-> Channel
+******** Number <-> Channel
 
 RGB channels need to be converted to a =0-1= range to be useful in calculation. And then they need to be converted back
 to channels later.
@@ -3349,7 +3292,7 @@ function numberFromChannel(channel) {
 }
 #+END_SRC
 
-******* Hue Component
+******** Hue Component
 
 Some of the color conversions require the [[https://www.rapidtables.com/convert/number/how-degrees-to-radians.html][hue as radians]]. And then we need to be able to [[https://www.rapidtables.com/convert/number/how-radians-to-degrees.html][convert back]].
 
@@ -3374,7 +3317,7 @@ function turnsToDegrees(turns) {
 }
 #+END_SRC
 
-******* Hue Correction
+******** Hue Correction
 
 A stipulation of the hue component in the spec is that it must support hue values greater than a single revolution.
 
@@ -3397,7 +3340,7 @@ function hueCorrection(hue) {
 }
 #+END_SRC
 
-****** Parsing RGB Hex
+******* Parsing RGB Hex
 
 RGB Hex must be parsed as RGB channels to be mathematically useful. That's what =parseHex()= does.
 
@@ -3421,7 +3364,7 @@ function parseHex([format, components]) {
 }
 #+END_SRC
 
-****** Parsing Functional RGB
+******* Parsing Functional RGB
 
 As stated above, RGB must be converted to a =0-1= range to be mathematically useful. This is a straightforward
 conversion because of our =numberFromChannel()= helper. Meanwhile, percentage values are valid for =a=.
@@ -3454,7 +3397,7 @@ function parseRgb([format, components]) {
 }
 #+END_SRC
 
-****** Parsing Functional HSL
+******* Parsing Functional HSL
 
 The =h= component will need special processing depending on its units. And our conversion goal is /degrees/. Other than
 that, =s= and =l= need conversion to a =0-1= range, and =A= is handled as usual.
@@ -3497,7 +3440,7 @@ function parseHsl([format, components]) {
 }
 #+END_SRC
 
-****** Parsing Functional CMYK
+******* Parsing Functional CMYK
 
 Functional CMYK is dead simple to parse. We check to see if the components are percentages and convert them. Otherwise,
 we coerce them to numbers with no additional processing.
@@ -3517,11 +3460,11 @@ function parseCMYK([format, components]) {
 }
 #+END_SRC
 
-****** Parsing Functional HWB
+******* Parsing Functional HWB
 
 Parsing functional HWB simply reuses =parseHSL()= because in this area they are /identical/.
 
-****** Parsing Functional CIELAB/CIELCH
+******* Parsing Functional CIELAB/CIELCH
 
 Of these two, the only one that requires any special attention is CIELCH because of that hue component. CIELAB just
 passes its values through number coercion.
@@ -3553,7 +3496,7 @@ function parseCielch([format, components]) {
 }
 #+END_SRC
 
-****** Parsing OKLab/OKLCH
+******* Parsing OKLab/OKLCH
 
 Parsing OKLab/OKLCH is similar to the above section, but it's important to note that OKLCH calculations expect the hue
 in /radians/. =L= is also converted to a =0-1= range.
@@ -3587,7 +3530,7 @@ function parseOklch([format, components]) {
 }
 #+END_SRC
 
-****** Parsing Preparation
+******* Parsing Preparation
 
 Similar to the validator and extractor, the =parser()= will read a color tuple and execute the correct parsing function
 for a matched format. And then it throws back a transformed tuple of =[format, values]=.
@@ -3612,7 +3555,7 @@ function parser(extracted) {
 }
 #+END_SRC
 
-***** Calculation
+****** Calculation
 
 Having completed our necessary preparations, we can finally move on to color conversion. QuarkSuite handles conversion
 with a very precise method.
@@ -3625,7 +3568,7 @@ every input format to its targeted output format.
 
 Some formats need to be linked into the pipeline. Specifically =Scalar <-> Polar= formats.
 
-****** Preamble
+******* Preamble
 
 To keep things simple, I'll keep using the color tuple data structure up until the point it's actually time to hand a
 color back to the user. This is a *major* change from v1, where I attempted to reassemble the color within each conversion
@@ -3639,7 +3582,7 @@ the result of parsing as the color tuple =[format, values]=.
 
 In the color conversion functions themselves, we'll be passing the results along as the =[format, results]= tuple.
 
-****** RGB <-> RGB
+******* RGB <-> RGB
 
 Yes, we do have to account for RGB converting to and from itself, because the parsed RGB can't be serialized.
 
@@ -3658,11 +3601,11 @@ function rgbOutputIdentity([, rgbValues]) {
 #+END_SRC
 
 
-****** INPUT -> RGB
+******* INPUT -> RGB
 
 The first process in the conversion pipeline is to take the =INPUT= format and convert it to =RGB=.
 
-******* Hex -> RGB
+******** Hex -> RGB
 
 If you remember from =parseHex()=, a parsed hexadecimal color is already a valid RGB result. So we mark it as such and pass it
 through.
@@ -3673,7 +3616,7 @@ function hexToRgb([, values]) {
 }
 #+END_SRC
 
-******* HSL -> RGB
+******** HSL -> RGB
 
 To convert HSL to RGB, we use [[https://www.rapidtables.com/convert/color/hsl-to-rgb.html][this conversion formula from RapidTables]].
 
@@ -3706,7 +3649,7 @@ function hslToRgb([, values]) {
 }
 #+END_SRC
 
-******* CMYK -> RGB
+******** CMYK -> RGB
 
 #+BEGIN_QUOTE
 IMPORTANT: CSS Color Module 5 will use a device-independent conversion of CMYK through the CIELAB space. This means the
@@ -3731,7 +3674,7 @@ function cmykToRgb([, values]) {
 }
 #+END_SRC
 
-******* HWB -> RGB
+******** HWB -> RGB
 
 The formula for conversion of HWB to RGB is [[https://www.w3.org/TR/css-color-4/#hwb-to-rgb][adapted from the spec itself]].
 
@@ -3756,7 +3699,7 @@ function hwbToRgb([, values]) {
 }
 #+END_SRC
 
-******* CIELAB -> RGB
+******** CIELAB -> RGB
 
 The steps for the CIELAB to RGB conversion are as follows:
 
@@ -3829,7 +3772,7 @@ function cielabToRgb([, values]) {
 }
 #+END_SRC
 
-******* OKLAB -> RGB
+******** OKLAB -> RGB
 
 The OKLab to RGB conversion steps are adapted from the creator, Björn Ottosson's, [[https://bottosson.github.io/posts/oklab/][original post about it]].
 
@@ -3880,11 +3823,11 @@ function oklabToRgb([, values]) {
 }
 #+END_SRC
 
-****** RGB -> OUTPUT
+******* RGB -> OUTPUT
 
 The next stage is to get the output format /from/ the RGB.
 
-******* RGB -> Hex
+******** RGB -> Hex
 
 Getting RGB to hexadecimal color output is a similarly stratightforward implementation.
 
@@ -3902,7 +3845,7 @@ function hexFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-******* RGB -> HSL
+******** RGB -> HSL
 
 Getting RGB to an HSL output color is [[https://www.rapidtables.com/convert/color/rgb-to-hsl.html][handled by another RapidTables formula]].
 
@@ -3943,7 +3886,7 @@ function hslFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-******* RGB -> CMYK
+******** RGB -> CMYK
 
 Getting RGB to CMYK output [[https://www.rapidtables.com/convert/color/rgb-to-cmyk.html][requires yet another RapidTables formula]].
 
@@ -3960,7 +3903,7 @@ function cmykFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-******* RGB -> HWB
+******** RGB -> HWB
 
 The formula for converting RGB to HWB output is also [[https://www.w3.org/TR/css-color-4/#rgb-to-hwb][pulled from the spec]].
 
@@ -3984,7 +3927,7 @@ function hwbFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-******* RGB -> CIELAB
+******** RGB -> CIELAB
 
 For getting CIELAB output from RGB, we'll be leaning on Bruce Lindbloom's equations again.
 
@@ -4051,7 +3994,7 @@ function cielabFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-******* RGB -> OKLAB
+******** RGB -> OKLAB
 
 To get Oklab output from RGB, we're going to use the inversion also documented by its creator.
 
@@ -4095,7 +4038,7 @@ function oklabFromRgb([, rgbValues]) {
 }
 #+END_SRC
 
-****** SCALAR <-> POLAR
+******* SCALAR <-> POLAR
 
 The last thing we need to do before wiring everything up is create a bridge to and from CIELAB & OKLab to their polar
 coordinate alter-egos (CIELCH & OKLCH).
@@ -4124,7 +4067,7 @@ function scalarFromPolar([, polarValues]) {
 }
 #+END_SRC
 
-******* CIELAB <-> CIELCH
+******** CIELAB <-> CIELCH
 
 #+BEGIN_SRC js
 function cielabToCielch([, cielabValues]) {
@@ -4136,7 +4079,7 @@ function cielabFromCielch([, cielchValues]) {
 }
 #+END_SRC
 
-******* OKLab <-> OKLCH
+******** OKLab <-> OKLCH
 
 #+BEGIN_SRC js
 function oklabToOklch([, oklabValues]) {
@@ -4148,7 +4091,7 @@ function oklabFromOklch([, oklchValues]) {
 }
 #+END_SRC
 
-****** Color Conversion Pipeline
+******* Color Conversion Pipeline
 
 Phew, now that we've prepared each individual format, it's time to construct the color conversion pipeline.
 
@@ -4197,7 +4140,7 @@ function _convert(color, to) {
 }
 #+END_SRC
 
-***** Serialization
+****** Serialization
 
 All of that is well and good, but this leaves the converted color in a state that the user doesn't expect, and the
 browser can't make any use of. That's why we have to /serialize/ the result.
@@ -4208,7 +4151,7 @@ format, but we already have that information.
 
 Now let's create the serialization functions.
 
-****** Serializing RGB Hex
+******* Serializing RGB Hex
 
 Concatenate the =hexResult= with a =#=. If the alpha channel is =ff=, the color is opaque and alpha should be removed.
 
@@ -4223,7 +4166,7 @@ function serializeHex([, hexResult]) {
 }
 #+END_SRC
 
-****** Serializing Functional Formats
+******* Serializing Functional Formats
 
 Functional color formats have an incredibly uniform syntax, so let's create a helper =serializeFunctionalFormat()= to
 logically assemble the data. It needs to be generic enough for us to simply attach a prefix and plug in values; similar
@@ -4247,7 +4190,7 @@ function serializeFunctional_Convert({ prefix, legacy = true }, components) {
 }
 #+END_SRC
 
-******* Serializing RGB
+******** Serializing RGB
 
 #+BEGIN_SRC js
 function serializeRgb([, rgbResult]) {
@@ -4262,7 +4205,7 @@ function serializeRgb([, rgbResult]) {
 }
 #+END_SRC
 
-******* Serializing HSL
+******** Serializing HSL
 
 #+BEGIN_SRC js
 function serializeHsl([, hslResult]) {
@@ -4278,7 +4221,7 @@ function serializeHsl([, hslResult]) {
 }
 #+END_SRC
 
-******* Serializing CMYK
+******** Serializing CMYK
 
 #+BEGIN_SRC js
 function serializeCmyk([, cmykResult]) {
@@ -4300,7 +4243,7 @@ function serializeCmyk([, cmykResult]) {
 }
 #+END_SRC
 
-******* Serializing HWB
+******** Serializing HWB
 
 #+BEGIN_SRC js
 function serializeHwb([, hslResult]) {
@@ -4321,7 +4264,7 @@ function serializeHwb([, hslResult]) {
 }
 #+END_SRC
 
-******* Serializing CIELAB/CIELCH
+******** Serializing CIELAB/CIELCH
 
 #+BEGIN_SRC js
 function serializeCielab([, cielabValues]) {
@@ -4369,7 +4312,7 @@ function serializeCielch([, cielchValues]) {
 }
 #+END_SRC
 
-******* Serializing OKLab/OKLCH
+******** Serializing OKLab/OKLCH
 
 #+BEGIN_SRC js
 function serializeOklab([, oklabValues]) {
@@ -4417,7 +4360,7 @@ function serializeOklch([, oklchValues]) {
 }
 #+END_SRC
 
-****** Serialization Interface
+******* Serialization Interface
 
 To clean things up, we'll create a direct interface for serialization. The =serialize()= function will check the format
 of the incoming color calculation results and execute its corresponding serialization function.
@@ -4440,12 +4383,12 @@ function serialize([format, results]) {
 }
 #+END_SRC
 
-**** Color Adjustment
+***** Color Adjustment
 
 Now that color conversion is handled, we can move on to color actions. The first necessary action we can perform on a
 color is /adjustment/.
 
-***** Target Properties
+****** Target Properties
 
 The properties we can adjust include:
 
@@ -4460,7 +4403,7 @@ The properties we can adjust include:
 + Alpha: A measure of how much light a color allows to pass through it (with amounts >50 trending toward solid and <50
   trending toward total transparency).
 
-***** Perceptually Uniform Color Adjustment
+****** Perceptually Uniform Color Adjustment
 
 Many color libraries allow you to choose the color space you want to adjust colors through or otherwise default to sRGB
 as it's the most familiar to developers and digital designers.
@@ -4476,7 +4419,7 @@ It's one of those things that didn't bother me much as a designer but became an 
 tool; these small, subtle shifts led to weird behavior when replicated at scale. It also made predictable color blending
 an exercise in frustration.
 
-***** Color Adjustment Through OKLCH
+****** Color Adjustment Through OKLCH
 
 OKLab solved the above issues. As an offshoot of CIELAB, perceptual uniformity is baked into its calculations. As an
 /improvement/ on CIELAB, these calculations were adjusted for increased practicality and predictability. In short, it
@@ -4557,13 +4500,13 @@ function colorAdjustment(
 }
 #+END_SRC
 
-**** Color Mixture
+***** Color Mixture
 
 The second important color action is mixture (or blending). This is when we take a color and, well, mix it with another
 color. This allows us to create colors for serving as natural gradient stops or to create /true/ tints, tones, and
 shades from a color.
 
-***** Perceptually Uniform Color Mixture
+****** Perceptually Uniform Color Mixture
 
 Similar to color adjustment, all color mixture happens through the OKLab space. The main advantage of using OKLab in
 this area is that it yields smooth, even blending. This is most evident when blending blue with white.
@@ -4574,7 +4517,7 @@ colors of high chroma with those of low. This often resulted in the high chroma 
 
 Either way, the results didn't seem like true blends to my eyes (even if they were mathematically correct).
 
-***** Color Mixture Through OKLab
+****** Color Mixture Through OKLab
 
 In the area of color mixture, raw scalar OKLab is the ideal tool. This is because when we talk about color blending,
 we're actually talking about /color difference/.
@@ -4648,7 +4591,7 @@ function colorMix({ target, strength = 0 }, color) {
 }
 #+END_SRC
 
-**** Color Perception
+***** Color Perception
 
 Recently, I decided it would be a great idea to implement ways to simulate conditions under which a person's /perception/
 of colors may change. Specifically the conditions of:
@@ -4660,7 +4603,7 @@ of colors may change. Specifically the conditions of:
 Once the simulation details are implemented, I believe every practical sense of using color is then covered by
 QuarkSuite's color API.
 
-***** Color Vision Deficiency (Colorblindness)
+****** Color Vision Deficiency (Colorblindness)
 
 If you want a full introduction to what color vision deficiency is and why it's important, [[http://www.color-blindness.com/what-is-color-blindness/][this article on the
 phenomenon]] will get you caught up.
@@ -4668,7 +4611,7 @@ phenomenon]] will get you caught up.
 What I want to focus on is the technical details of simulating colorblindness (or daltonization) so we can troubleshoot
 and analyze the viability of the colors we use.
 
-****** On CVD Algorithms
+******* On CVD Algorithms
 
 For this, I was originally going to use Daltonize's [[http://www.daltonize.org/2010/05/lms-daltonization-algorithm.html][daltonization algorithm]] because it's widely available and already
 has a JavaScript implementation. That wide availability can be double-edged, however, so I slept on it.
@@ -4689,12 +4632,12 @@ in for the implementation.
 The other important bit: both algorithms were written with the gamut allowed for CRT monitors in mind, so they'll need
 to be adapted for sRGB.
 
-****** CVD Simulation Process
+******* CVD Simulation Process
 
 The actual process we'll be using is [[https://github.com/DaltonLens/libDaltonLens][adapted from libDaltonLens]]: a C library that's not too painless to translate to
 JavaScript. It takes care of the aforementioned sRGB adaptation as well.
 
-******* CVD Brettel Simulation
+******** CVD Brettel Simulation
 
 #+BEGIN_SRC js
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
@@ -4808,7 +4751,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 }
 #+END_SRC
 
-******* CVD Vienot Simulation
+******** CVD Vienot Simulation
 
 #+BEGIN_SRC js
 function cvdVienotSimulation({ type, strength = 100 }, color) {
@@ -4873,7 +4816,7 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
 }
 #+END_SRC
 
-****** Color Vision Deficiency Interface
+******* Color Vision Deficiency Interface
 
 The interface exposes the two =methods= and allows us to define the =type= and =strength= of the simulation. Color
 perception is incredibly subjective even without considering dichromacy, so we should adjust the simulation according to
@@ -4918,7 +4861,7 @@ function checkColorblindness(
 }
 #+END_SRC
 
-***** Contrast Sensitivity
+****** Contrast Sensitivity
 
 After all that, simulating [[https://www.vision-and-eye-health.com/contrast-sensitivity.html][contrast sensitivity]] is mercifully simple.
 
@@ -4954,7 +4897,7 @@ function checkSensitivity({ contrast = 0, strength = 0 }, color) {
 }
 #+END_SRC
 
-***** Correlated Color Temperature (CCT)
+****** Correlated Color Temperature (CCT)
 
 Correlated color temperature, without getting too technical: a translation of an absolute temperature (expressed in
 Kelvin) to the /matched chromacity/ of, for example, cooking a black pot. You can [[https://www.olympus-lifescience.com/en/microscope-resource/primer/lightandcolor/colortemp/][read more if you want]] to dig into the
@@ -5008,7 +4951,7 @@ function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
 }
 #+END_SRC
 
-**** Color Interpolation
+***** Color Interpolation
 
 Now that the main color actions are defined and implemented, we have almost all the tools required to generate full
 palettes. The missing ingredient is interpolation. QuarkSuite supports three kinds of interpolation:
@@ -5113,7 +5056,7 @@ function colorInterpolation(action, settings, input) {
 }
 #+END_SRC
 
-**** Color Harmonies
+***** Color Harmonies
 
 QuarkSuite provides a conventional set of color schemes (or harmonies) to get
 you started on aesthetically pleasing color palettes. When combined with the
@@ -5198,7 +5141,7 @@ function colorHarmonies({ type, accented = false }, color) {
 }
 #+END_SRC
 
-**** Palette Configurations
+***** Palette Configurations
 
 We made it, y'all. We finally have the full set of color generation helpers to create palettes suitable for web design.
 
@@ -5209,7 +5152,7 @@ To this end, QuarkSuite supports two main palette configurations:
 + Artistic: This is a classical palette where you can create a scale of =[ui[], [tints[], tones[], shades[]], states[]]=
   with set levels of contrast between your variants.
 
-***** Material Configuration
+****** Material Configuration
 
 For the material configuration, we're going to allow the user to define the overall light and dark contrast as well as
 place the accent palette behind an =accented= boolean. If defined, it will add in the accents to the end of the variant collection.
@@ -5302,7 +5245,7 @@ function materialConfiguration(
 }
 #+END_SRC
 
-***** Artistic Configuration
+****** Artistic Configuration
 
 For the artistic configuration, we're going to allow the user to set overall =contrast= and an output limit for each
 variant. =stated= is also allowed here and works identically to the material-esque config.
@@ -5375,7 +5318,7 @@ function artisticConfiguration(
 }
 #+END_SRC
 
-**** Palette Accessibility
+***** Palette Accessibility
 
 Before formatting our palette as a color token dictionary, we're going to provide a means for handling color
 accessibility. The core targets are our palette =variants=, because =ui= and =states= remain constant. In addition, the
@@ -5386,7 +5329,7 @@ QuarkSuite determines color accessibility through two methods:
 + Standard WCAG Color Contrast Ratings
 + Colorimetric contrast calculations
 
-***** WCAG Color Contrast Ratios
+****** WCAG Color Contrast Ratios
 
 This is the way that most of us as front-end designers/developers are familiar with. If you've ever used a [[https://contrast-ratio.com/][contrast
 ratio calculator]] on the internet, you know what this is about. For those who don't, the [[https://webaim.org/articles/contrast/][WebAIM article on it]] is a great
@@ -5476,7 +5419,7 @@ function paletteWcagContrast({ rating = "AA", large, dark = false }, palette) {
 }
 #+END_SRC
 
-***** Colorimetric Contrast
+****** Colorimetric Contrast
 
 The second method of determining contrast uses the colorimetric data of the background itself. The process here is:
 
@@ -5556,7 +5499,7 @@ function paletteColorimetricContrast({ min = 75, max, dark = false }, palette) {
 }
 #+END_SRC
 
-**** Palette Formatting
+***** Palette Formatting
 
 Now that we've generated our palettes, we'll need a way to assemble them into a dictionary of color tokens. At this
 point, we know palette configurations output one of two standard data sets, so we'll only need to concern ourselves
@@ -5635,7 +5578,3 @@ function tokenizePalette(palette) {
   };
 }
 #+END_SRC
-
-*** Modular Scale Internals
-
-*** Design Token Internals
