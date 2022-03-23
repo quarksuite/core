@@ -76,25 +76,25 @@
         - [[#tokens-examples][tokens Examples]]
         - [[#tokens-implementation][tokens Implementation]]
         - [[#tokens-tests][tokens Tests]]
-      - [[#modular-scale][Modular Scale]]
-        - [[#create][create]]
-        - [[#modify][modify]]
-        - [[#chunk][chunk]]
-        - [[#format][format]]
-        - [[#tokens-1][tokens]]
-        - [[#element][element]]
-      - [[#design-tokens][Design Tokens]]
-        - [[#css][css]]
-        - [[#scss][scss]]
-        - [[#less][less]]
-        - [[#styl][styl]]
-        - [[#json][json]]
-        - [[#yaml][yaml]]
-        - [[#gpl][gpl]]
-        - [[#sketchpalette][sketchpalette]]
-        - [[#tailwind][tailwind]]
-        - [[#styledict][styledict]]
-        - [[#element-1][element]]
+    - [[#modular-scale][Modular Scale]]
+      - [[#create][create]]
+      - [[#modify][modify]]
+      - [[#chunk][chunk]]
+      - [[#format][format]]
+      - [[#tokens-1][tokens]]
+      - [[#element][element]]
+    - [[#design-tokens][Design Tokens]]
+      - [[#css][css]]
+      - [[#scss][scss]]
+      - [[#less][less]]
+      - [[#styl][styl]]
+      - [[#json][json]]
+      - [[#yaml][yaml]]
+      - [[#gpl][gpl]]
+      - [[#sketchpalette][sketchpalette]]
+      - [[#tailwind][tailwind]]
+      - [[#styledict][styledict]]
+      - [[#element-1][element]]
   - [[#internals][Internals]]
     - [[#functional][Functional]]
       - [[#composition-internals][Composition Internals]]
@@ -2725,49 +2725,49 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (488m
 
 #+end_src
 
-**** Modular Scale
+*** Modular Scale
 :PROPERTIES:
 :header-args:js: :tangle "./v2/ms.js" :mkdirp yes :comments link
 :END:
 
-***** create
+**** create
 
-***** modify
+**** modify
 
-***** chunk
+**** chunk
 
-***** format
+**** format
 
-***** tokens
+**** tokens
 
-***** element
+**** element
 
-**** Design Tokens
+*** Design Tokens
 :PROPERTIES:
 :header-args:js: :tangle "./v2/tokens.js" :mkdirp yes :comments link
 :END:
 
-***** css
+**** css
 
-***** scss
+**** scss
 
-***** less
+**** less
 
-***** styl
+**** styl
 
-***** json
+**** json
 
-***** yaml
+**** yaml
 
-***** gpl
+**** gpl
 
-***** sketchpalette
+**** sketchpalette
 
-***** tailwind
+**** tailwind
 
-***** styledict
+**** styledict
 
-***** element
+**** element
 
 ** Internals
 *** Functional
@@ -3404,10 +3404,7 @@ function parseHex([format, components]) {
   const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
 
   if (A) {
-    return [
-      format,
-      [R, G, B, numberFromChannel(hexFragmentToChannel(parseFloat(A)))],
-    ];
+    return [format, [R, G, B, numberFromChannel(hexFragmentToChannel(A))]];
   }
 
   return [format, [R, G, B, 1]];

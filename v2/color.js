@@ -671,10 +671,7 @@ function parseHex([format, components]) {
   const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
 
   if (A) {
-    return [
-      format,
-      [R, G, B, numberFromChannel(hexFragmentToChannel(parseFloat(A)))],
-    ];
+    return [format, [R, G, B, numberFromChannel(hexFragmentToChannel(A))]];
   }
 
   return [format, [R, G, B, 1]];
