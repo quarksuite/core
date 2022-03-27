@@ -103,7 +103,7 @@ export function vision(settings, color) {
     );
   }
 
-  return checkColorblindness({ method, type, strength: 100, steps }, color);
+  return checkColorblindness({ method, type, strength: 100 }, color);
 }
 // vision Implementation:1 ends here
 
@@ -1912,10 +1912,10 @@ function colorInterpolation(action, settings, input) {
             );
           }
 
-          if (action.name === "simulateColorblindness") {
+          if (action.name === "checkColorblindness") {
             const { method = "brettel", type, strength = 0 } = settings;
 
-            result = simulateColorblindness(
+            result = checkColorblindness(
               {
                 method,
                 type,
@@ -1925,10 +1925,10 @@ function colorInterpolation(action, settings, input) {
             );
           }
 
-          if (action.name === "simulateSensitivity") {
+          if (action.name === "checkSensitivity") {
             const { contrast = 0, strength = 0 } = settings;
 
-            result = simulateSensitivity(
+            result = checkSensitivity(
               {
                 contrast: interpolate(contrast, pos),
                 strength: interpolate(strength, pos),
@@ -1937,10 +1937,10 @@ function colorInterpolation(action, settings, input) {
             );
           }
 
-          if (action.name === "simulateIlluminant") {
+          if (action.name === "checkIlluminant") {
             const { temperature = 1000, strength = 0 } = settings;
 
-            result = simulateIlluminant(
+            result = checkIlluminant(
               {
                 temperature: interpolate(temperature, pos),
                 strength: interpolate(strength, pos),
