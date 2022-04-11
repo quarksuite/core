@@ -74,27 +74,29 @@
         - [[#accessibility-tests][accessibility Tests]]
       - [[#tokens][tokens]]
         - [[#tokens-examples][tokens Examples]]
-        - [[#tokens-implementation][tokens Implementation]]
-        - [[#tokens-tests][tokens Tests]]
-    - [[#modular-scale][Modular Scale]]
-      - [[#create][create]]
+        - [[#tokens-color-implementation][tokens (Color) Implementation]]
+        - [[#tokens-color-tests][tokens (Color) Tests]]
+    - [[#content][Content]]
+      - [[#text][text]]
+        - [[#text-examples][text Examples]]
+        - [[#text-implementation][text Implementation]]
+        - [[#text-tests][text Tests]]
+      - [[#grid][grid]]
+        - [[#grid-examples][grid Examples]]
+        - [[#grid-implementation][grid Implementation]]
+        - [[#grid-tests][grid Tests]]
+      - [[#ms][ms]]
+        - [[#ms-examples][ms Examples]]
+        - [[#ms-implementation][ms Implementation]]
+        - [[#ms-tests][ms Tests]]
       - [[#modify][modify]]
-      - [[#chunk][chunk]]
-      - [[#format][format]]
+        - [[#modify-examples][modify Examples]]
+        - [[#modify-implementation][modify Implementation]]
+        - [[#modify-tests][modify Tests]]
       - [[#tokens-1][tokens]]
-      - [[#element][element]]
-    - [[#design-tokens][Design Tokens]]
-      - [[#css][css]]
-      - [[#scss][scss]]
-      - [[#less][less]]
-      - [[#styl][styl]]
-      - [[#json][json]]
-      - [[#yaml][yaml]]
-      - [[#gpl][gpl]]
-      - [[#sketchpalette][sketchpalette]]
-      - [[#tailwind][tailwind]]
-      - [[#styledict][styledict]]
-      - [[#element-1][element]]
+        - [[#tokens-examples-1][tokens Examples]]
+        - [[#tokens-content-implementation][tokens (Content) Implementation]]
+        - [[#tokens-content-tests][tokens (Content) Tests]]
   - [[#internals][Internals]]
     - [[#functional][Functional]]
       - [[#composition-internals][Composition Internals]]
@@ -126,6 +128,14 @@
         - [[#wcag-color-contrast-ratios][WCAG Color Contrast Ratios]]
         - [[#colorimetric-contrast][Colorimetric Contrast]]
       - [[#palette-formatting][Palette Formatting]]
+    - [[#content-1][Content]]
+      - [[#modular-scales][Modular Scales]]
+        - [[#creating-a-raw-modular-scale][Creating a Raw Modular Scale]]
+        - [[#scale-modification][Scale Modification]]
+        - [[#scale-configurations][Scale Configurations]]
+        - [[#scale-units][Scale Units]]
+      - [[#text-families][Text Families]]
+      - [[#token-assembly][Token Assembly]]
 
 * Summary
 
@@ -228,6 +238,7 @@ during development before you've settled on what you need. QuarkSuite v2 separat
 #+BEGIN_SRC js :tangle "./v2/mod.js" :comments link
 export * as fn from "./fn.js";
 export * as color from "./color.js";
+export * as content from "./content.js";
 #+END_SRC
 
 ** API
@@ -2364,7 +2375,7 @@ An emitter that accepts a =palette= and assembles it into a dictionary of color 
 
 ***** tokens Examples
 
-***** tokens Implementation
+***** tokens (Color) Implementation
 
 #+BEGIN_SRC js
 export function tokens(palette) {
@@ -2372,7 +2383,7 @@ export function tokens(palette) {
 }
 #+END_SRC
 
-***** tokens Tests
+***** tokens (Color) Tests
 
 #+BEGIN_SRC js :tangle "./v2/tests/color/tokens_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
@@ -2725,49 +2736,88 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (488m
 
 #+end_src
 
-*** Modular Scale
+*** Content
 :PROPERTIES:
-:header-args:js: :tangle "./v2/ms.js" :mkdirp yes :comments link
+:header-args:js: :tangle "./v2/content.js" :mkdirp yes :comments link
 :END:
 
-**** create
+**** text
+
+***** text Examples
+
+***** text Implementation
+
+#+BEGIN_SRC js
+export function text(modifiers, font) {
+  // Set defaults
+  const { system = "sans", weights = ["regular", "bold"] } = modifiers;
+
+  return textFamily({ system, weights }, font);
+}
+#+END_SRC
+
+***** text Tests
+
+**** grid
+
+***** grid Examples
+***** grid Implementation
+
+#+BEGIN_SRC js
+export function grid(rows, columns) {
+  return tracks(columns, rows);
+}
+#+END_SRC
+
+***** grid Tests
+
+**** ms
+
+***** ms Examples
+
+***** ms Implementation
+
+#+BEGIN_SRC js
+export function ms(modifiers, base) {
+  // Set defaults
+  const { ratio = 1.5, values = 6 } = modifiers;
+
+  return create({ ratio, values }, base);
+}
+#+END_SRC
+
+***** ms Tests
 
 **** modify
 
-**** chunk
+***** modify Examples
 
-**** format
+***** modify Implementation
+
+#+BEGIN_SRC js
+export function modify(calc, ms) {
+  return update(calc, ms);
+}
+#+END_SRC
+
+***** modify Tests
 
 **** tokens
 
-**** element
+***** tokens Examples
 
-*** Design Tokens
-:PROPERTIES:
-:header-args:js: :tangle "./v2/tokens.js" :mkdirp yes :comments link
-:END:
+***** tokens (Content) Implementation
 
-**** css
+#+BEGIN_SRC js
+export function tokens(settings, ms) {
+  // Set defaults
+  const { type = "bidirectional", unit = "rem", inversion = "em" } = settings;
 
-**** scss
+  return assemble({ ...settings, type, unit, inversion }, ms);
+}
+#+END_SRC
 
-**** less
-
-**** styl
-
-**** json
-
-**** yaml
-
-**** gpl
-
-**** sketchpalette
-
-**** tailwind
-
-**** styledict
-
-**** element
+***** tokens (Content) Tests
 
 ** Internals
 *** Functional
@@ -5621,6 +5671,232 @@ function tokenizePalette(palette) {
         },
       }
       : {}),
+  };
+}
+#+END_SRC
+
+*** Content
+:PROPERTIES:
+:header-args:js: :tangle "./v2/content.js" :mkdirp yes :comments link
+:END:
+
+Now that we're finally done with colors, we can move on to content.
+
+This depends on a general workflow for creating and modifying modular scales. If you're coming from v1, you'll also
+notice that I've eliminated formulas and bootstrappers in favor of creating tokens around typical scale configurations
+(unidirectional, bidirectional, and range) and specific requirements (as with timing).
+
+**** Modular Scales
+
+Modular scales in v2 are primarily designed around providing consistent /options/. Modern CSS provides so many ways to
+recalculate and interpolate values on the fly via logical functions (=min()=, =max()=, =calc()=, and =clamp()=) that it
+no longer makes sense to expect that we'll be using full, static modular scales in web design for anything but
+compatibility.
+
+v2 modular scaling is intended to take full advantage of the fact that the future is fluid while accomodating the still
+somewhat static present.
+
+***** Creating a Raw Modular Scale
+
+Raw scale creation is handled by a small =create= function. Raw modular scales assume relative units, so if you want to
+create a pixel scale, set the base to =16=. In addition, multiple ratios are allowed for threaded scales.
+
+#+BEGIN_SRC js
+function create({ values = 6, ratio = 1.5 }, base) {
+  if (Array.isArray(ratio)) {
+    return [
+      ...new Set(
+        Array(values)
+          .fill(base)
+          .reduce(
+            (acc, base, pos) => [...acc, ...ratio.map((r) => base * r ** pos)],
+            []
+          )
+      ),
+    ]
+      .slice(0, values)
+      .sort((a, b) => a - b);
+  }
+
+  return Array(values)
+    .fill(base)
+    .map((base, pos) => base * ratio ** pos);
+}
+#+END_SRC
+
+***** Scale Modification
+
+The first action available to modular scales is in-place modification of values. This is handled internally by an
+=update()= function that accepts a calculation function and a raw scale, then outputs a new scale with the
+recalculations.
+
+#+BEGIN_SRC js
+function update(calc, ms) {
+  return ms.map((n) => calc(n));
+}
+#+END_SRC
+
+***** Scale Configurations
+
+Now we have all the pieces for creating and modifying raw modular scales, but in practice, we will often use particular
+scale configurations.
+
++ Unidirectional: a scale that goes in one direction. (=base ->=)
++ Bidirectional: a scale that goes in two directions (=<- base ->=)
++ Ranged: a scale that has a minimum and maximum value and a range of values between them (=min -> max=)
+
+There are other configurations that come into play with special cases, and we'll revisit those when we ecounter them.
+
+We'll write =unidirectional=, =bidirectional()= and =ranged()= helpers to specifically handle each configuration.
+
+#+BEGIN_SRC js
+function unidirectional(ms) {
+  const [base, ...x] = ms;
+
+  return [base, x];
+}
+
+function bidirectional(ms) {
+  const [base, ...x] = ms;
+  const d = update((n) => base ** 2 / n, x);
+
+  return [base, x, d];
+}
+
+function ranged({ min = 1, max = 10, trunc = false }, ms) {
+  const [, ...x] = ms;
+
+  const range = update((n) => {
+    let value = min + (max - min) / n;
+    return trunc ? Math.trunc(value) : value;
+  }, x)
+        .filter((n) => n > min && n < max)
+        .sort((a, b) => a - b);
+
+  return [min, range, max];
+}
+#+END_SRC
+
+***** Scale Units
+
+Once we've finished our calculation and configuration, we can attach our units. This is handled internally by the
+=output()= helper.
+
+#+BEGIN_SRC js
+function output(unit, n) {
+  return unit ? String(+n.toPrecision(5)).concat(unit) : +n.toPrecision(5);
+}
+#+END_SRC
+
+**** Text Families
+
+The code for text family tokens is largely unchanged from v1.
+
+#+BEGIN_SRC js
+const SYSTEM_FONT_STACKS = {
+  sans: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+  serif:
+  "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+  monospace:
+  "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+};
+
+function generateStack(fallback, font) {
+  return [font, SYSTEM_FONT_STACKS[fallback]].join(", ");
+}
+
+function fontWeights(key) {
+  return new Map([
+    ["thin", 100],
+    ["extralight", 200],
+    ["light", 300],
+    ["regular", 400],
+    ["medium", 500],
+    ["semibold", 600],
+    ["bold", 700],
+    ["extrabold", 800],
+    ["black", 900],
+  ]).get(key);
+}
+
+function generateWeights(weights) {
+  return weights.reduce((acc, key) => {
+    const value = fontWeights(key);
+
+    return { ...acc, [key]: value };
+  }, {});
+}
+
+function textFamily({ system = "sans", weights = ["regular", "bold"] }, font) {
+  return {
+    family: generateStack(system, font),
+    ...generateWeights(weights),
+  };
+}
+#+END_SRC
+
+**** Token Assembly
+
+Now, let's create a helper to actually assemble our calculated modular scales into token dictionaries. Note that the
+grid type calculates columns by the length of the modular scale and rows derive from columns.
+
+#+BEGIN_SRC js
+function assemble(settings, ms) {
+  const { type = "bidirectional", unit = "rem", inversion = unit } = settings;
+
+  if (type === "unidirectional") {
+    const [base, x] = unidirectional(ms);
+
+    return {
+      base: output(unit, base),
+      ...x
+        .map((v) => output(unit, v))
+        .reduce((acc, v, pos) => ({ ...acc, ["x".concat(++pos + 1)]: v }), {}),
+    };
+  }
+
+  if (type === "ranged") {
+    const { min = 1, max = 10, trunc = false } = settings;
+    const [, range] = ranged({ min, max, trunc }, ms);
+
+    return {
+      base: output(unit, max),
+      ...range
+        .map((v) => output(unit, v))
+        .reverse()
+        .reduce((acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }), {}),
+      min: output(unit, min),
+    };
+  }
+
+  if (type === "grid") {
+    const columns = ms.length;
+    const [, ratio] = ms;
+    const rows = Math.round(cols / ratio);
+    const cells = (dim) =>
+          Array(dim)
+          .fill(0)
+          .map((x, pos) => ++x + pos)
+          .reduce((acc, v) => ({ ...acc, [-v]: -v, [v]: v }), {});
+
+    return {
+      columns,
+      rows,
+      col: cells(columns),
+      row: cells(rows),
+    };
+  }
+
+  const [base, x, d] = bidirectional(ms);
+
+  return {
+    base: output(unit, base),
+    ...x
+      .map((v) => output(unit, v))
+      .reduce((acc, v, pos) => ({ ...acc, ["x".concat(++pos + 1)]: v }), {}),
+    ...d
+      .map((v) => output(inversion, v))
+      .reduce((acc, v, pos) => ({ ...acc, ["d".concat(++pos + 1)]: v }), {}),
   };
 }
 #+END_SRC

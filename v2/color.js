@@ -199,11 +199,11 @@ export function accessibility(settings, palette) {
 }
 // accessibility Implementation:1 ends here
 
-// [[file:../Notebook.org::*tokens Implementation][tokens Implementation:1]]
+// [[file:../Notebook.org::*tokens (Color) Implementation][tokens (Color) Implementation:1]]
 export function tokens(palette) {
   return tokenizePalette(palette);
 }
-// tokens Implementation:1 ends here
+// tokens (Color) Implementation:1 ends here
 
 // [[file:../Notebook.org::*Tokenization][Tokenization:1]]
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
