@@ -104,6 +104,7 @@ const SYSTEM_FONT_STACKS = {
 };
 
 function generateStack(fallback, font) {
+  if (font === null || font === "") return SYSTEM_FONT_STACKS[fallback];
   return [font, SYSTEM_FONT_STACKS[fallback]].join(", ");
 }
 
