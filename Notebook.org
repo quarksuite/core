@@ -3075,6 +3075,20 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (91ms
 
 **** tokens
 
++ =tokens(settings, ms)=
+  - =settings: {}=: token output settings
+    * =settings.type = "bidirectional": "bidirectional" | "unidirectional" | "ranged" | "grid"=: set the type of scale
+      tokens (each has its own settings)
+    * =settings.inversion = settings.unit: string | undefined=: optionally sets a unit for inversion (active with
+      ~"bidirectional"~)
+    * =settings.unit = underfined: string | undefined=: set the unit to attach to each token value (unitless if
+      undefined, active with ~"bidirectional"~, ~"unidirectional"~, and ~"ranged"~ types)
+    * =settings.min = 1: number=: the minimum scale value (active with ~"ranged"~ type)
+    * =settings.max = 10: number=: the maximum scale value (active with ~"ranged"~ type)
+    * =settings.trunc = false: boolean=: truncate scale values? (active with ~"ranged"~ type)
+    * =settings.context = "min": "min" | "max"=: set the context of the base scale value (active with ~"ranged"~ type)
+  - =ms: number[]=: the raw modular scale to assemble
+
 ***** tokens Examples
 
 ***** tokens (Content) Implementation
@@ -3082,13 +3096,256 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (91ms
 #+BEGIN_SRC js
 export function tokens(settings, ms) {
   // Set defaults
-  const { type = "bidirectional", unit = "rem", inversion = "em" } = settings;
+  const { type = "bidirectional", unit = undefined } = settings;
 
-  return assemble({ ...settings, type, unit, inversion }, ms);
+  return assemble({ ...settings, type, unit }, ms);
 }
 #+END_SRC
 
 ***** tokens (Content) Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/content/tokens_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { ms, tokens } from "../../content.js";
+
+describe("tokens(settings, ms)", () => {
+  const $ms = ms({}, 1);
+
+  it("works with default settings", () => {
+    expect(tokens({}, $ms)).toEqual({
+      base: 1,
+      x2: 1.5,
+      x3: 2.25,
+      x4: 3.375,
+      x5: 5.0625,
+      x6: 7.5938,
+      d2: 0.66667,
+      d3: 0.44444,
+      d4: 0.2963,
+      d5: 0.19753,
+      d6: 0.13169,
+    });
+  });
+
+  describe("settings.type = 'bidirectional'", () => {
+    it("should activate unit setting", () => {
+      expect(tokens({ unit: "rem" }, $ms)).toEqual({
+        base: "1rem",
+        x2: "1.5rem",
+        x3: "2.25rem",
+        x4: "3.375rem",
+        x5: "5.0625rem",
+        x6: "7.5938rem",
+        d2: "0.66667rem",
+        d3: "0.44444rem",
+        d4: "0.2963rem",
+        d5: "0.19753rem",
+        d6: "0.13169rem",
+      });
+      expect(tokens({ unit: "ex" }, $ms)).toEqual({
+        base: "1ex",
+        x2: "1.5ex",
+        x3: "2.25ex",
+        x4: "3.375ex",
+        x5: "5.0625ex",
+        x6: "7.5938ex",
+        d2: "0.66667ex",
+        d3: "0.44444ex",
+        d4: "0.2963ex",
+        d5: "0.19753ex",
+        d6: "0.13169ex",
+      });
+    });
+
+    it("should activate inversion setting", () => {
+      expect(tokens({ unit: "rem", inversion: "em" }, $ms)).toEqual({
+        base: "1rem",
+        x2: "1.5rem",
+        x3: "2.25rem",
+        x4: "3.375rem",
+        x5: "5.0625rem",
+        x6: "7.5938rem",
+        d2: "0.66667em",
+        d3: "0.44444em",
+        d4: "0.2963em",
+        d5: "0.19753em",
+        d6: "0.13169em",
+      });
+    });
+  });
+
+  describe("settings.type = 'unidirectional'", () => {
+    it("should activate unit setting", () => {
+      expect(tokens({ type: "unidirectional", unit: "rem" }, $ms)).toEqual({
+        base: "1rem",
+        x2: "1.5rem",
+        x3: "2.25rem",
+        x4: "3.375rem",
+        x5: "5.0625rem",
+        x6: "7.5938rem",
+      });
+      expect(tokens({ type: "unidirectional", unit: "ex" }, $ms)).toEqual({
+        base: "1ex",
+        x2: "1.5ex",
+        x3: "2.25ex",
+        x4: "3.375ex",
+        x5: "5.0625ex",
+        x6: "7.5938ex",
+      });
+    });
+  });
+
+  describe("settings.type = 'ranged'", () => {
+    it("should activate unit setting", () => {
+      expect(tokens({ type: "ranged", unit: "rem" }, $ms)).toEqual({
+        base: "1rem",
+        i2: "2.1852rem",
+        i3: "2.7778rem",
+        i4: "3.6667rem",
+        i5: "5rem",
+        i6: "7rem",
+        max: "10rem",
+      });
+    });
+
+    it("should activate min/max settings", () => {
+      expect(
+        tokens({ type: "ranged", min: 25, max: 100, unit: "vmin" }, $ms)
+      ).toEqual({
+        base: "25vmin",
+        i2: "34.877vmin",
+        i3: "39.815vmin",
+        i4: "47.222vmin",
+        i5: "58.333vmin",
+        i6: "75vmin",
+        max: "100vmin",
+      });
+      expect(
+        tokens({ type: "ranged", min: 16, max: 72, unit: "px" }, $ms)
+      ).toEqual({
+        base: "16px",
+        i2: "23.374px",
+        i3: "27.062px",
+        i4: "32.593px",
+        i5: "40.889px",
+        i6: "53.333px",
+        max: "72px",
+      });
+    });
+
+    it("should activate trunc setting", () => {
+      expect(
+        tokens(
+          { type: "ranged", min: 45, max: 75, unit: "ch", trunc: true },
+          $ms
+        )
+      ).toEqual({
+        base: "45ch",
+        i2: "48ch",
+        i3: "50ch",
+        i4: "53ch",
+        i5: "58ch",
+        i6: "65ch",
+        max: "75ch",
+      });
+      expect(
+        tokens(
+          { type: "ranged", min: 5, max: 100, unit: "vh", trunc: true },
+          $ms
+        )
+      ).toEqual({
+        base: "5vh",
+        i2: "17vh",
+        i3: "23vh",
+        i4: "33vh",
+        i5: "47vh",
+        i6: "68vh",
+        max: "100vh",
+      });
+    });
+
+    it("should activate context setting", () => {
+      expect(
+        tokens(
+          { type: "ranged", min: 5, max: 100, unit: "vw", context: "max" },
+          $ms
+        )
+      ).toEqual({
+        base: "100vw",
+        i2: "68.333vw",
+        i3: "47.222vw",
+        i4: "33.148vw",
+        i5: "23.765vw",
+        i6: "17.51vw",
+        min: "5vw",
+      });
+    });
+  });
+
+  describe("settings.type = 'grid'", () => {
+    it("should generate grid tokens from input scale when active", () => {
+      expect(tokens({ type: "grid" }, $ms)).toEqual({
+        columns: 6,
+        rows: 4,
+        col: {
+          1: 1,
+          2: 2,
+          3: 3,
+          4: 4,
+          5: 5,
+          6: 6,
+          "-1": -1,
+          "-2": -2,
+          "-3": -3,
+          "-4": -4,
+          "-5": -5,
+          "-6": -6,
+        },
+        row: { 1: 1, 2: 2, 3: 3, 4: 4, "-1": -1, "-2": -2, "-3": -3, "-4": -4 },
+      });
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/content/tokens_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  tokens(settings, ms)
+  • works with default settings
+    settings.type = 'bidirectional'
+    • should activate unit setting
+    • should activate inversion setting
+    settings.type = 'unidirectional'
+    • should activate unit setting
+    settings.type = 'ranged'
+    • should activate unit setting
+    • should activate min/max settings
+    • should activate trunc setting
+    • should activate context setting
+    settings.type = 'grid'
+    • should generate grid tokens from input scale when active
+
+running 9 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/content/tokens_test.js
+test tokens(settings, ms) > works with default settings ... ok (10ms)
+test tokens(settings, ms) > settings.type = 'bidirectional' > should activate unit setting ... ok (6ms)
+test tokens(settings, ms) > settings.type = 'bidirectional' > should activate inversion setting ... ok (6ms)
+test tokens(settings, ms) > settings.type = 'unidirectional' > should activate unit setting ... ok (6ms)
+test tokens(settings, ms) > settings.type = 'ranged' > should activate unit setting ... ok (7ms)
+test tokens(settings, ms) > settings.type = 'ranged' > should activate min/max settings ... ok (6ms)
+test tokens(settings, ms) > settings.type = 'ranged' > should activate trunc setting ... ok (6ms)
+test tokens(settings, ms) > settings.type = 'ranged' > should activate context setting ... ok (6ms)
+test tokens(settings, ms) > settings.type = 'grid' > should generate grid tokens from input scale when active ... ok (7ms)
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (139ms)
+
+#+end_src
 
 ** Internals
 *** Functional
@@ -6073,6 +6330,7 @@ const SYSTEM_FONT_STACKS = {
 };
 
 function generateStack(fallback, font) {
+  if (font === null || font === "") return SYSTEM_FONT_STACKS[fallback];
   return [font, SYSTEM_FONT_STACKS[fallback]].join(", ");
 }
 
@@ -6113,7 +6371,11 @@ grid type calculates columns by the length of the modular scale and rows derive 
 
 #+BEGIN_SRC js
 function assemble(settings, ms) {
-  const { type = "bidirectional", unit = "rem", inversion = unit } = settings;
+  const {
+    type = "bidirectional",
+    unit = undefined,
+    inversion = unit,
+  } = settings;
 
   if (type === "unidirectional") {
     const [base, x] = unidirectional(ms);
@@ -6127,23 +6389,37 @@ function assemble(settings, ms) {
   }
 
   if (type === "ranged") {
-    const { min = 1, max = 10, trunc = false } = settings;
+    const { min = 1, max = 10, trunc = false, context = "min" } = settings;
     const [, range] = ranged({ min, max, trunc }, ms);
 
-    return {
-      base: output(unit, max),
+    return context === "max"
+      ? {
+        base: output(unit, max),
+        ...range
+          .map((v) => output(unit, v))
+          .reverse()
+          .reduce(
+            (acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }),
+            {}
+          ),
+        min: output(unit, min),
+      }
+    : {
+      base: output(unit, min),
       ...range
         .map((v) => output(unit, v))
-        .reverse()
-        .reduce((acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }), {}),
-      min: output(unit, min),
+        .reduce(
+          (acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }),
+          {}
+        ),
+      max: output(unit, max),
     };
   }
 
   if (type === "grid") {
     const columns = ms.length;
     const [, ratio] = ms;
-    const rows = Math.round(cols / ratio);
+    const rows = Math.round(columns / ratio);
     const cells = (dim) =>
           Array(dim)
           .fill(0)

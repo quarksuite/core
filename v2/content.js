@@ -25,9 +25,9 @@ export function modify(calc, ms) {
 // [[file:../Notebook.org::*tokens (Content) Implementation][tokens (Content) Implementation:1]]
 export function tokens(settings, ms) {
   // Set defaults
-  const { type = "bidirectional", unit = "rem", inversion = "em" } = settings;
+  const { type = "bidirectional", unit = undefined } = settings;
 
-  return assemble({ ...settings, type, unit, inversion }, ms);
+  return assemble({ ...settings, type, unit }, ms);
 }
 // tokens (Content) Implementation:1 ends here
 
@@ -140,7 +140,11 @@ function textFamily({ system = "sans", weights = ["regular", "bold"] }, font) {
 
 // [[file:../Notebook.org::*Token Assembly][Token Assembly:1]]
 function assemble(settings, ms) {
-  const { type = "bidirectional", unit = "rem", inversion = unit } = settings;
+  const {
+    type = "bidirectional",
+    unit = undefined,
+    inversion = unit,
+  } = settings;
 
   if (type === "unidirectional") {
     const [base, x] = unidirectional(ms);
@@ -154,23 +158,37 @@ function assemble(settings, ms) {
   }
 
   if (type === "ranged") {
-    const { min = 1, max = 10, trunc = false } = settings;
+    const { min = 1, max = 10, trunc = false, context = "min" } = settings;
     const [, range] = ranged({ min, max, trunc }, ms);
 
-    return {
-      base: output(unit, max),
+    return context === "max"
+      ? {
+        base: output(unit, max),
+        ...range
+          .map((v) => output(unit, v))
+          .reverse()
+          .reduce(
+            (acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }),
+            {}
+          ),
+        min: output(unit, min),
+      }
+    : {
+      base: output(unit, min),
       ...range
         .map((v) => output(unit, v))
-        .reverse()
-        .reduce((acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }), {}),
-      min: output(unit, min),
+        .reduce(
+          (acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }),
+          {}
+        ),
+      max: output(unit, max),
     };
   }
 
   if (type === "grid") {
     const columns = ms.length;
     const [, ratio] = ms;
-    const rows = Math.round(cols / ratio);
+    const rows = Math.round(columns / ratio);
     const cells = (dim) =>
           Array(dim)
           .fill(0)
