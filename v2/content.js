@@ -1,22 +1,16 @@
 // [[file:../Notebook.org::*text Implementation][text Implementation:1]]
-export function text(modifiers, font) {
+export function text(settings, font) {
   // Set defaults
-  const { system = "sans", weights = ["regular", "bold"] } = modifiers;
+  const { system = "sans", weights = ["regular", "bold"] } = settings;
 
   return textFamily({ system, weights }, font);
 }
 // text Implementation:1 ends here
 
-// [[file:../Notebook.org::*grid Implementation][grid Implementation:1]]
-export function grid(rows, columns) {
-  return tracks(columns, rows);
-}
-// grid Implementation:1 ends here
-
 // [[file:../Notebook.org::*ms Implementation][ms Implementation:1]]
-export function ms(modifiers, base) {
+export function ms(settings, base) {
   // Set defaults
-  const { ratio = 1.5, values = 6 } = modifiers;
+  const { ratio = 1.5, values = 6 } = settings;
 
   return create({ ratio, values }, base);
 }

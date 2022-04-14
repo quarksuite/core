@@ -81,10 +81,6 @@
         - [[#text-examples][text Examples]]
         - [[#text-implementation][text Implementation]]
         - [[#text-tests][text Tests]]
-      - [[#grid][grid]]
-        - [[#grid-examples][grid Examples]]
-        - [[#grid-implementation][grid Implementation]]
-        - [[#grid-tests][grid Tests]]
       - [[#ms][ms]]
         - [[#ms-examples][ms Examples]]
         - [[#ms-implementation][ms Implementation]]
@@ -2743,33 +2739,24 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (488m
 
 **** text
 
+A special action for generating font stack and weight tokens.
+
++ =text(settings, font)=
+
 ***** text Examples
 
 ***** text Implementation
 
 #+BEGIN_SRC js
-export function text(modifiers, font) {
+export function text(settings, font) {
   // Set defaults
-  const { system = "sans", weights = ["regular", "bold"] } = modifiers;
+  const { system = "sans", weights = ["regular", "bold"] } = settings;
 
   return textFamily({ system, weights }, font);
 }
 #+END_SRC
 
 ***** text Tests
-
-**** grid
-
-***** grid Examples
-***** grid Implementation
-
-#+BEGIN_SRC js
-export function grid(rows, columns) {
-  return tracks(columns, rows);
-}
-#+END_SRC
-
-***** grid Tests
 
 **** ms
 
@@ -2778,9 +2765,9 @@ export function grid(rows, columns) {
 ***** ms Implementation
 
 #+BEGIN_SRC js
-export function ms(modifiers, base) {
+export function ms(settings, base) {
   // Set defaults
-  const { ratio = 1.5, values = 6 } = modifiers;
+  const { ratio = 1.5, values = 6 } = settings;
 
   return create({ ratio, values }, base);
 }
