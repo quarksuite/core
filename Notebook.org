@@ -242,7 +242,7 @@ rest. This means that modern build tools, and environments that support tree sha
 The library begins with an entry point =mod.js= that aggregates all the functionality to make it easier to experiment
 during development before you've settled on what you need. QuarkSuite v2 separates all functionality by its input type.
 
-#+BEGIN_SRC js :tangle "./v2/mod.js" :comments link
+#+BEGIN_SRC js :tangle "mod.js" :comments link
 export * as fn from "./fn.js";
 export * as color from "./color.js";
 export * as content from "./content.js";
@@ -253,7 +253,7 @@ export * as exporter from "./exporter.js";
 
 *** Functional Utilities
 :PROPERTIES:
-:header-args:js: :tangle "./v2/fn.js" :mkdirp yes :comments link
+:header-args:js: :tangle "fn.js" :mkdirp yes :comments link
 :END:
 
 **** process
@@ -362,7 +362,7 @@ export function delegate(emitters, xs) {
 
 *** Color
 :PROPERTIES:
-:header-args:js: :tangle "./v2/color.js" :mkdirp yes :comments link
+:header-args:js: :tangle "color.js" :mkdirp yes :comments link
 :END:
 
 **** convert
@@ -395,7 +395,7 @@ export function convert(to, color) {
 
 ***** convert Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/convert_test.js"
+#+BEGIN_SRC js :tangle "tests/color/convert_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { convert } from "../../color.js";
 
@@ -628,7 +628,7 @@ export function adjust(settings, color) {
 
 ***** adjust Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/adjust_test.js"
+#+BEGIN_SRC js :tangle "tests/color/adjust_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { adjust } from "../../color.js";
 
@@ -927,7 +927,7 @@ export function mix(settings, color) {
 
 ***** mix Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/mix_test.js"
+#+BEGIN_SRC js :tangle "tests/color/mix_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { adjust, mix } from "../../color.js";
 
@@ -1108,7 +1108,7 @@ export function harmony(settings, color) {
 
 ***** harmony Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/harmony_test.js"
+#+BEGIN_SRC js :tangle "tests/color/harmony_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { harmony } from "../../color.js";
 
@@ -1362,7 +1362,7 @@ export function vision(settings, color) {
 
 ***** vision Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/vision_test.js"
+#+BEGIN_SRC js :tangle "tests/color/vision_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { vision } from "../../color.js";
 
@@ -1614,7 +1614,7 @@ export function contrast(settings, color) {
 
 ***** contrast Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/contrast_test.js"
+#+BEGIN_SRC js :tangle "tests/color/contrast_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { contrast } from "../../color.js";
 
@@ -1734,7 +1734,7 @@ export function illuminant(settings, color) {
 
 ***** illuminant Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/illuminant_test.js"
+#+BEGIN_SRC js :tangle "tests/color/illuminant_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { illuminant } from "../../color.js";
 
@@ -1858,7 +1858,7 @@ export function palette(settings, color) {
 
 ***** palette Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/palette_test.js"
+#+BEGIN_SRC js :tangle "tests/color/palette_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette } from "../../color.js";
 
@@ -2171,7 +2171,7 @@ export function accessibility(settings, palette) {
 
 ***** accessibility Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/accessibility_test.js"
+#+BEGIN_SRC js :tangle "tests/color/accessibility_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { accessibility, palette } from "../../color.js";
 
@@ -2391,7 +2391,7 @@ export function tokens(palette) {
 
 ***** tokens (Color) Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/tokens_test.js"
+#+BEGIN_SRC js :tangle "tests/color/tokens_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { tokens, palette } from "../../color.js";
 
@@ -2762,7 +2762,7 @@ export function output(format, dict) {
 
 ***** output Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/color/output_test.js"
+#+BEGIN_SRC js :tangle "tests/color/output_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { tokens, palette, output } from "../../color.js";
 
@@ -2982,7 +2982,7 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (223m
 
 *** Content
 :PROPERTIES:
-:header-args:js: :tangle "./v2/content.js" :mkdirp yes :comments link
+:header-args:js: :tangle "content.js" :mkdirp yes :comments link
 :END:
 
 **** text
@@ -3011,7 +3011,7 @@ export function text(settings, font) {
 
 ***** text Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/content/text_test.js"
+#+BEGIN_SRC js :tangle "tests/content/text_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { text } from "../../content.js";
 
@@ -3171,7 +3171,7 @@ export function ms(settings, base) {
 
 ***** ms Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/content/ms_test.js"
+#+BEGIN_SRC js :tangle "tests/content/ms_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { ms } from "../../content.js";
 
@@ -3272,7 +3272,7 @@ export function modify(calc, ms) {
 
 ***** modify Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/content/modify_test.js"
+#+BEGIN_SRC js :tangle "tests/content/modify_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { ms, modify } from "../../content.js";
 
@@ -3369,7 +3369,7 @@ export function tokens(settings, ms) {
 
 ***** tokens (Content) Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/content/tokens_test.js"
+#+BEGIN_SRC js :tangle "tests/content/tokens_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { ms, tokens } from "../../content.js";
 
@@ -3614,7 +3614,7 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (139m
 
 *** Exporter
 :PROPERTIES:
-:header-args:js: :tangle "./v2/exporter.js" :mkdirp yes :comments link
+:header-args:js: :tangle "exporter.js" :mkdirp yes :comments link
 :END:
 
 **** stylesheet
@@ -3635,7 +3635,7 @@ export function stylesheet(format, dict) {
 
 ***** stylesheet Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/exporter/stylesheet_test.js"
+#+BEGIN_SRC js :tangle "tests/exporter/stylesheet_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
 import { text, ms, tokens as content } from "../../content.js";
@@ -4184,7 +4184,7 @@ export function data(format, dict) {
 
 ***** data Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/exporter/data_test.js"
+#+BEGIN_SRC js :tangle "tests/exporter/data_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
 import { text, ms, tokens as content } from "../../content.js";
@@ -4553,7 +4553,7 @@ export function interop(format, dict) {
 
 ***** interop Tests
 
-#+BEGIN_SRC js :tangle "./v2/tests/exporter/interop_test.js"
+#+BEGIN_SRC js :tangle "tests/exporter/interop_test.js"
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
 import { text, ms, tokens as content } from "../../content.js";
@@ -4907,12 +4907,12 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (165m
 ** Internals
 *** Functional
 :PROPERTIES:
-:header-args:js: :tangle "./v2/fn.js" :mkdirp yes :comments link
+:header-args:js: :tangle "fn.js" :mkdirp yes :comments link
 :END:
 
 **** Composition Internals
 
-#+BEGIN_SRC js :tangle "./v2/fn.js"
+#+BEGIN_SRC js :tangle "fn.js"
 function compose(...fns) {
   return (x) => fns.reduce((g, f) => f(g), x);
 }
@@ -4920,7 +4920,7 @@ function compose(...fns) {
 
 *** Color
 :PROPERTIES:
-:header-args:js: :tangle "./v2/color.js" :mkdirp yes :comments link
+:header-args:js: :tangle "color.js" :mkdirp yes :comments link
 :END:
 
 QuarkSuite accepts and processes most valid CSS color formats defined in [[https://www.w3.org/TR/css-color-4/][CSS Color Module Level 4]]. There are no color objects
@@ -7826,7 +7826,7 @@ function sketchpalette(dict) {
 
 *** Content
 :PROPERTIES:
-:header-args:js: :tangle "./v2/content.js" :mkdirp yes :comments link
+:header-args:js: :tangle "content.js" :mkdirp yes :comments link
 :END:
 
 Now that we're finally done with colors, we can move on to content.
@@ -8071,7 +8071,7 @@ function assemble(settings, ms) {
 
 *** Exporter
 :PROPERTIES:
-:header-args:js: :tangle "./v2/exporter.js" :mkdirp yes :comments link
+:header-args:js: :tangle "exporter.js" :mkdirp yes :comments link
 :END:
 
 At this point, our foundational tokens are now ready and we can use them as-is. The more portable solution is to create

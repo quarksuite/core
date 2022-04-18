@@ -1,4 +1,4 @@
-// [[file:../../../Notebook.org::*modify Tests][modify Tests:1]]
+// [[file:../../Notebook.org::*modify Tests][modify Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { ms, modify } from "../../content.js";
 

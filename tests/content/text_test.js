@@ -1,4 +1,4 @@
-// [[file:../../../Notebook.org::*text Tests][text Tests:1]]
+// [[file:../../Notebook.org::*text Tests][text Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { text } from "../../content.js";
 

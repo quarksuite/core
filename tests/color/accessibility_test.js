@@ -1,4 +1,4 @@
-// [[file:../../../Notebook.org::*accessibility Tests][accessibility Tests:1]]
+// [[file:../../Notebook.org::*accessibility Tests][accessibility Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { accessibility, palette } from "../../color.js";
 

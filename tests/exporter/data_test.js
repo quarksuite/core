@@ -1,4 +1,4 @@
-// [[file:../../../Notebook.org::*data Tests][data Tests:1]]
+// [[file:../../Notebook.org::*data Tests][data Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
 import { text, ms, tokens as content } from "../../content.js";

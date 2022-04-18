@@ -1,4 +1,4 @@
-// [[file:../../../Notebook.org::*tokens (Content) Tests][tokens (Content) Tests:1]]
+// [[file:../../Notebook.org::*tokens (Content) Tests][tokens (Content) Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { ms, tokens } from "../../content.js";
 
