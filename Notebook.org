@@ -96,6 +96,19 @@
         - [[#tokens-examples-1][tokens Examples]]
         - [[#tokens-content-implementation][tokens (Content) Implementation]]
         - [[#tokens-content-tests][tokens (Content) Tests]]
+    - [[#exporter][Exporter]]
+      - [[#stylesheet][stylesheet]]
+        - [[#stylesheet-examples][stylesheet Examples]]
+        - [[#stylesheet-implementation][stylesheet Implementation]]
+        - [[#stylesheet-tests][stylesheet Tests]]
+      - [[#data][data]]
+        - [[#data-examples][data Examples]]
+        - [[#data-implementation][data Implementation]]
+        - [[#data-tests][data Tests]]
+      - [[#interop][interop]]
+        - [[#interop-examples][interop Examples]]
+        - [[#interop-implementation][interop Implementation]]
+        - [[#interop-tests][interop Tests]]
   - [[#internals][Internals]]
     - [[#functional][Functional]]
       - [[#composition-internals][Composition Internals]]
@@ -138,6 +151,13 @@
         - [[#scale-units][Scale Units]]
       - [[#text-families][Text Families]]
       - [[#token-assembly][Token Assembly]]
+    - [[#exporter-1][Exporter]]
+      - [[#setup][Setup]]
+      - [[#stylesheet-1][Stylesheet]]
+        - [[#stylesheet-setup][Stylesheet Setup]]
+        - [[#stylesheet-variables][Stylesheet Variables]]
+      - [[#data-1][Data]]
+      - [[#interop-1][Interop]]
 
 * Summary
 
@@ -196,6 +216,7 @@ The DSL is a work in progress and being created in conjunction with Core v2. You
 + =palette=: generated color palettes
 + =ms=: raw modular scales
 + =tokens=: token collections
++ =dict=: complete QuarkSuite token dictionary (must have a =project= property)
 
 ** Improved Performance
 
@@ -225,6 +246,7 @@ during development before you've settled on what you need. QuarkSuite v2 separat
 export * as fn from "./fn.js";
 export * as color from "./color.js";
 export * as content from "./content.js";
+export * as exporter from "./exporter.js";
 #+END_SRC
 
 ** API
@@ -3590,6 +3612,1298 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (139m
 
 #+end_src
 
+*** Exporter
+:PROPERTIES:
+:header-args:js: :tangle "./v2/exporter.js" :mkdirp yes :comments link
+:END:
+
+**** stylesheet
+
++ =stylesheet(format, dict)=
+  + =format: "css" | "scss" | "less" | "styl"=: the target domain format
+  + =dict: {}=: the token dictionary to transform
+
+***** stylesheet Examples
+
+***** stylesheet Implementation
+
+#+BEGIN_SRC js
+export function stylesheet(format, dict) {
+  return variables(format, dict);
+}
+#+END_SRC
+
+***** stylesheet Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/exporter/stylesheet_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { palette, tokens as color } from "../../color.js";
+import { text, ms, tokens as content } from "../../content.js";
+import { stylesheet } from "../../exporter.js";
+
+const swatch = "rebeccapurple";
+const scale = ms({ values: 4, ratio: 1.337 }, 1);
+
+// Whip up a sample dictionary
+const dict = {
+  project: {
+    name: "Example Stylesheet Variables",
+    author: "Chatman R. Jr",
+    version: "0.1.0",
+    license: "Unlicense",
+  },
+  color: color(palette({}, "rebeccapurple")),
+  text: {
+    primary: text({}, ""),
+    secondary: text({ system: "serif", weights: ["light", "black"] }, ""),
+    source: text({ system: "monospace" }, ""),
+    size: content({ unit: "rem", inversion: "em" }, scale),
+    leading: content(
+      { type: "ranged", min: 1.25, max: 1.5, context: "max" },
+      scale
+    ),
+    measure: content(
+      {
+        type: "ranged",
+        min: 45,
+        max: 75,
+        unit: "ch",
+        trunc: true,
+        context: "max",
+      },
+      scale
+    ),
+  },
+  layout: {
+    grid: {
+      ...content({ type: "grid" }, scale),
+      fr: content({ unit: "fr" }, scale),
+    },
+    spacing: content({ unit: "ex" }, scale),
+    dimensions: {
+      width: content({ type: "ranged", min: 25, max: 100, unit: "vw" }, scale),
+      height: content({ type: "ranged", min: 25, max: 100, unit: "vh" }, scale),
+      min: content({ type: "ranged", min: 25, max: 100, unit: "vmin" }, scale),
+      max: content({ type: "ranged", min: 25, max: 100, unit: "vmax" }, scale),
+    },
+  },
+};
+
+describe("stylesheet(format, dict)", () => {
+  const removeTimestamp = (format) =>
+    format.replace(
+      /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
+      "[Timestamp replaced for testing]"
+    );
+
+  describe("format = 'css'", () => {
+    it("should correctly output CSS variables from the sample dictionary", () => {
+      expect(removeTimestamp(stylesheet("css", dict))).toBe(`
+/**
+ * Project: Example Stylesheet Variables (v0.1.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * --------------------------------------------------------------------------------
+ * [Timestamp replaced for testing]
+ **/
+
+:root {
+  --color-50: #eeeaf6;
+  --color-100: #d6cbe7;
+  --color-200: #beadd8;
+  --color-300: #a78fc9;
+  --color-400: #9171ba;
+  --color-500: #7b53aa;
+  --color-600: #512d78;
+  --color-700: #3d2658;
+  --color-800: #2a1e39;
+  --color-900: #18151d;
+  --color-bg: #ffffff;
+  --color-fg: #111111;
+  --text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+  --text-primary-regular: 400;
+  --text-primary-bold: 700;
+  --text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  --text-secondary-light: 300;
+  --text-secondary-black: 900;
+  --text-source-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+  --text-source-regular: 400;
+  --text-source-bold: 700;
+  --text-size: 1rem;
+  --text-size-x2: 1.337rem;
+  --text-size-x3: 1.7876rem;
+  --text-size-x4: 2.39rem;
+  --text-size-d2: 0.74794em;
+  --text-size-d3: 0.55942em;
+  --text-size-d4: 0.41841em;
+  --text-leading: 1.5;
+  --text-leading-i2: 1.437;
+  --text-leading-i3: 1.3899;
+  --text-leading-i4: 1.3546;
+  --text-leading-min: 1.25;
+  --text-measure: 75ch;
+  --text-measure-i2: 67ch;
+  --text-measure-i3: 61ch;
+  --text-measure-i4: 57ch;
+  --text-measure-min: 45ch;
+  --layout-grid-columns: 4;
+  --layout-grid-rows: 3;
+  --layout-grid-col-1: 1;
+  --layout-grid-col-2: 2;
+  --layout-grid-col-3: 3;
+  --layout-grid-col-4: 4;
+  --layout-grid-col--1: -1;
+  --layout-grid-col--2: -2;
+  --layout-grid-col--3: -3;
+  --layout-grid-col--4: -4;
+  --layout-grid-row-1: 1;
+  --layout-grid-row-2: 2;
+  --layout-grid-row-3: 3;
+  --layout-grid-row--1: -1;
+  --layout-grid-row--2: -2;
+  --layout-grid-row--3: -3;
+  --layout-grid-fr: 1fr;
+  --layout-grid-fr-x2: 1.337fr;
+  --layout-grid-fr-x3: 1.7876fr;
+  --layout-grid-fr-x4: 2.39fr;
+  --layout-grid-fr-d2: 0.74794fr;
+  --layout-grid-fr-d3: 0.55942fr;
+  --layout-grid-fr-d4: 0.41841fr;
+  --layout-spacing: 1ex;
+  --layout-spacing-x2: 1.337ex;
+  --layout-spacing-x3: 1.7876ex;
+  --layout-spacing-x4: 2.39ex;
+  --layout-spacing-d2: 0.74794ex;
+  --layout-spacing-d3: 0.55942ex;
+  --layout-spacing-d4: 0.41841ex;
+  --layout-dimensions-width: 25vw;
+  --layout-dimensions-width-i2: 56.381vw;
+  --layout-dimensions-width-i3: 66.956vw;
+  --layout-dimensions-width-i4: 81.096vw;
+  --layout-dimensions-width-max: 100vw;
+  --layout-dimensions-height: 25vh;
+  --layout-dimensions-height-i2: 56.381vh;
+  --layout-dimensions-height-i3: 66.956vh;
+  --layout-dimensions-height-i4: 81.096vh;
+  --layout-dimensions-height-max: 100vh;
+  --layout-dimensions-min: 25vmin;
+  --layout-dimensions-min-i2: 56.381vmin;
+  --layout-dimensions-min-i3: 66.956vmin;
+  --layout-dimensions-min-i4: 81.096vmin;
+  --layout-dimensions-min-max: 100vmin;
+  --layout-dimensions-max: 25vmax;
+  --layout-dimensions-max-i2: 56.381vmax;
+  --layout-dimensions-max-i3: 66.956vmax;
+  --layout-dimensions-max-i4: 81.096vmax;
+  --layout-dimensions-max-max: 100vmax;
+
+}
+`);
+    });
+  });
+
+  describe("format = 'scss'", () => {
+    it("should correctly output Sass variables from the sample dictionary", () => {
+      expect(removeTimestamp(stylesheet("scss", dict))).toBe(`
+/*!
+ * Project: Example Stylesheet Variables (v0.1.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * --------------------------------------------------------------------------------
+ * [Timestamp replaced for testing]
+ */
+
+$color-50: #eeeaf6;
+$color-100: #d6cbe7;
+$color-200: #beadd8;
+$color-300: #a78fc9;
+$color-400: #9171ba;
+$color-500: #7b53aa;
+$color-600: #512d78;
+$color-700: #3d2658;
+$color-800: #2a1e39;
+$color-900: #18151d;
+$color-bg: #ffffff;
+$color-fg: #111111;
+$text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+$text-primary-regular: 400;
+$text-primary-bold: 700;
+$text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+$text-secondary-light: 300;
+$text-secondary-black: 900;
+$text-source-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+$text-source-regular: 400;
+$text-source-bold: 700;
+$text-size: 1rem;
+$text-size-x2: 1.337rem;
+$text-size-x3: 1.7876rem;
+$text-size-x4: 2.39rem;
+$text-size-d2: 0.74794em;
+$text-size-d3: 0.55942em;
+$text-size-d4: 0.41841em;
+$text-leading: 1.5;
+$text-leading-i2: 1.437;
+$text-leading-i3: 1.3899;
+$text-leading-i4: 1.3546;
+$text-leading-min: 1.25;
+$text-measure: 75ch;
+$text-measure-i2: 67ch;
+$text-measure-i3: 61ch;
+$text-measure-i4: 57ch;
+$text-measure-min: 45ch;
+$layout-grid-columns: 4;
+$layout-grid-rows: 3;
+$layout-grid-col-1: 1;
+$layout-grid-col-2: 2;
+$layout-grid-col-3: 3;
+$layout-grid-col-4: 4;
+$layout-grid-col--1: -1;
+$layout-grid-col--2: -2;
+$layout-grid-col--3: -3;
+$layout-grid-col--4: -4;
+$layout-grid-row-1: 1;
+$layout-grid-row-2: 2;
+$layout-grid-row-3: 3;
+$layout-grid-row--1: -1;
+$layout-grid-row--2: -2;
+$layout-grid-row--3: -3;
+$layout-grid-fr: 1fr;
+$layout-grid-fr-x2: 1.337fr;
+$layout-grid-fr-x3: 1.7876fr;
+$layout-grid-fr-x4: 2.39fr;
+$layout-grid-fr-d2: 0.74794fr;
+$layout-grid-fr-d3: 0.55942fr;
+$layout-grid-fr-d4: 0.41841fr;
+$layout-spacing: 1ex;
+$layout-spacing-x2: 1.337ex;
+$layout-spacing-x3: 1.7876ex;
+$layout-spacing-x4: 2.39ex;
+$layout-spacing-d2: 0.74794ex;
+$layout-spacing-d3: 0.55942ex;
+$layout-spacing-d4: 0.41841ex;
+$layout-dimensions-width: 25vw;
+$layout-dimensions-width-i2: 56.381vw;
+$layout-dimensions-width-i3: 66.956vw;
+$layout-dimensions-width-i4: 81.096vw;
+$layout-dimensions-width-max: 100vw;
+$layout-dimensions-height: 25vh;
+$layout-dimensions-height-i2: 56.381vh;
+$layout-dimensions-height-i3: 66.956vh;
+$layout-dimensions-height-i4: 81.096vh;
+$layout-dimensions-height-max: 100vh;
+$layout-dimensions-min: 25vmin;
+$layout-dimensions-min-i2: 56.381vmin;
+$layout-dimensions-min-i3: 66.956vmin;
+$layout-dimensions-min-i4: 81.096vmin;
+$layout-dimensions-min-max: 100vmin;
+$layout-dimensions-max: 25vmax;
+$layout-dimensions-max-i2: 56.381vmax;
+$layout-dimensions-max-i3: 66.956vmax;
+$layout-dimensions-max-i4: 81.096vmax;
+$layout-dimensions-max-max: 100vmax;
+
+`);
+    });
+  });
+
+  describe("format = 'less'", () => {
+    it("should correctly output Less varibles from the sample dictionary", () => {
+      expect(removeTimestamp(stylesheet("less", dict))).toBe(`
+/*
+ * Project: Example Stylesheet Variables (v0.1.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * --------------------------------------------------------------------------------
+ * [Timestamp replaced for testing]
+ */
+
+@color-50: #eeeaf6;
+@color-100: #d6cbe7;
+@color-200: #beadd8;
+@color-300: #a78fc9;
+@color-400: #9171ba;
+@color-500: #7b53aa;
+@color-600: #512d78;
+@color-700: #3d2658;
+@color-800: #2a1e39;
+@color-900: #18151d;
+@color-bg: #ffffff;
+@color-fg: #111111;
+@text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+@text-primary-regular: 400;
+@text-primary-bold: 700;
+@text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+@text-secondary-light: 300;
+@text-secondary-black: 900;
+@text-source-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+@text-source-regular: 400;
+@text-source-bold: 700;
+@text-size: 1rem;
+@text-size-x2: 1.337rem;
+@text-size-x3: 1.7876rem;
+@text-size-x4: 2.39rem;
+@text-size-d2: 0.74794em;
+@text-size-d3: 0.55942em;
+@text-size-d4: 0.41841em;
+@text-leading: 1.5;
+@text-leading-i2: 1.437;
+@text-leading-i3: 1.3899;
+@text-leading-i4: 1.3546;
+@text-leading-min: 1.25;
+@text-measure: 75ch;
+@text-measure-i2: 67ch;
+@text-measure-i3: 61ch;
+@text-measure-i4: 57ch;
+@text-measure-min: 45ch;
+@layout-grid-columns: 4;
+@layout-grid-rows: 3;
+@layout-grid-col-1: 1;
+@layout-grid-col-2: 2;
+@layout-grid-col-3: 3;
+@layout-grid-col-4: 4;
+@layout-grid-col--1: -1;
+@layout-grid-col--2: -2;
+@layout-grid-col--3: -3;
+@layout-grid-col--4: -4;
+@layout-grid-row-1: 1;
+@layout-grid-row-2: 2;
+@layout-grid-row-3: 3;
+@layout-grid-row--1: -1;
+@layout-grid-row--2: -2;
+@layout-grid-row--3: -3;
+@layout-grid-fr: 1fr;
+@layout-grid-fr-x2: 1.337fr;
+@layout-grid-fr-x3: 1.7876fr;
+@layout-grid-fr-x4: 2.39fr;
+@layout-grid-fr-d2: 0.74794fr;
+@layout-grid-fr-d3: 0.55942fr;
+@layout-grid-fr-d4: 0.41841fr;
+@layout-spacing: 1ex;
+@layout-spacing-x2: 1.337ex;
+@layout-spacing-x3: 1.7876ex;
+@layout-spacing-x4: 2.39ex;
+@layout-spacing-d2: 0.74794ex;
+@layout-spacing-d3: 0.55942ex;
+@layout-spacing-d4: 0.41841ex;
+@layout-dimensions-width: 25vw;
+@layout-dimensions-width-i2: 56.381vw;
+@layout-dimensions-width-i3: 66.956vw;
+@layout-dimensions-width-i4: 81.096vw;
+@layout-dimensions-width-max: 100vw;
+@layout-dimensions-height: 25vh;
+@layout-dimensions-height-i2: 56.381vh;
+@layout-dimensions-height-i3: 66.956vh;
+@layout-dimensions-height-i4: 81.096vh;
+@layout-dimensions-height-max: 100vh;
+@layout-dimensions-min: 25vmin;
+@layout-dimensions-min-i2: 56.381vmin;
+@layout-dimensions-min-i3: 66.956vmin;
+@layout-dimensions-min-i4: 81.096vmin;
+@layout-dimensions-min-max: 100vmin;
+@layout-dimensions-max: 25vmax;
+@layout-dimensions-max-i2: 56.381vmax;
+@layout-dimensions-max-i3: 66.956vmax;
+@layout-dimensions-max-i4: 81.096vmax;
+@layout-dimensions-max-max: 100vmax;
+
+`);
+    });
+  });
+
+  describe("format = 'styl'", () => {
+    it("should correctly output Stylus varibles from the sample dictionary", () => {
+      expect(removeTimestamp(stylesheet("styl", dict))).toBe(`
+/*!
+ * Project: Example Stylesheet Variables (v0.1.0)
+ * Owned by: Chatman R. Jr
+ * License: Unlicense
+ * ================================================================================
+ *
+ * DESCRIPTION: N/A
+ * COMMENTS: N/A
+ * --------------------------------------------------------------------------------
+ * [Timestamp replaced for testing]
+ */
+
+color-50 = #eeeaf6
+color-100 = #d6cbe7
+color-200 = #beadd8
+color-300 = #a78fc9
+color-400 = #9171ba
+color-500 = #7b53aa
+color-600 = #512d78
+color-700 = #3d2658
+color-800 = #2a1e39
+color-900 = #18151d
+color-bg = #ffffff
+color-fg = #111111
+text-primary-family = -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif
+text-primary-regular = 400
+text-primary-bold = 700
+text-secondary-family = Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol
+text-secondary-light = 300
+text-secondary-black = 900
+text-source-family = Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace
+text-source-regular = 400
+text-source-bold = 700
+text-size = 1rem
+text-size-x2 = 1.337rem
+text-size-x3 = 1.7876rem
+text-size-x4 = 2.39rem
+text-size-d2 = 0.74794em
+text-size-d3 = 0.55942em
+text-size-d4 = 0.41841em
+text-leading = 1.5
+text-leading-i2 = 1.437
+text-leading-i3 = 1.3899
+text-leading-i4 = 1.3546
+text-leading-min = 1.25
+text-measure = 75ch
+text-measure-i2 = 67ch
+text-measure-i3 = 61ch
+text-measure-i4 = 57ch
+text-measure-min = 45ch
+layout-grid-columns = 4
+layout-grid-rows = 3
+layout-grid-col-1 = 1
+layout-grid-col-2 = 2
+layout-grid-col-3 = 3
+layout-grid-col-4 = 4
+layout-grid-col--1 = -1
+layout-grid-col--2 = -2
+layout-grid-col--3 = -3
+layout-grid-col--4 = -4
+layout-grid-row-1 = 1
+layout-grid-row-2 = 2
+layout-grid-row-3 = 3
+layout-grid-row--1 = -1
+layout-grid-row--2 = -2
+layout-grid-row--3 = -3
+layout-grid-fr = 1fr
+layout-grid-fr-x2 = 1.337fr
+layout-grid-fr-x3 = 1.7876fr
+layout-grid-fr-x4 = 2.39fr
+layout-grid-fr-d2 = 0.74794fr
+layout-grid-fr-d3 = 0.55942fr
+layout-grid-fr-d4 = 0.41841fr
+layout-spacing = 1ex
+layout-spacing-x2 = 1.337ex
+layout-spacing-x3 = 1.7876ex
+layout-spacing-x4 = 2.39ex
+layout-spacing-d2 = 0.74794ex
+layout-spacing-d3 = 0.55942ex
+layout-spacing-d4 = 0.41841ex
+layout-dimensions-width = 25vw
+layout-dimensions-width-i2 = 56.381vw
+layout-dimensions-width-i3 = 66.956vw
+layout-dimensions-width-i4 = 81.096vw
+layout-dimensions-width-max = 100vw
+layout-dimensions-height = 25vh
+layout-dimensions-height-i2 = 56.381vh
+layout-dimensions-height-i3 = 66.956vh
+layout-dimensions-height-i4 = 81.096vh
+layout-dimensions-height-max = 100vh
+layout-dimensions-min = 25vmin
+layout-dimensions-min-i2 = 56.381vmin
+layout-dimensions-min-i3 = 66.956vmin
+layout-dimensions-min-i4 = 81.096vmin
+layout-dimensions-min-max = 100vmin
+layout-dimensions-max = 25vmax
+layout-dimensions-max-i2 = 56.381vmax
+layout-dimensions-max-i3 = 66.956vmax
+layout-dimensions-max-i4 = 81.096vmax
+layout-dimensions-max-max = 100vmax
+
+`);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/exporter/stylesheet_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  stylesheet(format, dict)
+    format = 'css'
+    • should correctly output CSS variables from the sample dictionary
+    format = 'scss'
+    • should correctly output Sass variables from the sample dictionary
+    format = 'less'
+    • should correctly output Less varibles from the sample dictionary
+    format = 'styl'
+    • should correctly output Stylus varibles from the sample dictionary
+
+running 4 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/exporter/stylesheet_test.js
+test stylesheet(format, dict) > format = 'css' > should correctly output CSS variables from the sample dictionary ... ok (35ms)
+test stylesheet(format, dict) > format = 'scss' > should correctly output Sass variables from the sample dictionary ... ok (6ms)
+test stylesheet(format, dict) > format = 'less' > should correctly output Less varibles from the sample dictionary ... ok (6ms)
+test stylesheet(format, dict) > format = 'styl' > should correctly output Stylus varibles from the sample dictionary ... ok (5ms)
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (200ms)
+
+#+end_src
+
+**** data
+
++ =data(format, dict)=
+  + =format: "json" | "yaml"=: the target domain format
+  + =dict: {}=: the token dictionary to transform
+
+***** data Examples
+
+***** data Implementation
+
+#+BEGIN_SRC js
+export function data(format, dict) {
+  const output = {
+    json: json.bind(null),
+    yaml: yaml.bind(null),
+  };
+
+  return output[format](dict);
+}
+#+END_SRC
+
+***** data Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/exporter/data_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { palette, tokens as color } from "../../color.js";
+import { text, ms, tokens as content } from "../../content.js";
+import { data } from "../../exporter.js";
+
+const swatch = "rebeccapurple";
+const scale = ms({ values: 4, ratio: 1.337 }, 1);
+
+// Whip up a sample dictionary
+const dict = {
+  project: {
+    name: "Example Data Export",
+    author: "Chatman R. Jr",
+    version: "0.1.0",
+    license: "Unlicense",
+  },
+  color: color(palette({}, swatch)),
+  text: {
+    primary: text({}, ""),
+    secondary: text({ system: "serif", weights: ["light", "black"] }, ""),
+    source: text({ system: "monospace" }, ""),
+    size: content({ unit: "rem", inversion: "em" }, scale),
+    leading: content(
+      { type: "ranged", min: 1.25, max: 1.5, context: "max" },
+      scale
+    ),
+    measure: content(
+      {
+        type: "ranged",
+        min: 45,
+        max: 75,
+        unit: "ch",
+        trunc: true,
+        context: "max",
+      },
+      scale
+    ),
+  },
+  layout: {
+    grid: {
+      ...content({ type: "grid" }, scale),
+      fr: content({ unit: "fr" }, scale),
+    },
+    spacing: content({ unit: "ex" }, scale),
+    dimensions: {
+      width: content({ type: "ranged", min: 25, max: 100, unit: "vw" }, scale),
+      height: content({ type: "ranged", min: 25, max: 100, unit: "vh" }, scale),
+      min: content({ type: "ranged", min: 25, max: 100, unit: "vmin" }, scale),
+      max: content({ type: "ranged", min: 25, max: 100, unit: "vmax" }, scale),
+    },
+  },
+};
+
+describe("data(format, dict)", () => {
+  const removeTimestamp = (format) =>
+    format.replace(
+      /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
+      "[Timestamp replaced for testing]"
+    );
+
+  describe("format = 'json'", () => {
+    it("should correctly export sample dictionary as JSON data", () => {
+      expect(JSON.parse(data("json", dict))).toEqual({
+        project: {
+          name: "Example Data Export",
+          author: "Chatman R. Jr",
+          version: "0.1.0",
+          license: "Unlicense",
+        },
+        tokens: {
+          color: {
+            50: "#eeeaf6",
+            100: "#d6cbe7",
+            200: "#beadd8",
+            300: "#a78fc9",
+            400: "#9171ba",
+            500: "#7b53aa",
+            600: "#512d78",
+            700: "#3d2658",
+            800: "#2a1e39",
+            900: "#18151d",
+            bg: "#ffffff",
+            fg: "#111111",
+          },
+          text: {
+            primary: {
+              family:
+              "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+              regular: 400,
+              bold: 700,
+            },
+            secondary: {
+              family:
+              "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+              light: 300,
+              black: 900,
+            },
+            source: {
+              family:
+              "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+              regular: 400,
+              bold: 700,
+            },
+            size: {
+              base: "1rem",
+              x2: "1.337rem",
+              x3: "1.7876rem",
+              x4: "2.39rem",
+              d2: "0.74794em",
+              d3: "0.55942em",
+              d4: "0.41841em",
+            },
+            leading: {
+              base: 1.5,
+              i2: 1.437,
+              i3: 1.3899,
+              i4: 1.3546,
+              min: 1.25,
+            },
+            measure: {
+              base: "75ch",
+              i2: "67ch",
+              i3: "61ch",
+              i4: "57ch",
+              min: "45ch",
+            },
+          },
+          layout: {
+            grid: {
+              columns: 4,
+              rows: 3,
+              col: {
+                1: 1,
+                2: 2,
+                3: 3,
+                4: 4,
+                "-1": -1,
+                "-2": -2,
+                "-3": -3,
+                "-4": -4,
+              },
+              row: { 1: 1, 2: 2, 3: 3, "-1": -1, "-2": -2, "-3": -3 },
+              fr: {
+                base: "1fr",
+                x2: "1.337fr",
+                x3: "1.7876fr",
+                x4: "2.39fr",
+                d2: "0.74794fr",
+                d3: "0.55942fr",
+                d4: "0.41841fr",
+              },
+            },
+            spacing: {
+              base: "1ex",
+              x2: "1.337ex",
+              x3: "1.7876ex",
+              x4: "2.39ex",
+              d2: "0.74794ex",
+              d3: "0.55942ex",
+              d4: "0.41841ex",
+            },
+            dimensions: {
+              width: {
+                base: "25vw",
+                i2: "56.381vw",
+                i3: "66.956vw",
+                i4: "81.096vw",
+                max: "100vw",
+              },
+              height: {
+                base: "25vh",
+                i2: "56.381vh",
+                i3: "66.956vh",
+                i4: "81.096vh",
+                max: "100vh",
+              },
+              min: {
+                base: "25vmin",
+                i2: "56.381vmin",
+                i3: "66.956vmin",
+                i4: "81.096vmin",
+                max: "100vmin",
+              },
+              max: {
+                base: "25vmax",
+                i2: "56.381vmax",
+                i3: "66.956vmax",
+                i4: "81.096vmax",
+                max: "100vmax",
+              },
+            },
+          },
+        },
+      });
+    });
+  });
+
+  describe("format = 'yaml'", () => {
+    it("should correctly export sample dictionary as YAML data", () => {
+      expect(removeTimestamp(data("yaml", dict))).toBe(`
+# [Timestamp replaced for testing]
+
+project:
+  name: Example Data Export
+  author: Chatman R. Jr
+  version: 0.1.0
+  license: Unlicense
+
+tokens:
+  color:
+    50: #eeeaf6
+    100: #d6cbe7
+    200: #beadd8
+    300: #a78fc9
+    400: #9171ba
+    500: #7b53aa
+    600: #512d78
+    700: #3d2658
+    800: #2a1e39
+    900: #18151d
+    bg: #ffffff
+    fg: #111111
+  text:
+    primary:
+      family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif
+      regular: 400
+      bold: 700
+    secondary:
+      family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol
+      light: 300
+      black: 900
+    source:
+      family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace
+      regular: 400
+      bold: 700
+    size:
+      base: 1rem
+      x2: 1.337rem
+      x3: 1.7876rem
+      x4: 2.39rem
+      d2: 0.74794em
+      d3: 0.55942em
+      d4: 0.41841em
+    leading:
+      base: 1.5
+      i2: 1.437
+      i3: 1.3899
+      i4: 1.3546
+      min: 1.25
+    measure:
+      base: 75ch
+      i2: 67ch
+      i3: 61ch
+      i4: 57ch
+      min: 45ch
+  layout:
+    grid:
+      columns: 4
+      rows: 3
+      col:
+        1: 1
+        2: 2
+        3: 3
+        4: 4
+        -1: -1
+        -2: -2
+        -3: -3
+        -4: -4
+      row:
+        1: 1
+        2: 2
+        3: 3
+        -1: -1
+        -2: -2
+        -3: -3
+      fr:
+        base: 1fr
+        x2: 1.337fr
+        x3: 1.7876fr
+        x4: 2.39fr
+        d2: 0.74794fr
+        d3: 0.55942fr
+        d4: 0.41841fr
+    spacing:
+      base: 1ex
+      x2: 1.337ex
+      x3: 1.7876ex
+      x4: 2.39ex
+      d2: 0.74794ex
+      d3: 0.55942ex
+      d4: 0.41841ex
+    dimensions:
+      width:
+        base: 25vw
+        i2: 56.381vw
+        i3: 66.956vw
+        i4: 81.096vw
+        max: 100vw
+      height:
+        base: 25vh
+        i2: 56.381vh
+        i3: 66.956vh
+        i4: 81.096vh
+        max: 100vh
+      min:
+        base: 25vmin
+        i2: 56.381vmin
+        i3: 66.956vmin
+        i4: 81.096vmin
+        max: 100vmin
+      max:
+        base: 25vmax
+        i2: 56.381vmax
+        i3: 66.956vmax
+        i4: 81.096vmax
+        max: 100vmax
+`);
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/exporter/data_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  data(format, dict)
+    format = 'json'
+    • should correctly export sample dictionary as JSON data
+    format = 'yaml'
+    • should correctly export sample dictionary as YAML data
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/exporter/data_test.js
+test data(format, dict) > format = 'json' > should correctly export sample dictionary as JSON data ... ok (10ms)
+test data(format, dict) > format = 'yaml' > should correctly export sample dictionary as YAML data ... ok (32ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (188ms)
+
+#+end_src
+
+**** interop
+
++ =interop(format, dict)=
+  + =format: "tailwindcss" | "style dictionary"=: the target tool
+  + =dict: {}=: the token dictionary to transform
+
+***** interop Examples
+
+***** interop Implementation
+
+#+BEGIN_SRC js
+export function interop(format, dict) {
+  const output = {
+    tailwindcss: tailwindcss.bind(null),
+    "style dictionary": styledictionary.bind(null),
+  };
+
+  return output[format](dict);
+}
+#+END_SRC
+
+***** interop Tests
+
+#+BEGIN_SRC js :tangle "./v2/tests/exporter/interop_test.js"
+import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import { palette, tokens as color } from "../../color.js";
+import { text, ms, tokens as content } from "../../content.js";
+import { interop } from "../../exporter.js";
+
+const swatch = "rebeccapurple";
+const scale = ms({ values: 4, ratio: 1.337 }, 1);
+
+// Whip up a sample dictionary
+const dict = {
+  project: {
+    name: "Example Interop",
+    author: "Chatman R. Jr",
+    version: "0.1.0",
+    license: "Unlicense",
+  },
+  color: color(palette({}, swatch)),
+  text: {
+    primary: text({}, ""),
+    secondary: text({ system: "serif", weights: ["light", "black"] }, ""),
+    source: text({ system: "monospace" }, ""),
+    size: content({ unit: "rem", inversion: "em" }, scale),
+    leading: content(
+      { type: "ranged", min: 1.25, max: 1.5, context: "max" },
+      scale
+    ),
+    measure: content(
+      {
+        type: "ranged",
+        min: 45,
+        max: 75,
+        unit: "ch",
+        trunc: true,
+        context: "max",
+      },
+      scale
+    ),
+  },
+  layout: {
+    grid: {
+      ...content({ type: "grid" }, scale),
+      fr: content({ unit: "fr" }, scale),
+    },
+    spacing: content({ unit: "ex" }, scale),
+    dimensions: {
+      width: content({ type: "ranged", min: 25, max: 100, unit: "vw" }, scale),
+      height: content({ type: "ranged", min: 25, max: 100, unit: "vh" }, scale),
+      min: content({ type: "ranged", min: 25, max: 100, unit: "vmin" }, scale),
+      max: content({ type: "ranged", min: 25, max: 100, unit: "vmax" }, scale),
+    },
+  },
+};
+
+describe("interop(format, dict)", () => {
+  describe("format = 'tailwindcss'", () => {
+    it("should translate sample dictionary to a tailwindcss theme", () => {
+      expect(interop("tailwindcss", dict)).toEqual({
+        color: {
+          50: "#eeeaf6",
+          100: "#d6cbe7",
+          200: "#beadd8",
+          300: "#a78fc9",
+          400: "#9171ba",
+          500: "#7b53aa",
+          600: "#512d78",
+          700: "#3d2658",
+          800: "#2a1e39",
+          900: "#18151d",
+          bg: "#ffffff",
+          fg: "#111111",
+        },
+        text: {
+          primary: {
+            family:
+              "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+            regular: 400,
+            bold: 700,
+          },
+          secondary: {
+            family:
+              "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+            light: 300,
+            black: 900,
+          },
+          source: {
+            family:
+              "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+            regular: 400,
+            bold: 700,
+          },
+          size: {
+            DEFAULT: "1rem",
+            x2: "1.337rem",
+            x3: "1.7876rem",
+            x4: "2.39rem",
+            d2: "0.74794em",
+            d3: "0.55942em",
+            d4: "0.41841em",
+          },
+          leading: {
+            DEFAULT: 1.5,
+            i2: 1.437,
+            i3: 1.3899,
+            i4: 1.3546,
+            min: 1.25,
+          },
+          measure: {
+            DEFAULT: "75ch",
+            i2: "67ch",
+            i3: "61ch",
+            i4: "57ch",
+            min: "45ch",
+          },
+        },
+        layout: {
+          grid: {
+            columns: 4,
+            rows: 3,
+            col: {
+              1: 1,
+              2: 2,
+              3: 3,
+              4: 4,
+              "-1": -1,
+              "-2": -2,
+              "-3": -3,
+              "-4": -4,
+            },
+            row: { 1: 1, 2: 2, 3: 3, "-1": -1, "-2": -2, "-3": -3 },
+            fr: {
+              DEFAULT: "1fr",
+              x2: "1.337fr",
+              x3: "1.7876fr",
+              x4: "2.39fr",
+              d2: "0.74794fr",
+              d3: "0.55942fr",
+              d4: "0.41841fr",
+            },
+          },
+          spacing: {
+            DEFAULT: "1ex",
+            x2: "1.337ex",
+            x3: "1.7876ex",
+            x4: "2.39ex",
+            d2: "0.74794ex",
+            d3: "0.55942ex",
+            d4: "0.41841ex",
+          },
+          dimensions: {
+            width: {
+              DEFAULT: "25vw",
+              i2: "56.381vw",
+              i3: "66.956vw",
+              i4: "81.096vw",
+              max: "100vw",
+            },
+            height: {
+              DEFAULT: "25vh",
+              i2: "56.381vh",
+              i3: "66.956vh",
+              i4: "81.096vh",
+              max: "100vh",
+            },
+            min: {
+              DEFAULT: "25vmin",
+              i2: "56.381vmin",
+              i3: "66.956vmin",
+              i4: "81.096vmin",
+              max: "100vmin",
+            },
+            max: {
+              DEFAULT: "25vmax",
+              i2: "56.381vmax",
+              i3: "66.956vmax",
+              i4: "81.096vmax",
+              max: "100vmax",
+            },
+          },
+        },
+      });
+    });
+  });
+
+  describe("format = 'style dictionary'", () => {
+    it("should translate sample dictionary to Style Dictionary tokens", () => {
+      expect(interop("style dictionary", dict)).toEqual({
+        color: {
+          50: { value: "#eeeaf6" },
+          100: { value: "#d6cbe7" },
+          200: { value: "#beadd8" },
+          300: { value: "#a78fc9" },
+          400: { value: "#9171ba" },
+          500: { value: "#7b53aa" },
+          600: { value: "#512d78" },
+          700: { value: "#3d2658" },
+          800: { value: "#2a1e39" },
+          900: { value: "#18151d" },
+          bg: { value: "#ffffff" },
+          fg: { value: "#111111" },
+        },
+        text: {
+          primary: {
+            family: {
+              value:
+              "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+            },
+            regular: { value: 400 },
+            bold: { value: 700 },
+          },
+          secondary: {
+            family: {
+              value:
+              "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+            },
+            light: { value: 300 },
+            black: { value: 900 },
+          },
+          source: {
+            family: {
+              value:
+              "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+            },
+            regular: { value: 400 },
+            bold: { value: 700 },
+          },
+          size: {
+            base: { value: "1rem" },
+            x2: { value: "1.337rem" },
+            x3: { value: "1.7876rem" },
+            x4: { value: "2.39rem" },
+            d2: { value: "0.74794em" },
+            d3: { value: "0.55942em" },
+            d4: { value: "0.41841em" },
+          },
+          leading: {
+            base: { value: 1.5 },
+            i2: { value: 1.437 },
+            i3: { value: 1.3899 },
+            i4: { value: 1.3546 },
+            min: { value: 1.25 },
+          },
+          measure: {
+            base: { value: "75ch" },
+            i2: { value: "67ch" },
+            i3: { value: "61ch" },
+            i4: { value: "57ch" },
+            min: { value: "45ch" },
+          },
+        },
+        layout: {
+          grid: {
+            columns: { value: 4 },
+            rows: { value: 3 },
+            col: {
+              1: { value: 1 },
+              2: { value: 2 },
+              3: { value: 3 },
+              4: { value: 4 },
+              "-1": { value: -1 },
+              "-2": { value: -2 },
+              "-3": { value: -3 },
+              "-4": { value: -4 },
+            },
+            row: {
+              1: { value: 1 },
+              2: { value: 2 },
+              3: { value: 3 },
+              "-1": { value: -1 },
+              "-2": { value: -2 },
+              "-3": { value: -3 },
+            },
+            fr: {
+              base: { value: "1fr" },
+              x2: { value: "1.337fr" },
+              x3: { value: "1.7876fr" },
+              x4: { value: "2.39fr" },
+              d2: { value: "0.74794fr" },
+              d3: { value: "0.55942fr" },
+              d4: { value: "0.41841fr" },
+            },
+          },
+          spacing: {
+            base: { value: "1ex" },
+            x2: { value: "1.337ex" },
+            x3: { value: "1.7876ex" },
+            x4: { value: "2.39ex" },
+            d2: { value: "0.74794ex" },
+            d3: { value: "0.55942ex" },
+            d4: { value: "0.41841ex" },
+          },
+          dimensions: {
+            width: {
+              base: { value: "25vw" },
+              i2: { value: "56.381vw" },
+              i3: { value: "66.956vw" },
+              i4: { value: "81.096vw" },
+              max: { value: "100vw" },
+            },
+            height: {
+              base: { value: "25vh" },
+              i2: { value: "56.381vh" },
+              i3: { value: "66.956vh" },
+              i4: { value: "81.096vh" },
+              max: { value: "100vh" },
+            },
+            min: {
+              base: { value: "25vmin" },
+              i2: { value: "56.381vmin" },
+              i3: { value: "66.956vmin" },
+              i4: { value: "81.096vmin" },
+              max: { value: "100vmin" },
+            },
+            max: {
+              base: { value: "25vmax" },
+              i2: { value: "56.381vmax" },
+              i3: { value: "66.956vmax" },
+              i4: { value: "81.096vmax" },
+              max: { value: "100vmax" },
+            },
+          },
+        },
+      });
+    });
+  });
+});
+
+run();
+#+END_SRC
+
+#+BEGIN_SRC shell
+NO_COLOR=1 deno test v2/tests/exporter/interop_test.js
+#+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+
+  interop(format, dict)
+    format = 'tailwindcss'
+    • should translate sample dictionary to a tailwindcss theme
+    format = 'style dictionary'
+    • should translate sample dictionary to Style Dictionary tokens
+
+running 2 tests from file:///home/cr-jr/Code/quarksuite:core/v2/tests/exporter/interop_test.js
+test interop(format, dict) > format = 'tailwindcss' > should translate sample dictionary to a tailwindcss theme ... ok (10ms)
+test interop(format, dict) > format = 'style dictionary' > should translate sample dictionary to Style Dictionary tokens ... ok (8ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (165ms)
+
+#+end_src
+
 ** Internals
 *** Functional
 :PROPERTIES:
@@ -6752,5 +8066,378 @@ function assemble(settings, ms) {
       .map((v) => output(inversion, v))
       .reduce((acc, v, pos) => ({ ...acc, ["d".concat(++pos + 1)]: v }), {}),
   };
+}
+#+END_SRC
+
+*** Exporter
+:PROPERTIES:
+:header-args:js: :tangle "./v2/exporter.js" :mkdirp yes :comments link
+:END:
+
+At this point, our foundational tokens are now ready and we can use them as-is. The more portable solution is to create
+a series of exporters that read our tokens and export/adapt them for the actual target environment(s).
+
+v1 provided a selection of exporting emitters for CSS custom properties, preprocessors, several general data formats,
+and a few desktop app formats. It also provided some degree of interoperability with other tools such as Style
+Dictionary and TailwindCSS.
+
+For v2, we're not going to remove much, but we are going to restructure the exporters as /actions/ instead of
+emitters to allow a bit more flexibility and organization. For that, let's create a few exporter categories.
+
++ Stylesheet: the domain target is some kind of stylesheet format (plain CSS or preprocessors)
++ Data: the domain target uses a universal data format like JSON or YAML
++ Interop: the domain target is another JavaScript library or build tool (translates data as necessary)
+
+You'll notice the desktop exporters are gone. They were mostly taking up space, and I want to explore direct integration
+with UI and graphic design web apps.
+
+
+**** Setup
+
+#+BEGIN_SRC js
+function timestamp() {
+  const TIMESTAMP = new Date(Date.now());
+  return `Updated on ${TIMESTAMP.toLocaleDateString()} at ${TIMESTAMP.toLocaleTimeString()}`;
+}
+
+function info(
+  {
+    commentDelim: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
+    str = "",
+  },
+  metadata
+) {
+  return str.concat(
+    OPEN,
+    Object.entries(metadata).reduce((str, [key, value]) => {
+      const lines = value.split("\n");
+
+      if (lines.length > 1) {
+        return str
+          .concat(
+            "\n",
+            DELIM,
+            key.toUpperCase(),
+            ":",
+            "\n",
+            DELIM.trimEnd(),
+            lines.join(`\n${DELIM}`)
+          )
+          .trimEnd();
+      }
+
+      return str.concat("\n", DELIM, key.toUpperCase(), ": ", lines);
+    }, ""),
+    CLOSE
+  );
+}
+
+function bumpVersion(project) {
+  let [major, minor, patch, pre] = Array.from(
+    project.version.split(/[.-]/g)
+  ).map((n) => parseFloat(n));
+
+  function next(keyword) {
+    const bumped = new Map([
+      ["major", [major + 1, 0, 0]],
+      ["minor", [major, minor + 1, 0]],
+      ["patch", [major, minor, patch + 1]],
+      ["pre", [major, minor, patch, pre + 1 || 0]],
+      ["build", [major, minor, patch, pre, Date.now()]],
+    ]).get(keyword);
+
+    return bumped;
+  }
+
+  const releaseConditions = (release) =>
+    Array.from(
+      new Map([
+        [release.length === 3, release.join(".")],
+        [
+          release.length === 4,
+          [release.slice(0, 3).join("."), release[3]].join("-"),
+        ],
+        [
+          release.length === 5,
+          [
+            release.slice(0, 3).join("."),
+            [release[3] ?? 0, release[4]].join("+"),
+          ].join("-"),
+        ],
+      ])
+    )
+      .filter(([condition]) => condition)
+      .flatMap(([, release]) => release)
+      .toString();
+
+  return { ...project, version: releaseConditions(next(project.bump)) };
+}
+#+END_SRC
+
+**** Stylesheet
+
+The code for stylesheet variables formatting hasn't changed much from v1. I mean, it works. We're only going to clean
+things up.
+
+***** Stylesheet Setup
+
+#+BEGIN_SRC js
+function styleIdentifier(collected, current, delim) {
+  if (current === "base") {
+    return collected;
+  }
+
+  if (collected) {
+    return [collected, current].join(delim);
+  }
+
+  return current;
+}
+
+function styleAssembler({
+  padding = "",
+  prefix = "--",
+  assignment = ": ",
+  suffix = ";",
+  terminator = "\n",
+}) {
+  return function (str, key, value) {
+    return str.concat(
+      padding,
+      prefix,
+      key,
+      assignment,
+      value,
+      suffix,
+      terminator
+    );
+  };
+}
+
+function styleFormatter(opts, node) {
+  function assemble(head, node) {
+    const { metadata, ...tokens } = node;
+
+    return "".concat(
+      (metadata && info(opts, metadata)) || "",
+      Object.entries(tokens).reduce((str, [key, value]) => {
+        const format = styleAssembler(opts);
+
+        if (typeof value === "object") {
+          return str.concat(assemble(styleIdentifier(head, key, "-"), value));
+        }
+
+        return format(str, styleIdentifier(head, key, "-"), value);
+      }, "")
+    );
+  }
+
+  return "\n".concat(assemble("", node));
+}
+
+function styleHeader([DOC_OPEN, DOC_CLOSE] = ["\n/**", " **/\n"], project) {
+  let {
+    name = "Unknown",
+    author = "Anonymous",
+    version = "0.1.0",
+    license = "Unlicense",
+    bump = "manual",
+    metadata: { description = "N/A", comments = "N/A" } = {},
+  } = project;
+
+  // Attach a dynamic property initializing the autorelease version
+  const autobump = ["major", "minor", "patch", "pre", "build"].some(
+    (keyword) => keyword === bump
+  );
+
+  return "".concat(
+    DOC_OPEN,
+    `
+ * Project: ${name} (v${autobump ? bumpVersion(project) : version})
+ * Owned by: ${author}
+ * License: ${license}
+ * ${"=".repeat(80)}
+${info(
+  { commentDelim: [" *", " * ", ""] },
+  {
+    description,
+    comments,
+  }
+)}
+ * ${"-".repeat(80)}
+ * ${timestamp()}
+`,
+    DOC_CLOSE
+  );
+}
+
+function styleTokens(
+  {
+    metadata: [OPEN, DELIM, CLOSE] = ["\n  /**", "   * ", "\n   **/\n\n"],
+    wrapper: [TOKENS_OPEN, TOKENS_CLOSE] = ["\n:root {", "\n}\n"],
+    opts = { padding: "  " },
+  },
+  tokens
+) {
+  return "".concat(
+    TOKENS_OPEN,
+    styleFormatter({ ...opts, commentDelim: [OPEN, DELIM, CLOSE] }, tokens),
+    TOKENS_CLOSE
+  );
+}
+
+function style({ doc, ...opts } = {}, { project, ...tokens }) {
+  return "".concat(styleHeader(doc, project), styleTokens(opts, tokens));
+}
+#+END_SRC
+
+***** Stylesheet Variables
+
+#+BEGIN_SRC js
+function variables(type, dict) {
+  const format = {
+    css: style.bind(null, {}),
+    scss: style.bind(null, {
+      doc: ["\n/*!", " */\n"],
+      metadata: ["", "// ", "\n\n"],
+      wrapper: ["", "\n"],
+      opts: { padding: "", prefix: "$" },
+    }),
+    less: style.bind(null, {
+      doc: ["\n/*", " */\n"],
+      metadata: ["", "// ", "\n\n"],
+      wrapper: ["", "\n"],
+      opts: { padding: "", prefix: "@" },
+    }),
+    styl: style.bind(null, {
+      doc: ["\n/*!", " */\n"],
+      metadata: ["", "// ", "\n\n"],
+      wrapper: ["", "\n"],
+      opts: { padding: "", prefix: "", assignment: " = ", suffix: "" },
+    }),
+  };
+
+  return format[type](dict);
+}
+#+END_SRC
+
+**** Data
+
+The data exporters are unchanged other than some simplification of the YAML as we no longer deal with arrays in the spec.
+
+#+BEGIN_SRC js
+function json(dict) {
+  const { project, ...tokens } = dict;
+
+  const { bump = "manual" } = project;
+
+  // Check if bump matches an automation keyword
+  const autobump = ["major", "minor", "patch", "pre", "build"].some(
+    (keyword) => keyword === bump
+  );
+
+  // Then bump the version
+  autobump && bumpVersion(project);
+
+  return JSON.stringify({ project, tokens }, null, 2);
+}
+
+function yamlValue(level, str, key, value) {
+  const isMultiline = typeof value === "string" && value.split("\n").length > 1;
+  if (isMultiline) {
+    return str.concat(
+      "".padStart(level),
+      `${key}: |\n`,
+      value
+        .split("\n")
+        .reduce((s, line) => s.concat("".padStart(level + 2), line, "\n"), "")
+    );
+  }
+
+  return str.concat("".padStart(level), key, ": ", value, "\n");
+}
+
+function yaml(dict) {
+  const { project, ...tokens } = dict;
+  const { bump = "manual" } = project;
+
+  // Check if bump matches an automation keyword
+  const autobump = ["major", "minor", "patch", "pre", "build"].some(
+    (keyword) => keyword === bump
+  );
+
+  // Then bump the version
+  autobump && bumpVersion(project);
+
+  // Recursively assemble the data tree
+  const assemble = (level, tree) =>
+    Object.entries(tree).reduce((str, [key, data]) => {
+      if (typeof data === "string" || typeof data === "number")
+        return yamlValue(level, str, key, data);
+      return str.concat(
+        "".padStart(level),
+        key,
+        ":\n",
+        assemble(level + 2, data)
+      );
+    }, "");
+
+  return `
+# ${timestamp()}
+${Object.entries({ project, tokens })
+  .reduce((str, [key, data]) => {
+    if (typeof data === "string" || typeof data === "number")
+      return yamlValue(0, str, key, data);
+    return str.concat("\n", key, ":\n", assemble(2, data));
+  }, "")
+  .trimEnd()}
+`;
+}
+#+END_SRC
+
+**** Interop
+
+QuarkSuite Core was designed, nearly from the start, for interoperability with two mature tools in the design token
+authoring space: TailwindCSS and Style Dictionary. Core v2 also turns its attention to Figma interop.
+
+Adapting QuarkSuite dictionaries for both of these is straightforward since the spec is derived in part from theirs.
+
+#+BEGIN_SRC js
+function tailwindcss(dict) {
+  const { project, ...tokens } = dict;
+
+  const assemble = (node) =>
+    Object.entries(node).reduce((acc, [key, data]) => {
+      if (key === "base") return { ...acc, DEFAULT: data };
+
+      // Skip past any metadata
+      if (key === "metadata") return { ...acc };
+
+      if (typeof data === "object") {
+        return { ...acc, [key]: assemble(data) };
+      }
+
+      return { ...acc, [key]: data };
+    }, {});
+
+  return project && assemble(tokens);
+}
+
+function styledictionary(dict) {
+  const { project, ...tokens } = dict;
+
+  const assemble = (node) =>
+    Object.entries(node).reduce((acc, [key, data]) => {
+      // Skip past any metadata
+      if (key === "metadata") return { ...acc };
+
+      if (typeof data === "object") {
+        return { ...acc, [key]: assemble(data) };
+      }
+
+      return { ...acc, [key]: { value: data } };
+    }, {});
+
+  return project && assemble(tokens);
 }
 #+END_SRC
