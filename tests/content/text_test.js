@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*text Tests][text Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { text } from "../../content.js";
 
@@ -101,4 +100,3 @@ describe("text(settings, font)", () => {
 });
 
 run();
-// text Tests:1 ends here

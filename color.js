@@ -1,4 +1,3 @@
-// [[file:Notebook.org::*convert Implementation][convert Implementation:1]]
 export function convert(to, color) {
   if (to === "lab") {
     return serialize(_convert(color, "cielab"));
@@ -10,9 +9,7 @@ export function convert(to, color) {
 
   return serialize(_convert(color, to));
 }
-// convert Implementation:1 ends here
 
-// [[file:Notebook.org::*adjust Implementation][adjust Implementation:1]]
 export function adjust(settings, color) {
   // Do nothing by default
   const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
@@ -33,9 +30,7 @@ export function adjust(settings, color) {
 
   return colorAdjustment({ lightness, chroma, hue, alpha }, color);
 }
-// adjust Implementation:1 ends here
 
-// [[file:Notebook.org::*mix Implementation][mix Implementation:1]]
 export function mix(settings, color) {
   // Do nothing by default
   const { target = color, strength = 0, steps } = settings;
@@ -46,18 +41,14 @@ export function mix(settings, color) {
 
   return colorMix({ target, strength }, color);
 }
-// mix Implementation:1 ends here
 
-// [[file:Notebook.org::*harmony Implementation][harmony Implementation:1]]
 export function harmony(settings, color) {
   // Set defaults
   const { configuration = "complementary", accented = false } = settings;
 
   return colorHarmonies({ type: configuration, accented }, color);
 }
-// harmony Implementation:1 ends here
 
-// [[file:Notebook.org::*vision Implementation][vision Implementation:1]]
 export function vision(settings, color) {
   // Set defaults
   const { as = "protanopia", method = "brettel", steps = 0 } = settings;
@@ -105,9 +96,7 @@ export function vision(settings, color) {
 
   return checkColorblindness({ method, type, strength: 100 }, color);
 }
-// vision Implementation:1 ends here
 
-// [[file:Notebook.org::*contrast Implementation][contrast Implementation:1]]
 export function contrast(settings, color) {
   // Set defaults
   const { factor = 0, severity = 50, steps = 0 } = settings;
@@ -129,9 +118,7 @@ export function contrast(settings, color) {
     color
   );
 }
-// contrast Implementation:1 ends here
 
-// [[file:Notebook.org::*illuminant Implementation][illuminant Implementation:1]]
 export function illuminant(settings, color) {
   // Set defaults
   const { K = 1850, intensity = 50, steps = 0 } = settings;
@@ -150,9 +137,7 @@ export function illuminant(settings, color) {
 
   return checkIlluminant({ temperature: K, strength: intensity, steps }, color);
 }
-// illuminant Implementation:1 ends here
 
-// [[file:Notebook.org::*palette Implementation][palette Implementation:1]]
 export function palette(settings, color) {
   // Set default configuration and settings and exclude interface states until requested
   const {
@@ -174,9 +159,7 @@ export function palette(settings, color) {
 
   return materialConfiguration({ contrast, accented, stated }, color);
 }
-// palette Implementation:1 ends here
 
-// [[file:Notebook.org::*accessibility Implementation][accessibility Implementation:1]]
 export function accessibility(settings, palette) {
   // Set action defaults
   const {
@@ -195,21 +178,15 @@ export function accessibility(settings, palette) {
 
   return paletteWcagContrast({ rating, large, dark }, palette);
 }
-// accessibility Implementation:1 ends here
 
-// [[file:Notebook.org::*tokens (Color) Implementation][tokens (Color) Implementation:1]]
 export function tokens(palette) {
   return tokenizePalette(palette);
 }
-// tokens (Color) Implementation:1 ends here
 
-// [[file:Notebook.org::*output Implementation][output Implementation:1]]
 export function output(format, dict) {
   return format === "sketchpalette" ? sketchpalette(dict) : gpl(dict);
 }
-// output Implementation:1 ends here
 
-// [[file:Notebook.org::*Tokenization][Tokenization:1]]
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
   ["(?:", NUMBER_TOKEN.source, "%)"].join("")
@@ -230,9 +207,7 @@ const COMPONENT_TOKEN = new RegExp(
 const HUE_TOKEN = new RegExp(
   ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
 );
-// Tokenization:1 ends here
 
-// [[file:Notebook.org::*Named Color Validation][Named Color Validation:1]]
 const NAMED_COLOR_KEYWORDS = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
@@ -394,15 +369,11 @@ const NAMED_COLOR_KEYWORDS = {
 function namedValidator(color) {
   return Boolean(NAMED_COLOR_KEYWORDS[color]);
 }
-// Named Color Validation:1 ends here
 
-// [[file:Notebook.org::*RGB Hex Validation][RGB Hex Validation:1]]
 function hexValidator(color) {
   return /^#([\da-f]{3,4}){1,2}$/i.test(color);
 }
-// RGB Hex Validation:1 ends here
 
-// [[file:Notebook.org::*Validating Functional Formats][Validating Functional Formats:1]]
 function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   const VALUES = tokens.map((token) => token.source);
 
@@ -418,45 +389,35 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
     )
   );
 }
-// Validating Functional Formats:1 ends here
 
-// [[file:Notebook.org::*RGB Validation][RGB Validation:1]]
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
     Array(3).fill(COMPONENT_TOKEN)
   ).test(color);
 }
-// RGB Validation:1 ends here
 
-// [[file:Notebook.org::*HSL Validation][HSL Validation:1]]
 function hslValidator(color) {
   return matchFunctionalFormat({ prefix: "hsla?" }, [
     HUE_TOKEN,
     ...Array(2).fill(PERCENTAGE_TOKEN),
   ]).test(color);
 }
-// HSL Validation:1 ends here
 
-// [[file:Notebook.org::*CMYK Validation][CMYK Validation:1]]
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
     Array(4).fill(COMPONENT_TOKEN)
   ).test(color);
 }
-// CMYK Validation:1 ends here
 
-// [[file:Notebook.org::*HWB Validation][HWB Validation:1]]
 function hwbValidator(color) {
   return matchFunctionalFormat({ prefix: "hwb", legacy: false }, [
     HUE_TOKEN,
     ...Array(2).fill(PERCENTAGE_TOKEN),
   ]).test(color);
 }
-// HWB Validation:1 ends here
 
-// [[file:Notebook.org::*CIELAB/CIELCH Validation][CIELAB/CIELCH Validation:1]]
 function cielabValidator(color) {
   return matchFunctionalFormat({ prefix: "lab", legacy: false }, [
     PERCENTAGE_TOKEN,
@@ -471,9 +432,7 @@ function cielchValidator(color) {
     HUE_TOKEN,
   ]).test(color);
 }
-// CIELAB/CIELCH Validation:1 ends here
 
-// [[file:Notebook.org::*OKLab/OKLCH Validation][OKLab/OKLCH Validation:1]]
 function oklabValidator(color) {
   return matchFunctionalFormat({ prefix: "oklab", legacy: false }, [
     PERCENTAGE_TOKEN,
@@ -489,9 +448,7 @@ function oklchValidator(color) {
     HUE_TOKEN,
   ]).test(color);
 }
-// OKLab/OKLCH Validation:1 ends here
 
-// [[file:Notebook.org::*Preparing Validation][Preparing Validation:1]]
 function validator(input) {
   const SUPPORTED_FORMATS = {
     named: namedValidator,
@@ -512,9 +469,7 @@ function validator(input) {
       .find(([, color]) => color) || InvalidColorError(input)
   );
 }
-// Preparing Validation:1 ends here
 
-// [[file:Notebook.org::*Invalid Color Handling][Invalid Color Handling:1]]
 class InvalidColor extends Error {
   constructor(input, ...params) {
     super(...params);
@@ -550,9 +505,7 @@ ${"=".repeat(100)}
 function InvalidColorError(input) {
   return new InvalidColor(input);
 }
-// Invalid Color Handling:1 ends here
 
-// [[file:Notebook.org::*RGB Hex Extractor][RGB Hex Extractor:1]]
 function hexExtractor(color) {
   return expandHex(color).match(/[\da-f]{2}/gi);
 }
@@ -566,15 +519,11 @@ function expandHex(color) {
 
   return color;
 }
-// RGB Hex Extractor:1 ends here
 
-// [[file:Notebook.org::*Functional Format Extractor][Functional Format Extractor:1]]
 function componentExtractor(color) {
   return color.match(/(-?[\d.](%|deg|g?rad|turn)?)+/g);
 }
-// Functional Format Extractor:1 ends here
 
-// [[file:Notebook.org::*Extraction Preparation][Extraction Preparation:1]]
 function extractor(validated) {
   const [format, color] = validated;
 
@@ -588,9 +537,7 @@ function extractor(validated) {
 
   return [format, componentExtractor(color)];
 }
-// Extraction Preparation:1 ends here
 
-// [[file:Notebook.org::*Clamping Values][Clamping Values:1]]
 function clamp(x, a, b) {
   if (x < a) {
     return a;
@@ -602,9 +549,7 @@ function clamp(x, a, b) {
 
   return x;
 }
-// Clamping Values:1 ends here
 
-// [[file:Notebook.org::*Hex Fragment <-> Channel][Hex Fragment <-> Channel:1]]
 function hexFragmentToChannel(hex) {
   return parseInt(hex, 16);
 }
@@ -612,9 +557,7 @@ function hexFragmentToChannel(hex) {
 function hexFragmentFromChannel(channel) {
   return clamp(channel, 0, 255).toString(16).padStart(2, "0");
 }
-// Hex Fragment <-> Channel:1 ends here
 
-// [[file:Notebook.org::*Number <-> Percentage][Number <-> Percentage:1]]
 function numberToPercentage(n) {
   return n * 100;
 }
@@ -622,9 +565,7 @@ function numberToPercentage(n) {
 function numberFromPercentage(percentage) {
   return percentage / 100;
 }
-// Number <-> Percentage:1 ends here
 
-// [[file:Notebook.org::*Number <-> Channel][Number <-> Channel:1]]
 function numberToChannel(n) {
   return Math.round(n * 255);
 }
@@ -632,9 +573,7 @@ function numberToChannel(n) {
 function numberFromChannel(channel) {
   return channel / 255;
 }
-// Number <-> Channel:1 ends here
 
-// [[file:Notebook.org::*Hue Component][Hue Component:1]]
 function radiansToDegrees(radians) {
   return (radians * 180) / Math.PI;
 }
@@ -650,9 +589,7 @@ function gradiansToDegrees(gradians) {
 function turnsToDegrees(turns) {
   return turns * 360;
 }
-// Hue Component:1 ends here
 
-// [[file:Notebook.org::*Hue Correction][Hue Correction:1]]
 function hueCorrection(hue) {
   let h = hue;
 
@@ -666,9 +603,7 @@ function hueCorrection(hue) {
 
   return clamp(h, -360, 360);
 }
-// Hue Correction:1 ends here
 
-// [[file:Notebook.org::*Parsing RGB Hex][Parsing RGB Hex:1]]
 function parseHex([format, components]) {
   const [r, g, b, A] = components;
 
@@ -680,9 +615,7 @@ function parseHex([format, components]) {
 
   return [format, [R, G, B, 1]];
 }
-// Parsing RGB Hex:1 ends here
 
-// [[file:Notebook.org::*Parsing Functional RGB][Parsing Functional RGB:1]]
 function parsePercentage(component) {
   if (component.endsWith("%")) {
     return numberFromPercentage(parseFloat(component));
@@ -704,9 +637,7 @@ function parseRgb([format, components]) {
 
   return [format, [R, G, B, 1]];
 }
-// Parsing Functional RGB:1 ends here
 
-// [[file:Notebook.org::*Parsing Functional HSL][Parsing Functional HSL:1]]
 function parseHue(hue) {
   let HUE = parseFloat(hue);
 
@@ -740,9 +671,7 @@ function parseHsl([format, components]) {
 
   return [format, [H, S, L, 1]];
 }
-// Parsing Functional HSL:1 ends here
 
-// [[file:Notebook.org::*Parsing Functional CMYK][Parsing Functional CMYK:1]]
 function parseCMYK([format, components]) {
   const [C, M, Y, K, A] = components.map((V) => {
     if (V.endsWith("%")) return parsePercentage(V);
@@ -755,9 +684,7 @@ function parseCMYK([format, components]) {
 
   return [format, [C, M, Y, K, 1]];
 }
-// Parsing Functional CMYK:1 ends here
 
-// [[file:Notebook.org::*Parsing Functional CIELAB/CIELCH][Parsing Functional CIELAB/CIELCH:1]]
 function parseCielab([format, components]) {
   const [$L, $a, $b, A] = components;
 
@@ -782,9 +709,7 @@ function parseCielch([format, components]) {
 
   return [format, [L, C, H, 1]];
 }
-// Parsing Functional CIELAB/CIELCH:1 ends here
 
-// [[file:Notebook.org::*Parsing OKLab/OKLCH][Parsing OKLab/OKLCH:1]]
 function parseOklab([format, components]) {
   const [$L, $a, $b, A] = components;
 
@@ -811,9 +736,7 @@ function parseOklch([format, components]) {
 
   return [format, [L, C, H, 1]];
 }
-// Parsing OKLab/OKLCH:1 ends here
 
-// [[file:Notebook.org::*Parsing Preparation][Parsing Preparation:1]]
 function parser(extracted) {
   const [format] = extracted;
 
@@ -831,9 +754,7 @@ function parser(extracted) {
 
   return FORMAT_PARSERS[format](extracted);
 }
-// Parsing Preparation:1 ends here
 
-// [[file:Notebook.org::*RGB <-> RGB][RGB <-> RGB:1]]
 function rgbInputIdentity([, values]) {
   const [r, g, b, A] = values;
 
@@ -845,15 +766,11 @@ function rgbInputIdentity([, values]) {
 function rgbOutputIdentity([, rgbValues]) {
   return ["rgb", rgbValues];
 }
-// RGB <-> RGB:1 ends here
 
-// [[file:Notebook.org::*Hex -> RGB][Hex -> RGB:1]]
 function hexToRgb([, values]) {
   return ["rgb", values];
 }
-// Hex -> RGB:1 ends here
 
-// [[file:Notebook.org::*HSL -> RGB][HSL -> RGB:1]]
 function calculateRgb(C, X, H) {
   return new Map([
     [[C, X, 0], 0 <= H && H < 60],
@@ -880,9 +797,7 @@ function hslToRgb([, values]) {
 
   return ["rgb", [R, G, B, A]];
 }
-// HSL -> RGB:1 ends here
 
-// [[file:Notebook.org::*CMYK -> RGB][CMYK -> RGB:1]]
 function cmykToRgb([, values]) {
   const [C, M, Y, K, A] = values;
 
@@ -890,9 +805,7 @@ function cmykToRgb([, values]) {
 
   return ["rgb", [R, G, B, A]];
 }
-// CMYK -> RGB:1 ends here
 
-// [[file:Notebook.org::*HWB -> RGB][HWB -> RGB:1]]
 function hwbToRgb([, values]) {
   const [H, W, BLK, A] = values;
 
@@ -911,9 +824,7 @@ function hwbToRgb([, values]) {
 
   return ["rgb", [R, G, B, A]];
 }
-// HWB -> RGB:1 ends here
 
-// [[file:Notebook.org::*CIELAB -> RGB][CIELAB -> RGB:1]]
 function cielabToCiexyz([L, a, b]) {
   // CIE standards
   const ε = 216 / 24389;
@@ -974,9 +885,7 @@ function cielabToRgb([, values]) {
 
   return ["rgb", [R, G, B, A]];
 }
-// CIELAB -> RGB:1 ends here
 
-// [[file:Notebook.org::*OKLAB -> RGB][OKLAB -> RGB:1]]
 function oklabToLrgb([L, a, b]) {
   const LINEAR_LMS_CONE_ACTIVATIONS = [
     [0.3963377774, 0.2158037573],
@@ -1014,9 +923,7 @@ function oklabToRgb([, values]) {
 
   return ["rgb", [R, G, B, A]];
 }
-// OKLAB -> RGB:1 ends here
 
-// [[file:Notebook.org::*RGB -> Hex][RGB -> Hex:1]]
 function hexFromRgb([, rgbValues]) {
   const [r, g, b, a] = rgbValues;
 
@@ -1025,9 +932,7 @@ function hexFromRgb([, rgbValues]) {
 
   return ["hex", [R, G, B, A]];
 }
-// RGB -> Hex:1 ends here
 
-// [[file:Notebook.org::*RGB -> HSL][RGB -> HSL:1]]
 function calculateHue(R, G, B, cmax, delta) {
   return new Map([
     [0, delta === 0],
@@ -1062,9 +967,7 @@ function hslFromRgb([, rgbValues]) {
 
   return ["hsl", [H, S, L, A]];
 }
-// RGB -> HSL:1 ends here
 
-// [[file:Notebook.org::*RGB -> CMYK][RGB -> CMYK:1]]
 function cmykFromRgb([, rgbValues]) {
   const [r, g, b, A] = rgbValues;
 
@@ -1075,9 +978,7 @@ function cmykFromRgb([, rgbValues]) {
 
   return ["cmyk", [C, M, Y, K, A]];
 }
-// RGB -> CMYK:1 ends here
 
-// [[file:Notebook.org::*RGB -> HWB][RGB -> HWB:1]]
 function hwbFromRgb([, rgbValues]) {
   const [r, g, b, A] = rgbValues;
 
@@ -1095,9 +996,7 @@ function hwbFromRgb([, rgbValues]) {
 
   return ["hwb", [H, W, BLK, A]];
 }
-// RGB -> HWB:1 ends here
 
-// [[file:Notebook.org::*RGB -> CIELAB][RGB -> CIELAB:1]]
 function rgbToLrgb([R, G, B]) {
   return [R, G, B].map((V) =>
     V <= 0.04045 ? V / 12.92 : ((V + 0.055) / 1.055) ** 2.4
@@ -1152,9 +1051,7 @@ function cielabFromRgb([, rgbValues]) {
 
   return ["cielab", [L, a, b, A]];
 }
-// RGB -> CIELAB:1 ends here
 
-// [[file:Notebook.org::*RGB -> OKLAB][RGB -> OKLAB:1]]
 function lrgbToOklab([LR, LG, LB]) {
   const NONLINEAR_LMS_CONE_ACTIVATIONS = [
     [0.4122214708, 0.5363325363, 0.0514459929],
@@ -1187,9 +1084,7 @@ function oklabFromRgb([, rgbValues]) {
 
   return ["oklab", [L, a, b, A]];
 }
-// RGB -> OKLAB:1 ends here
 
-// [[file:Notebook.org::*SCALAR <-> POLAR][SCALAR <-> POLAR:1]]
 function scalarToPolar([, scalarValues]) {
   const [L, a, b, A] = scalarValues;
 
@@ -1207,9 +1102,7 @@ function scalarFromPolar([, polarValues]) {
 
   return [L, a, b, A];
 }
-// SCALAR <-> POLAR:1 ends here
 
-// [[file:Notebook.org::*CIELAB <-> CIELCH][CIELAB <-> CIELCH:1]]
 function cielabToCielch([, cielabValues]) {
   return ["cielch", scalarToPolar(["cielab", cielabValues])];
 }
@@ -1217,9 +1110,7 @@ function cielabToCielch([, cielabValues]) {
 function cielabFromCielch([, cielchValues]) {
   return ["cielab", scalarFromPolar(["cielch", cielchValues])];
 }
-// CIELAB <-> CIELCH:1 ends here
 
-// [[file:Notebook.org::*OKLab <-> OKLCH][OKLab <-> OKLCH:1]]
 function oklabToOklch([, oklabValues]) {
   return ["oklch", scalarToPolar(["oklab", oklabValues])];
 }
@@ -1227,9 +1118,7 @@ function oklabToOklch([, oklabValues]) {
 function oklabFromOklch([, oklchValues]) {
   return ["oklab", scalarFromPolar(["oklch", oklchValues])];
 }
-// OKLab <-> OKLCH:1 ends here
 
-// [[file:Notebook.org::*Color Conversion Pipeline][Color Conversion Pipeline:1]]
 function _convert(color, to) {
   // Let's make the pathway explicit
   const valid = validator(color);
@@ -1268,9 +1157,7 @@ function _convert(color, to) {
 
   return OUTPUT;
 }
-// Color Conversion Pipeline:1 ends here
 
-// [[file:Notebook.org::*Serializing RGB Hex][Serializing RGB Hex:1]]
 function serializeHex([, hexResult]) {
   const [R, G, B, A] = hexResult;
 
@@ -1279,9 +1166,7 @@ function serializeHex([, hexResult]) {
   }
   return "#".concat(R, G, B, A);
 }
-// Serializing RGB Hex:1 ends here
 
-// [[file:Notebook.org::*Serializing Functional Formats][Serializing Functional Formats:1]]
 function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   const DELIMITER = legacy ? ", " : " ";
   const ALPHA_DELIMITER = legacy ? ", " : " / ";
@@ -1297,9 +1182,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
     ")"
   );
 }
-// Serializing Functional Formats:1 ends here
 
-// [[file:Notebook.org::*Serializing RGB][Serializing RGB:1]]
 function serializeRgb([, rgbResult]) {
   const [r, g, b, A] = rgbResult;
 
@@ -1310,9 +1193,7 @@ function serializeRgb([, rgbResult]) {
 
   return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
 }
-// Serializing RGB:1 ends here
 
-// [[file:Notebook.org::*Serializing HSL][Serializing HSL:1]]
 function serializeHsl([, hslResult]) {
   const [h, s, l, A] = hslResult;
 
@@ -1324,9 +1205,7 @@ function serializeHsl([, hslResult]) {
 
   return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
 }
-// Serializing HSL:1 ends here
 
-// [[file:Notebook.org::*Serializing CMYK][Serializing CMYK:1]]
 function serializeCmyk([, cmykResult]) {
   const [c, m, y, k, A] = cmykResult;
 
@@ -1343,9 +1222,7 @@ function serializeCmyk([, cmykResult]) {
     A,
   ]);
 }
-// Serializing CMYK:1 ends here
 
-// [[file:Notebook.org::*Serializing HWB][Serializing HWB:1]]
 function serializeHwb([, hslResult]) {
   const [h, w, blk, A] = hslResult;
 
@@ -1362,9 +1239,7 @@ function serializeHwb([, hslResult]) {
     A,
   ]);
 }
-// Serializing HWB:1 ends here
 
-// [[file:Notebook.org::*Serializing CIELAB/CIELCH][Serializing CIELAB/CIELCH:1]]
 function serializeCielab([, cielabValues]) {
   const [$L, $a, $b, A] = cielabValues;
 
@@ -1408,9 +1283,7 @@ function serializeCielch([, cielchValues]) {
     A,
   ]);
 }
-// Serializing CIELAB/CIELCH:1 ends here
 
-// [[file:Notebook.org::*Serializing OKLab/OKLCH][Serializing OKLab/OKLCH:1]]
 function serializeOklab([, oklabValues]) {
   const [$L, $a, $b, A] = oklabValues;
 
@@ -1454,9 +1327,7 @@ function serializeOklch([, oklchValues]) {
     A,
   ]);
 }
-// Serializing OKLab/OKLCH:1 ends here
 
-// [[file:Notebook.org::*Serialization Interface][Serialization Interface:1]]
 function serialize([format, results]) {
   const serializers = {
     hex: serializeHex,
@@ -1472,9 +1343,7 @@ function serialize([format, results]) {
 
   return serializers[format]([format, results]);
 }
-// Serialization Interface:1 ends here
 
-// [[file:Notebook.org::*Color Adjustment Through OKLCH][Color Adjustment Through OKLCH:1]]
 function extractOklchValues(color) {
   const formatedOklch = serializeOklch(_convert(color, "oklch"));
   const [, components] = extractor(["oklch", formatedOklch]);
@@ -1539,9 +1408,7 @@ function colorAdjustment(
   // Otherwise use input format
   return serializeInput(_convert(oklch, format));
 }
-// Color Adjustment Through OKLCH:1 ends here
 
-// [[file:Notebook.org::*Color Mixture Through OKLab][Color Mixture Through OKLab:1]]
 function getOklabValues(color) {
   return _convert(color, "oklab");
 }
@@ -1596,9 +1463,7 @@ function colorMix({ target, strength = 0 }, color) {
 
   return serializeInput(_convert(oklab, format));
 }
-// Color Mixture Through OKLab:1 ends here
 
-// [[file:Notebook.org::*CVD Brettel Simulation][CVD Brettel Simulation:1]]
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
@@ -1666,9 +1531,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 
   return [R, G, B, A];
 }
-// CVD Brettel Simulation:1 ends here
 
-// [[file:Notebook.org::*CVD Vienot Simulation][CVD Vienot Simulation:1]]
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
@@ -1713,9 +1576,7 @@ function cvdVienotSimulation({ type, strength = 100 }, color) {
 
   return [R, G, B, A];
 }
-// CVD Vienot Simulation:1 ends here
 
-// [[file:Notebook.org::*Color Vision Deficiency Interface][Color Vision Deficiency Interface:1]]
 function checkColorblindness(
   { method = "brettel", type, strength = 0 },
   color
@@ -1749,9 +1610,7 @@ function checkColorblindness(
 
   return serializeInput(_convert(rgb, format));
 }
-// Color Vision Deficiency Interface:1 ends here
 
-// [[file:Notebook.org::*Contrast Sensitivity][Contrast Sensitivity:1]]
 function checkSensitivity({ contrast = 0, strength = 0 }, color) {
   // Derive contrast from a shade of gray
   const GRAY = colorMix(
@@ -1771,9 +1630,7 @@ function checkSensitivity({ contrast = 0, strength = 0 }, color) {
     color
   );
 }
-// Contrast Sensitivity:1 ends here
 
-// [[file:Notebook.org::*Correlated Color Temperature (CCT)][Correlated Color Temperature (CCT):1]]
 function kelvinToRgb(temperature) {
   // The accurate range for this algorithm is 1000-40000K
   // and K / 100 is required
@@ -1811,9 +1668,7 @@ function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
 
   return colorMix({ target, strength }, color);
 }
-// Correlated Color Temperature (CCT):1 ends here
 
-// [[file:Notebook.org::*Color Interpolation][Color Interpolation:1]]
 function colorInterpolation(action, settings, input) {
   // Set default for shared step property
   const { steps = 1 } = settings;
@@ -1899,9 +1754,7 @@ function colorInterpolation(action, settings, input) {
     ),
   ].reverse();
 }
-// Color Interpolation:1 ends here
 
-// [[file:Notebook.org::*Color Harmonies][Color Harmonies:1]]
 function colorHarmonies({ type, accented = false }, color) {
   const withComplement = accented ? [colorAdjustment({ hue: 180 }, color)] : [];
 
@@ -1960,9 +1813,7 @@ function colorHarmonies({ type, accented = false }, color) {
 
   return harmonies[type];
 }
-// Color Harmonies:1 ends here
 
-// [[file:Notebook.org::*Material Configuration][Material Configuration:1]]
 function materialConfiguration(
   { contrast = 100, accented = false, stated = false },
   color
@@ -2047,9 +1898,7 @@ function materialConfiguration(
 
   return [ui, [variants, accents], states];
 }
-// Material Configuration:1 ends here
 
-// [[file:Notebook.org::*Artistic Configuration][Artistic Configuration:1]]
 function artisticConfiguration(
   { contrast = 100, tints = 3, tones = 3, shades = 3, stated = false },
   color
@@ -2115,9 +1964,7 @@ function artisticConfiguration(
 
   return [ui, variants, states];
 }
-// Artistic Configuration:1 ends here
 
-// [[file:Notebook.org::*WCAG Color Contrast Ratios][WCAG Color Contrast Ratios:1]]
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
     extractor(["rgb", serializeRgb(_convert(color, "rgb"))])
@@ -2191,9 +2038,7 @@ function paletteWcagContrast({ rating = "AA", large, dark = false }, palette) {
     state,
   ];
 }
-// WCAG Color Contrast Ratios:1 ends here
 
-// [[file:Notebook.org::*Colorimetric Contrast][Colorimetric Contrast:1]]
 function comparePerceptualLightness(bg, fg) {
   const [, bgValues] = extractor([
     "oklch",
@@ -2260,9 +2105,7 @@ function paletteColorimetricContrast({ min = 75, max, dark = false }, palette) {
     state,
   ];
 }
-// Colorimetric Contrast:1 ends here
 
-// [[file:Notebook.org::*Palette Formatting][Palette Formatting:1]]
 function tokenizeMaterialVariants(variants) {
   // Extract [main[], accents[]]
   const [main, accents] = variants;
@@ -2330,9 +2173,7 @@ function tokenizePalette(palette) {
       : {}),
   };
 }
-// Palette Formatting:1 ends here
 
-// [[file:Notebook.org::*GIMP/Inkscape][GIMP/Inkscape:1]]
 function gplSwatch(color) {
   const [, values] = _convert(color, "rgb");
 
@@ -2410,9 +2251,7 @@ Columns: 6
 ${assemble("", palette)}
 `.trimStart();
 }
-// GIMP/Inkscape:1 ends here
 
-// [[file:Notebook.org::*Sketch][Sketch:1]]
 function sketchpaletteSwatch(color) {
   const swatch = serializeRgb(_convert(color, "rgb"));
   const [, [red, green, blue, alpha]] = parser(extractor(["rgb", swatch]));
@@ -2441,4 +2280,3 @@ function sketchpalette(dict) {
     compatibleVersion: "1.4",
   });
 }
-// Sketch:1 ends here

@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*interop Tests][interop Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
 import { text, ms, tokens as content } from "../../content.js";
@@ -326,4 +325,3 @@ describe("interop(format, dict)", () => {
 });
 
 run();
-// interop Tests:1 ends here

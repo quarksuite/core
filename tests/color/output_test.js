@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*output Tests][output Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { tokens, palette, output } from "../../color.js";
 
@@ -193,4 +192,3 @@ Columns: 6
 });
 
 run();
-// output Tests:1 ends here

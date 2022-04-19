@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*modify Tests][modify Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { ms, modify } from "../../content.js";
 
@@ -43,4 +42,3 @@ describe("modify(calc, ms)", () => {
 });
 
 run();
-// modify Tests:1 ends here

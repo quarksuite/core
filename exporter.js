@@ -1,10 +1,7 @@
-// [[file:Notebook.org::*stylesheet Implementation][stylesheet Implementation:1]]
 export function stylesheet(format, dict) {
   return variables(format, dict);
 }
-// stylesheet Implementation:1 ends here
 
-// [[file:Notebook.org::*data Implementation][data Implementation:1]]
 export function data(format, dict) {
   const output = {
     json: json.bind(null),
@@ -13,9 +10,7 @@ export function data(format, dict) {
 
   return output[format](dict);
 }
-// data Implementation:1 ends here
 
-// [[file:Notebook.org::*interop Implementation][interop Implementation:1]]
 export function interop(format, dict) {
   const output = {
     tailwindcss: tailwindcss.bind(null),
@@ -24,9 +19,7 @@ export function interop(format, dict) {
 
   return output[format](dict);
 }
-// interop Implementation:1 ends here
 
-// [[file:Notebook.org::*Setup][Setup:1]]
 function timestamp() {
   const TIMESTAMP = new Date(Date.now());
   return `Updated on ${TIMESTAMP.toLocaleDateString()} at ${TIMESTAMP.toLocaleTimeString()}`;
@@ -104,9 +97,7 @@ function bumpVersion(project) {
 
   return { ...project, version: releaseConditions(next(project.bump)) };
 }
-// Setup:1 ends here
 
-// [[file:Notebook.org::*Stylesheet Setup][Stylesheet Setup:1]]
 function styleIdentifier(collected, current, delim) {
   if (current === "base") {
     return collected;
@@ -214,9 +205,7 @@ function styleTokens(
 function style({ doc, ...opts } = {}, { project, ...tokens }) {
   return "".concat(styleHeader(doc, project), styleTokens(opts, tokens));
 }
-// Stylesheet Setup:1 ends here
 
-// [[file:Notebook.org::*Stylesheet Variables][Stylesheet Variables:1]]
 function variables(type, dict) {
   const format = {
     css: style.bind(null, {}),
@@ -242,9 +231,7 @@ function variables(type, dict) {
 
   return format[type](dict);
 }
-// Stylesheet Variables:1 ends here
 
-// [[file:Notebook.org::*Data][Data:1]]
 function json(dict) {
   const { project, ...tokens } = dict;
 
@@ -312,9 +299,7 @@ ${Object.entries({ project, tokens })
   .trimEnd()}
 `;
 }
-// Data:1 ends here
 
-// [[file:Notebook.org::*Interop][Interop:1]]
 function tailwindcss(dict) {
   const { project, ...tokens } = dict;
 
@@ -352,4 +337,3 @@ function styledictionary(dict) {
 
   return project && assemble(tokens);
 }
-// Interop:1 ends here

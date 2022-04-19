@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*harmony Tests][harmony Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { harmony } from "../../color.js";
 
@@ -165,4 +164,3 @@ describe("harmony(settings, color)", () => {
 });
 
 run();
-// harmony Tests:1 ends here

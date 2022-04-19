@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*convert Tests][convert Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { convert } from "../../color.js";
 
@@ -139,4 +138,3 @@ describe("convert(to, color)", () => {
 });
 
 run();
-// convert Tests:1 ends here

@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*stylesheet Tests][stylesheet Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
 import { text, ms, tokens as content } from "../../content.js";
@@ -495,4 +494,3 @@ layout-dimensions-max-max = 100vmax
 });
 
 run();
-// stylesheet Tests:1 ends here

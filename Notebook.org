@@ -13,7 +13,7 @@
   - [[#improved-modularity][Improved Modularity]]
 - [[#spec][Spec]]
   - [[#api][API]]
-    - [[#functional-utilities][Functional Utilities]]
+    - [[#workflow][Workflow]]
       - [[#process][process]]
         - [[#process-examples][process Examples]]
         - [[#process-implementation][process Implementation]]
@@ -110,7 +110,7 @@
         - [[#interop-implementation][interop Implementation]]
         - [[#interop-tests][interop Tests]]
   - [[#internals][Internals]]
-    - [[#functional][Functional]]
+    - [[#workflow-1][Workflow]]
       - [[#composition-internals][Composition Internals]]
     - [[#color-1][Color]]
       - [[#conversion][Conversion]]
@@ -242,8 +242,8 @@ rest. This means that modern build tools, and environments that support tree sha
 The library begins with an entry point =mod.js= that aggregates all the functionality to make it easier to experiment
 during development before you've settled on what you need. QuarkSuite v2 separates all functionality by its input type.
 
-#+BEGIN_SRC js :tangle "mod.js" :comments link
-export * as fn from "./fn.js";
+#+BEGIN_SRC js :tangle "mod.js"
+export * as workflow from "./workflow.js";
 export * as color from "./color.js";
 export * as content from "./content.js";
 export * as exporter from "./exporter.js";
@@ -251,9 +251,9 @@ export * as exporter from "./exporter.js";
 
 ** API
 
-*** Functional Utilities
+*** Workflow
 :PROPERTIES:
-:header-args:js: :tangle "fn.js" :mkdirp yes :comments link
+:header-args:js: :tangle "workflow.js" :mkdirp yes
 :END:
 
 **** process
@@ -362,7 +362,7 @@ export function delegate(emitters, xs) {
 
 *** Color
 :PROPERTIES:
-:header-args:js: :tangle "color.js" :mkdirp yes :comments link
+:header-args:js: :tangle "color.js" :mkdirp yes
 :END:
 
 **** convert
@@ -2982,7 +2982,7 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (223m
 
 *** Content
 :PROPERTIES:
-:header-args:js: :tangle "content.js" :mkdirp yes :comments link
+:header-args:js: :tangle "content.js" :mkdirp yes
 :END:
 
 **** text
@@ -3614,7 +3614,7 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (139m
 
 *** Exporter
 :PROPERTIES:
-:header-args:js: :tangle "exporter.js" :mkdirp yes :comments link
+:header-args:js: :tangle "exporter.js" :mkdirp yes
 :END:
 
 **** stylesheet
@@ -4905,14 +4905,14 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (165m
 #+end_src
 
 ** Internals
-*** Functional
+*** Workflow
 :PROPERTIES:
-:header-args:js: :tangle "fn.js" :mkdirp yes :comments link
+:header-args:js: :tangle "workflow.js" :mkdirp yes
 :END:
 
 **** Composition Internals
 
-#+BEGIN_SRC js :tangle "fn.js"
+#+BEGIN_SRC js
 function compose(...fns) {
   return (x) => fns.reduce((g, f) => f(g), x);
 }
@@ -4920,7 +4920,7 @@ function compose(...fns) {
 
 *** Color
 :PROPERTIES:
-:header-args:js: :tangle "color.js" :mkdirp yes :comments link
+:header-args:js: :tangle "color.js" :mkdirp yes
 :END:
 
 QuarkSuite accepts and processes most valid CSS color formats defined in [[https://www.w3.org/TR/css-color-4/][CSS Color Module Level 4]]. There are no color objects
@@ -7826,7 +7826,7 @@ function sketchpalette(dict) {
 
 *** Content
 :PROPERTIES:
-:header-args:js: :tangle "content.js" :mkdirp yes :comments link
+:header-args:js: :tangle "content.js" :mkdirp yes
 :END:
 
 Now that we're finally done with colors, we can move on to content.
@@ -8071,7 +8071,7 @@ function assemble(settings, ms) {
 
 *** Exporter
 :PROPERTIES:
-:header-args:js: :tangle "exporter.js" :mkdirp yes :comments link
+:header-args:js: :tangle "exporter.js" :mkdirp yes
 :END:
 
 At this point, our foundational tokens are now ready and we can use them as-is. The more portable solution is to create

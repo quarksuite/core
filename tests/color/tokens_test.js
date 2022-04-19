@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*tokens (Color) Tests][tokens (Color) Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { tokens, palette } from "../../color.js";
 
@@ -316,4 +315,3 @@ describe("tokens(palette)", () => {
 });
 
 run();
-// tokens (Color) Tests:1 ends here

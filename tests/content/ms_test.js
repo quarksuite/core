@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*ms Tests][ms Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { ms } from "../../content.js";
 
@@ -49,4 +48,3 @@ describe("ms(settings, base)", () => {
 });
 
 run();
-// ms Tests:1 ends here

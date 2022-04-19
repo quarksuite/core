@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*illuminant Tests][illuminant Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { illuminant } from "../../color.js";
 
@@ -54,4 +53,3 @@ describe("illuminant(settings, color)", () => {
 });
 
 run();
-// illuminant Tests:1 ends here

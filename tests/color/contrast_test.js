@@ -1,4 +1,3 @@
-// [[file:../../Notebook.org::*contrast Tests][contrast Tests:1]]
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { contrast } from "../../color.js";
 
@@ -54,4 +53,3 @@ describe("contrast(settings, color)", () => {
 });
 
 run();
-// contrast Tests:1 ends here
