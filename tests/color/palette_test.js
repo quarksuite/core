@@ -154,17 +154,17 @@ describe("palette(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette({ configuration: "artistic", contrast: 80 }, green)).toEqual(
+      expect(
+        palette({ configuration: "artistic", contrast: 80 }, green)
+      ).toEqual([
+        ["#e8ffdd", "#26391d"],
         [
-          ["#e8ffdd", "#26391d"],
-          [
-            ["#a3ff70", "#c2ffa4", "#dfffd0"],
-            ["#8eeb5a", "#9ad77c", "#a2c394"],
-            ["#63bf23", "#498227", "#2f4a21"],
-          ],
-          [],
+          ["#a3ff70", "#c2ffa4", "#dfffd0"],
+          ["#8eeb5a", "#9ad77c", "#a2c394"],
+          ["#63bf23", "#498227", "#2f4a21"],
         ],
-      );
+        [],
+      ]);
       expect(palette({ contrast: 70 }, blue)).toEqual([
         ["#c3e0ff", "#1d344f"],
         [
@@ -189,15 +189,17 @@ describe("palette(settings, color)", () => {
 
   describe("settings.stated", () => {
     it("should be active with either configuration", () => {
-      expect(palette({ configuration: "artistic", stated: true }, red)).toEqual([
-        ["#ffffff", "#111111"],
+      expect(palette({ configuration: "artistic", stated: true }, red)).toEqual(
         [
-          ["#ef7175", "#fbb0af", "#ffebeb"],
-          ["#d4595e", "#c67f7f", "#b3a09f"],
-          ["#9a2130", "#5c2023", "#231616"],
-        ],
-        ["#e0cccc", "#4c8625", "#dc9a26", "#b62125"],
-      ]);
+          ["#ffffff", "#111111"],
+          [
+            ["#ef7175", "#fbb0af", "#ffebeb"],
+            ["#d4595e", "#c67f7f", "#b3a09f"],
+            ["#9a2130", "#5c2023", "#231616"],
+          ],
+          ["#e0cccc", "#4c8625", "#dc9a26", "#b62125"],
+        ]
+      );
       expect(palette({ stated: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
@@ -217,7 +219,9 @@ describe("palette(settings, color)", () => {
         ],
         ["#d4e0cf", "#2c9622", "#d5af1f", "#b54323"],
       ]);
-      expect(palette({ configuration: "artistic", stated: true }, blue)).toEqual([
+      expect(
+        palette({ configuration: "artistic", stated: true }, blue)
+      ).toEqual([
         ["#ffffff", "#111111"],
         [
           ["#70b4ff", "#aed5ff", "#ebf5ff"],
@@ -225,6 +229,60 @@ describe("palette(settings, color)", () => {
           ["#2367af", "#1f4066", "#161c25"],
         ],
         ["#ccd5e1", "#1b8d44", "#cba650", "#ac393f"],
+      ]);
+    });
+  });
+
+  describe("settings.dark", () => {
+    it("should be active with either configuration", () => {
+      expect(palette({ dark: true }, red)).toEqual([
+        ["#111111", "#ffffff"],
+        [
+          [
+            "#ffebeb",
+            "#ffcecc",
+            "#fbb0af",
+            "#f69292",
+            "#ef7175",
+            "#e64d59",
+            "#aa2033",
+            "#7a2229",
+            "#4d1e20",
+            "#231616",
+          ],
+          [],
+        ],
+        [],
+      ]);
+      expect(palette({ configuration: "artistic", dark: true }, green)).toEqual(
+        [
+          ["#111111", "#ffffff"],
+          [
+            ["#abff7e", "#d1ffba", "#f4ffee"],
+            ["#91e664", "#9ecd88", "#a8b3a3"],
+            ["#5daf25", "#3c6625", "#1c2418"],
+          ],
+          [],
+        ]
+      );
+      expect(palette({ dark: true }, blue)).toEqual([
+        ["#111111", "#ffffff"],
+        [
+          [
+            "#ebf5ff",
+            "#cde5ff",
+            "#aed5ff",
+            "#90c4ff",
+            "#70b4ff",
+            "#4da2ff",
+            "#2371c3",
+            "#22538a",
+            "#1d3755",
+            "#161c25",
+          ],
+          [],
+        ],
+        [],
       ]);
     });
   });

@@ -1,3 +1,33 @@
+/** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "lab" | "lch" | "oklab" | "oklch"} CSSColorFormats */
+
+/**
+ * An action that takes any valid CSS `color` and converts it `to` another format.
+ *
+ * @param {CSSColorFormats} to - the target format
+ * @param {string} color - the color to convert
+ * @returns {string} the converted color
+ *
+ * @example
+ * Converting a hex color to RGB
+ *
+ * ```js
+ * convert("rgb", "#7ea");
+ * ```
+ *
+ * @example
+ * Converting a hex color to HSL
+ *
+ * ```js
+ * convert("hsl", "#7ea");
+ * ```
+ *
+ * @example
+ * Converting LCH color to hex
+ *
+ * ```js
+ * convert("hex", "lch(49% 63 120)");
+ * ```
+ */
 export function convert(to, color) {
   if (to === "lab") {
     return serialize(_convert(color, "cielab"));
@@ -10,6 +40,44 @@ export function convert(to, color) {
   return serialize(_convert(color, to));
 }
 
+/**
+ * An action that takes any valid CSS `color` and adjusts its properties
+ * according to user `settings`.
+ *
+ * @param {object} settings - color adjustment settings
+ * @param {number} [settings.lightness] - adjust the color lightness (as a percentage)
+ * @param {number} [settings.chroma] - adjust the color chroma/intensity (as a percentage)
+ * @param {number} [settings.hue] - adjust the color hue (in degrees)
+ * @param {number} [settings.alpha] - adjust the color alpha/transparency (as a percentage)
+ * @param {number} [settings.steps] - activates interpolated color adjustment (up to number of steps)
+ *
+ * @param {string} color - the color to adjust
+ * @returns {string | string[]} the adjusted color or interpolation results
+ *
+ * @example
+ * Some sample color adjustments
+ *
+ * ```js
+ * const swatch = "rebeccapurple";
+ *
+ * // Positive values increase
+ * adjust({ lightness: 20 }, swatch);
+ * adjust({ chroma: 8 }, swatch);
+ * adjust({ hue: 90 }, swatch);
+ *
+ * // Negative values decrease
+ * adjust({ lightness: -36 }, swatch);
+ * adjust({ chroma: -15 }, swatch);
+ * adjust({ hue: -220 }, swatch);
+ * adjust({ alpha: -25 }, swatch);
+ *
+ * // Multiple adjustments allowed
+ * adjust({ lightness: 25, chroma: -8, hue: 240 }, swatch);
+ *
+ * // Interpolated
+ * adjust({ lightness: -75, steps: 6 }, swatch);
+ * ```
+ */
 export function adjust(settings, color) {
   // Do nothing by default
   const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
@@ -31,6 +99,34 @@ export function adjust(settings, color) {
   return colorAdjustment({ lightness, chroma, hue, alpha }, color);
 }
 
+/**
+ * An action that takes any valid CSS `color` and mixes it according to user `settings`.
+ *
+ * @param {object} settings - color blending settings
+ * @param {string} [settings.target] - set the blend target
+ * @param {number} [settings.strength] - set the blend strength (as a percentage)
+ * @param {number} [settings.steps] - activates interpolated color blending (up to number of steps)
+ *
+ * @param {string} color - the input color
+ * @returns {string | string[]} the blended color or interpolation results
+ *
+ * @example
+ * Some sample color blends
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ * const target = "crimson";
+ *
+ * // Positive strength blends toward target
+ * mix({ target, strength: 72 }, swatch);
+ *
+ * // Negative strength blends from target
+ * mix({ target, strength: -64 }, swatch);
+ *
+ * // Interpolated
+ * mix({ target, strength: 50, steps: 6 }, swatch);
+ * ```
+ */
 export function mix(settings, color) {
   // Do nothing by default
   const { target = color, strength = 0, steps } = settings;
@@ -42,6 +138,37 @@ export function mix(settings, color) {
   return colorMix({ target, strength }, color);
 }
 
+/** @typedef {"dyadic" | "complementary" | "analogous" | "split" | "clash" | "triadic" | "double" | "tetradic" | "square"} ColorHarmonies */
+
+/**
+ * An action that takes any valid CSS `color` and generates an artistic color
+ * harmony according to user `settings`.
+ *
+ * @param {object} settings - color harmony settings
+ * @param {ColorHarmonies} [settings.configuration] - set the artistic color harmony
+ * @param {boolean} [settings.accented] - include the complement as an accent?
+ *
+ * @param {string} color - the input color
+ * @returns {[string, string, string?, string?]} the generated color harmony
+ *
+ * @example
+ * Generating an analogous harmony from a color
+ *
+ * ```js
+ * const swatch = "#bada55";
+ *
+ * harmony({ configuration: "analogous" }, swatch);
+ * ```
+ *
+ * @example
+ * Generating an accented split complementary harmony from a color
+ *
+ * ```js
+ * const swatch = "#deaded";
+ *
+ * harmony({ configuration: "split" accented: true }, swatch);
+ * ```
+ */
 export function harmony(settings, color) {
   // Set defaults
   const { configuration = "complementary", accented = false } = settings;
@@ -49,6 +176,58 @@ export function harmony(settings, color) {
   return colorHarmonies({ type: configuration, accented }, color);
 }
 
+/**
+ * @typedef {"prot" | "deuter" | "trit"} CVD
+ * @typedef {"brettel" | "vienot"} CVDMethod
+ * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
+ */
+
+/**
+ * An action that takes any valid CSS `color` and checks it against color vision
+ * deficiency (colorblindness) according to user `settings`.
+ *
+ * @param {object} settings - color vision settings
+ * @param {ColorVision} [settings.as] - set the type of colorblindness
+ * @param {CVDMethod} [settings.method] - set the algorithm to use
+ * @param {number} [settings.severity] - set the severity of anomalous trichromacy checks (as a percentage)
+ * @param {number} [settings.steps] - activates interpolated color vision check (up to number of steps)
+ *
+ * @param {string} color - the input color
+ * @returns {string | string[]} the color vision check or interpolation results
+ *
+ * @example
+ * A color vision check for a single color
+ *
+ * ```js
+ * const swatch = "crimson";
+ *
+ * vision({ as: "protanopia" }, swatch);
+ * vision({ as: "deuteranopia" }, swatch);
+ * vision({ as: "tritanopia" }, swatch);
+ *
+ * // Severity property applies to anomalous trichromacy checks
+ * vision({ as: "protanomaly", severity: 75 }, swatch);
+ *
+ * // Optionally set the algorithm
+ * vision({ as: "deuteranopia", method: "vienot" }, swatch);
+ *
+ * // Interpolated
+ * vision({ as: "deuteranomaly", severity: 85, steps: 4 }, swatch);
+ * ```
+ *
+ * @example
+ * A color vision contrast check for a color harmony
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ * const scheme = harmony({ configuration: "analogous", accented: true }, swatch);
+ *
+ * // Advanced: propagate the color vision check over the whole color harmony scale
+ * propagate(preset(vision, { as: "achromatopsia" }), scheme);
+ * ```
+ *
+ * @see `workflow.js` module for `propagate` and `preset` helpers
+ */
 export function vision(settings, color) {
   // Set defaults
   const { as = "protanopia", method = "brettel", steps = 0 } = settings;
@@ -56,10 +235,6 @@ export function vision(settings, color) {
   // Achromatopsia through reducing the chroma to zero
   if (as === "achromatopsia") {
     const chroma = -100;
-
-    if (steps) {
-      return colorInterpolation(colorAdjustment, { chroma, steps }, color);
-    }
 
     return colorAdjustment({ chroma }, color);
   }
@@ -97,6 +272,45 @@ export function vision(settings, color) {
   return checkColorblindness({ method, type, strength: 100 }, color);
 }
 
+/**
+ * An action that takes any valid CSS `color` and checks it against contrast
+ * sensitivity according to user `settings`.
+ *
+ * @param {object} settings - contrast sensitivity settings
+ * @param {number} [settings.factor] - set the gray factor (as a percentage)
+ * @param {number} [settings.severity] - set the severity of sensitivity (as a percentage)
+ * @param {number} [settings.steps] - activates interpolated contrast sensitivity check (up to number of steps)
+ *
+ * @param {string} color - the input color
+ * @returns {string | string[]} the contrast sensitivity check or interpolation results
+ *
+ * @example
+ * A contrast sensitivity check for a single color
+ *
+ * ```js
+ * const swatch = "crimson";
+ *
+ * contrast({ factor: 0, severity: 80 }, swatch); // 0 means black
+ * contrast({ factor: 50, severity: 80 }, swatch); // 50 means gray
+ * contrast({ factor: 100, severity: 80 }, swatch); // 100 means black
+ *
+ * // Interpolated
+ * contrast({ factor: 58, severity: 100, steps: 8 }, swatch);
+ * ```
+ *
+ * @example
+ * A contrast sensitivity check for a color harmony
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ * const scheme = harmony({ configuration: "analogous", accented: true }, swatch);
+ *
+ * // Advanced: propagate the contrast sensitivity check over the whole color harmony scale
+ * propagate(preset(contrast, { factor: 40, severity: 80 }), scheme);
+ * ```
+ *
+ * @see `workflow.js` module for `propagate` and `preset` helpers
+ */
 export function contrast(settings, color) {
   // Set defaults
   const { factor = 0, severity = 50, steps = 0 } = settings;
@@ -119,6 +333,45 @@ export function contrast(settings, color) {
   );
 }
 
+/**
+ * An action tha takes any valid CSS `color` and checks it against an illuminant
+ * (light source) according to user `settings`.
+ *
+ * @param {object} settings - illuminant settings
+ * @param {number} [settings.K] - set the illuminant temperature (in kelvin)
+ * @param {number} [settings.intensity] - set the intensity of the illuminant (as a percentage)
+ * @param {number} [settings.steps] - activates interpolated illuminant check (up to number of steps)
+ *
+ * @param {string} color - the input color
+ * @returns {string | string[]} the illuminant check or interpolation results
+ *
+ * @example
+ * An illuminant check for a single color
+ *
+ * ```js
+ * const swatch = "crimson";
+ *
+ * illuminant({ K: 1850, intensity: 80 }, swatch); // candlelight
+ * illuminant({ K: 2400, intensity: 80 }, swatch); // standard incandescent bulb
+ * illuminant({ K: 6700, intensity: 80 }, swatch); // LCD screen
+ *
+ * // Interpolated
+ * illuminant({ K: 3200, intensity: 100, steps: 8 }, swatch);
+ * ```
+ *
+ * @example
+ * An illuminant check for a color harmony
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ * const scheme = harmony({ configuration: "analogous", accented: true }, swatch);
+ *
+ * // Advanced: propagate the illuminant check over the whole color harmony scale
+ * propagate(preset(illuminant, { K: 6500, intensity: 80 }), scheme);
+ * ```
+ *
+ * @see `workflow.js` module for `propagate` and `preset` helpers
+ */
 export function illuminant(settings, color) {
   // Set defaults
   const { K = 1850, intensity = 50, steps = 0 } = settings;
@@ -138,6 +391,82 @@ export function illuminant(settings, color) {
   return checkIlluminant({ temperature: K, strength: intensity, steps }, color);
 }
 
+/**
+ * @typedef {[string, string]} Surface - [bg, fg]
+ * @typedef {[string[], string[]]} MaterialVariants - [main, accents]
+ * @typedef {[string[], string[], string[]]} ArtisticVariants - [tints, tones, shades]
+ * @typedef {string[]} State - [pending, success, warning, error]
+ * @typedef {[Surface, MaterialVariants, State]} MaterialData - [[bg, fg], [main, accents], [pending, success, warning, error]]
+ * @typedef {[Surface, ArtisticVariants, State]} ArtisticData - [[bg, fg], [tints, tones, shades], [pending, success, warning, error]]
+ * @typedef {MaterialData | ArtisticData} PaletteData - palette data configurations
+ */
+
+/**
+ * An action that takes any valid CSS `color` and generates a palette according
+ * to user `settings`.
+ *
+ * @param {object} settings - palette settings
+ * @param {"material" | "artistic"} [settings.configuration] - set the palette configuration
+ * @param {number} [settings.contrast] - set the overall palette contrast (both configurations)
+ * @param {boolean} [settings.stated] - include interface states? (both configurations)
+ * @param {boolean} [settings.dark] - toggle dark mode? (both configurations)
+ *
+ * @param {boolean} [settings.accented] - include accent colors? (material)
+ *
+ * @param {number} [settings.tints] - number of tints to generate (artistic)
+ * @param {number} [settings.tones] - number of tones to generate (artistic)
+ * @param {number} [settings.shades] - number of shades to generate (artistic)
+ *
+ * @param {string} color - the input color
+ * @returns {PaletteData} generated palette data
+ *
+ * @example
+ * Generating a material palette
+ *
+ * ```js
+ * const swatch = "#fac99a";
+ *
+ * palette({ configuration: "material" }, swatch);
+ *
+ * // Optionally adjusting the contrast
+ * palette({ configuration: "material", contrast: 90 }, swatch);
+ *
+ * // Optionally including accent colors
+ * palette({ configuration: "material", accented: true }, swatch);
+ *
+ * // Optionally including interface states
+ * palette({ configuration: "material", stated: true }, swatch);
+ *
+ * // Optionally set dark mode
+ * palette({ configuration: "material", dark: true }, swatch);
+ * ```
+ *
+ * @example
+ * Generating an artistic palette
+ *
+ * ```js
+ * const swatch = "#fac99a";
+ *
+ * palette({ configuration: "artistic" }, swatch);
+ *
+ * // Optionally adjusting the contrast
+ * palette({ configuration: "artistic", contrast: 90 }, swatch);
+ *
+ * // Optionally adjusting variant output
+ * palette({ configuration: "artistic", tints: 5 }, swatch);
+ * palette({ configuration: "artistic", tints: 4, tones: 0, shades: 2 }, swatch); // setting a variant to 0 excludes
+ * palette({ configuration: "artistic", tints: 4, tones: 1, shades: 2 }, swatch);
+ *
+ * // Optionally including interface states
+ * palette({ configuration: "artistic", stated: true }, swatch);
+ *
+ * // Optionally set dark mode
+ * palette({ configuration: "artistic", dark: true }, swatch);
+ * ```
+ *
+ * @see {@link accessibility}
+ * @see {@link tokens}
+ */
 export function palette(settings, color) {
   // Set default configuration and settings and exclude interface states until requested
   const {
@@ -145,6 +474,7 @@ export function palette(settings, color) {
     contrast = 100,
     accented = false,
     stated = false,
+    dark = false,
   } = settings;
 
   // Generate from material-esque or artistic configuration depending on configuration
@@ -152,37 +482,234 @@ export function palette(settings, color) {
     const { tints = 3, tones = 3, shades = 3 } = settings;
 
     return artisticConfiguration(
-      { contrast, tints, tones, shades, stated },
+      { contrast, tints, tones, shades, stated, dark },
       color
     );
   }
 
-  return materialConfiguration({ contrast, accented, stated }, color);
+  return materialConfiguration({ contrast, accented, stated, dark }, color);
 }
 
+/**
+ * An action that takes a generated `palette` and filters it for accessibility
+ * according to user `settings`.
+ *
+ * @param {object} settings - accessibility settings
+ * @param {"standard" | "custom"} [settings.mode] - set the accessibility mode
+ *
+ * @param {"AA" | "AAA"} [settings.rating] - WCAG contrast rating to filter by (standard)
+ * @param {boolean} [settings.large] - use adjusted contrast ratio for larger text? (standard)
+ *
+ * @param {number} [settings.min] - minimum percentage of contrast against the background (custom)
+ * @param {number} [settings.max] - maximum percentage of contrast against the background (custom)
+ *
+ * @param {PaletteData} palette - palette data
+ * @returns {PaletteData} filtered palette data
+ *
+ * @remarks
+ * For most use cases, stick with the standard WCAG contrast ratio mode. Only
+ * use custom mode if you *absolutely require* the precision.
+ *
+ * @example
+ * Palette data accessibility filtering (standard)
+ *
+ * ```js
+ * const swatch = "#ace";
+ * const data = palette({ configuration: "material", contrast: 95 }, swatch);
+ *
+ * accessibility({ mode: "standard", rating: "AA" }, swatch);
+ *
+ * // Optionally set large text ratio
+ * accessibility({ mode: "standard", rating: "AA", large: true }, swatch);
+ *
+ * // Optionally set enhanced rating
+ * accessibility({ mode: "standard", rating: "AAA" }, swatch);
+ * ```
+ *
+ * @example
+ * Palette data accessibility filtering (custom)
+ *
+ * ```js
+ * const swatch = "#ace";
+ * const data = palette({ configuration: "material", contrast: 95 }, swatch);
+ *
+ * accessibility({ mode: "custom", min: 78 }, swatch);
+ *
+ * // Optionally set maximum contrast
+ * accessibility({ mode: "custom", min: 78, max: 95 }, swatch);
+ * ```
+ */
 export function accessibility(settings, palette) {
   // Set action defaults
-  const {
-    mode = "standard",
-    rating = "AA",
-    large = false,
-    dark = false,
-  } = settings;
+  const { mode = "standard", rating = "AA", large = false } = settings;
 
   // If mode is custom
   if (mode === "custom") {
     const { min = 85, max } = settings;
 
-    return paletteColorimetricContrast({ min, max, dark }, palette);
+    return paletteColorimetricContrast({ min, max }, palette);
   }
 
-  return paletteWcagContrast({ rating, large, dark }, palette);
+  return paletteWcagContrast({ rating, large }, palette);
 }
 
+/**
+ * @typedef {{ bg: string; fg: string }} SurfaceTokens - BG, FG
+ *
+ * @typedef {Partial<{
+ *   50: string;
+ *   100: string;
+ *   200: string;
+ *   300: string;
+ *   400: string;
+ *   500: string;
+ *   600: string;
+ *   700: string;
+ *   800: string;
+ *   900: string;
+ *   a100: string;
+ *   a200: string;
+ *   a300: string;
+ *   a400: string; }>} MaterialVariantTokens - MAIN, ACCENT?
+ *
+ * @typedef {Partial<{
+ *   light: { [key: string]: string };
+ *   muted: { [key: string]: string };
+ *   dark: { [key: string]: string }}>} ArtisticVariantTokens - LIGHT?, MUTED?, DARK?
+ *
+ * @typedef {Partial<{
+ *  state: {
+ *    pending: string;
+ *    success: string;
+ *    warning: string;
+ *    error: string;
+ *  } }>} StateTokens
+ *
+ * @typedef {SurfaceTokens & MaterialVariantTokens & StateTokens} MaterialTokens
+ * @typedef {SurfaceTokens & ArtisticVariantTokens & StateTokens} ArtisticTokens
+ * @typedef {MaterialTokens | ArtisticTokens} PaletteTokens - assembled palette token object
+ */
+
+/**
+ * An emitter that takes a generated `palette` and transforms it into a collection
+ * of tokens for use as-is or with an exporter.
+ *
+ * @param {PaletteData}
+ * @returns {PaletteTokens}
+ *
+ * @example
+ * Generating a collection of palette tokens from accessible palette data
+ *
+ * ```js
+ * const swatch = "chartreuse";
+ *
+ * const data = palette({ configuration: "material", contrast: 90 }, swatch);
+ * const safeColors = accessibility({ mode: "standard", rating: "AA" }, data);
+ *
+ * tokens(safeColors);
+ * ```
+ *
+ * @example
+ * Contextual palette example
+ *
+ * ```js
+ * const swatch = "chartreuse";
+ *
+ * const data = palette({ configuration: "material", contrast: 90 }, swatch);
+ *
+ * const ui = accessibility({ mode: "standard", rating: "AA", large: true }, data);
+ * const heading = accessibility({ mode: "standard", rating: "AA" }, data);
+ * const text = accessibility({ mode: "standard", rating: "AAA" }, data);
+ *
+ * const color = {
+ *   ui: tokens(ui),
+ *   heading: tokens(heading),
+ *   text: tokens(text)
+ * };
+ * ```
+ *
+ * @see {@link output}
+ */
 export function tokens(palette) {
   return tokenizePalette(palette);
 }
 
+/**
+ * @typedef {Partial<{
+ *   name: string;
+ *   author: string;
+ *   version: string;
+ *   license: string;
+ *   bump: string;
+ *   metadata: {
+ *     description?: string;
+ *     comments?: string;
+ *   }
+ * }>} ProjectSettings
+ *
+ * @typedef {string | number} TokenValue
+ *
+ * @typedef {{base: TokenValue; [variant: string]: TokenValue | TokenSubcategory }} TokenSubcategory
+ *
+ * @typedef {{ [category: string]: TokenValue | TokenSubcategory | {} | TokenSchema }} TokenSchema
+ *
+ * @typedef {{
+ *   project: ProjectSettings;
+ *   [tokens: string]: TokenSchema;
+ * }} Dictionary
+ */
+
+/**
+ * An exporter that takes a complete color `dict` and prepares it for a given
+ * color `format`.
+ *
+ * @param {"gpl" | "sketchpalette"} format - color exporter formats
+ * @param {Dictionary} dict - the input color dictionary
+ * @returns {string} file-ready output
+ *
+ * @remarks
+ * As a rule, exporter functions do *not* assume read/write access to your system.
+ * The output of an exporter will either be a prepared file-ready template string
+ * (or stringified JSON) or an object according to its return type.
+ *
+ * @example
+ * Exporting a color dictionary as GIMP/Inkscape palette
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ *
+ * const color = tokens(
+ *   palette({
+ *     configuration: "artistic",
+ *     contrast: 95,
+ *     tints: 9,
+ *     tones: 9,
+ *     shades: 9
+ *   }, swatch)
+ * );
+ *
+ * output("gpl", {project: {}, ...color });
+ * ```
+ *
+ * @example
+ * Exporting a color dictionary as a Sketch palette
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ *
+ * const color = tokens(
+ *   palette({
+ *     configuration: "artistic",
+ *     contrast: 95,
+ *     tints: 9,
+ *     tones: 9,
+ *     shades: 9
+ *   }, swatch)
+ * );
+ *
+ * output("sketchpalette", {project: {}, ...color });
+ * ```
+ */
 export function output(format, dict) {
   return format === "sketchpalette" ? sketchpalette(dict) : gpl(dict);
 }
@@ -1815,7 +2342,7 @@ function colorHarmonies({ type, accented = false }, color) {
 }
 
 function materialConfiguration(
-  { contrast = 100, accented = false, stated = false },
+  { contrast = 100, accented = false, stated = false, dark = false },
   color
 ) {
   // [bg, fg]
@@ -1896,11 +2423,18 @@ function materialConfiguration(
       ]
     : [];
 
-  return [ui, [variants, accents], states];
+  return [dark ? ui.reverse() : ui, [variants, accents], states];
 }
 
 function artisticConfiguration(
-  { contrast = 100, tints = 3, tones = 3, shades = 3, stated = false },
+  {
+    contrast = 100,
+    tints = 3,
+    tones = 3,
+    shades = 3,
+    stated = false,
+    dark = false,
+  },
   color
 ) {
   // [bg, fg]
@@ -1962,7 +2496,7 @@ function artisticConfiguration(
       ]
     : [];
 
-  return [ui, variants, states];
+  return [dark ? ui.reverse() : ui, variants, states];
 }
 
 function calculateRelativeLuminance(color) {
@@ -2017,24 +2551,14 @@ function variantContrastWcag({ rating, large, background }, variants) {
   ];
 }
 
-function paletteWcagContrast({ rating = "AA", large, dark = false }, palette) {
+function paletteWcagContrast({ rating = "AA", large = false }, palette) {
   // Extract palette datasets
   const [ui, variants, state] = palette;
-  const [bg, fg] = ui;
-
-  if (dark) {
-    // Invert order of [bg, fg]
-    const [fg, bg] = ui;
-    return [
-      [bg, fg],
-      variantContrastWcag({ rating, large, background: bg }, variants),
-      state,
-    ];
-  }
+  const [background] = ui;
 
   return [
-    [bg, fg],
-    variantContrastWcag({ rating, large, background: bg }, variants),
+    ui,
+    variantContrastWcag({ rating, large, background }, variants),
     state,
   ];
 }
@@ -2085,23 +2609,13 @@ function variantsColorimetricContrast({ min, max, background }, variants) {
   ];
 }
 
-function paletteColorimetricContrast({ min = 75, max, dark = false }, palette) {
+function paletteColorimetricContrast({ min = 75, max }, palette) {
   const [ui, variants, state] = palette;
-  const [bg, fg] = ui;
-
-  if (dark) {
-    const [fg, bg] = ui;
-
-    return [
-      [bg, fg],
-      variantsColorimetricContrast({ min, max, background: bg }, variants),
-      state,
-    ];
-  }
+  const [background] = ui;
 
   return [
-    [bg, fg],
-    variantsColorimetricContrast({ min, max, background: bg }, variants),
+    ui,
+    variantsColorimetricContrast({ min, max, background }, variants),
     state,
   ];
 }
@@ -2212,18 +2726,18 @@ function gpl(dict) {
   };
 
   const assemble = (head, node) =>
-        Object.entries(node).reduce((str, [key, value]) => {
-          const KEY = key.toUpperCase();
+    Object.entries(node).reduce((str, [key, value]) => {
+      const KEY = key.toUpperCase();
 
-          // Ignore metadata
-          if (key === "metadata") {
-            return str;
-          }
+      // Ignore metadata
+      if (key === "metadata") {
+        return str;
+      }
 
-          if (typeof value === "object") {
-            return str.concat(assemble(identifier(head, KEY, " "), value));
-          }
-          return str.concat(
+      if (typeof value === "object") {
+        return str.concat(assemble(identifier(head, KEY, " "), value));
+      }
+      return str.concat(
         gplSwatch(value),
         "\t",
         identifier(head, KEY, " "),
