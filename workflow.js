@@ -16,7 +16,7 @@
  * @template {EmitterSequence} Sequence
  *
  * @param {Sequence} emitters - the sequence of emitters to combine
- * @return {Last<Sequence>} The last emitter in the sequence
+ * @returns {Last<Sequence>} The last emitter in the sequence
  *
  * @remarks
  * This workflow helper is excellent for combining simple emitters into complex
@@ -114,7 +114,7 @@ export function pipeline(x, ...emitters) {
  *
  * @param {(x: X) => R} emitter - the emitter to execute on each value
  * @param {Collection} xs - the collection of values to map execution
- * @return {R[]} the collection of results
+ * @returns {R[]} the collection of results
  *
  * @remarks
  * This workflow helper comes in handy when you have a scale of values and you
