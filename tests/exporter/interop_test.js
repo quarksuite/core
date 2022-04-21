@@ -1,6 +1,6 @@
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
-import { text, ms, tokens as content } from "../../content.js";
+import { ms, text, tokens as content } from "../../content.js";
 import { interop } from "../../exporter.js";
 
 const swatch = "rebeccapurple";
@@ -22,7 +22,7 @@ const dict = {
     size: content({ unit: "rem", inversion: "em" }, scale),
     leading: content(
       { type: "ranged", min: 1.25, max: 1.5, context: "max" },
-      scale
+      scale,
     ),
     measure: content(
       {
@@ -33,7 +33,7 @@ const dict = {
         trunc: true,
         context: "max",
       },
-      scale
+      scale,
     ),
   },
   layout: {
@@ -181,9 +181,9 @@ describe("interop(format, dict)", () => {
     });
   });
 
-  describe("format = 'style dictionary'", () => {
+  describe("format = 'styledictionary'", () => {
     it("should translate sample dictionary to Style Dictionary tokens", () => {
-      expect(interop("style dictionary", dict)).toEqual({
+      expect(interop("styledictionary", dict)).toEqual({
         color: {
           50: { value: "#eeeaf6" },
           100: { value: "#d6cbe7" },
@@ -202,7 +202,7 @@ describe("interop(format, dict)", () => {
           primary: {
             family: {
               value:
-              "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+                "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
             },
             regular: { value: 400 },
             bold: { value: 700 },
@@ -210,7 +210,7 @@ describe("interop(format, dict)", () => {
           secondary: {
             family: {
               value:
-              "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+                "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
             },
             light: { value: 300 },
             black: { value: 900 },
@@ -218,7 +218,7 @@ describe("interop(format, dict)", () => {
           source: {
             family: {
               value:
-              "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+                "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
             },
             regular: { value: 400 },
             bold: { value: 700 },
