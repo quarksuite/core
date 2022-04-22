@@ -73,7 +73,7 @@ can. If it seems to be taking a while, you can email me at: crjr.code@protonmail
 
 + Env: [Deno](https://deno.land)
 + Testing: [Tincan](https://github.com/gcaptn/tincan)
-+ Benchmarking: [Merlin](https://github.com/crewdevio/merlin)
++ Benchmarking: Built-in (`deno bench`) **v1.20.5**
 + Linting: Built-in (`deno lint`)
 + Formatting: Built-in (`deno fmt`)
 
