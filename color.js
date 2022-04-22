@@ -30,14 +30,14 @@
  */
 export function convert(to, color) {
   if (to === "lab") {
-    return serialize(_convert(color, "cielab"));
+    return serialize(conversion(color, "cielab"));
   }
 
   if (to === "lch") {
-    return serialize(_convert(color, "cielch"));
+    return serialize(conversion(color, "cielch"));
   }
 
-  return serialize(_convert(color, to));
+  return serialize(conversion(color, to));
 }
 
 /**
@@ -252,10 +252,7 @@ export function vision(settings, color) {
       );
     }
 
-    return checkColorblindness(
-      { method, type, strength: severity, steps },
-      color
-    );
+    return checkColorblindness({ method, type, strength: severity }, color);
   }
 
   // Protanopia, Deuteranopia, Tritanopia by definition do not
@@ -327,10 +324,7 @@ export function contrast(settings, color) {
     );
   }
 
-  return checkSensitivity(
-    { contrast: factor, strength: severity, steps },
-    color
-  );
+  return checkSensitivity({ contrast: factor, strength: severity }, color);
 }
 
 /**
@@ -388,7 +382,7 @@ export function illuminant(settings, color) {
     );
   }
 
-  return checkIlluminant({ temperature: K, strength: intensity, steps }, color);
+  return checkIlluminant({ temperature: K, strength: intensity }, color);
 }
 
 /**
@@ -719,6 +713,10 @@ export function output(format, dict) {
   return format === "sketchpalette" ? sketchpalette(dict) : gpl(dict);
 }
 
+// Internals
+
+// Color Tokenization
+
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
   ["(?:", NUMBER_TOKEN.source, "%)"].join("")
@@ -739,6 +737,8 @@ const COMPONENT_TOKEN = new RegExp(
 const HUE_TOKEN = new RegExp(
   ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
 );
+
+// Color Validation
 
 const NAMED_COLOR_KEYWORDS = {
   aliceblue: "#f0f8ff",
@@ -982,24 +982,28 @@ function oklchValidator(color) {
 }
 
 function validator(input) {
-  const SUPPORTED_FORMATS = {
-    named: namedValidator,
-    hex: hexValidator,
-    rgb: rgbValidator,
-    hsl: hslValidator,
-    cmyk: cmykValidator,
-    hwb: hwbValidator,
-    cielab: cielabValidator,
-    cielch: cielchValidator,
-    oklab: oklabValidator,
-    oklch: oklchValidator,
-  };
+  const formats = [
+    namedValidator,
+    hexValidator,
+    rgbValidator,
+    hslValidator,
+    cmykValidator,
+    hwbValidator,
+    cielabValidator,
+    cielchValidator,
+    oklabValidator,
+    oklchValidator,
+  ];
 
-  return (
-    Object.entries(SUPPORTED_FORMATS)
-      .map(([format, test]) => [format, test(input) && input])
-      .find(([, color]) => color) || InvalidColorError(input)
-  );
+  const [format] = formats
+    .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
+    .find(([, fn]) => fn(input));
+
+  if (!format) {
+    return InvalidColorError(input);
+  }
+
+  return [format, input];
 }
 
 class InvalidColor extends Error {
@@ -1038,6 +1042,8 @@ function InvalidColorError(input) {
   return new InvalidColor(input);
 }
 
+// Color Value Extraction
+
 function hexExtractor(color) {
   return expandHex(color).match(/[\da-f]{2}/gi);
 }
@@ -1069,6 +1075,8 @@ function extractor(validated) {
 
   return [format, componentExtractor(color)];
 }
+
+// Color Arithmetic
 
 function clamp(x, a, b) {
   if (x < a) {
@@ -1136,7 +1144,9 @@ function hueCorrection(hue) {
   return clamp(h, -360, 360);
 }
 
-function parseHex([format, components]) {
+// Color Parsing
+
+function hexParser([format, components]) {
   const [r, g, b, A] = components;
 
   const [R, G, B] = [r, g, b].map((fragment) => hexFragmentToChannel(fragment));
@@ -1155,7 +1165,7 @@ function parsePercentage(component) {
   return parseFloat(component);
 }
 
-function parseRgb([format, components]) {
+function rgbParser([format, components]) {
   const [r, g, b, A] = components;
 
   const [R, G, B] = [r, g, b].map((channel) => {
@@ -1173,25 +1183,29 @@ function parseRgb([format, components]) {
 function parseHue(hue) {
   let HUE = parseFloat(hue);
 
-  if (hue.endsWith("rad")) {
-    HUE = radiansToDegrees(HUE);
-  }
+  const gradians = hue.endsWith("grad");
+  const radians = hue.endsWith("rad") && !gradians;
+  const turns = hue.endsWith("turn");
 
-  if (hue.endsWith("grad")) {
+  if (gradians) {
     HUE = gradiansToDegrees(HUE);
   }
 
-  if (hue.endsWith("turn")) {
+  if (radians) {
+    HUE = radiansToDegrees(HUE);
+  }
+
+  if (turns) {
     HUE = turnsToDegrees(HUE);
   }
 
   return hueCorrection(HUE);
 }
 
-function parseHsl([format, components]) {
+function hslParser([format, components]) {
   const [h, s, l, A] = components;
 
-  let H = parseHue(h);
+  const H = parseHue(h);
 
   const [S, L] = [s, l].map((percentage) =>
     numberFromPercentage(parseFloat(percentage))
@@ -1204,7 +1218,7 @@ function parseHsl([format, components]) {
   return [format, [H, S, L, 1]];
 }
 
-function parseCMYK([format, components]) {
+function cmykParser([format, components]) {
   const [C, M, Y, K, A] = components.map((V) => {
     if (V.endsWith("%")) return parsePercentage(V);
     return parseFloat(V);
@@ -1217,7 +1231,7 @@ function parseCMYK([format, components]) {
   return [format, [C, M, Y, K, 1]];
 }
 
-function parseCielab([format, components]) {
+function cielabParser([format, components]) {
   const [$L, $a, $b, A] = components;
 
   const [L, a, b] = [$L, $a, $b].map((component) => parseFloat(component));
@@ -1229,7 +1243,7 @@ function parseCielab([format, components]) {
   return [format, [L, a, b, 1]];
 }
 
-function parseCielch([format, components]) {
+function cielchParser([format, components]) {
   const [$L, c, h, A] = components;
 
   const [L, C] = [$L, c].map((component) => parseFloat(component));
@@ -1242,7 +1256,7 @@ function parseCielch([format, components]) {
   return [format, [L, C, H, 1]];
 }
 
-function parseOklab([format, components]) {
+function oklabParser([format, components]) {
   const [$L, $a, $b, A] = components;
 
   const L = parsePercentage($L);
@@ -1255,7 +1269,7 @@ function parseOklab([format, components]) {
   return [format, [L, a, b, 1]];
 }
 
-function parseOklch([format, components]) {
+function oklchParser([format, components]) {
   const [$L, c, h, A] = components;
 
   const L = parsePercentage($L);
@@ -1272,20 +1286,27 @@ function parseOklch([format, components]) {
 function parser(extracted) {
   const [format] = extracted;
 
-  const FORMAT_PARSERS = {
-    hex: parseHex,
-    rgb: parseRgb,
-    hsl: parseHsl,
-    cmyk: parseCMYK,
-    hwb: parseHsl, // identical to HSL
-    cielab: parseCielab,
-    cielch: parseCielch,
-    oklab: parseOklab,
-    oklch: parseOklch,
-  };
+  const parsers = [
+    hexParser,
+    rgbParser,
+    hslParser,
+    cmykParser,
+    cielabParser,
+    cielchParser,
+    oklabParser,
+    oklchParser,
+  ];
 
-  return FORMAT_PARSERS[format](extracted);
+  if (format === "hwb") {
+    return hslParser(extracted);
+  }
+
+  const parse = parsers.find((fn) => fn.name.replace(/Parser/, "") === format);
+
+  return parse(extracted);
 }
+
+// Input -> RGB
 
 function rgbInputIdentity([, values]) {
   const [r, g, b, A] = values;
@@ -1343,9 +1364,9 @@ function hwbToRgb([, values]) {
 
   // Achromacity
   if (W + BLK >= 1) {
-    let GRAY = numberToChannel(W / (W + BLK));
+    const GRAY = numberToChannel(W / (W + BLK));
 
-    return ["rgb", [Array(3).fill(GRAY), A]];
+    return ["rgb", [...Array(3).fill(GRAY), A]];
   }
 
   // Conversion
@@ -1455,6 +1476,8 @@ function oklabToRgb([, values]) {
 
   return ["rgb", [R, G, B, A]];
 }
+
+// RGB -> Output
 
 function hexFromRgb([, rgbValues]) {
   const [r, g, b, a] = rgbValues;
@@ -1651,46 +1674,82 @@ function oklabFromOklch([, oklchValues]) {
   return ["oklab", scalarFromPolar(["oklch", oklchValues])];
 }
 
-function _convert(color, to) {
-  // Let's make the pathway explicit
+// Conversion pipeline
+
+function inputToRgb(color) {
   const valid = validator(color);
   const extraction = extractor(valid);
-  const [format, values] = parser(extraction);
+  const parsed = parser(extraction);
+  const [format] = parsed;
 
-  // Takes the input and formats it to RGB depending on format
-  const INPUT_TO_RGB = (input) => ({
-    named: hexToRgb(input),
-    hex: hexToRgb(input),
-    rgb: rgbInputIdentity(input), // identity
-    hsl: hslToRgb(input),
-    cmyk: cmykToRgb(input),
-    hwb: hwbToRgb(input),
-    cielab: cielabToRgb(input),
-    cielch: cielabToRgb(cielabFromCielch(input)),
-    oklab: oklabToRgb(input),
-    oklch: oklabToRgb(oklabFromOklch(input)),
-  });
+  // Input -> RGB
+  const RGB = [hslToRgb, cmykToRgb, hwbToRgb, cielabToRgb, oklabToRgb];
 
-  // Takes the RGB and formats to output target
-  const RGB_TO_OUTPUT = (rgb) => ({
-    hex: hexFromRgb(rgb),
-    rgb: rgbOutputIdentity(rgb), // identity
-    hsl: hslFromRgb(rgb),
-    cmyk: cmykFromRgb(rgb),
-    hwb: hwbFromRgb(rgb),
-    cielab: cielabFromRgb(rgb),
-    cielch: cielabToCielch(cielabFromRgb(rgb)),
-    oklab: oklabFromRgb(rgb),
-    oklch: oklabToOklch(oklabFromRgb(rgb)),
-  });
+  const input = (data, funcs) => {
+    const [format] = data;
 
-  // Construct the pipeline
-  const OUTPUT = RGB_TO_OUTPUT(INPUT_TO_RGB([format, values])[format])[to];
+    return funcs.find((fn) => fn.name.startsWith(format))(data);
+  };
 
-  return OUTPUT;
+  if (format === "hex" || format === "named") {
+    return hexToRgb(parsed);
+  }
+
+  if (format === "rgb") {
+    return rgbInputIdentity(parsed);
+  }
+
+  if (format.endsWith("lch")) {
+    const scalar = [cielabFromCielch, oklabFromOklch].find((fn) =>
+      fn.name.toLowerCase().endsWith(format)
+    );
+
+    return input(scalar(parsed), RGB);
+  }
+
+  return input(parsed, RGB);
 }
 
-function serializeHex([, hexResult]) {
+function outputFromRgb(target, data) {
+  // RGB -> Output
+  const RGB = [
+    hslFromRgb,
+    cmykFromRgb,
+    hwbFromRgb,
+    cielabFromRgb,
+    oklabFromRgb,
+  ];
+
+  const output = (funcs) => {
+    return funcs.find((fn) => fn.name.startsWith(target))(data);
+  };
+
+  if (target === "hex") {
+    return hexFromRgb(data);
+  }
+
+  if (target === "rgb") {
+    return rgbOutputIdentity(data);
+  }
+
+  if (target === "cielch") {
+    return cielabToCielch(cielabFromRgb(data));
+  }
+
+  if (target === "oklch") {
+    return oklabToOklch(oklabFromRgb(data));
+  }
+
+  return output(RGB);
+}
+
+function conversion(color, to) {
+  return outputFromRgb(to, inputToRgb(color));
+}
+
+// Color Serialization
+
+function hexSerializer([, hexResult]) {
   const [R, G, B, A] = hexResult;
 
   if (A === "ff") {
@@ -1715,7 +1774,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   );
 }
 
-function serializeRgb([, rgbResult]) {
+function rgbSerializer([, rgbResult]) {
   const [r, g, b, A] = rgbResult;
 
   // Clamp RGB channels 0-255
@@ -1726,7 +1785,7 @@ function serializeRgb([, rgbResult]) {
   return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
 }
 
-function serializeHsl([, hslResult]) {
+function hslSerializer([, hslResult]) {
   const [h, s, l, A] = hslResult;
 
   // Correct the hue result
@@ -1738,7 +1797,7 @@ function serializeHsl([, hslResult]) {
   return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
 }
 
-function serializeCmyk([, cmykResult]) {
+function cmykSerializer([, cmykResult]) {
   const [c, m, y, k, A] = cmykResult;
 
   // Format to percentage, cap at 0-100
@@ -1755,7 +1814,7 @@ function serializeCmyk([, cmykResult]) {
   ]);
 }
 
-function serializeHwb([, hslResult]) {
+function hwbSerializer([, hslResult]) {
   const [h, w, blk, A] = hslResult;
 
   // Correct the hue result
@@ -1772,7 +1831,7 @@ function serializeHwb([, hslResult]) {
   ]);
 }
 
-function serializeCielab([, cielabValues]) {
+function cielabSerializer([, cielabValues]) {
   const [$L, $a, $b, A] = cielabValues;
 
   // Clamp lightness at 0-100
@@ -1789,14 +1848,14 @@ function serializeCielab([, cielabValues]) {
   ]);
 }
 
-function serializeCielch([, cielchValues]) {
+function cielchSerializer([, cielchValues]) {
   const [$L, c, h, A] = cielchValues;
 
   // Clamp lightness at 0-100
   const L = `${+clamp($L, 0, 100).toFixed(3)}%`;
 
-  // Clamp chroma at 0-132
-  const C = +clamp(c, 0, 132).toFixed(3);
+  // Clamp chroma at 0-230
+  const C = +clamp(c, 0, 230).toFixed(3);
 
   let H = h;
 
@@ -1816,7 +1875,7 @@ function serializeCielch([, cielchValues]) {
   ]);
 }
 
-function serializeOklab([, oklabValues]) {
+function oklabSerializer([, oklabValues]) {
   const [$L, $a, $b, A] = oklabValues;
 
   // Format number to percentage, clamp at 0-100
@@ -1833,7 +1892,7 @@ function serializeOklab([, oklabValues]) {
   ]);
 }
 
-function serializeOklch([, oklchValues]) {
+function oklchSerializer([, oklchValues]) {
   const [$L, c, h, A] = oklchValues;
 
   // Format lightness to percentage, clamp at 0-100
@@ -1860,25 +1919,33 @@ function serializeOklch([, oklchValues]) {
   ]);
 }
 
-function serialize([format, results]) {
-  const serializers = {
-    hex: serializeHex,
-    rgb: serializeRgb,
-    hsl: serializeHsl,
-    cmyk: serializeCmyk,
-    hwb: serializeHwb,
-    cielab: serializeCielab,
-    cielch: serializeCielch,
-    oklab: serializeOklab,
-    oklch: serializeOklch,
-  };
+function serialize(results) {
+  const [format] = results;
 
-  return serializers[format]([format, results]);
+  const serializers = [
+    hexSerializer,
+    rgbSerializer,
+    hslSerializer,
+    cmykSerializer,
+    hwbSerializer,
+    cielabSerializer,
+    cielchSerializer,
+    oklabSerializer,
+    oklchSerializer,
+  ];
+
+  const matched = serializers.find(
+    (fn) => fn.name.replace(/Serializer/, "") === format
+  );
+
+  return matched(results);
 }
 
+// Color Adjustment Internals
+
 function extractOklchValues(color) {
-  const formatedOklch = serializeOklch(_convert(color, "oklch"));
-  const [, components] = extractor(["oklch", formatedOklch]);
+  const formattedOklch = serialize(conversion(color, "oklch"));
+  const [, components] = extractor(["oklch", formattedOklch]);
 
   return components.map((V) => parseFloat(V));
 }
@@ -1888,29 +1955,13 @@ function adjustColorProperties(
   [l, c, h, a]
 ) {
   // Adjust properties only if defined, make values parseable
-  let L = numberFromPercentage(lightness ? l + lightness : l);
-  let C = chroma ? c + numberFromPercentage(chroma) * 0.5 * 0.5 : c;
-  let H = radiansFromDegrees(hue ? hueCorrection(h + hue) : h);
-  let A = alpha ? (a ?? 1) + numberFromPercentage(alpha) : a ?? 1;
+  const L = numberFromPercentage(lightness ? l + lightness : l);
+  const C = chroma ? c + numberFromPercentage(chroma) * 0.5 * 0.5 : c;
+  const H = radiansFromDegrees(hue ? hueCorrection(h + hue) : h);
+  const A = alpha ? (a ?? 1) + numberFromPercentage(alpha) : a ?? 1;
 
   // Return adjusted values
   return [L, C, H, A];
-}
-
-function serializeInput([format, values]) {
-  const SERIALIZATION_TARGETS = {
-    hex: serializeHex,
-    rgb: serializeRgb,
-    hsl: serializeHsl,
-    cmyk: serializeCmyk,
-    hwb: serializeHwb,
-    cielab: serializeCielab,
-    cielch: serializeCielch,
-    oklab: serializeOklab,
-    oklch: serializeOklch,
-  };
-
-  return SERIALIZATION_TARGETS[format]([format, values]);
 }
 
 function colorAdjustment(
@@ -1930,19 +1981,21 @@ function colorAdjustment(
   );
 
   // Serialize oklch result
-  const oklch = serializeOklch(["oklch", [L, C, H, A]]);
+  const oklch = serialize(["oklch", [L, C, H, A]]);
 
   // If input format is named, format to hex
   if (format === "named") {
-    return serializeInput(_convert(oklch, "hex"));
+    return serialize(conversion(oklch, "hex"));
   }
 
   // Otherwise use input format
-  return serializeInput(_convert(oklch, format));
+  return serialize(conversion(oklch, format));
 }
 
+// Color Mixture Internals
+
 function getOklabValues(color) {
-  return _convert(color, "oklab");
+  return conversion(color, "oklab");
 }
 
 function calculateMixture(color, target, strength) {
@@ -1987,19 +2040,21 @@ function colorMix({ target, strength = 0 }, color) {
   );
 
   // Serialize the blend result
-  const oklab = serializeOklab(["oklab", [L, a, b, A]]);
+  const oklab = serialize(["oklab", [L, a, b, A]]);
 
   if (format === "named") {
-    return serializeInput(_convert(oklab, "hex"));
+    return serialize(conversion(oklab, "hex"));
   }
 
-  return serializeInput(_convert(oklab, format));
+  return serialize(conversion(oklab, format));
 }
+
+// Color Vision Internals
 
 function cvdBrettelSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(_convert(color, "rgb"))])
+    extractor(["rgb", serialize(conversion(color, "rgb"))])
   );
 
   // Format RGB to linear RGB
@@ -2067,7 +2122,7 @@ function cvdBrettelSimulation({ type, strength = 100 }, color) {
 function cvdVienotSimulation({ type, strength = 100 }, color) {
   // Parse values from RGB
   const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serializeRgb(_convert(color, "rgb"))])
+    extractor(["rgb", serialize(conversion(color, "rgb"))])
   );
 
   // Format RGB to linear RGB
@@ -2129,7 +2184,7 @@ function checkColorblindness(
   }
 
   // Serialize RGB, but leave the alpha alone
-  const rgb = serializeRgb([
+  const rgb = serialize([
     "rgb",
     values.map((component, index) =>
       index !== 3 ? numberToChannel(component) : component
@@ -2137,11 +2192,13 @@ function checkColorblindness(
   ]);
 
   if (format === "named") {
-    return serializeInput(_convert(rgb, "hex"));
+    return serialize(conversion(rgb, "hex"));
   }
 
-  return serializeInput(_convert(rgb, format));
+  return serialize(conversion(rgb, format));
 }
+
+// Contrast Sensitivity Internals
 
 function checkSensitivity({ contrast = 0, strength = 0 }, color) {
   // Derive contrast from a shade of gray
@@ -2162,6 +2219,8 @@ function checkSensitivity({ contrast = 0, strength = 0 }, color) {
     color
   );
 }
+
+// Illuminant Internals
 
 function kelvinToRgb(temperature) {
   // The accurate range for this algorithm is 1000-40000K
@@ -2192,7 +2251,7 @@ function kelvinToRgb(temperature) {
   }
 
   // Serialize RGB
-  return serializeRgb(["rgb", [R, G, B, 1]]);
+  return serialize(["rgb", [R, G, B, 1]]);
 }
 
 function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
@@ -2200,6 +2259,8 @@ function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
 
   return colorMix({ target, strength }, color);
 }
+
+// Color Interpolation Behavior
 
 function colorInterpolation(action, settings, input) {
   // Set default for shared step property
@@ -2287,6 +2348,8 @@ function colorInterpolation(action, settings, input) {
   ].reverse();
 }
 
+// Color Harmony Internals
+
 function colorHarmonies({ type, accented = false }, color) {
   const withComplement = accented ? [colorAdjustment({ hue: 180 }, color)] : [];
 
@@ -2345,6 +2408,8 @@ function colorHarmonies({ type, accented = false }, color) {
 
   return harmonies[type];
 }
+
+// Color Palette Internals
 
 function materialConfiguration(
   { contrast = 100, accented = false, stated = false, dark = false },
@@ -2504,9 +2569,11 @@ function artisticConfiguration(
   return [dark ? ui.reverse() : ui, variants, states];
 }
 
+// Accessibility Internals
+
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", serializeRgb(_convert(color, "rgb"))])
+    extractor(["rgb", rgbSerializer(conversion(color, "rgb"))])
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -2539,7 +2606,7 @@ function variantContrastWcag({ rating, large, background }, variants) {
     });
 
   const optional = (fn, collection) =>
-        collection.length ? fn(collection) : [];
+    collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2571,11 +2638,11 @@ function paletteWcagContrast({ rating = "AA", large = false }, palette) {
 function comparePerceptualLightness(bg, fg) {
   const [, bgValues] = extractor([
     "oklch",
-    serializeOklch(_convert(bg, "oklch")),
+    oklchSerializer(conversion(bg, "oklch")),
   ]);
   const [, fgValues] = extractor([
     "oklch",
-    serializeOklch(_convert(fg, "oklch")),
+    oklchSerializer(conversion(fg, "oklch")),
   ]);
 
   const [bL] = bgValues.map((V) => parseFloat(V));
@@ -2597,7 +2664,7 @@ function variantsColorimetricContrast({ min, max, background }, variants) {
     });
 
   const optional = (fn, collection) =>
-        collection.length ? fn(collection) : [];
+    collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2625,6 +2692,8 @@ function paletteColorimetricContrast({ min = 75, max }, palette) {
   ];
 }
 
+// Color Token Internals
+
 function tokenizeMaterialVariants(variants) {
   // Extract [main[], accents[]]
   const [main, accents] = variants;
@@ -2638,9 +2707,9 @@ function tokenizeMaterialVariants(variants) {
     // a100-a400
     ...(accents.length
       ? accents.reduce((acc, color, index) => {
-        return { ...acc, [`a${++index}00`]: color };
-      }, {})
-        : {}),
+          return { ...acc, [`a${++index}00`]: color };
+        }, {})
+      : {}),
   };
 }
 
@@ -2682,21 +2751,21 @@ function tokenizePalette(palette) {
     ...variations,
     ...(states.length
       ? {
-        state: {
-          pending: states[0],
-          success: states[1],
-          warning: states[2],
-          error: states[3],
-        },
-      }
-        : {}),
+          state: {
+            pending: states[0],
+            success: states[1],
+            warning: states[2],
+            error: states[3],
+          },
+        }
+      : {}),
   };
 }
 
-function gplSwatch(color) {
-  const [, values] = _convert(color, "rgb");
+// Color Output Internals
 
-  return values
+function gplSwatch(color) {
+  return conversion(color, "rgb")[1]
     .map((component) => String(component).padStart(3, " "))
     .slice(0, 3)
     .join("\t");
@@ -2705,7 +2774,7 @@ function gplSwatch(color) {
 function gpl(dict) {
   const { project, ...palette } = dict;
 
-  let {
+  const {
     name = "Unknown",
     author = "Anonymous",
     version = "0.1.0",
@@ -2746,7 +2815,7 @@ function gpl(dict) {
         gplSwatch(value),
         "\t",
         identifier(head, KEY, " "),
-        ` (${serializeHex(_convert(value, "hex"))})`,
+        ` (${hexSerializer(conversion(value, "hex"))})`,
         "\n"
       );
     }, "");
@@ -2772,14 +2841,14 @@ ${assemble("", palette)}
 }
 
 function sketchpaletteSwatch(color) {
-  const swatch = serializeRgb(_convert(color, "rgb"));
+  const swatch = serialize(conversion(color, "rgb"));
   const [, [red, green, blue, alpha]] = parser(extractor(["rgb", swatch]));
 
   return { red, green, blue, alpha };
 }
 
 function sketchpalette(dict) {
-  const { project, ...palette } = dict;
+  const { project: _, ...palette } = dict;
 
   const assemble = (tree) =>
     Object.entries(tree).reduce((acc, [key, data]) => {
