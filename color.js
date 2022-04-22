@@ -996,8 +996,8 @@ function validator(input) {
   ];
 
   const [format] = formats
-        .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
-        .find(([, fn]) => fn(input));
+    .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
+    .find(([, fn]) => fn(input));
 
   if (!format) {
     return InvalidColorError(input);
@@ -2356,9 +2356,9 @@ function colorHarmonies({ type, accented = false }, color) {
   const withComplement = accented ? [opposite] : [];
 
   const uniform = ({ arc = 30, values = 2 }, color) =>
-        Array(values)
-        .fill(color)
-        .map((color, pos) => colorAdjustment({ hue: arc * pos }, color));
+    Array(values)
+      .fill(color)
+      .map((color, pos) => colorAdjustment({ hue: arc * pos }, color));
 
   const triad = (color, arc = 30, accented = false) => {
     const [a, b] = [
@@ -2398,12 +2398,8 @@ function colorHarmonies({ type, accented = false }, color) {
 
 // Color Palette Internals
 
-function materialConfiguration(
-  { contrast = 100, accented = false, stated = false, dark = false },
-  color
-) {
-  // [bg, fg]
-  const ui = [
+function generateSurface(contrast, color) {
+  return [
     colorMix(
       { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
       color
@@ -2413,6 +2409,23 @@ function materialConfiguration(
       color
     ),
   ];
+}
+
+function generateStates(color) {
+  return [
+    colorMix({ target: "gainsboro", strength: 90 }, color),
+    colorMix({ target: "forestgreen", strength: 90 }, color),
+    colorMix({ target: "goldenrod", strength: 90 }, color),
+    colorMix({ target: "firebrick", strength: 90 }, color),
+  ];
+}
+
+function materialConfiguration(
+  { contrast = 100, accented = false, stated = false, dark = false },
+  color
+) {
+  // [bg, fg]
+  const ui = generateSurface(contrast, color);
 
   // [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
   const variants = [
@@ -2438,47 +2451,40 @@ function materialConfiguration(
 
   // [A100, A200, A300, A400]
   const accents = accented
-    ? [
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: -50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: 25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: -15,
-          },
-          color
-        ),
-        colorAdjustment(
-          {
-            lightness: -25 * numberFromPercentage(contrast),
-            chroma: 50,
-            hue: 15,
-          },
-          color
-        ),
-      ]
-    : [];
+        ? [
+          colorAdjustment(
+            {
+              lightness: 25 * numberFromPercentage(contrast),
+              chroma: -50,
+              hue: -15,
+            },
+            color
+          ),
+          colorAdjustment(
+            { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
+            color
+          ),
+          colorAdjustment(
+            {
+              lightness: 25 * numberFromPercentage(contrast),
+              chroma: 50,
+              hue: -15,
+            },
+            color
+          ),
+          colorAdjustment(
+            {
+              lightness: -25 * numberFromPercentage(contrast),
+              chroma: 50,
+              hue: 15,
+            },
+            color
+          ),
+        ]
+        : [];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
-  const states = stated
-    ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
-    : [];
+  const states = stated ? generateStates(color) : [];
 
   return [dark ? ui.reverse() : ui, [variants, accents], states];
 }
@@ -2495,63 +2501,47 @@ function artisticConfiguration(
   color
 ) {
   // [bg, fg]
-  const ui = [
-    colorMix(
-      { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color
-    ),
-    colorMix(
-      { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color
-    ),
-  ];
+  const ui = generateSurface(contrast, color);
 
   // [tints[], tones[], shades[]]
   const variants = [
     tints
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#fff",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tints,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#fff",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tints,
+        },
+        color
+      )
       : [],
     tones
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#aaa",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: tones,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#aaa",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: tones,
+        },
+        color
+      )
       : [],
     shades
       ? colorInterpolation(
-          colorMix,
-          {
-            target: "#111",
-            strength: 90 * numberFromPercentage(contrast),
-            steps: shades,
-          },
-          color
-        )
+        colorMix,
+        {
+          target: "#111",
+          strength: 90 * numberFromPercentage(contrast),
+          steps: shades,
+        },
+        color
+      )
       : [],
   ];
 
   // [PENDING, SUCCESS, WARNING, ERROR]
-  const states = stated
-    ? [
-        colorMix({ target: "gainsboro", strength: 90 }, color),
-        colorMix({ target: "forestgreen", strength: 90 }, color),
-        colorMix({ target: "goldenrod", strength: 90 }, color),
-        colorMix({ target: "firebrick", strength: 90 }, color),
-      ]
-    : [];
+  const states = stated ? generateStates(color) : [];
 
   return [dark ? ui.reverse() : ui, variants, states];
 }
