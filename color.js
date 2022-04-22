@@ -996,8 +996,8 @@ function validator(input) {
   ];
 
   const [format] = formats
-    .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
-    .find(([, fn]) => fn(input));
+        .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
+        .find(([, fn]) => fn(input));
 
   if (!format) {
     return InvalidColorError(input);
@@ -2351,62 +2351,49 @@ function colorInterpolation(action, settings, input) {
 // Color Harmony Internals
 
 function colorHarmonies({ type, accented = false }, color) {
-  const withComplement = accented ? [colorAdjustment({ hue: 180 }, color)] : [];
+  const opposite = colorAdjustment({ hue: 180 }, color);
 
-  const harmonies = {
-    dyadic: [
+  const withComplement = accented ? [opposite] : [];
+
+  const uniform = ({ arc = 30, values = 2 }, color) =>
+        Array(values)
+        .fill(color)
+        .map((color, pos) => colorAdjustment({ hue: arc * pos }, color));
+
+  const triad = (color, arc = 30, accented = false) => {
+    const [a, b] = [
+      colorAdjustment({ hue: 180 - arc }, color),
+      colorAdjustment({ hue: 180 + arc }, color),
+    ];
+
+    return [
       colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 30 }, color),
-      ...withComplement,
-    ],
-    complementary: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 180 }, color),
-    ],
-    analogous: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 30 }, color),
-      colorAdjustment({ hue: 30 * 2 }, color),
-      ...withComplement,
-    ],
-    split: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 180 - 30 }, color),
-      ...withComplement,
-      colorAdjustment({ hue: 180 + 30 }, color),
-    ],
-    clash: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 90 }, color),
-      colorAdjustment({ hue: 90 * 3 }, color),
-    ],
-    triadic: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 120 }, color),
-      ...withComplement,
-      colorAdjustment({ hue: 120 * 2 }, color),
-    ],
-    double: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 30 }, color),
-      colorAdjustment({ hue: 180 }, color),
-      colorAdjustment({ hue: 180 + 30 }, color),
-    ],
-    tetradic: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 45 }, color),
-      colorAdjustment({ hue: 180 }, color),
-      colorAdjustment({ hue: 180 + 45 }, color),
-    ],
-    square: [
-      colorAdjustment({ hue: 0 }, color),
-      colorAdjustment({ hue: 90 }, color),
-      colorAdjustment({ hue: 90 * 2 }, color),
-      colorAdjustment({ hue: 90 * 3 }, color),
-    ],
+      a,
+      ...(accented ? [opposite] : []),
+      b,
+    ];
   };
 
-  return harmonies[type];
+  const tetrad = (color, arc = 30) => [
+    colorAdjustment({ hue: 0 }, color),
+    colorAdjustment({ hue: arc }, color),
+    colorAdjustment({ hue: 180 }, color),
+    colorAdjustment({ hue: 180 + arc }, color),
+  ];
+
+  const harmonies = {
+    dyadic: [...uniform({}, color), ...withComplement],
+    complementary: uniform({ arc: 180 }, color),
+    analogous: [...uniform({ values: 3 }, color), ...withComplement],
+    split: triad(color, 30, accented),
+    triadic: triad(color, 60, accented),
+    clash: triad(color, 90),
+    double: tetrad(color),
+    tetradic: tetrad(color, 45),
+    square: uniform({ arc: 90, values: 4 }, color),
+  };
+
+  return harmonies[type] || color;
 }
 
 // Color Palette Internals
