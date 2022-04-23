@@ -36,5 +36,3 @@ Deno.bench({ warmup, n }, function modify250() {
 Deno.bench({ warmup, n }, function modify500() {
   return modify(calc, ms500);
 });
-
-console.log(modify(calc, ms500));
