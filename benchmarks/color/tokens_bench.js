@@ -1,4 +1,4 @@
-import { adjust, output, palette, tokens } from "../../color.js";
+import { adjust, palette, tokens } from "../../color.js";
 import { pipeline, preset, propagate } from "../../workflow.js";
 
 const warmup = 10;
@@ -23,15 +23,6 @@ function paletteFactory(data) {
   return pipeline(data, generate, assemble, categorize);
 }
 
-const dict = {
-  project: {},
-  color: paletteFactory(swatches),
-};
-
-Deno.bench({ warmup, n }, function outputGplStress() {
-  return output("gpl", dict);
-});
-
-Deno.bench({ warmup, n }, function outputSketchpaletteStress() {
-  return output("sketchpalette", dict);
+Deno.bench({ warmup, n }, function colorTokensStress() {
+  return paletteFactory(swatches);
 });
