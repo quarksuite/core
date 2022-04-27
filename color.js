@@ -1765,11 +1765,11 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   // Coercing the result of toFixed() to a number preserves precision while removing trailing zeroes.
   const isOpaque = components[components.length - 1] === 1;
   const values = components.slice(0, components.length - 1);
-  const alpha = (+components.slice(-1)).toFixed(3);
+  const alpha = Number(components.slice(-1)).toFixed(3);
 
   return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
     values.join(DELIMITER),
-    isOpaque ? "" : ALPHA_DELIMITER.concat(alpha),
+    isOpaque ? "" : ALPHA_DELIMITER.concat(+alpha),
     ")"
   );
 }
@@ -1940,6 +1940,8 @@ function serialize(results) {
 
   return matched(results);
 }
+
+console.log(serialize(["rgb", [210, 39, -30, 0.3]]));
 
 // Color Adjustment Internals
 
