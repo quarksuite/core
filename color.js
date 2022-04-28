@@ -2448,7 +2448,7 @@ function colorHarmonies({ type, accented = false }, color) {
     triadic: triad(color, 60, accented),
     clash: triad(color, 90),
     double: tetrad(color),
-    tetradic: tetrad(color, 45),
+    tetradic: tetrad(color, 60),
     square: uniform({ arc: 90, values: 4 }, color),
   };
 

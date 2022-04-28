@@ -78,14 +78,14 @@ describe("harmony(settings, color)", () => {
       ["magenta", ["#ff00ff", "#ff009d", "#00cd00", "#00d5a0"]],
     ],
     tetradic: [
-      ["red", ["#ff0000", "#de5f00", "#00a9db", "#0080ff"]],
-      ["orange", ["#ffa500", "#b7c826", "#5bc0ff", "#c5a2ff"]],
-      ["yellow", ["#ffff00", "#5bffb3", "#f4d8ff", "#ffb9ff"]],
-      ["lime", ["#00ff00", "#00fff5", "#ff7dff", "#ff5cb0"]],
-      ["cyan", ["#00ffff", "#72edff", "#ffb3bf", "#ffc56e"]],
-      ["blue", ["#0000ff", "#8800d3", "#a02000", "#016c00"]],
-      ["purple", ["#800080", "#9b002d", "#006600", "#00686b"]],
-      ["magenta", ["#ff00ff", "#ff0061", "#00cd00", "#00d1d7"]],
+      ["red", ["#ff0000", "#c57500", "#00a9db", "#4f6fff"]],
+      ["orange", ["#ffa500", "#95d150", "#5bc0ff", "#de99ff"]],
+      ["yellow", ["#ffff00", "#00ffde", "#f4d8ff", "#ffb3ff"]],
+      ["lime", ["#00ff00", "#00ffff", "#ff7dff", "#ff6072"]],
+      ["cyan", ["#00ffff", "#96e3ff", "#ffb3bf", "#ffd05c"]],
+      ["blue", ["#0000ff", "#9e00b2", "#a02000", "#007700"]],
+      ["purple", ["#800080", "#9c0000", "#006600", "#006384"]],
+      ["magenta", ["#ff00ff", "#ff0000", "#00cd00", "#00c8ff"]],
     ],
     square: [
       ["red", ["#ff0000", "#7b9900", "#00a9db", "#a34fff"]],
@@ -156,7 +156,9 @@ describe("harmony(settings, color)", () => {
     describe(`settings.configuration = '${configuration}'`, () => {
       it(`should correctly generate an accented ${configuration} color harmony from samples`, () => {
         samples.forEach(([input, output]) => {
-          expect(harmony({ configuration, accented: true }, input)).toEqual(output);
+          expect(harmony({ configuration, accented: true }, input)).toEqual(
+            output,
+          );
         });
       });
     });
