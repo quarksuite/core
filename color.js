@@ -2457,26 +2457,80 @@ function colorHarmonies({ type, accented = false }, color) {
 
 // Color Palette Internals
 
-function generateSurface(contrast, color) {
+function generateSurface(contrast, color, dark = false) {
+  const strength = 100 * numberFromPercentage(contrast);
+  const surface = [
+    colorMix({ target: "#ffffff", strength }, color),
+    colorMix({ target: "#111111", strength }, color),
+  ];
+
+  return dark ? surface.reverse() : surface;
+}
+
+function generateMaterialVariants(contrast, [bg, fg], color) {
+  const strength = 90 * numberFromPercentage(contrast);
+  const interpolate = (target) =>
+    colorInterpolation(colorMix, { target, strength, steps: 5 }, color);
+
+  return [...interpolate(bg).reverse(), ...interpolate(fg)];
+}
+
+function generateMaterialAccents(
+  contrast,
+  variants,
+  color,
+  accented = false,
+  dark = false,
+) {
+  const PERCENTAGE = 50;
+  const HUE = 120;
+
+  const limit = (max = 90) => max * numberFromPercentage(contrast);
+  const interpolate = (properties) =>
+    colorInterpolation(colorAdjustment, properties, color).map((target, pos) =>
+      colorMix({ target, strength: limit(100) }, variants[pos])
+    );
+
+  return accented
+    ? [
+      ...interpolate({
+        lightness: limit(dark ? -PERCENTAGE : PERCENTAGE),
+        chroma: limit(-PERCENTAGE),
+        hue: limit(-HUE),
+        steps: 5,
+      }).reverse(),
+      ...interpolate({
+        lightness: limit(dark ? PERCENTAGE : -PERCENTAGE),
+        chroma: limit(PERCENTAGE),
+        hue: limit(HUE),
+        steps: 5,
+      }),
+    ]
+    : [];
+}
+
+function generateArtisticVariants(contrast, { tints, tones, shades }, color) {
+  const strength = 90 * numberFromPercentage(contrast);
+  const interpolate = (target, steps) =>
+    colorInterpolation(colorMix, { target, strength, steps }, color);
+
   return [
-    colorMix(
-      { target: "#fff", strength: 100 * numberFromPercentage(contrast) },
-      color,
-    ),
-    colorMix(
-      { target: "#111", strength: 100 * numberFromPercentage(contrast) },
-      color,
-    ),
+    tints ? interpolate("#ffffff", tints) : [],
+    tones ? interpolate("#aaaaaa", tones) : [],
+    shades ? interpolate("#111111", shades) : [],
   ];
 }
 
-function generateStates(color) {
-  return [
-    colorMix({ target: "gainsboro", strength: 90 }, color),
-    colorMix({ target: "forestgreen", strength: 90 }, color),
-    colorMix({ target: "goldenrod", strength: 90 }, color),
-    colorMix({ target: "firebrick", strength: 90 }, color),
-  ];
+function generateStates(contrast, [, fg], color, stated = false) {
+  const strength = 90 * numberFromPercentage(contrast);
+  return stated
+    ? [
+      colorMix({ target: "#dddddd", strength }, color),
+      colorMix({ target: "#2ecc40", strength }, color),
+      colorMix({ target: "#ffdc00", strength }, color),
+      colorMix({ target: "#ff4136", strength }, color),
+    ].map((states) => colorMix({ target: fg, strength: strength / 3 }, states))
+    : [];
 }
 
 function materialConfiguration(
@@ -2484,68 +2538,24 @@ function materialConfiguration(
   color,
 ) {
   // [bg, fg]
-  const ui = generateSurface(contrast, color);
+  const ui = generateSurface(contrast, color, dark);
 
   // [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
-  const variants = [
-    ...colorInterpolation(
-      colorMix,
-      {
-        target: "#fff",
-        strength: 90 * numberFromPercentage(contrast),
-        steps: 6,
-      },
-      color,
-    ).reverse(),
-    ...colorInterpolation(
-      colorMix,
-      {
-        target: "#111",
-        strength: 90 * numberFromPercentage(contrast),
-        steps: 4,
-      },
-      color,
-    ),
-  ];
+  const variants = generateMaterialVariants(contrast, ui, color);
 
-  // [A100, A200, A300, A400]
-  const accents = accented
-    ? [
-      colorAdjustment(
-        {
-          lightness: 25 * numberFromPercentage(contrast),
-          chroma: -50,
-          hue: -15,
-        },
-        color,
-      ),
-      colorAdjustment(
-        { chroma: -25 * numberFromPercentage(contrast), hue: -15 },
-        color,
-      ),
-      colorAdjustment(
-        {
-          lightness: 25 * numberFromPercentage(contrast),
-          chroma: 50,
-          hue: -15,
-        },
-        color,
-      ),
-      colorAdjustment(
-        {
-          lightness: -25 * numberFromPercentage(contrast),
-          chroma: 50,
-          hue: 15,
-        },
-        color,
-      ),
-    ]
-    : [];
+  // [A100, A200, A300, A400, A500, A600, A700, A800, A900]
+  const accents = generateMaterialAccents(
+    contrast,
+    variants,
+    color,
+    accented,
+    dark,
+  );
 
   // [PENDING, SUCCESS, WARNING, ERROR]
-  const states = stated ? generateStates(color) : [];
+  const states = generateStates(contrast, ui, color, stated);
 
-  return [dark ? ui.reverse() : ui, [variants, accents], states];
+  return [ui, [variants, accents], states];
 }
 
 function artisticConfiguration(
@@ -2560,49 +2570,18 @@ function artisticConfiguration(
   color,
 ) {
   // [bg, fg]
-  const ui = generateSurface(contrast, color);
+  const ui = generateSurface(contrast, color, dark);
 
   // [tints[], tones[], shades[]]
-  const variants = [
-    tints
-      ? colorInterpolation(
-        colorMix,
-        {
-          target: "#fff",
-          strength: 90 * numberFromPercentage(contrast),
-          steps: tints,
-        },
-        color,
-      )
-      : [],
-    tones
-      ? colorInterpolation(
-        colorMix,
-        {
-          target: "#aaa",
-          strength: 90 * numberFromPercentage(contrast),
-          steps: tones,
-        },
-        color,
-      )
-      : [],
-    shades
-      ? colorInterpolation(
-        colorMix,
-        {
-          target: "#111",
-          strength: 90 * numberFromPercentage(contrast),
-          steps: shades,
-        },
-        color,
-      )
-      : [],
-  ];
+  const variants = generateArtisticVariants(
+    contrast,
+    { tints, tones, shades },
+    color,
+  );
 
-  // [PENDING, SUCCESS, WARNING, ERROR]
-  const states = stated ? generateStates(color) : [];
+  const states = generateStates(contrast, ui, color, stated);
 
-  return [dark ? ui.reverse() : ui, variants, states];
+  return [ui, variants, states];
 }
 
 // Accessibility Internals
