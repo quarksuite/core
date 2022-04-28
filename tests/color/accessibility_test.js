@@ -12,15 +12,15 @@ describe("accessibility(settings, palette)", () => {
     it("should work with default settings", () => {
       expect(accessibility({}, palette({}, red))).toEqual([
         ["#ffffff", "#111111"],
-        [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
+        [["#b41f35", "#8d222d", "#682125", "#451d1e", "#231616"], []],
         [],
       ]);
       expect(
-        accessibility({}, palette({ configuration: "artistic" }, green))
+        accessibility({}, palette({ configuration: "artistic" }, green)),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625", "#1c2418"]], []]);
       expect(accessibility({}, palette({}, blue))).toEqual([
         ["#ffffff", "#111111"],
-        [["#2371c3", "#22538a", "#1d3755", "#161c25"], []],
+        [["#2277cf", "#235fa0", "#214874", "#1c324b", "#161c25"], []],
         [],
       ]);
     });
@@ -31,9 +31,9 @@ describe("accessibility(settings, palette)", () => {
           { rating: "AAA" },
           palette(
             { configuration: "artistic", tints: 15, tones: 8, shades: 15 },
-            red
-          )
-        )
+            red,
+          ),
+        ),
       ).toEqual([
         ["#ffffff", "#111111"],
         [
@@ -58,7 +58,7 @@ describe("accessibility(settings, palette)", () => {
       ]);
       expect(accessibility({ rating: "AA" }, palette({}, green))).toEqual([
         ["#ffffff", "#111111"],
-        [["#345422", "#1c2418"], []],
+        [["#427426", "#2f4a21", "#1c2418"], []],
         [],
       ]);
       expect(
@@ -66,9 +66,9 @@ describe("accessibility(settings, palette)", () => {
           { rating: "AAA" },
           palette(
             { configuration: "artistic", tints: 16, tones: 8, shades: 8 },
-            blue
-          )
-        )
+            blue,
+          ),
+        ),
       ).toEqual([
         ["#ffffff", "#111111"],
         [[], [], ["#22538a", "#20456f", "#1d3755", "#1a2a3c", "#161c25"]],
@@ -77,23 +77,26 @@ describe("accessibility(settings, palette)", () => {
     });
     it("should activate settings.large", () => {
       expect(
-        accessibility({ large: true }, palette({ contrast: 90 }, red))
+        accessibility({ large: true }, palette({ contrast: 90 }, red)),
       ).toEqual([
         ["#ffebeb", "#231616"],
-        [["#e54956", "#af1f34", "#84222b", "#5b1f23", "#34191a"], []],
+        [
+          ["#e64c58", "#bb1e36", "#9c2130", "#7d222a", "#5f2024", "#431c1e"],
+          [],
+        ],
         [],
       ]);
       expect(
         accessibility(
           { large: true },
-          palette({ configuration: "artistic", contrast: 85 }, green)
-        )
+          palette({ configuration: "artistic", contrast: 85 }, green),
+        ),
       ).toEqual([["#eeffe6", "#212f1a"], [[], [], ["#467b26", "#2a411f"]], []]);
       expect(
-        accessibility({ large: true }, palette({ contrast: 80 }, blue))
+        accessibility({ large: true }, palette({ contrast: 80 }, blue)),
       ).toEqual([
         ["#d7eaff", "#192839"],
-        [["#2277cf", "#235fa0", "#214874", "#1c324b"], []],
+        [["#2180e0", "#2270c1", "#2261a4", "#215287", "#1f436b"], []],
         [],
       ]);
     });
@@ -101,41 +104,37 @@ describe("accessibility(settings, palette)", () => {
   describe("settings.mode = 'custom'", () => {
     it("should activate settings.min", () => {
       expect(
-        accessibility({ mode: "custom", min: 50 }, palette({}, red))
+        accessibility({ mode: "custom", min: 50 }, palette({}, red)),
       ).toEqual([
         ["#ffffff", "#111111"],
-        [["#aa2033", "#7a2229", "#4d1e20", "#231616"], []],
+        [["#8d222d", "#682125", "#451d1e", "#231616"], []],
         [],
       ]);
       expect(
         accessibility(
           { mode: "custom", min: 64 },
-          palette({ configuration: "artistic" }, green)
-        )
+          palette({ configuration: "artistic" }, green),
+        ),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#1c2418"]], []]);
       expect(
-        accessibility({ mode: "custom", min: 80 }, palette({}, blue))
+        accessibility({ mode: "custom", min: 80 }, palette({}, blue)),
       ).toEqual([["#ffffff", "#111111"], [[], []], []]);
     });
     it("should activate settings.max", () => {
       expect(
-        accessibility({ mode: "custom", min: 50, max: 70 }, palette({}, red))
-      ).toEqual([
-        ["#ffffff", "#111111"],
-        [["#aa2033", "#7a2229", "#4d1e20"], []],
-        [],
-      ]);
+        accessibility({ mode: "custom", min: 50, max: 70 }, palette({}, red)),
+      ).toEqual([["#ffffff", "#111111"], [["#8d222d", "#682125"], []], []]);
       expect(
         accessibility(
           { mode: "custom", min: 50, max: 75 },
-          palette({ configuration: "artistic" }, green)
-        )
+          palette({ configuration: "artistic" }, green),
+        ),
       ).toEqual([["#ffffff", "#111111"], [[], [], ["#3c6625"]], []]);
       expect(
-        accessibility({ mode: "custom", min: 50, max: 80 }, palette({}, blue))
+        accessibility({ mode: "custom", min: 50, max: 80 }, palette({}, blue)),
       ).toEqual([
         ["#ffffff", "#111111"],
-        [["#22538a", "#1d3755", "#161c25"], []],
+        [["#235fa0", "#214874", "#1c324b", "#161c25"], []],
         [],
       ]);
     });
@@ -143,14 +142,14 @@ describe("accessibility(settings, palette)", () => {
   it("should work with dark mode palettes", () => {
     expect(accessibility({}, palette({ dark: true }, red))).toEqual([
       ["#111111", "#ffffff"],
-      [["#ffebeb", "#ffcecc", "#fbb0af", "#f69292", "#ef7175", "#e64d59"], []],
+      [["#e8555f", "#f27f81", "#faa4a3", "#fec8c7", "#ffebeb"], []],
       [],
     ]);
     expect(
       accessibility(
         { mode: "custom", min: 64 },
-        palette({ configuration: "artistic", dark: true }, green)
-      )
+        palette({ configuration: "artistic", dark: true }, green),
+      ),
     ).toEqual([
       ["#111111", "#ffffff"],
       [["#abff7e", "#d1ffba", "#f4ffee"], ["#91e664"], []],
@@ -158,7 +157,7 @@ describe("accessibility(settings, palette)", () => {
     ]);
     expect(accessibility({}, palette({ dark: true }, blue))).toEqual([
       ["#111111", "#ffffff"],
-      [["#ebf5ff", "#cde5ff", "#aed5ff", "#90c4ff", "#70b4ff", "#4da2ff"], []],
+      [["#55a6ff", "#7dbaff", "#a2ceff", "#c7e2ff", "#ebf5ff"], []],
       [],
     ]);
   });
