@@ -2654,7 +2654,7 @@ function wcagContrastCriteria({ rating, large }, ratio) {
   ]).get(rating);
 }
 
-function variantContrastWcag({ rating, large, background }, variants) {
+function contrastWcag({ rating, large, background }, [variants, special]) {
   const valid = (collection) =>
     collection.filter((foreground) => {
       const ratio = calculateWCAGContrastRatio(background, foreground);
@@ -2666,27 +2666,25 @@ function variantContrastWcag({ rating, large, background }, variants) {
   if (variants.length === 2) {
     const [main, accents] = variants;
 
-    return [valid(main), optional(valid, accents)];
+    return [[valid(main), optional(valid, accents)], special];
   }
 
   const [tints, tones, shades] = variants;
 
   return [
-    optional(valid, tints),
-    optional(valid, tones),
-    optional(valid, shades),
+    [optional(valid, tints), optional(valid, tones), optional(valid, shades)],
+    valid(special),
   ];
 }
 
 function paletteWcagContrast({ rating = "AA", large = false }, palette) {
   // Extract palette datasets
-  const [ui, variants, state] = palette;
+  const [ui, variants, special] = palette;
   const [background] = ui;
 
   return [
     ui,
-    variantContrastWcag({ rating, large, background }, variants),
-    state,
+    ...contrastWcag({ rating, large, background }, [variants, special]),
   ];
 }
 
@@ -2710,7 +2708,7 @@ function filterCondition({ min, max }, difference) {
   return max ? difference >= min && difference <= max : difference >= min;
 }
 
-function variantsColorimetricContrast({ min, max, background }, variants) {
+function colorimetricContrast({ min, max, background }, [variants, special]) {
   const valid = (collection) =>
     collection.filter((foreground) => {
       const difference = comparePerceptualLightness(background, foreground);
@@ -2723,86 +2721,43 @@ function variantsColorimetricContrast({ min, max, background }, variants) {
   if (variants.length === 2) {
     const [main, accents] = variants;
 
-    return [valid(main), optional(valid, accents)];
+    return [[valid(main), optional(valid, accents)], special];
   }
 
   const [tints, tones, shades] = variants;
 
   return [
-    optional(valid, tints),
-    optional(valid, tones),
-    optional(valid, shades),
+    [optional(valid, tints), optional(valid, tones), optional(valid, shades)],
+    valid(special),
   ];
 }
 
 function paletteColorimetricContrast({ min = 75, max }, palette) {
-  const [ui, variants, state] = palette;
+  const [ui, variants, special] = palette;
   const [background] = ui;
 
   return [
     ui,
-    variantsColorimetricContrast({ min, max, background }, variants),
-    state,
+    ...colorimetricContrast({ min, max, background }, [variants, special]),
   ];
 }
 
 // Color Token Internals
 
-function tokenizeMaterialVariants(variants) {
+function tokenizeMaterial(variants, states) {
   // Extract [main[], accents[]]
   const [main, accents] = variants;
+  const materialCategorization = (prefix = "") =>
+    (acc, color, index) => {
+      if (index === 0) return { ...acc, 50: color };
+      return { ...acc, [`${prefix.concat(index)}00`]: color };
+    };
 
   return {
     // 50-900
-    ...main.reduce((acc, color, index) => {
-      if (index === 0) return { ...acc, 50: color };
-      return { ...acc, [`${index}00`]: color };
-    }, {}),
-    // a100-a400
-    ...(accents.length
-      ? accents.reduce((acc, color, index) => {
-        return { ...acc, [`a${++index}00`]: color };
-      }, {})
-      : {}),
-  };
-}
-
-function tokenizeArtisticVariants(variants) {
-  const [tints, tones, shades] = variants;
-
-  // Here, we check the variants that contain data and filter out any that don't before assembling the tokens
-  return Object.entries({ light: tints, muted: tones, dark: shades })
-    .filter(([, data]) => data.length)
-    .reduce((acc, [category, data]) => {
-      return {
-        ...acc,
-        [category]: data.reduce((a, color, i) => {
-          return { ...a, [`${++i}00`]: color };
-        }, {}),
-      };
-    }, {});
-}
-
-function tokenizePalette(palette) {
-  // Standard palettes share internal structure
-  const [[bg, fg], variants, states] = palette;
-
-  let variations = {};
-
-  // Material palettes contain two kinds of variants
-  if (variants.length === 2) {
-    variations = tokenizeMaterialVariants(variants);
-  }
-
-  // Otherwise it's artistic
-  if (variants.length === 3) {
-    variations = tokenizeArtisticVariants(variants);
-  }
-
-  return {
-    bg,
-    fg,
-    ...variations,
+    ...main.reduce(materialCategorization(), {}),
+    // a50-a900
+    ...(accents.length ? accents.reduce(materialCategorization, {}) : {}),
     ...(states.length
       ? {
         state: {
@@ -2813,6 +2768,55 @@ function tokenizePalette(palette) {
         },
       }
       : {}),
+  };
+}
+
+function tokenizeArtistic(variants, accents) {
+  const [tints, tones, shades] = variants;
+
+  const numericScale = (acc, [category, data]) => {
+    return {
+      ...acc,
+      [category]: data.reduce((a, color, i) => {
+        return { ...a, [`${++i}00`]: color };
+      }, {}),
+    };
+  };
+
+  return {
+    // Here, we check the variants that contain data and filter out any that don't before assembling the tokens
+    ...Object.entries({ light: tints, muted: tones, dark: shades })
+      .filter(([, data]) => data.length)
+      .reduce(numericScale, {}),
+    ...(accents
+      ? Object.entries({ a: accents[0], b: accents[1] }).reduce(
+        numericScale,
+        {},
+      )
+      : {}),
+  };
+}
+
+function tokenizePalette(palette) {
+  // Standard palettes share internal structure
+  const [[bg, fg], variants, special] = palette;
+
+  let unique = {};
+
+  // Material palettes contain two kinds of variants
+  if (variants.length === 2) {
+    unique = tokenizeMaterial(variants, special);
+  }
+
+  // Otherwise it's artistic
+  if (variants.length === 3) {
+    unique = tokenizeArtistic(variants, special);
+  }
+
+  return {
+    bg,
+    fg,
+    ...unique,
   };
 }
 
