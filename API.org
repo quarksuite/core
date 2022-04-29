@@ -1,0 +1,1058 @@
+#+TITLE: QuarkSuite Core (v2.0.0)
+#+PROPERTY: header-args:deno :results output code :allow 'net
+
+* Table of Contents :TOC@5:
+- [[#summary][Summary]]
+- [[#terminology][Terminology]]
+  - [[#types][Types]]
+  - [[#idioms][Idioms]]
+- [[#api][API]]
+  - [[#color][Color]]
+    - [[#convertto-color][convert(to, color)]]
+      - [[#parameters][Parameters]]
+      - [[#returns][Returns]]
+      - [[#example][Example]]
+      - [[#notes][Notes]]
+    - [[#adjustsettings-color][adjust(settings, color)]]
+      - [[#parameters-1][Parameters]]
+      - [[#returns-1][Returns]]
+      - [[#example-1][Example]]
+      - [[#notes-1][Notes]]
+    - [[#mixsettings-color][mix(settings, color)]]
+      - [[#parameters-2][Parameters]]
+      - [[#returns-2][Returns]]
+      - [[#example-2][Example]]
+      - [[#notes-2][Notes]]
+    - [[#harmonysettings-color][harmony(settings, color)]]
+      - [[#parameters-3][Parameters]]
+      - [[#returns-3][Returns]]
+      - [[#example-3][Example]]
+    - [[#visionsettings-color][vision(settings, color)]]
+      - [[#parameters-4][Parameters]]
+      - [[#returns-4][Returns]]
+      - [[#example-4][Example]]
+      - [[#notes-3][Notes]]
+    - [[#contrastsettings-color][contrast(settings, color)]]
+      - [[#parameters-5][Parameters]]
+      - [[#returns-5][Returns]]
+      - [[#example-5][Example]]
+    - [[#illuminantsettings-color][illuminant(settings, color)]]
+      - [[#parameters-6][Parameters]]
+      - [[#returns-6][Returns]]
+      - [[#example-6][Example]]
+    - [[#palettesettings-color][palette(settings, color)]]
+      - [[#parameters-7][Parameters]]
+      - [[#returns-7][Returns]]
+      - [[#examples][Examples]]
+        - [[#material-configuration][Material Configuration]]
+        - [[#artistic-configuration][Artistic Configuration]]
+        - [[#notes-4][Notes]]
+    - [[#accessibilitysettings-palette][accessibility(settings, palette)]]
+      - [[#parameters-8][Parameters]]
+      - [[#returns-8][Returns]]
+      - [[#examples-1][Examples]]
+        - [[#material-configuration-1][Material Configuration]]
+        - [[#artistic-configuration-1][Artistic Configuration]]
+      - [[#notes-5][Notes]]
+
+* Summary
+
+This is the API documentation for QuarkSuite Core. It's a technical overview of everything you can do with the
+library. For general use, you'll want to read the handbook instead. The utilities are organized based on the module
+they're associated with.
+
+This is a very straightforward document, but if something is unclear, please open an issue and let me know.
+
+* Terminology
+
+QuarkSuite Core has certain idioms based around its design, and it helps to be aware of them while reading.
+
+** Types
+
+When we talk about types in QuarkSuite, we mean /input and output/ types. This is signficant because it lets you know
+what kind of data a utility takes and gives back. The types as of this writing are:
+
++ =color=: any valid CSS color string
++ =palette=: generated palette data
++ =ms=: generated modular scale data
++ =tokens=: assembled data object
++ =dict=: prepared data object with a required ~project~ property
+
+Any type that is not explicitly mentioned here is local to the given utility.
+
+** Idioms
+
+The included utilities are structured around three key idioms:
+
++ =action(y, x)=: a function that accepts type =x= and a =y= modifier to configure its output
++ =emitter(x)=: a function that accepts type =x= and emits output /directly from/ type =x=
++ =exporter(format, dict)=: a special action that accepts type =dict= and transforms its output based on a target =format=
+
+* API
+
+** Color
+
+The =color.js= module contains all functionality related to creating and manipulating color, generating palettes, and
+assembling color dictionaries.
+
+You should be aware that all color processing happens in the Oklab color space. Using a perceptually uniform space like
+Oklab was key in making color data composition and configurations both possible and predictable.
+
+That said, every color /output/ is anchored in sRGB as that is the expected color space of the web.
+
+*** convert(to, color)
+
+An action that takes any valid CSS =color= and converts it =to= a given target format.
+
+**** Parameters
+
++ =to: "hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "lab" | "lch" | "oklab" | "oklch"=: the target format
++ =color: string=: the input color
+
+**** Returns
+
++ =string=: the converted color
+
+**** Example
+
+#+BEGIN_SRC js
+import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = "rebeccapurple";
+
+// Highly recommend converting CSS Color Module 4/5 formats to hex, rgb, hsl
+console.log(convert("hex", color)); // #663399
+console.log(convert("rgb", color)); // rgb(102, 51, 153)
+console.log(convert("hsl", color)); // hsl(270, 50%, 40%)
+
+// When browsers are ready, you can use these
+console.log(convert("cmyk", color)); // device-cmyk(33.333% 66.667% 0% 40%)
+console.log(convert("hwb", color));  // hwb(270 20% 40%)
+console.log(convert("lab", color)); // lab(32.393% 38.428 -47.69)
+console.log(convert("lch", color)); // lch(32.393% 61.246 308.862)
+console.log(convert("oklab", color)); // oklab(44.027% 0.08818 -0.13386)
+console.log(convert("oklch", color)); // oklch(44.027% 0.1603 303.373)
+#+END_SRC
+
+**** Notes
+
++ Every color function in the library outputs colors in the format of the input color. The exception are named colors,
+  which will *always* be converted to hexadecimal if used as input.
+
+*** adjust(settings, color)
+
+An action that takes any valid CSS =color= and adjusts its properties according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: color adjustment settings
+  + =settings.lightness = 0: number=: adjust the lightness of a color (as a percentage)
+  + =settings.chroma = 0: number=: adjust the chroma/intensity of a color (as a percentage)
+  + =settings.hue = 0: number=: adjust the hue of a color (in degrees)
+  + =settings.alpha = 0: number=: adjust the alpha/transparency of a color (as a percentage)
+  + =settings.steps = 0: number=: interpolates the color adjustment (up to number of steps)
++ =color: string=: the input color
+
+**** Returns
+
++ =string | string[]=: the adjusted color or interpolation data
+
+**** Example
+
+#+BEGIN_SRC js
+import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("rgb", "rebeccapurple");
+
+// You can adjust a single property
+console.log(adjust({ lightness: 20 }, color)); // rgb(161, 112, 219)
+console.log(adjust({ chroma: 50 }, color)); // rgb(119, 0, 206)
+console.log(adjust({ hue: 120 }, color)); // rgb(140, 52, 0)
+
+// Negative values mean a decrease
+console.log(adjust({ lightness: -20 }, color)); // rgb(49, 0, 91)
+console.log(adjust({ chroma: -50 }, color)); // rgb(86, 78, 99)
+console.log(adjust({ hue: -120 }, color)); // rgb(0, 108, 92)
+console.log(adjust({ alpha: -30 }, color)); // rgba(102, 51, 153, 0.7)
+
+// You can adjust multiple properties
+console.log(adjust({ lightness: 10, chroma: -20, hue: 90 }, color)); // rgb(165, 84, 67)
+console.log(adjust({ chroma: 15, hue: -60 }, color)); // rgb(0, 83, 181)
+
+// Interpolation activated
+console.log(adjust({ lightness: 10, chroma: -50, hue: 360, steps: 5 }, color));
+// [
+//  "rgb(148, 47, 62)",
+//  "rgb(120, 88, 0)",
+//  "rgb(49, 114, 82)",
+//  "rgb(67, 111, 134)",
+//  "rgb(115, 106, 128)"
+// ]
+#+END_SRC
+
+**** Notes
+
++ Percentage values lock at =±0-100=
++ Hue locks at =±0-360=
+
+*** mix(settings, color)
+
+An action that takes any valid CSS =color= and mixes it according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: color blending settings
+  + =settings.target = color: string=: set the blend target
+  + =settings.strength = 0: number=: set the blend strength (as a percentage)
+  + =settings.steps = 0: number=: interpolates the color blending (up to number of steps)
++ =color: string=: the input color
+
+**** Returns
+
++ =string | string[]=: the blended color or interpolation data
+
+**** Example
+
+#+BEGIN_SRC js
+import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hsl", "rebeccapurple");
+const target = "crimson";
+
+// Blending toward the target color
+console.log(mix({ target, strength: 0 }, color)); // hsl(270, 50, 40%)
+console.log(mix({ target, strength: 25 }, color)); // hsl(296.154, 40.625%, 37.647%)
+console.log(mix({ target, strength: 50 }, color)); // hsl(326.538, 48.148%, 42.353%)
+console.log(mix({ target, strength: 75 }, color)); // hsl(341.538, 60.338%, 46.471%)
+console.log(mix({ target, strength: 100 }, color));  // hsl(348, 83.333%, 47.059%)
+
+// Blending from the target color
+console.log(mix({ target, strength: -0 }, color)); // hsl(348, 83.333%, 47.059%)
+console.log(mix({ target, strength: -25 }, color)); // hsl(341.538, 60.338%, 46.471%)
+console.log(mix({ target, strength: -50 }, color)); // hsl(326.538, 48.148%, 42.353%)
+console.log(mix({ target, strength: -75 }, color)); // hsl(296.154, 40.625%, 37.647%)
+console.log(mix({ target, strength: -100 }, color));  // hsl(270, 50, 40%)
+
+// Interpolation activated
+console.log(mix({ target, strength: 100, steps: 5 }, color));
+// [
+//   "hsl(290.488, 42.268%, 38.039%)",
+//   "hsl(316.484, 44.39%, 40.196%)",
+//   "hsl(333.782, 52.889%, 44.118%)",
+//   "hsl(343.421, 63.333%, 47.059%)",
+//   "hsl(348, 83.333%, 47.059%)"
+// ]
+#+END_SRC
+
+**** Notes
+
++ Percentage values lock at =±0-100=
++ Hue locks at =±0-360=
+
+
+*** harmony(settings, color)
+
+An action that takes any valid CSS =color= and a generates an artistic color harmony according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: color harmony settings
+  + =settings.configuration = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" |
+    "clash" | "double" | "tetradic" | "square" =: set the color harmony configuration
+  + =settings.accented = false: boolean=: accented variant? (with ~"dyadic"~, ~"analogous"~, ~"split"~, ~"triadic"~)
++ =color: string=: the input color
+
+**** Returns
+
++ =string[]=: the generated color harmony
+
+**** Example
+
+#+BEGIN_SRC js
+import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hex", "rebeccapurple");
+
+// Rotational harmonies
+console.log(harmony({ configuration: "dyadic" }, color)); // ["#663399", "#832477"]
+console.log(harmony({ configuration: "analogous" }, color)); // ["#663399", "#832477", "#931849"]
+console.log(harmony({ configuration: "complementary" }, color)); // ["#663399", "#425e00"]
+
+// Triadic harmonies
+console.log(harmony({ configuration: "split" }, color)); // ["#663399", "#714c00", "#006921"]
+console.log(harmony({ configuration: "triadic" }, color)); // ["#663399", "#8c3400", "#006c5c"]
+console.log(harmony({ configuration: "clash" }, color)); // ["#663399", "#971e01", "#006587"]
+
+// Tetradic harmonies
+console.log(harmony({ configuration: "double" }, color)); // ["#663399", "#832477", "#425e00", "#006921"]
+console.log(harmony({ configuration: "tetradic" }, color)); // ["#663399", "#931849", "#425e00", "#006c5c"]
+console.log(harmony({ configuration: "square" }, color)); // ["#663399", "#971e01", "#425e00", "#006587"]
+
+// Accented harmonies
+console.log(harmony({ configuration: "dyadic", accented: true }, color)); // ["#663399", "#832477", "#425e00"]
+console.log(harmony({ configuration: "analogous", accented: true }, color)); // ["#663399", "#832477", "#931849", "#425e00"]
+console.log(harmony({ configuration: "split", accented: true }, color)); // ["#663399", "#714c00", "#425e00", "#006921"]
+console.log(harmony({ configuration: "triadic", accented: true }, color)); // [ "#663399", "#8c3400", "#425e00", "#006c5c" ]
+#+END_SRC
+
+*** vision(settings, color)
+
+An action that takes any valid CSS =color= and checks it against color vision deficiency (colorblindness) according to
+user =settings=.
+
+**** Parameters
+
++ =settings: {}=: color vision settings
+  + =settings.as = "protanopia": "achromatopsia" | "protanopia" | "deuteranopia" | "tritanopia" | "protanomaly" |
+    "deuteranomaly" | "tritanomaly" =: set the color vision to check
+  + =settings.method = "brettel": "brettel" | "vienot"=: set the color vision algorithm
+  + =settings.severity = 50: number=: set the severity (for anaomalous trichromacy checks as a percentage)
+  + =settings.steps = 0: number=: interpolates the color vision checks (up to number of steps)
++ =color: string=: the input color
+
+**** Returns
+
++ =string | string[]=: the color checked against color vision or interpolation data
+
+**** Example
+
+#+BEGIN_SRC js
+import { convert, vision } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("rgb", "rebeccapurple");
+
+// Rod monochromatism (achromatopsia)
+console.log(vision({ as: "achromatopsia" }, color)); // rgb(82, 82, 82)
+
+// Dichromacy
+console.log(vision({ as: "protanopia" }, color)); // rgb(0, 66, 153)
+console.log(vision({ as: "deuteranopia" }, color)); // rgb(14, 83, 152)
+console.log(vision({ as: "tritanopia" }, color)); // rgb(85, 76, 77)
+
+// Anomalous trichromacy
+console.log(vision({ as: "protanomaly" }, color)); // rgb(61, 59, 153)
+console.log(vision({ as: "deuteranomaly" }, color)); // rgb(74, 69, 153)
+console.log(vision({ as: "tritanomaly" }, color)); // rgb(94, 65, 123)
+
+// Interpolation activated
+console.log(vision({ as: "protanopia", steps: 5 }, color));
+// [
+//   "rgb(88, 54, 153)",
+//   "rgb(71, 58, 153)",
+//   "rgb(48, 61, 153)",
+//   "rgb(0, 64, 153)",
+//   "rgb(0, 66, 153)"
+// ]
+#+END_SRC
+
+**** Notes
+
+You'll notice that achromatomaly and blue-cone monochromatism (BCM) are missing.
+
+This is a deliberate omission.
+
+I realized that because of the sparse papers on cone monochromatism (and whether achromatomaly even is a correct term),
+I wasn't comfortable with my attempts to implement it.
+
+/Incomplete achromatopsia/ is the term that actually showed up in medical research, while the only references I've found
+to achromatomaly were specific to CVD simulation research and implementation.
+
+It feels strange that there's such a disparity between the vision science and software, so I concluded the responsible
+choice was to not implement it at all.
+
+If I find accurate algorithms to simulate them, I will in a future version. For now, doing so would be irresponsible of
+me as a developer at the risk that someone might use these simulations to self-diagnose.
+
+The =vision()= utility is intended for designers/developers to determine whether their colors are distinct enough to accomodate their
+colorblind users and adjust them accordingly without having to rely on a browser extension or SVG filters.
+
+It's definitely not intended for any kind of corrective image processing, so please don't.
+
+*** contrast(settings, color)
+
+An action that takes any valid CSS =color= and checks it against contrast sensitivity according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: contrast sensitivity settings
+  + =settings.factor = 0: number=: sets the gray factor to check against (as a percentage)
+  + =settings.severity = 50: number=: set the severity of contrast loss (as a percentage)
+  + =settings.steps = 0: number=: interpolates the contrast sensitivity check (up to number of steps)
++ =color: string=: the input color
+
+**** Returns
+
++ =string | string[]=: the color checked against contrast sensitivity or interpolation data
+
+**** Example
+
+#+BEGIN_SRC js
+import { convert, contrast } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hsl", "rebeccapurple");
+
+// Factor percentage goes from black -> gray -> white
+const severity = 50;
+console.log(contrast({ factor: 0, severity }, color)); // hsl(270.698, 62.319%, 13.529%)
+console.log(contrast({ factor: 25, severity }, color)); // hsl(266.667, 32.847%, 26.863%)
+console.log(contrast({ factor: 50, severity }, color)); // hsl(265.714, 23.671%, 40.588%)
+console.log(contrast({ factor: 75, severity }, color)); // hsl(265.882, 22.271%, 55.098%)
+console.log(contrast({ factor: 100, severity }, color)); // hsl(264.906, 35.099%, 70.392%)
+
+// Severity setting against factor 50 (pure gray)
+const factor = 50;
+console.log(contrast({ severity: 0, factor }, color)); // hsl(270, 50%, 40%)
+console.log(contrast({ severity: 25, factor }, color)); // hsl(267.568, 35.577%, 40.784%)
+console.log(contrast({ severity: 50, factor }, color)); // hsl(265.714, 23.671%, 40.588%)
+console.log(contrast({ severity: 75, factor }, color)); // hsl(262.5, 11.765%, 40%)
+console.log(contrast({ severity: 100, factor }, color)); // hsl(0, 0%, 38.824%)
+
+// Interpolation activated
+console.log(contrast({ factor, severity, steps: 5 }, color));
+// [
+//   "hsl(269.663, 49.171%, 35.49%)",
+//   "hsl(269.231, 45.349%, 33.725%)",
+//   "hsl(267.761, 38.728%, 33.922%)",
+//   "hsl(266.316, 30.811%, 36.275%)",
+//   "hsl(265.714, 23.671%, 40.588%)"
+// ]
+#+END_SRC
+
+*** illuminant(settings, color)
+
+An action that takes any valid CSS =color= and checks it against an illuminant (light source) according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: illuminant settings
+  + =settings.K = 1850: number=: sets the illuminant temperature (in Kelvin)
+  + =settings.intensity = 50: number=: set the intensity of the illuminant (as a percentage)
+  + =settings.steps = 0: number=: interpolates the illuminant check (up to number of steps)
++ =color: string=: the input color
+
+**** Returns
+
++ =string | string[]=: the color checked against an illuminant or interpolation data
+
+**** Example
+
+#+BEGIN_SRC js
+import { convert, illuminant } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hex", "rebeccapurple");
+
+// Check the illuminants in order at 50% intensity:
+// - candlelight (1850K)
+// - incandescent bulb (2400K)
+// - studio lamp (3200K)
+// - tubular fluorescent lamps (5000K)
+// - LCD screens (approximate) (6500K-9500K)
+const intensity = 50;
+console.log(illuminant({ K: 1850, intensity}, color)); // #ad6275
+console.log(illuminant({ K: 2400, intensity}, color)); // #ad6d80
+console.log(illuminant({ K: 3200, intensity}, color)); // #ad7a95
+console.log(illuminant({ K: 5000, intensity}, color)); // #ae8db8
+console.log(illuminant({ K: 7400, intensity}, color)); // #a58fcd
+
+// Check illuminant candlelight at varying intensity
+const K = 1850;
+console.log(illuminant({ K, intensity: 0 }, color)); // #663399
+console.log(illuminant({ K, intensity: 25 }, color)); // #884e8a
+console.log(illuminant({ K, intensity: 50 }, color)); // #ad6275
+console.log(illuminant({ K, intensity: 75 }, color)); // #d57457
+console.log(illuminant({ K, intensity: 100 }, color)); // #ff8100
+
+// Interpolation activated
+console.log(illuminant({ K, intensity, steps: 5 }, color)); // ["#743a92", "#82408a", "#904682", "#9f537c", "#ad6275"]
+#+END_SRC
+
+*** palette(settings, color)
+
+An action that takes any valid CSS =color= and generates a palette according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: palette settings
+  + =settings.configuration = "material": "material" | "artistic"=: set the palette configuration
+  + =settings.contrast = 100: number=: set the overall palette contrast (both configurations)
+  + =settings.accents = false: boolean= include accent colors? (both configurations)
+  + =settings.dark = false: boolean=: toggle dark mode? (both configurations)
+  + =settings.states = false: boolean=: include interface states? (~"material"~)
+  + =settings.tints = 3: number=: number of tints to generate (~"artistic"~)
+  + =settings.tones = 3: number=: number of tones to generate (~"artistic"~)
+  + =settings.shades = 3: number=: number of shades to generate (~"artistic"~)
++ =color: string=: the input color
+
+**** Returns
+
++ =string[][]=: generated palette data
+
+**** Examples
+
+***** Material Configuration
+
+#+BEGIN_SRC js
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hex", "rebeccapurple");
+
+// Material configuration:
+console.log(palette({ configuration: "material" }, color));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [
+//       "#eeeaf6", "#d1c5e4",
+//       "#b5a1d2", "#9a7dc0",
+//       "#7f59ad", "#552e7e",
+//       "#452964", "#35234b",
+//       "#261c34", "#18151d"
+//     ],
+//     []
+//   ],
+//   []
+// ]
+
+// Material contrast adjustment
+console.log(palette({ configuration: "material", contrast: 80 }, color));
+// [
+//   [ "#ded5ec", "#201929" ],
+//   [
+//     [
+//       "#baa8d6", "#a991ca",
+//       "#977abe", "#8663b2",
+//       "#764ca6", "#5b3088",
+//       "#512d77", "#462966",
+//       "#3c2556", "#322146"
+//     ],
+//     []
+//   ],
+//   []
+// ]
+
+// Material with accents
+console.log(palette({ configuration: "material", accents: true }, color));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [
+//       "#eeeaf6", "#d1c5e4",
+//       "#b5a1d2", "#9a7dc0",
+//       "#7f59ad", "#552e7e",
+//       "#452964", "#35234b",
+//       "#261c34", "#18151d"
+//     ],
+//     [
+//       "#d2f4ed", "#9cd6df",
+//       "#70b5d7", "#5d8ece",
+//       "#6063bb", "#640067",
+//       "#58002a", "#420000",
+//       "#1f0000", "#001c00"
+//     ]
+//   ],
+//   []
+// ]
+
+// Material with interface states
+console.log(palette({ configuration: "material", states: true }, color));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [
+//       "#eeeaf6", "#d1c5e4",
+//       "#b5a1d2", "#9a7dc0",
+//       "#7f59ad", "#552e7e",
+//       "#452964", "#35234b",
+//       "#261c34", "#18151d"
+//     ],
+//     []
+//   ],
+//   [ "#908d95", "#368540", "#a48e3a", "#a63838" ]
+// ]
+
+// Material dark mode
+console.log(palette({
+  configuration: "material",
+  dark: true,
+  accents: true,
+  states: true
+}, color));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [
+//     [
+//       "#18151d", "#261c34",
+//       "#35234b", "#452964",
+//       "#552e7e", "#7f59ad",
+//       "#9a7dc0", "#b5a1d2",
+//       "#d1c5e4", "#eeeaf6"
+//     ],
+//     [
+//       "#000000", "#000003",
+//       "#000a25", "#001b51",
+//       "#2e287b", "#a43ca5",
+//       "#e4449b", "#ff5679",
+//       "#ff7a1a", "#ffb200"
+//     ]
+//   ],
+//   [ "#dedbe3", "#84d38a", "#f3dc89", "#fb857f" ]
+// ]
+#+END_SRC
+
+***** Artistic Configuration
+
+#+BEGIN_SRC js
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hex", "rebeccapurple");
+
+// Artistic configuration:
+console.log(palette({ configuration: "artistic" }, color));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#9171ba", "#beadd8", "#eeeaf6" ],
+//     [ "#795aa0", "#8e7da6", "#a39fa9" ],
+//     [ "#4a2a6d", "#302143", "#18151d" ]
+//   ],
+//   []
+// ]
+
+// Artistic contrast adjustment
+console.log(palette({ configuration: "artistic", contrast: 80 }, color));
+// [
+//   [ "#ded5ec", "#201929" ],
+//   [
+//     [ "#8865b3", "#ac95cc", "#d1c5e4" ],
+//     [ "#75539f", "#856fa4", "#968aa8" ],
+//     [ "#502c75", "#3a2553", "#261c34" ]
+//   ],
+//   []
+// ]
+
+// Artistic with adjusted variants
+console.log(palette({
+  configuration: "artistic",
+  tints: 6,
+  tones: 2,
+  shades: 4
+}, color));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#7b53aa", "#9171ba", "#a78fc9", "#beadd8", "#d6cbe7", "#eeeaf6" ],
+//     [ "#836ba3", "#a39fa9" ],
+//     [ "#512d78", "#3d2658", "#2a1e39", "#18151d" ]
+//   ],
+//   []
+// ]
+
+// Artistic with omitted variants
+console.log(palette({ configuration: "artistic", tints: 6, tones: 0, shades: 4 }, color));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#7b53aa", "#9171ba", "#a78fc9", "#beadd8", "#d6cbe7", "#eeeaf6" ],
+//     [],
+//     [ "#512d78", "#3d2658", "#2a1e39", "#18151d" ]
+//   ],
+//   []
+// ]
+
+// Artistic with accents
+console.log(palette({ configuration: "artistic", accents: true }, color));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#9171ba", "#beadd8", "#eeeaf6" ],
+//     [ "#795aa0", "#8e7da6", "#a39fa9" ],
+//     [ "#4a2a6d", "#302143", "#18151d" ]
+//   ],
+//   [
+//     "#6ad6eb", "#72aed7",
+//     "#7386c3", "#6f5eae",
+//     "#4e2c75", "#3b2659",
+//     "#291f3f", "#191826",
+//     "#08100f"
+//   ]
+// ]
+
+// Artistic dark mode
+console.log(palette({
+  configuration: "artistic",
+  accents: true,
+  dark: true,
+}, color));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [
+//     [ "#9171ba", "#beadd8", "#eeeaf6" ],
+//     [ "#795aa0", "#8e7da6", "#a39fa9" ],
+//     [ "#4a2a6d", "#302143", "#18151d" ]
+//   ],
+//   [
+//     "#6ad6eb", "#72aed7",
+//     "#7386c3", "#6f5eae",
+//     "#4e2c75", "#3b2659",
+//     "#291f3f", "#191826",
+//     "#08100f"
+//   ]
+// ]
+#+END_SRC
+
+***** Notes
+
+The ="material"= configuration is especially suited for app palettes. If you include accents and interface states, you
+likely won't need to generate any more colors for your app even after filtering for accessibility.
+
+The ="artistic"= configuration is ideal for graphic design and content websites. The optional accents are generated much
+like the material accents but are chromatically less extreme to reflect their different use case.
+
+*** accessibility(settings, palette)
+
+An action that takes generated =palette= data and filters it for accessibiility according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: accessibility settings
+  - =settings.mode = "standard": "standard" | "custom"=: set the accessibility mode
+  - =settings.rating = "AA": "AA" | "AAA"=: set the WCAG contrast rating (~"standard"~)
+  - =settings.large = false: boolean=: use adjusted contrast ratio for large text/UI? (~"standard"~)
+  - =settings.min = 85: number=: minimum percentage of contrast against the background (~"custom"~)
+  - =settings.max = undefined: number=: maximum percentage of contrast against the background (~"custom"~)
++ =palette: string[][]=: the input palette data
+
+**** Returns
+
++ =string[][]=: the filtered palette data
+
+**** Examples
+
+***** Material Configuration
+
+#+BEGIN_SRC js
+import {
+  convert,
+  palette,
+  accessibility
+} = from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hex", "rebeccapurple");
+const light = palette({ configuration: "material", accents: true }, color);
+const dark = palette({ configuration: "material", accents: true, dark: true }, color);
+
+// Valid colors for standard mode "AA" rating
+console.log(accessibility({ mode: "standard", rating: "AA" }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#7f59ad", "#552e7e", "#452964", "#35234b", "#261c34", "#18151d" ],
+//     [ "#6063bb", "#640067", "#58002a", "#420000", "#1f0000", "#001c00" ]
+//   ],
+//   []
+// ]
+
+// Valid colors for standard mode "AA" rating (dark)
+console.log(accessibility({ mode: "standard", rating: "AA" }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [
+//     [ "#9a7dc0", "#b5a1d2", "#d1c5e4", "#eeeaf6" ],
+//     [ "#e4449b", "#ff5679", "#ff7a1a", "#ffb200" ]
+//   ],
+//   []
+// ]
+
+// Valid colors for standard mode "AA" large rating
+console.log(accessibility({ mode: "standard", rating: "AA", large: true }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [
+//       "#9a7dc0",
+//       "#7f59ad",
+//       "#552e7e",
+//       "#452964",
+//       "#35234b",
+//       "#261c34",
+//       "#18151d"
+//     ],
+//     [
+//       "#5d8ece",
+//       "#6063bb",
+//       "#640067",
+//       "#58002a",
+//       "#420000",
+//       "#1f0000",
+//       "#001c00"
+//     ]
+//   ],
+//   []
+// ]
+
+// Valid colors for standard mode "AA" large rating (dark)
+console.log(accessibility({ mode: "standard", rating: "AA", large: true }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [
+//     [ "#7f59ad", "#9a7dc0", "#b5a1d2", "#d1c5e4", "#eeeaf6" ],
+//     [ "#a43ca5", "#e4449b", "#ff5679", "#ff7a1a", "#ffb200" ]
+//   ],
+//   []
+// ]
+
+// Valid colors for standard mode "AAA" rating
+console.log(accessibility({ mode: "standard", rating: "AAA" }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#552e7e", "#452964", "#35234b", "#261c34", "#18151d" ],
+//     [ "#640067", "#58002a", "#420000", "#1f0000", "#001c00" ]
+//   ],
+//   []
+// ]
+
+// Valid colors for standard mode "AAA" rating (dark)
+console.log(accessibility({ mode: "standard", rating: "AAA" }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [ [ "#b5a1d2", "#d1c5e4", "#eeeaf6" ], [ "#ff7a1a", "#ffb200" ] ],
+//   []
+// ]
+
+// Valid colors for custom mode at 70% contrast from background
+console.log(accessibility({ mode: "custom", min: 70 }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#35234b", "#261c34", "#18151d" ],
+//     [ "#58002a", "#420000", "#1f0000", "#001c00" ]
+//   ],
+//   []
+// ]
+
+// Valid colors for custom mode at 50% contrast from background (dark)
+console.log(accessibility({ mode: "custom", min: 50 }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [ [ "#b5a1d2", "#d1c5e4", "#eeeaf6" ], [ "#ff5679", "#ff7a1a", "#ffb200" ] ],
+//   []
+// ]
+
+// Valid colors for custom mode at 55-75% contrast from background
+console.log(accessibility({ mode: "custom", min: 55, max: 75 }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [ [ "#552e7e", "#452964", "#35234b", "#261c34" ], [ "#640067", "#58002a" ] ],
+//   []
+// ]
+
+// Valid colors for custom mode at 45-60% contrast from background (dark)
+console.log(accessibility({ mode: "custom", min: 45, max: 60 }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [ [ "#9a7dc0", "#b5a1d2" ], [ "#e4449b", "#ff5679", "#ff7a1a" ] ],
+//   []
+// ]
+#+END_SRC
+
+***** Artistic Configuration
+
+#+BEGIN_SRC js
+import {
+  convert,
+  palette,
+  accessibility
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+
+const color = convert("hex", "rebeccapurple");
+const values = 10;
+const variants = { tints: values, tones: values, shades: values };
+const light = palette({ configuration: "artistic", ...variants, accents: true, }, color);
+const dark = palette({ configuration: "artistic", ...variants, accents: true, dark: true }, color);
+
+// Valid colors for standard mode "AA" rating
+console.log(accessibility({ mode: "standard", rating: "AA" }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#7247a3", "#7f59ad" ],
+//     [ "#6c409b", "#714b9e", "#7756a0", "#7d61a2", "#836ba3" ],
+//     [
+//       "#5d318b", "#552e7e",
+//       "#4d2b71", "#452964",
+//       "#3d2658", "#35234b",
+//       "#2e203f", "#261c34",
+//       "#1f1928", "#18151d"
+//     ]
+//   ],
+//   [ "#6f5eae", "#4e2c75", "#3b2659", "#291f3f", "#191826", "#08100f" ]
+// ]
+
+// Valid colors for standard mode "AA" rating (dark)
+console.log(accessibility({ mode: "standard", rating: "AA" }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [
+//     [
+//       "#9a7dc0",
+//       "#a78fc9",
+//       "#b5a1d2",
+//       "#c3b3db",
+//       "#d1c5e4",
+//       "#e0d7ed",
+//       "#eeeaf6"
+//     ],
+//     [ "#8a76a5", "#9080a6", "#968aa8", "#9c94a9", "#a39fa9" ],
+//     []
+//   ],
+//   [ "#6ad6eb", "#72aed7", "#7386c3" ]
+// ]
+
+// Valid colors for standard mode "AA" large rating
+console.log(accessibility({ mode: "standard", rating: "AA", large: true }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#7247a3", "#7f59ad", "#8c6bb6", "#9a7dc0" ],
+//     [
+//       "#6c409b", "#714b9e",
+//       "#7756a0", "#7d61a2",
+//       "#836ba3", "#8a76a5",
+//       "#9080a6", "#968aa8"
+//     ],
+//     [
+//       "#5d318b", "#552e7e",
+//       "#4d2b71", "#452964",
+//       "#3d2658", "#35234b",
+//       "#2e203f", "#261c34",
+//       "#1f1928", "#18151d"
+//     ]
+//   ],
+//   [
+//     "#7386c3",
+//     "#6f5eae",
+//     "#4e2c75",
+//     "#3b2659",
+//     "#291f3f",
+//     "#191826",
+//     "#08100f"
+//   ]
+// ]
+
+// Valid colors for standard mode "AA" large rating (dark)
+console.log(accessibility({ mode: "standard", rating: "AA", large: true }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [
+//     [
+//       "#7f59ad", "#8c6bb6",
+//       "#9a7dc0", "#a78fc9",
+//       "#b5a1d2", "#c3b3db",
+//       "#d1c5e4", "#e0d7ed",
+//       "#eeeaf6"
+//     ],
+//     [
+//       "#7756a0", "#7d61a2",
+//       "#836ba3", "#8a76a5",
+//       "#9080a6", "#968aa8",
+//       "#9c94a9", "#a39fa9"
+//     ],
+//     []
+//   ],
+//   [ "#6ad6eb", "#72aed7", "#7386c3", "#6f5eae" ]
+// ]
+
+// Valid colors for standard mode "AAA" rating
+console.log(accessibility({ mode: "standard", rating: "AAA" }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [],
+//     [ "#6c409b" ],
+//     [
+//       "#5d318b", "#552e7e",
+//       "#4d2b71", "#452964",
+//       "#3d2658", "#35234b",
+//       "#2e203f", "#261c34",
+//       "#1f1928", "#18151d"
+//     ]
+//   ],
+//   [ "#4e2c75", "#3b2659", "#291f3f", "#191826", "#08100f" ]
+// ]
+
+// Valid colors for standard mode "AAA" rating (dark)
+console.log(accessibility({ mode: "standard", rating: "AAA" }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [ [ "#b5a1d2", "#c3b3db", "#d1c5e4", "#e0d7ed", "#eeeaf6" ], [ "#a39fa9" ], [] ],
+//   [ "#6ad6eb", "#72aed7" ]
+// ]
+
+// Valid colors for custom mode at 50% contrast from background
+console.log(accessibility({ mode: "custom", min: 50 }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#7247a3" ],
+//     [ "#6c409b", "#714b9e" ],
+//     [
+//       "#5d318b", "#552e7e",
+//       "#4d2b71", "#452964",
+//       "#3d2658", "#35234b",
+//       "#2e203f", "#261c34",
+//       "#1f1928", "#18151d"
+//     ]
+//   ],
+//   [ "#4e2c75", "#3b2659", "#291f3f", "#191826", "#08100f" ]
+// ]
+
+// Valid colors for custom mode at 50% contrast from background (dark)
+console.log(accessibility({ mode: "custom", min: 50 }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [
+//     [ "#a78fc9", "#b5a1d2", "#c3b3db", "#d1c5e4", "#e0d7ed", "#eeeaf6" ],
+//     [ "#9c94a9", "#a39fa9" ],
+//     []
+//   ],
+//   [ "#6ad6eb", "#72aed7" ]
+// ]
+
+// Valid colors for custom mode at 50-70% contrast from background
+console.log(accessibility({ mode: "custom", min: 50, max: 70 }, light));
+// [
+//   [ "#ffffff", "#111111" ],
+//   [
+//     [ "#7247a3" ],
+//     [ "#6c409b", "#714b9e" ],
+//     [ "#5d318b", "#552e7e", "#4d2b71", "#452964", "#3d2658" ]
+//   ],
+//   [ "#4e2c75", "#3b2659" ]
+// ]
+
+// Valid colors for custom mode at 50-70% contrast from background (dark)
+console.log(accessibility({ mode: "custom", min: 50, max: 70 }, dark));
+// [
+//   [ "#111111", "#ffffff" ],
+//   [ [ "#a78fc9", "#b5a1d2", "#c3b3db", "#d1c5e4" ], [ "#9c94a9", "#a39fa9" ], [] ],
+//   [ "#6ad6eb", "#72aed7" ]
+// ]
+#+END_SRC
+
+**** Notes
+
+Remember that QuarkSuite palette data is nothing but an array with static grouping.
+
+If you want to check the accessibility of color variants against an arbitrary background, you can change the background
+color in the surface grouping (=[bg, fg]=) and the accessibility utility will use it as the background context.
+
+If you want to check the accessibility of a random grouping of variants, you can swap out the variants grouping =[main,
+accents]= with your own colors. The function only cares that the shape of the palette data matches a known
+configuration. It doesn't necessarily care what kind of colors are grouped.
+
+The reason for this major shift from v1 in packaging palette data is because I realized there should be a straight path
+from a base color to a fully accessible palette.
+
+The user is still free to access the assembled data for further transformation in any way they want, but the actual
+palette creation process is intentionally simple.
