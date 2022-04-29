@@ -9,8 +9,8 @@ describe("palette(settings, color)", () => {
   const [red, green, blue] = ["crimson", "chartreuse", "dodgerblue"];
 
   describe("settings.configuration = 'material'", () => {
-    it("should activate settings.accented", () => {
-      expect(palette({ accented: true }, red)).toEqual([
+    it("should activate settings.states", () => {
+      expect(palette({ states: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -25,22 +25,11 @@ describe("palette(settings, color)", () => {
             "#451d1e",
             "#231616",
           ],
-          [
-            "#d9ffff",
-            "#ebebff",
-            "#f0b9ff",
-            "#f388e5",
-            "#ed5599",
-            "#bd0000",
-            "#900000",
-            "#560000",
-            "#111500",
-            "#000d00",
-          ],
+          [],
         ],
-        [],
+        ["#9b8e8d", "#498635", "#ae8e28", "#ae352e"],
       ]);
-      expect(palette({ accented: true }, green)).toEqual([
+      expect(palette({ states: true }, green)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -55,22 +44,11 @@ describe("palette(settings, color)", () => {
             "#2f4a21",
             "#1c2418",
           ],
-          [
-            "#ffd7df",
-            "#ffd7a7",
-            "#ffe061",
-            "#fff400",
-            "#ffff00",
-            "#00ed74",
-            "#00d0b2",
-            "#00a2e4",
-            "#005dff",
-            "#0000ff",
-          ],
+          [],
         ],
-        [],
+        ["#939b90", "#349134", "#a89b25", "#ad482d"],
       ]);
-      expect(palette({ accented: true }, blue)).toEqual([
+      expect(palette({ states: true }, blue)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
@@ -85,20 +63,9 @@ describe("palette(settings, color)", () => {
             "#1c324b",
             "#161c25",
           ],
-          [
-            "#eeffdd",
-            "#ccffe7",
-            "#8efff4",
-            "#28e8fa",
-            "#00c0ff",
-            "#5a58eb",
-            "#7100c1",
-            "#750082",
-            "#6b0036",
-            "#560000",
-          ],
+          [],
         ],
-        [],
+        ["#8e949c", "#2a8b48", "#a29542", "#a6423f"],
       ]);
     });
   });
@@ -188,7 +155,7 @@ describe("palette(settings, color)", () => {
         [],
       ]);
       expect(
-        palette({ configuration: "artistic", contrast: 80 }, green)
+        palette({ configuration: "artistic", contrast: 80 }, green),
       ).toEqual([
         ["#e8ffdd", "#26391d"],
         [
@@ -220,48 +187,81 @@ describe("palette(settings, color)", () => {
     });
   });
 
-  describe("settings.stated", () => {
+  describe("settings.accents", () => {
     it("should be active with either configuration", () => {
-      expect(palette({ configuration: "artistic", stated: true }, red)).toEqual(
-        [
-          ["#ffffff", "#111111"],
-          [
-            ["#ef7175", "#fbb0af", "#ffebeb"],
-            ["#d4595e", "#c67f7f", "#b3a09f"],
-            ["#9a2130", "#5c2023", "#231616"],
-          ],
-          ["#9b8e8d", "#498635", "#ae8e28", "#ae352e"],
-        ]
-      );
-      expect(palette({ stated: true }, green)).toEqual([
+      expect(palette({ accents: true }, red)).toEqual([
         ["#ffffff", "#111111"],
         [
           [
-            "#f4ffee",
-            "#dfffd0",
-            "#c9ffaf",
-            "#b3ff8b",
-            "#9aff60",
-            "#6ace1f",
-            "#56a026",
-            "#427426",
-            "#2f4a21",
-            "#1c2418",
+            "#ffebeb",
+            "#fec8c7",
+            "#faa4a3",
+            "#f27f81",
+            "#e8555f",
+            "#b41f35",
+            "#8d222d",
+            "#682125",
+            "#451d1e",
+            "#231616",
           ],
-          [],
+          [
+            "#d9ffff",
+            "#ebebff",
+            "#f0b9ff",
+            "#f388e5",
+            "#ed5599",
+            "#bd0000",
+            "#900000",
+            "#560000",
+            "#111500",
+            "#000d00",
+          ],
         ],
-        ["#939b90", "#349134", "#a89b25", "#ad482d"],
+        [],
       ]);
       expect(
-        palette({ configuration: "artistic", stated: true }, blue)
+        palette({ configuration: "artistic", accents: true }, green),
       ).toEqual([
         ["#ffffff", "#111111"],
         [
-          ["#70b4ff", "#aed5ff", "#ebf5ff"],
-          ["#589be7", "#7ea3ce", "#9fa8b4"],
-          ["#2367af", "#1f4066", "#161c25"],
+          ["#abff7e", "#d1ffba", "#f4ffee"],
+          ["#91e664", "#9ecd88", "#a8b3a3"],
+          ["#5daf25", "#3c6625", "#1c2418"],
         ],
-        ["#8e949c", "#2a8b48", "#a29542", "#a6423f"],
+        [
+          ["#a3ed46", "#bedb61", "#d2c774", "#e3b383", "#f19c90"],
+          ["#50e0e7", "#57e7ce", "#5feeb2", "#69f493", "#72f96e"],
+        ],
+      ]);
+      expect(palette({ accents: true }, blue)).toEqual([
+        ["#ffffff", "#111111"],
+        [
+          [
+            "#ebf5ff",
+            "#c7e2ff",
+            "#a2ceff",
+            "#7dbaff",
+            "#55a6ff",
+            "#2277cf",
+            "#235fa0",
+            "#214874",
+            "#1c324b",
+            "#161c25",
+          ],
+          [
+            "#eeffdd",
+            "#ccffe7",
+            "#8efff4",
+            "#28e8fa",
+            "#00c0ff",
+            "#5a58eb",
+            "#7100c1",
+            "#750082",
+            "#6b0036",
+            "#560000",
+          ],
+        ],
+        [],
       ]);
     });
   });
@@ -296,7 +296,7 @@ describe("palette(settings, color)", () => {
             ["#5daf25", "#3c6625", "#1c2418"],
           ],
           [],
-        ]
+        ],
       );
       expect(palette({ dark: true }, blue)).toEqual([
         ["#111111", "#ffffff"],
@@ -319,7 +319,7 @@ describe("palette(settings, color)", () => {
       ]);
     });
     it("should invert material accents", () => {
-      expect(palette({ accented: true, dark: true }, red)).toEqual([
+      expect(palette({ accents: true, dark: true }, red)).toEqual([
         ["#111111", "#ffffff"],
         [
           [
@@ -349,7 +349,7 @@ describe("palette(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette({ accented: true, dark: true }, green)).toEqual([
+      expect(palette({ accents: true, dark: true }, green)).toEqual([
         ["#111111", "#ffffff"],
         [
           [
@@ -377,7 +377,7 @@ describe("palette(settings, color)", () => {
         ],
         [],
       ]);
-      expect(palette({ accented: true, dark: true }, blue)).toEqual([
+      expect(palette({ accents: true, dark: true }, blue)).toEqual([
         ["#111111", "#ffffff"],
         [
           [
@@ -408,8 +408,8 @@ describe("palette(settings, color)", () => {
         [],
       ]);
     });
-    it("should invert interface states", () => {
-      expect(palette({ stated: true, dark: true }, red)).toEqual([
+    it("should invert material interface states", () => {
+      expect(palette({ states: true, dark: true }, red)).toEqual([
         ["#111111", "#ffffff"],
         [
           [
@@ -428,18 +428,26 @@ describe("palette(settings, color)", () => {
         ],
         ["#eadcdb", "#93d480", "#ffdd7d", "#ff8476"],
       ]);
-      expect(
-        palette({ configuration: "artistic", stated: true, dark: true }, green)
-      ).toEqual([
+      expect(palette({ states: true, dark: true }, green)).toEqual([
         ["#111111", "#ffffff"],
         [
-          ["#abff7e", "#d1ffba", "#f4ffee"],
-          ["#91e664", "#9ecd88", "#a8b3a3"],
-          ["#5daf25", "#3c6625", "#1c2418"],
+          [
+            "#1c2418",
+            "#2f4a21",
+            "#427426",
+            "#56a026",
+            "#6ace1f",
+            "#9aff60",
+            "#b3ff8b",
+            "#c9ffaf",
+            "#dfffd0",
+            "#f4ffee",
+          ],
+          [],
         ],
         ["#e1eade", "#84e181", "#f7eb7d", "#ff9477"],
       ]);
-      expect(palette({ stated: true, dark: true }, blue)).toEqual([
+      expect(palette({ states: true, dark: true }, blue)).toEqual([
         ["#111111", "#ffffff"],
         [
           [

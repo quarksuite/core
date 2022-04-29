@@ -388,10 +388,11 @@ export function illuminant(settings, color) {
 /**
  * @typedef {[string, string]} Surface - [bg, fg]
  * @typedef {[string[], string[]]} MaterialVariants - [main, accents]
+ * @typedef {[string[], string[]]} ArtisticAccents - [a, b]
  * @typedef {[string[], string[], string[]]} ArtisticVariants - [tints, tones, shades]
  * @typedef {string[]} State - [pending, success, warning, error]
  * @typedef {[Surface, MaterialVariants, State]} MaterialData - [[bg, fg], [main, accents], [pending, success, warning, error]]
- * @typedef {[Surface, ArtisticVariants, State]} ArtisticData - [[bg, fg], [tints, tones, shades], [pending, success, warning, error]]
+ * @typedef {[Surface, ArtisticVariants, ArtisticAccents]} ArtisticData - [[bg, fg], [tints, tones, shades], [a, b]]
  * @typedef {MaterialData | ArtisticData} PaletteData - palette data configurations
  */
 
@@ -402,10 +403,10 @@ export function illuminant(settings, color) {
  * @param {object} settings - palette settings
  * @param {"material" | "artistic"} [settings.configuration] - set the palette configuration
  * @param {number} [settings.contrast] - set the overall palette contrast (both configurations)
- * @param {boolean} [settings.stated] - include interface states? (both configurations)
+ * @param {boolean} [settings.accents] - include accent colors? (both configurations)
  * @param {boolean} [settings.dark] - toggle dark mode? (both configurations)
  *
- * @param {boolean} [settings.accented] - include accent colors? (material)
+ * @param {boolean} [settings.states] - include interface states? (material)
  *
  * @param {number} [settings.tints] - number of tints to generate (artistic)
  * @param {number} [settings.tones] - number of tones to generate (artistic)
@@ -426,10 +427,10 @@ export function illuminant(settings, color) {
  * palette({ configuration: "material", contrast: 90 }, swatch);
  *
  * // Optionally including accent colors
- * palette({ configuration: "material", accented: true }, swatch);
+ * palette({ configuration: "material", accents: true }, swatch);
  *
  * // Optionally including interface states
- * palette({ configuration: "material", stated: true }, swatch);
+ * palette({ configuration: "material", states: true }, swatch);
  *
  * // Optionally set dark mode
  * palette({ configuration: "material", dark: true }, swatch);
@@ -451,8 +452,8 @@ export function illuminant(settings, color) {
  * palette({ configuration: "artistic", tints: 4, tones: 0, shades: 2 }, swatch); // setting a variant to 0 excludes
  * palette({ configuration: "artistic", tints: 4, tones: 1, shades: 2 }, swatch);
  *
- * // Optionally including interface states
- * palette({ configuration: "artistic", stated: true }, swatch);
+ * // Optionally including accents
+ * palette({ configuration: "artistic", accents: true }, swatch);
  *
  * // Optionally set dark mode
  * palette({ configuration: "artistic", dark: true }, swatch);
@@ -466,8 +467,8 @@ export function palette(settings, color) {
   const {
     configuration = "material",
     contrast = 100,
-    accented = false,
-    stated = false,
+    accents = false,
+    states = false,
     dark = false,
   } = settings;
 
@@ -476,12 +477,20 @@ export function palette(settings, color) {
     const { tints = 3, tones = 3, shades = 3 } = settings;
 
     return artisticConfiguration(
-      { contrast, tints, tones, shades, stated, dark },
+      { contrast, tints, tones, shades, accented: accents, dark },
       color,
     );
   }
 
-  return materialConfiguration({ contrast, accented, stated, dark }, color);
+  return materialConfiguration(
+    {
+      contrast,
+      accented: accents,
+      stated: states,
+      dark,
+    },
+    color,
+  );
 }
 
 /**
@@ -2521,6 +2530,35 @@ function generateArtisticVariants(contrast, { tints, tones, shades }, color) {
   ];
 }
 
+function generateArtisticAccents(contrast, color, accented = false) {
+  const limit = (max = 90) => max * numberFromPercentage(contrast);
+  const PERCENTAGE = 80;
+  const HUE = 120;
+
+  return accented
+    ? [
+      colorInterpolation(
+        colorMix,
+        {
+          target: colorAdjustment({ hue: limit(-HUE) }, color),
+          strength: limit(PERCENTAGE),
+          steps: 5,
+        },
+        color,
+      ),
+      colorInterpolation(
+        colorMix,
+        {
+          target: colorAdjustment({ hue: limit(HUE) }, color),
+          strength: limit(-PERCENTAGE),
+          steps: 5,
+        },
+        color,
+      ),
+    ]
+    : [];
+}
+
 function generateStates(contrast, [, fg], color, stated = false) {
   const strength = 90 * numberFromPercentage(contrast);
   return stated
@@ -2564,7 +2602,7 @@ function artisticConfiguration(
     tints = 3,
     tones = 3,
     shades = 3,
-    stated = false,
+    accented = false,
     dark = false,
   },
   color,
@@ -2579,9 +2617,10 @@ function artisticConfiguration(
     color,
   );
 
-  const states = generateStates(contrast, ui, color, stated);
+  // [a[], b[]]
+  const accents = generateArtisticAccents(contrast, color, accented);
 
-  return [ui, variants, states];
+  return [ui, variants, accents];
 }
 
 // Accessibility Internals
