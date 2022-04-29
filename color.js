@@ -388,11 +388,11 @@ export function illuminant(settings, color) {
 /**
  * @typedef {[string, string]} Surface - [bg, fg]
  * @typedef {[string[], string[]]} MaterialVariants - [main, accents]
- * @typedef {[string[], string[]]} ArtisticAccents - [a, b]
+ * @typedef {string[]} ArtisticAccents - [100, 200, 300, 400, 500, 600, 700, 800, 900]
  * @typedef {[string[], string[], string[]]} ArtisticVariants - [tints, tones, shades]
  * @typedef {string[]} State - [pending, success, warning, error]
  * @typedef {[Surface, MaterialVariants, State]} MaterialData - [[bg, fg], [main, accents], [pending, success, warning, error]]
- * @typedef {[Surface, ArtisticVariants, ArtisticAccents]} ArtisticData - [[bg, fg], [tints, tones, shades], [a, b]]
+ * @typedef {[Surface, ArtisticVariants, ArtisticAccents]} ArtisticData - [[bg, fg], [tints, tones, shades], [100, 200, 300, 400, 500, 600, 700, 800, 900]]
  * @typedef {MaterialData | ArtisticData} PaletteData - palette data configurations
  */
 
@@ -2532,29 +2532,31 @@ function generateArtisticVariants(contrast, { tints, tones, shades }, color) {
 
 function generateArtisticAccents(contrast, color, accented = false) {
   const limit = (max = 90) => max * numberFromPercentage(contrast);
+  const interpolate = (percentage, hue, steps) =>
+    colorInterpolation(
+      colorMix,
+      {
+        target: colorAdjustment(
+          {
+            lightness: limit(percentage),
+            hue: limit(hue),
+            color,
+          },
+          color,
+        ),
+        strength: limit(percentage),
+        steps,
+      },
+      color,
+    );
+
   const PERCENTAGE = 80;
   const HUE = 120;
 
   return accented
     ? [
-      colorInterpolation(
-        colorMix,
-        {
-          target: colorAdjustment({ hue: limit(-HUE) }, color),
-          strength: limit(PERCENTAGE),
-          steps: 5,
-        },
-        color,
-      ),
-      colorInterpolation(
-        colorMix,
-        {
-          target: colorAdjustment({ hue: limit(HUE) }, color),
-          strength: limit(-PERCENTAGE),
-          steps: 5,
-        },
-        color,
-      ),
+      ...interpolate(PERCENTAGE, -HUE, 4).reverse(),
+      ...interpolate(-PERCENTAGE, HUE, 5).reverse(),
     ]
     : [];
 }

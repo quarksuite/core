@@ -229,8 +229,15 @@ describe("palette(settings, color)", () => {
           ["#5daf25", "#3c6625", "#1c2418"],
         ],
         [
-          ["#a3ed46", "#bedb61", "#d2c774", "#e3b383", "#f19c90"],
-          ["#50e0e7", "#57e7ce", "#5feeb2", "#69f493", "#72f96e"],
+          "#eebaad",
+          "#dacd96",
+          "#c2df7b",
+          "#a6ef58",
+          "#64ce55",
+          "#50a867",
+          "#3e836e",
+          "#2f5e70",
+          "#24386d",
         ],
       ]);
       expect(palette({ accents: true }, blue)).toEqual([
