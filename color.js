@@ -570,15 +570,23 @@ export function accessibility(settings, palette) {
  *   700: string;
  *   800: string;
  *   900: string;
+ *   a50: string;
  *   a100: string;
  *   a200: string;
  *   a300: string;
- *   a400: string; }>} MaterialVariantTokens - MAIN, ACCENT?
+ *   a400: string;
+ *   a500: string;
+ *   a600: string;
+ *   a700: string;
+ *   a800: string;
+ *   a900: string; }>} MaterialVariantTokens - MAIN, ACCENT?
  *
  * @typedef {Partial<{
  *   light: { [key: string]: string };
  *   muted: { [key: string]: string };
- *   dark: { [key: string]: string }}>} ArtisticVariantTokens - LIGHT?, MUTED?, DARK?
+ *   dark: { [key: string]: string }; }>} ArtisticVariantTokens - LIGHT?, MUTED?, DARK?
+ *
+ * @typedef {Partial<{ accent: { [key: string]: string; } }>} ArtisticAccentTokens
  *
  * @typedef {Partial<{
  *  state: {
@@ -589,7 +597,7 @@ export function accessibility(settings, palette) {
  *  } }>} StateTokens
  *
  * @typedef {SurfaceTokens & MaterialVariantTokens & StateTokens} MaterialTokens
- * @typedef {SurfaceTokens & ArtisticVariantTokens & StateTokens} ArtisticTokens
+ * @typedef {SurfaceTokens & ArtisticVariantTokens & ArtisticAccentTokens} ArtisticTokens
  * @typedef {MaterialTokens | ArtisticTokens} PaletteTokens - assembled palette token object
  */
 
@@ -2749,7 +2757,7 @@ function tokenizeMaterial(variants, states) {
   const [main, accents] = variants;
   const materialCategorization = (prefix = "") =>
     (acc, color, index) => {
-      if (index === 0) return { ...acc, 50: color };
+      if (index === 0) return { ...acc, [prefix.concat(50)]: color };
       return { ...acc, [`${prefix.concat(index)}00`]: color };
     };
 
@@ -2757,7 +2765,7 @@ function tokenizeMaterial(variants, states) {
     // 50-900
     ...main.reduce(materialCategorization(), {}),
     // a50-a900
-    ...(accents.length ? accents.reduce(materialCategorization, {}) : {}),
+    ...(accents.length ? accents.reduce(materialCategorization("a"), {}) : {}),
     ...(states.length
       ? {
         state: {
@@ -2774,12 +2782,15 @@ function tokenizeMaterial(variants, states) {
 function tokenizeArtistic(variants, accents) {
   const [tints, tones, shades] = variants;
 
-  const numericScale = (acc, [category, data]) => {
+  const numericScale = (acc, color, i) => ({
+    ...acc,
+    [`${++i}00`]: color,
+  });
+
+  const numericVariantScale = (acc, [category, data]) => {
     return {
       ...acc,
-      [category]: data.reduce((a, color, i) => {
-        return { ...a, [`${++i}00`]: color };
-      }, {}),
+      [category]: data.reduce(numericScale, {}),
     };
   };
 
@@ -2787,13 +2798,9 @@ function tokenizeArtistic(variants, accents) {
     // Here, we check the variants that contain data and filter out any that don't before assembling the tokens
     ...Object.entries({ light: tints, muted: tones, dark: shades })
       .filter(([, data]) => data.length)
-      .reduce(numericScale, {}),
-    ...(accents
-      ? Object.entries({ a: accents[0], b: accents[1] }).reduce(
-        numericScale,
-        {},
-      )
-      : {}),
+      .reduce(numericVariantScale, {}),
+    // Then assemble he accents if they exist
+    ...(accents.length ? { accent: accents.reduce(numericScale, {}) } : {}),
   };
 }
 
