@@ -3,9 +3,12 @@
 
 * Table of Contents :TOC@5:
 - [[#summary][Summary]]
-- [[#terminology][Terminology]]
+- [[#concepts][Concepts]]
   - [[#types][Types]]
+    - [[#tokens][Tokens]]
+    - [[#dictionary][Dictionary]]
   - [[#idioms][Idioms]]
+    - [[#exporter][Exporter]]
 - [[#api][API]]
   - [[#color][Color]]
     - [[#convertto-color][convert(to, color)]]
@@ -54,6 +57,14 @@
         - [[#material-configuration-1][Material Configuration]]
         - [[#artistic-configuration-1][Artistic Configuration]]
       - [[#notes-5][Notes]]
+    - [[#tokenspalette][tokens(palette)]]
+      - [[#parameter][Parameter]]
+      - [[#returns-9][Returns]]
+      - [[#example-7][Example]]
+    - [[#outputformat-dict][output(format, dict)]]
+      - [[#parameters-9][Parameters]]
+      - [[#returns-10][Returns]]
+      - [[#example-8][Example]]
 
 * Summary
 
@@ -63,7 +74,7 @@ they're associated with.
 
 This is a very straightforward document, but if something is unclear, please open an issue and let me know.
 
-* Terminology
+* Concepts
 
 QuarkSuite Core has certain idioms based around its design, and it helps to be aware of them while reading.
 
@@ -78,7 +89,27 @@ what kind of data a utility takes and gives back. The types as of this writing a
 + =tokens=: assembled data object
 + =dict=: prepared data object with a required ~project~ property
 
-Any type that is not explicitly mentioned here is local to the given utility.
+Any type that is not explicitly mentioned here is local to the given utility. Now, let's go into a little more detail
+about each type.
+
+*** Tokens
+
+Tokens in QuarkSuite are assembled data collections. If you're familiar with how they worked in v1, you should know that
+it's changed significantly. Instead of manual assembly, token output now relies on assembling generated data into
+conventional configurations.
+
+This reduces a lot of the object creation boilerplate that v1 attempted to mitigate by providing the formula and
+bootstrapper layers. Both are completely unnecessary in v2.
+
+*** Dictionary
+
+Dictionaries in QuarkSuite are packaged token collections. They're identified by a ~project~ object which exporting
+functions require to be present (even if it's empty) before they will prepare tokens for use with their target formats.
+
+Dictionaries are hierarchical and accommodate groups as you define them.
+
+You can optionally define metadata at any group level or in the project settings themselves, but take care as some exporters will
+ignore it depending on the format you use.
 
 ** Idioms
 
@@ -87,6 +118,14 @@ The included utilities are structured around three key idioms:
 + =action(y, x)=: a function that accepts type =x= and a =y= modifier to configure its output
 + =emitter(x)=: a function that accepts type =x= and emits output /directly from/ type =x=
 + =exporter(format, dict)=: a special action that accepts type =dict= and transforms its output based on a target =format=
+
+*** Exporter
+
+The shared rule between all exporters (with the exception of those for interop because they translate rather than
+export): assume no access to the user's filesystem. The output of exporters is /file-ready/ for the target formats, but
+you'll have to take it the rest of the way with your JS environment's native filesystem API or a library of your choice.
+
+For security reasons, QuarkSuite does not generate output files.
 
 * API
 
@@ -116,7 +155,7 @@ An action that takes any valid CSS =color= and converts it =to= a given target f
 **** Example
 
 #+BEGIN_SRC js
-import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = "rebeccapurple";
 
@@ -160,7 +199,7 @@ An action that takes any valid CSS =color= and adjusts its properties according 
 **** Example
 
 #+BEGIN_SRC js
-import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -214,7 +253,7 @@ An action that takes any valid CSS =color= and mixes it according to user =setti
 **** Example
 
 #+BEGIN_SRC js
-import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hsl", "rebeccapurple");
 const target = "crimson";
@@ -269,7 +308,7 @@ An action that takes any valid CSS =color= and a generates an artistic color har
 **** Example
 
 #+BEGIN_SRC js
-import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -317,7 +356,7 @@ user =settings=.
 **** Example
 
 #+BEGIN_SRC js
-import { convert, vision } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, vision } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -387,7 +426,7 @@ An action that takes any valid CSS =color= and checks it against contrast sensit
 **** Example
 
 #+BEGIN_SRC js
-import { convert, contrast } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, contrast } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hsl", "rebeccapurple");
 
@@ -437,7 +476,7 @@ An action that takes any valid CSS =color= and checks it against an illuminant (
 **** Example
 
 #+BEGIN_SRC js
-import { convert, illuminant } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, illuminant } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -492,7 +531,7 @@ An action that takes any valid CSS =color= and generates a palette according to 
 ***** Material Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -602,7 +641,7 @@ console.log(palette({
 ***** Artistic Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -735,7 +774,7 @@ import {
   convert,
   palette,
   accessibility
-} = from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+} = from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hex", "rebeccapurple");
 const light = palette({ configuration: "material", accents: true }, color);
@@ -863,7 +902,7 @@ import {
   convert,
   palette,
   accessibility
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-25/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("hex", "rebeccapurple");
 const values = 10;
@@ -1056,3 +1095,265 @@ from a base color to a fully accessible palette.
 
 The user is still free to access the assembled data for further transformation in any way they want, but the actual
 palette creation process is intentionally simple.
+
+*** tokens(palette)
+
+An emitter that takes generated =palette= data and assembles it into a collection of color tokens for use as-is or with
+an exporter.
+
+**** Parameter
+
++ =palette: string[][]=: the generated palette data
+
+**** Returns
+
+={}=: assembled color tokens
+
+**** Example
+
+#+BEGIN_SRC js
+import {
+  convert,
+  palette,
+  accessibility,
+  tokens
+} = from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+
+const color = convert("rgb", "rebeccapurple");
+
+const contrast = 95;
+const material = palette({ contrast, accents: true, states: true }, color);
+const materialDark = palette({ contrast, accents: true, dark: true, states: true }, color);
+
+const materialUI = accessibility({ rating: "AA", large: true }, material);
+const materialHeading = accessibility({ rating: "AA" }, material);
+const materialText = accessibility({ rating: "AAA" }, material);
+
+const materialDarkUI = accessibility({ rating: "AA", large: true }, materialDark);
+const materialDarkHeading = accessibility({ rating: "AA" }, materialDark);
+const materialDarkText = accessibility({ rating: "AAA" }, materialDark);
+
+// Accessible material UI (AA large)
+console.log(tokens(materialUI));
+// {
+//   50: "rgb(148, 118, 188)",
+//   100: "rgb(125, 86, 171)",
+//   200: "rgb(87, 47, 129)",
+//   300: "rgb(72, 42, 105)",
+//   400: "rgb(58, 36, 82)",
+//   500: "rgb(44, 31, 61)",
+//   600: "rgb(31, 25, 40)",
+//   bg: "rgb(247, 245, 250)",
+//   fg: "rgb(21, 19, 23)",
+//   a50: "rgb(99, 140, 206)",
+//   a100: "rgb(102, 103, 189)",
+//   a200: "rgb(107, 20, 112)",
+//   a300: "rgb(96, 14, 55)",
+//   a400: "rgb(76, 9, 9)",
+//   a500: "rgb(45, 4, 5)",
+//   a600: "rgb(4, 28, 6)",
+//   state: {
+//     pending: "rgb(145, 140, 152)",
+//     success: "rgb(60, 132, 73)",
+//     warning: "rgb(163, 141, 68)",
+//     error: "rgb(165, 58, 64)"
+//   }
+// }
+
+// Accessible material dark UI (AA large)
+console.log(tokens(materialDarkUI));
+// {
+//   50: "rgb(125, 86, 171)",
+//   100: "rgb(148, 118, 188)",
+//   200: "rgb(173, 150, 205)",
+//   300: "rgb(198, 183, 221)",
+//   400: "rgb(224, 216, 237)",
+//   bg: "rgb(21, 19, 23)",
+//   fg: "rgb(247, 245, 250)",
+//   a50: "rgb(211, 66, 152)",
+//   a100: "rgb(244, 80, 126)",
+//   a200: "rgb(245, 110, 68)",
+//   a300: "rgb(246, 157, 38)"
+//   state: {
+//     pending: "rgb(215, 210, 223)",
+//     success: "rgb(128, 202, 138)",
+//     warning: "rgb(235, 211, 137)",
+//     error: "rgb(242, 127, 128)"
+//   }
+// }
+
+// Accessible material heading (AA)
+console.log(tokens(materialHeading));
+// {
+//   50: "rgb(125, 86, 171)",
+//   100: "rgb(87, 47, 129)",
+//   200: "rgb(72, 42, 105)",
+//   300: "rgb(58, 36, 82)",
+//   400: "rgb(44, 31, 61)",
+//   500: "rgb(31, 25, 40)",
+//   bg: "rgb(247, 245, 250)",
+//   fg: "rgb(21, 19, 23)",
+//   a50: "rgb(102, 103, 189)",
+//   a100: "rgb(107, 20, 112)",
+//   a200: "rgb(96, 14, 55)",
+//   a300: "rgb(76, 9, 9)",
+//   a400: "rgb(45, 4, 5)",
+//   a500: "rgb(4, 28, 6)"
+//   state: {
+//     pending: "rgb(145, 140, 152)",
+//     success: "rgb(60, 132, 73)",
+//     warning: "rgb(163, 141, 68)",
+//     error: "rgb(165, 58, 64)"
+//   }
+// }
+
+// Accessible material dark heading (AA)
+console.log(tokens(materialDarkHeading));
+// {
+//   50: "rgb(148, 118, 188)",
+//   100: "rgb(173, 150, 205)",
+//   200: "rgb(198, 183, 221)",
+//   300: "rgb(224, 216, 237)",
+//   bg: "rgb(21, 19, 23)",
+//   fg: "rgb(247, 245, 250)",
+//   a50: "rgb(244, 80, 126)",
+//   a100: "rgb(245, 110, 68)",
+//   a200: "rgb(246, 157, 38)",
+//   state: {
+//     pending: "rgb(215, 210, 223)",
+//     success: "rgb(128, 202, 138)",
+//     warning: "rgb(235, 211, 137)",
+//     error: "rgb(242, 127, 128)"
+//   }
+// }
+
+// Accessible material text (AAA)
+console.log(tokens(materialText));
+// {
+//   50: "rgb(87, 47, 129)",
+//   100: "rgb(72, 42, 105)",
+//   200: "rgb(58, 36, 82)",
+//   300: "rgb(44, 31, 61)",
+//   400: "rgb(31, 25, 40)",
+//   bg: "rgb(247, 245, 250)",
+//   fg: "rgb(21, 19, 23)",
+//   a50: "rgb(107, 20, 112)",
+//   a100: "rgb(96, 14, 55)",
+//   a200: "rgb(76, 9, 9)",
+//   a300: "rgb(45, 4, 5)",
+//   a400: "rgb(4, 28, 6)",
+//   state: {
+//     pending: "rgb(145, 140, 152)",
+//     success: "rgb(60, 132, 73)",
+//     warning: "rgb(163, 141, 68)",
+//     error: "rgb(165, 58, 64)"
+//   }
+// }
+
+// Accessible material dark text (AAA)
+console.log(tokens(materialDarkText));
+// {
+//   "50": "rgb(198, 183, 221)",
+//   "100": "rgb(224, 216, 237)",
+//   bg: "rgb(21, 19, 23)",
+//   fg: "rgb(247, 245, 250)",
+//   a50: "rgb(246, 157, 38)",
+//   state: {
+//     pending: "rgb(215, 210, 223)",
+//     success: "rgb(128, 202, 138)",
+//     warning: "rgb(235, 211, 137)",
+//     error: "rgb(242, 127, 128)"
+//   }
+// }
+#+END_SRC
+
+*** output(format, dict)
+
+An exporter that takes a complete color =dict= and prepares it for a given palette =format=.
+
+**** Parameters
+
++ =format: "gpl" | "sketchpalette"=: the target palette format
++ =dict: {}=: the input color dictionary
+
+**** Returns
+
+=string=: file-ready exported palette
+
+**** Example
+
+#+BEGIN_SRC js
+import {
+  convert,
+  palette,
+  accessibility,
+  tokens,
+  output
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+
+const color = convert("hex", "rebeccapurple");
+
+const contrast = 80;
+const graphic = palette({
+  configuration: "artistic",
+  contrast,
+  tints: 5,
+  tones: 3,
+  shades: 4,
+  accents: true,
+}, color);
+
+const graphicDark = palette({
+  configuration: "artistic",
+  contrast,
+  tints: 5,
+  tones: 3,
+  shades: 4,
+  accents: true,
+  dark: true
+}, color);
+
+const highContrast = accessibility({ rating: "AAA" }, graphic);
+const highContrastDark = accessibility({ rating: "AAA" }, graphicDark);
+
+const dict = {
+  project: {
+    name: "High Contrast Accessible Palette",
+    author: "Chatman R. Jr",
+    license: "Attribution 4.0 International (CC BY 4.0)",
+    version: "0.1.0"
+  },
+  light: tokens(highContrast),
+  dark: tokens(highContrastDark)
+};
+
+// GIMP/Inkscape Palette
+console.log(output("gpl", dict));
+// GIMP Palette
+// Name: High Contrast Accessible Palette (v0.1.0)
+// # Owned by Chatman R. Jr
+// # License: Attribution 4.0 International (CC BY 4.0)
+// # 4/30/2022 2:55:38 PM
+//
+// Columns: 6
+// 222	213	236	LIGHT BG (#ded5ec)
+//  32	 25	 41	LIGHT FG (#201929)
+//  85	 46	126	LIGHT DARK 100 (#552e7e)
+//  69	 41	100	LIGHT DARK 200 (#452964)
+//  53	 35	 75	LIGHT DARK 300 (#35234b)
+//  38	 28	 52	LIGHT DARK 400 (#261c34)
+//  61	 33	 87	LIGHT ACCENT 100 (#3d2157)
+//  47	 26	 66	LIGHT ACCENT 200 (#2f1a42)
+//  34	 19	 45	LIGHT ACCENT 300 (#22132d)
+//  22	 13	 26	LIGHT ACCENT 400 (#160d1a)
+//  11    6   8	LIGHT ACCENT 500 (#0b0608)
+//  32	 25	 41	DARK BG (#201929)
+// 222	213	236	DARK FG (#ded5ec)
+// 187	168	214	DARK LIGHT 100 (#bba8d6)
+// 209	197	228	DARK LIGHT 200 (#d1c5e4)
+// 108	182	219	DARK ACCENT 100 (#6cb6db)
+
+// Sketch Palette
+console.log(output("sketchpalette", dict));
+// {"colors":[{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.3333333333333333,"green":0.1803921568627451,"blue":0.49411764705882355,"alpha":1},{"red":0.27058823529411763,"green":0.1607843137254902,"blue":0.39215686274509803,"alpha":1},{"red":0.20784313725490197,"green":0.13725490196078433,"blue":0.29411764705882354,"alpha":1},{"red":0.14901960784313725,"green":0.10980392156862745,"blue":0.20392156862745098,"alpha":1},{"red":0.23921568627450981,"green":0.12941176470588237,"blue":0.3411764705882353,"alpha":1},{"red":0.1843137254901961,"green":0.10196078431372549,"blue":0.25882352941176473,"alpha":1},{"red":0.13333333333333333,"green":0.07450980392156863,"blue":0.17647058823529413,"alpha":1},{"red":0.08627450980392157,"green":0.050980392156862744,"blue":0.10196078431372549,"alpha":1},{"red":0.043137254901960784,"green":0.023529411764705882,"blue":0.03137254901960784,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.7333333333333333,"green":0.6588235294117647,"blue":0.8392156862745098,"alpha":1},{"red":0.8196078431372549,"green":0.7725490196078432,"blue":0.8941176470588236,"alpha":1},{"red":0.4235294117647059,"green":0.7137254901960784,"blue":0.8588235294117647,"alpha":1}],"pluginVersion":"1.4","compatibleVersion":"1.4"}
+#+END_SRC

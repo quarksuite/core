@@ -1,5 +1,5 @@
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { tokens, palette, output } from "../../color.js";
+import { output, palette, tokens } from "../../color.js";
 
 describe("output(format, dict)", () => {
   const swatch = "rebeccapurple";
@@ -11,40 +11,63 @@ describe("output(format, dict)", () => {
   const removeTimestamp = (format) =>
     format.replace(
       /[\d/]+ [\d:]+ (?:AM|PM)?/,
-      "[Timestamp replaced for testing]"
+      "[Timestamp replaced for testing]",
     );
 
   describe("format = 'gpl'", () => {
     it("should generate gpl palette from both palette token configurations", () => {
-      expect(removeTimestamp(output("gpl", { project: {}, ...material })))
-        .toBe(`GIMP Palette
+      expect(removeTimestamp(output("gpl", { project: {}, ...material }))).toBe(
+        `GIMP Palette
 Name: Unknown (v0.1.0)
 # Owned by Anonymous
 # License: Unlicense
 # [Timestamp replaced for testing]
 
 Columns: 6
-238\t234\t246\t50 (#eeeaf6)\n214\t203\t231\t100 (#d6cbe7)\n190\t173\t216\t200 (#beadd8)\n167\t143\t201\t300 (#a78fc9)\n145\t113\t186\t400 (#9171ba)\n123\t 83\t170\t500 (#7b53aa)\n 81\t 45\t120\t600 (#512d78)\n 61\t 38\t 88\t700 (#3d2658)\n 42\t 30\t 57\t800 (#2a1e39)\n 24\t 21\t 29\t900 (#18151d)\n255\t255\t255\tBG (#ffffff)\n 17\t 17\t 17\tFG (#111111)
+238	234	246	50 (#eeeaf6)
+209	197	228	100 (#d1c5e4)
+181	161	210	200 (#b5a1d2)
+154	125	192	300 (#9a7dc0)
+127	 89	173	400 (#7f59ad)
+ 85	 46	126	500 (#552e7e)
+ 69	 41	100	600 (#452964)
+ 53	 35	 75	700 (#35234b)
+ 38	 28	 52	800 (#261c34)
+ 24	 21	 29	900 (#18151d)
+255	255	255	BG (#ffffff)
+ 17	 17	 17	FG (#111111)
 
-`);
-      expect(removeTimestamp(output("gpl", { project: {}, ...artistic })))
-        .toBe(`GIMP Palette
+`,
+      );
+      expect(removeTimestamp(output("gpl", { project: {}, ...artistic }))).toBe(
+        `GIMP Palette
 Name: Unknown (v0.1.0)
 # Owned by Anonymous
 # License: Unlicense
 # [Timestamp replaced for testing]
 
 Columns: 6
-255\t255\t255\tBG (#ffffff)\n 17\t 17\t 17\tFG (#111111)\n145\t113\t186\tLIGHT 100 (#9171ba)\n190\t173\t216\tLIGHT 200 (#beadd8)\n238\t234\t246\tLIGHT 300 (#eeeaf6)\n121\t 90\t160\tMUTED 100 (#795aa0)\n142\t125\t166\tMUTED 200 (#8e7da6)\n163\t159\t169\tMUTED 300 (#a39fa9)\n 74\t 42\t109\tDARK 100 (#4a2a6d)\n 48\t 33\t 67\tDARK 200 (#302143)\n 24\t 21\t 29\tDARK 300 (#18151d)
+255	255	255	BG (#ffffff)
+ 17	 17	 17	FG (#111111)
+145	113	186	LIGHT 100 (#9171ba)
+190	173	216	LIGHT 200 (#beadd8)
+238	234	246	LIGHT 300 (#eeeaf6)
+121	 90	160	MUTED 100 (#795aa0)
+142	125	166	MUTED 200 (#8e7da6)
+163	159	169	MUTED 300 (#a39fa9)
+ 74	 42	109	DARK 100 (#4a2a6d)
+ 48	 33	 67	DARK 200 (#302143)
+ 24	 21	 29	DARK 300 (#18151d)
 
-`);
+`,
+      );
     });
   });
 
   describe("format = 'sketchpalette'", () => {
     it("should generate sketchpalette palette from both palette token configurations", () => {
       expect(
-        JSON.parse(output("sketchpalette", { project: {}, ...material }))
+        JSON.parse(output("sketchpalette", { project: {}, ...material })),
       ).toEqual({
         colors: [
           {
@@ -54,51 +77,51 @@ Columns: 6
             alpha: 1,
           },
           {
-            red: 0.8392156862745098,
-            green: 0.796078431372549,
-            blue: 0.9058823529411765,
+            red: 0.8196078431372549,
+            green: 0.7725490196078432,
+            blue: 0.8941176470588236,
             alpha: 1,
           },
           {
-            red: 0.7450980392156863,
-            green: 0.6784313725490196,
-            blue: 0.8470588235294118,
+            red: 0.7098039215686275,
+            green: 0.6313725490196078,
+            blue: 0.8235294117647058,
             alpha: 1,
           },
           {
-            red: 0.6549019607843137,
-            green: 0.5607843137254902,
-            blue: 0.788235294117647,
+            red: 0.6039215686274509,
+            green: 0.49019607843137253,
+            blue: 0.7529411764705882,
             alpha: 1,
           },
           {
-            red: 0.5686274509803921,
-            green: 0.44313725490196076,
-            blue: 0.7294117647058823,
+            red: 0.4980392156862745,
+            green: 0.34901960784313724,
+            blue: 0.6784313725490196,
             alpha: 1,
           },
           {
-            red: 0.4823529411764706,
-            green: 0.3254901960784314,
-            blue: 0.6666666666666666,
+            red: 0.3333333333333333,
+            green: 0.1803921568627451,
+            blue: 0.49411764705882355,
             alpha: 1,
           },
           {
-            red: 0.3176470588235294,
-            green: 0.17647058823529413,
-            blue: 0.47058823529411764,
+            red: 0.27058823529411763,
+            green: 0.1607843137254902,
+            blue: 0.39215686274509803,
             alpha: 1,
           },
           {
-            red: 0.23921568627450981,
-            green: 0.14901960784313725,
-            blue: 0.34509803921568627,
+            red: 0.20784313725490197,
+            green: 0.13725490196078433,
+            blue: 0.29411764705882354,
             alpha: 1,
           },
           {
-            red: 0.16470588235294117,
-            green: 0.11764705882352941,
-            blue: 0.2235294117647059,
+            red: 0.14901960784313725,
+            green: 0.10980392156862745,
+            blue: 0.20392156862745098,
             alpha: 1,
           },
           {
@@ -119,7 +142,7 @@ Columns: 6
         compatibleVersion: "1.4",
       });
       expect(
-        JSON.parse(output("sketchpalette", { project: {}, ...artistic }))
+        JSON.parse(output("sketchpalette", { project: {}, ...artistic })),
       ).toEqual({
         colors: [
           { red: 1, green: 1, blue: 1, alpha: 1 },
