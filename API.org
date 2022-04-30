@@ -1,7 +1,7 @@
 #+TITLE: QuarkSuite Core (v2.0.0)
 #+PROPERTY: header-args:deno :results output code :allow 'net
 
-* Table of Contents :TOC@5:
+* Table of Contents :TOC@3:
 - [[#summary][Summary]]
 - [[#concepts][Concepts]]
   - [[#types][Types]]
@@ -12,59 +12,16 @@
 - [[#api][API]]
   - [[#color][Color]]
     - [[#convertto-color][convert(to, color)]]
-      - [[#parameters][Parameters]]
-      - [[#returns][Returns]]
-      - [[#example][Example]]
-      - [[#notes][Notes]]
     - [[#adjustsettings-color][adjust(settings, color)]]
-      - [[#parameters-1][Parameters]]
-      - [[#returns-1][Returns]]
-      - [[#example-1][Example]]
-      - [[#notes-1][Notes]]
     - [[#mixsettings-color][mix(settings, color)]]
-      - [[#parameters-2][Parameters]]
-      - [[#returns-2][Returns]]
-      - [[#example-2][Example]]
-      - [[#notes-2][Notes]]
     - [[#harmonysettings-color][harmony(settings, color)]]
-      - [[#parameters-3][Parameters]]
-      - [[#returns-3][Returns]]
-      - [[#example-3][Example]]
     - [[#visionsettings-color][vision(settings, color)]]
-      - [[#parameters-4][Parameters]]
-      - [[#returns-4][Returns]]
-      - [[#example-4][Example]]
-      - [[#notes-3][Notes]]
     - [[#contrastsettings-color][contrast(settings, color)]]
-      - [[#parameters-5][Parameters]]
-      - [[#returns-5][Returns]]
-      - [[#example-5][Example]]
     - [[#illuminantsettings-color][illuminant(settings, color)]]
-      - [[#parameters-6][Parameters]]
-      - [[#returns-6][Returns]]
-      - [[#example-6][Example]]
     - [[#palettesettings-color][palette(settings, color)]]
-      - [[#parameters-7][Parameters]]
-      - [[#returns-7][Returns]]
-      - [[#examples][Examples]]
-        - [[#material-configuration][Material Configuration]]
-        - [[#artistic-configuration][Artistic Configuration]]
-      - [[#notes-4][Notes]]
     - [[#accessibilitysettings-palette][accessibility(settings, palette)]]
-      - [[#parameters-8][Parameters]]
-      - [[#returns-8][Returns]]
-      - [[#examples-1][Examples]]
-        - [[#material-configuration-1][Material Configuration]]
-        - [[#artistic-configuration-1][Artistic Configuration]]
-      - [[#notes-5][Notes]]
     - [[#tokenspalette][tokens(palette)]]
-      - [[#parameter][Parameter]]
-      - [[#returns-9][Returns]]
-      - [[#example-7][Example]]
     - [[#outputformat-dict][output(format, dict)]]
-      - [[#parameters-9][Parameters]]
-      - [[#returns-10][Returns]]
-      - [[#example-8][Example]]
 
 * Summary
 
@@ -87,7 +44,7 @@ what kind of data a utility takes and gives back. The types as of this writing a
 + =palette=: generated palette data
 + =ms=: generated modular scale data
 + =tokens=: assembled data object
-+ =dict=: prepared data object with a required ~project~ property
++ =dict=: prepared data object with a required =project= property
 
 Any type that is not explicitly mentioned here is local to the given utility. Now, let's go into a little more detail
 about each type.
@@ -103,7 +60,7 @@ bootstrapper layers. Both are completely unnecessary in v2.
 
 *** Dictionary
 
-Dictionaries in QuarkSuite are packaged token collections. They're identified by a ~project~ object which exporting
+Dictionaries in QuarkSuite are packaged token collections. They're identified by a =project= object which exporting
 functions require to be present (even if it's empty) before they will prepare tokens for use with their target formats.
 
 Dictionaries are hierarchical and accommodate groups as you define them.
@@ -145,7 +102,7 @@ An action that takes any valid CSS =color= and converts it =to= a given target f
 
 **** Parameters
 
-+ ~to: "hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "lab" | "lch" | "oklab" | "oklch"~: the target format
++ =to: hex | rgb | hsl | cmyk | hwb | lab | lch | oklab | oklch=: the target format
 + =color: string=: the input color
 
 **** Returns
@@ -296,9 +253,9 @@ An action that takes any valid CSS =color= and a generates an artistic color har
 **** Parameters
 
 + =settings: {}=: color harmony settings
-  + ~settings.configuration = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" |
-    "clash" | "double" | "tetradic" | "square"~: set the color harmony configuration
-  + =settings.accented = false: boolean=: accented variant? (with ~dyadic~, ~analogous~, ~split~, ~triadic~)
+  + =settings.configuration = complementary: dyadic | complementary | analogous | split | triadic | clash | double |
+    tetradic | square=: set the color harmony configuration
+  + =settings.accented = false: boolean=: accented variant? (with =dyadic=, =analogous=, =split=, =triadic=)
 + =color: string=: the input color
 
 **** Returns
@@ -342,9 +299,9 @@ user =settings=.
 **** Parameters
 
 + =settings: {}=: color vision settings
-  + ~settings.as = "protanopia": "achromatopsia" | "protanopia" | "deuteranopia" | "tritanopia" | "protanomaly" |
-    "deuteranomaly" | "tritanomaly"~: set the color vision to check
-  + =settings.method = "brettel": "brettel" | "vienot"=: set the color vision algorithm
+  + =settings.as = protanopia: achromatopsia | protanopia | deuteranopia | tritanopia | protanomaly | deuteranomaly |
+    tritanomaly=: set the color vision to check
+  + =settings.method = brettel: brettel | vienot=: set the color vision algorithm
   + =settings.severity = 50: number=: set the severity (for anaomalous trichromacy checks as a percentage)
   + =settings.steps = 0: number=: interpolates the color vision checks (up to number of steps)
 + =color: string=: the input color
@@ -512,14 +469,14 @@ An action that takes any valid CSS =color= and generates a palette according to 
 **** Parameters
 
 + =settings: {}=: palette settings
-  + =settings.configuration = "material": "material" | "artistic"=: set the palette configuration
+  + =settings.configuration = material: material | artistic=: set the palette configuration
   + =settings.contrast = 100: number=: set the overall palette contrast (both configurations)
   + =settings.accents = false: boolean= include accent colors? (both configurations)
   + =settings.dark = false: boolean=: toggle dark mode? (both configurations)
-  + =settings.states = false: boolean=: include interface states? (~material~)
-  + =settings.tints = 3: number=: number of tints to generate (~artistic~)
-  + =settings.tones = 3: number=: number of tones to generate (~artistic~)
-  + =settings.shades = 3: number=: number of shades to generate (~artistic~)
+  + =settings.states = false: boolean=: include interface states? (=material=)
+  + =settings.tints = 3: number=: number of tints to generate (=artistic=)
+  + =settings.tones = 3: number=: number of tones to generate (=artistic=)
+  + =settings.shades = 3: number=: number of shades to generate (=artistic=)
 + =color: string=: the input color
 
 **** Returns
@@ -741,10 +698,10 @@ console.log(palette({
 
 **** Notes
 
-The ="material"= configuration is especially suited for app palettes. If you include accents and interface states, you
+The =material= configuration is especially suited for app palettes. If you include accents and interface states, you
 likely won't need to generate any more colors for your app even after filtering for accessibility.
 
-The ="artistic"= configuration is ideal for graphic design and content websites. The optional accents are generated much
+The =artistic= configuration is ideal for graphic design and content websites. The optional accents are generated much
 like the material accents but are chromatically less extreme to reflect their different use case.
 
 *** accessibility(settings, palette)
@@ -754,11 +711,11 @@ An action that takes generated =palette= data and filters it for accessibiility 
 **** Parameters
 
 + =settings: {}=: accessibility settings
-  - =settings.mode = "standard": "standard" | "custom"=: set the accessibility mode
-  - =settings.rating = "AA": "AA" | "AAA"=: set the WCAG contrast rating (~standard~)
-  - =settings.large = false: boolean=: use adjusted contrast ratio for large text/UI? (~standard~)
-  - =settings.min = 85: number=: minimum percentage of contrast against the background (~custom~)
-  - =settings.max = undefined: number=: maximum percentage of contrast against the background (~custom~)
+  - =settings.mode = standard: standard | custom=: set the accessibility mode
+  - =settings.rating = AA: AA | AAA=: set the WCAG contrast rating (=standard=)
+  - =settings.large = false: boolean=: use adjusted contrast ratio for large text/UI? (=standard=)
+  - =settings.min = 85: number=: minimum percentage of contrast against the background (=custom=)
+  - =settings.max = undefined: number=: maximum percentage of contrast against the background (=custom=)
 + =palette: string[][]=: the input palette data
 
 **** Returns
@@ -1273,7 +1230,7 @@ An exporter that takes a complete color =dict= and prepares it for a given palet
 
 **** Parameters
 
-+ ~format: "gpl" | "sketchpalette"~: the target palette format
++ =format: gpl | sketchpalette=: the target palette format
 + =dict: {}=: the input color dictionary
 
 **** Returns
