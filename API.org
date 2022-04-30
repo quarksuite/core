@@ -145,7 +145,7 @@ An action that takes any valid CSS =color= and converts it =to= a given target f
 
 **** Parameters
 
-+ =to: "hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "lab" | "lch" | "oklab" | "oklch"=: the target format
++ ~to: "hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "lab" | "lch" | "oklab" | "oklch"~: the target format
 + =color: string=: the input color
 
 **** Returns
@@ -296,9 +296,9 @@ An action that takes any valid CSS =color= and a generates an artistic color har
 **** Parameters
 
 + =settings: {}=: color harmony settings
-  + =settings.configuration = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" |
-    "clash" | "double" | "tetradic" | "square" =: set the color harmony configuration
-  + =settings.accented = false: boolean=: accented variant? (with ~"dyadic"~, ~"analogous"~, ~"split"~, ~"triadic"~)
+  + ~settings.configuration = "complementary": "dyadic" | "complementary" | "analogous" | "split" | "triadic" |
+    "clash" | "double" | "tetradic" | "square"~: set the color harmony configuration
+  + =settings.accented = false: boolean=: accented variant? (with ~dyadic~, ~analogous~, ~split~, ~triadic~)
 + =color: string=: the input color
 
 **** Returns
@@ -342,8 +342,8 @@ user =settings=.
 **** Parameters
 
 + =settings: {}=: color vision settings
-  + =settings.as = "protanopia": "achromatopsia" | "protanopia" | "deuteranopia" | "tritanopia" | "protanomaly" |
-    "deuteranomaly" | "tritanomaly" =: set the color vision to check
+  + ~settings.as = "protanopia": "achromatopsia" | "protanopia" | "deuteranopia" | "tritanopia" | "protanomaly" |
+    "deuteranomaly" | "tritanomaly"~: set the color vision to check
   + =settings.method = "brettel": "brettel" | "vienot"=: set the color vision algorithm
   + =settings.severity = 50: number=: set the severity (for anaomalous trichromacy checks as a percentage)
   + =settings.steps = 0: number=: interpolates the color vision checks (up to number of steps)
@@ -516,10 +516,10 @@ An action that takes any valid CSS =color= and generates a palette according to 
   + =settings.contrast = 100: number=: set the overall palette contrast (both configurations)
   + =settings.accents = false: boolean= include accent colors? (both configurations)
   + =settings.dark = false: boolean=: toggle dark mode? (both configurations)
-  + =settings.states = false: boolean=: include interface states? (~"material"~)
-  + =settings.tints = 3: number=: number of tints to generate (~"artistic"~)
-  + =settings.tones = 3: number=: number of tones to generate (~"artistic"~)
-  + =settings.shades = 3: number=: number of shades to generate (~"artistic"~)
+  + =settings.states = false: boolean=: include interface states? (~material~)
+  + =settings.tints = 3: number=: number of tints to generate (~artistic~)
+  + =settings.tones = 3: number=: number of tones to generate (~artistic~)
+  + =settings.shades = 3: number=: number of shades to generate (~artistic~)
 + =color: string=: the input color
 
 **** Returns
@@ -755,10 +755,10 @@ An action that takes generated =palette= data and filters it for accessibiility 
 
 + =settings: {}=: accessibility settings
   - =settings.mode = "standard": "standard" | "custom"=: set the accessibility mode
-  - =settings.rating = "AA": "AA" | "AAA"=: set the WCAG contrast rating (~"standard"~)
-  - =settings.large = false: boolean=: use adjusted contrast ratio for large text/UI? (~"standard"~)
-  - =settings.min = 85: number=: minimum percentage of contrast against the background (~"custom"~)
-  - =settings.max = undefined: number=: maximum percentage of contrast against the background (~"custom"~)
+  - =settings.rating = "AA": "AA" | "AAA"=: set the WCAG contrast rating (~standard~)
+  - =settings.large = false: boolean=: use adjusted contrast ratio for large text/UI? (~standard~)
+  - =settings.min = 85: number=: minimum percentage of contrast against the background (~custom~)
+  - =settings.max = undefined: number=: maximum percentage of contrast against the background (~custom~)
 + =palette: string[][]=: the input palette data
 
 **** Returns
@@ -1273,7 +1273,7 @@ An exporter that takes a complete color =dict= and prepares it for a given palet
 
 **** Parameters
 
-+ =format: "gpl" | "sketchpalette"=: the target palette format
++ ~format: "gpl" | "sketchpalette"~: the target palette format
 + =dict: {}=: the input color dictionary
 
 **** Returns
