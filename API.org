@@ -22,6 +22,11 @@
     - [[#accessibilitysettings-palette][accessibility(settings, palette)]]
     - [[#tokenspalette][tokens(palette)]]
     - [[#outputformat-dict][output(format, dict)]]
+  - [[#content][Content]]
+    - [[#textsettings-font][text(settings, font)]]
+    - [[#mssettings-base][ms(settings, base)]]
+    - [[#modifycalc-ms][modify(calc, ms)]]
+    - [[#tokenssettings-ms][tokens(settings, ms)]]
 
 * Summary
 
@@ -1314,3 +1319,304 @@ console.log(output("gpl", dict));
 console.log(output("sketchpalette", dict));
 // {"colors":[{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.3333333333333333,"green":0.1803921568627451,"blue":0.49411764705882355,"alpha":1},{"red":0.27058823529411763,"green":0.1607843137254902,"blue":0.39215686274509803,"alpha":1},{"red":0.20784313725490197,"green":0.13725490196078433,"blue":0.29411764705882354,"alpha":1},{"red":0.14901960784313725,"green":0.10980392156862745,"blue":0.20392156862745098,"alpha":1},{"red":0.23921568627450981,"green":0.12941176470588237,"blue":0.3411764705882353,"alpha":1},{"red":0.1843137254901961,"green":0.10196078431372549,"blue":0.25882352941176473,"alpha":1},{"red":0.13333333333333333,"green":0.07450980392156863,"blue":0.17647058823529413,"alpha":1},{"red":0.08627450980392157,"green":0.050980392156862744,"blue":0.10196078431372549,"alpha":1},{"red":0.043137254901960784,"green":0.023529411764705882,"blue":0.03137254901960784,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.7333333333333333,"green":0.6588235294117647,"blue":0.8392156862745098,"alpha":1},{"red":0.8196078431372549,"green":0.7725490196078432,"blue":0.8941176470588236,"alpha":1},{"red":0.4235294117647059,"green":0.7137254901960784,"blue":0.8588235294117647,"alpha":1}],"pluginVersion":"1.4","compatibleVersion":"1.4"}
 #+END_SRC
+
+** Content
+
+The =content.js= module contains all functionality around creating content tokens.
+
+Modular scales are associated with the =ms= type and the goal is to create and enforce consistency in values used for
+text sizing, content dimensions, spacing, layout, etc.
+
+The content module also contains utilities for handling other kinds of content concerns.
+
+*** text(settings, font)
+
+An action that takes a =font= string and generates text tokens according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: text settings
+  - =settings.system = sans: sans | serif | monospace=: set system font stack
+  - =settings.weights = [regular, bold]: Array<thin | extralight | light | regular | medium | semibold | bold |
+    extrabold | black>=: set text weights
++ =font: string=: a custom font (or empty string)
+
+**** Returns
+
+={}=: generated text tokens
+
+**** Example
+
+#+BEGIN_SRC js
+import { text } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+// Change the system stack
+console.log(text({ system: "serif", weights: ["regular", "bold"] }, ""));
+// {
+//   family: "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro,...",
+//   regular: 400,
+//   bold: 700
+// }
+
+// Each weight string corresponds with a given generated weight token
+console.log(text({ system: "sans", weights: ["thin", "light", "black"] }, ""));
+// {
+//   family: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, n...",
+//   thin: 100,
+//   light: 300,
+//   black: 900
+// }
+
+// Set a font string and it will be prepended to the family
+console.log(text({ system: "serif", weights: ["regular", "bold"] }, "Mozilla Slab"));
+// {
+//   family: "Mozilla Slab, Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Sou...",
+//   regular: 400,
+//   bold: 700
+// }
+#+END_SRC
+
+*** ms(settings, base)
+
+An action that takes a =base= value and generates modular scale data according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: modular scale settings
+  + =settings.ratio = 1.5: number | number[]=: set scale ratio(s)
+  + =settings.values = 6: number=: set number of scale values
++ =base: number=: base value to generate from
+
+**** Returns
+
+=number[]=: modular scale data
+
+**** Example
+
+#+BEGIN_SRC js
+import { ms } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+// Setting ratio as 1.25
+console.log(ms({ ratio: 1.25, values: 6 }, 1)); // [1, 1.25, 1.5625, 1.953125, 2.44140625, 3.0517578125]
+
+// Multiple ratios can be set
+console.log(ms({ ratio: [1.25, 1.5, 1.75], values: 6 }, 1)); // [1, 1.25, 1.5, 1.5625, 1.75, 2.25]
+
+// Adjust output values
+console.log(ms({ ratio: 1.5, values: 8 }, 1));
+// [
+//           1,        1.5,
+//        2.25,      3.375,
+//      5.0625,    7.59375,
+//   11.390625, 17.0859375
+// ]
+
+// Set a different base
+console.log(ms({ ratio: 1.5, values: 6 }, 16)); // [16, 24, 36, 54, 81, 121.5]
+#+END_SRC
+
+**** Notes
+
++ At this point, the precision of the output is untouched. Raw modular scales should remain unprocessed for precision to
+  ensure recalculations are accurate as well. Precision comes in later.
+
+*** modify(calc, ms)
+
+An action that takes a generated =ms= and updates each value via a =calc= modifier.
+
+**** Parameters
+
++ =calc: (n: number) => number=: the recalculation function
++ =ms: number[]=: the input modular scale data
+
+**** Returns
+
+=number[]=: the modified scale data
+
+**** Example
+
+#+BEGIN_SRC js
+import { ms, modify } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+const scale = ms({ ratio: 2, values: 6 }, 1);
+
+// multiply each value by 1.2
+console.log(modify((n) => n * 1.2, scale)); // [1.2, 2.4, 4.8, 9.6, 19.2, 38.4]
+
+// divide each value by 10
+console.log(modify((n) => n / 10, scale)); // [0.1, 0.2, 0.4, 0.8, 1.6, 3.2]
+#+END_SRC
+
+*** tokens(settings, ms)
+
+An action that takes a generated =ms= and outputs content tokens according to user =settings=.
+
+**** Parameters
+
++ =settings: {}=: content token settings
+  - =settings.type = bidirectional: bidirectional | unidirectional | ranged | grid=: set the output type
+  - =settings.unit = undefined: string | undefined=: set the output units (=bidirectional=, =unidirectional=, =ranged=)
+  - =settings.inversion = undefined: string | undefined=: set the output units for the inverse (=bidirectional=)
+  - =settings.min = 1: number=: set the minimum range value (=ranged=)
+  - =settings.max = 1: number=: set the maximum range value (=ranged=)
+  - =settings.trunc = false: boolean=: truncate the values? (=ranged=)
+  - =settings.context = min: min | max=: set the token context (=ranged=)
++ =ms: number[]=: the input modular scale data
+
+**** Returns
+
+={}=: the generated content tokens
+
+**** Examples
+
+***** Bidirectional
+
+#+BEGIN_SRC js
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
+
+// Unitless by default
+console.log(tokens({ type: "bidirectional" }, scale));
+// {
+//   base: 1,
+//   x2: 1.414,
+//   x3: 1.618,
+//   x4: 1.9994,
+//   x5: 2.6179,
+//   x6: 2.8271,
+//   d2: 0.70721,
+//   d3: 0.61805,
+//   d4: 0.50015,
+//   d5: 0.38198,
+//   d6: 0.35371
+// }
+
+// As rems
+console.log(tokens({ type: "bidirectional", unit: "rem" }, scale));
+// {
+//   base: "1rem",
+//   x2: "1.414rem",
+//   x3: "1.618rem",
+//   x4: "1.9994rem",
+//   x5: "2.6179rem",
+//   x6: "2.8271rem",
+//   d2: "0.70721rem",
+//   d3: "0.61805rem",
+//   d4: "0.50015rem",
+//   d5: "0.38198rem",
+//   d6: "0.35371rem"
+// }
+
+// As rems with em inversion
+console.log(tokens({ type: "bidirectional", unit: "rem", inversion: "em" }, scale));
+// {
+//   base: "1rem",
+//   x2: "1.414rem",
+//   x3: "1.618rem",
+//   x4: "1.9994rem",
+//   x5: "2.6179rem",
+//   x6: "2.8271rem",
+//   d2: "0.70721em",
+//   d3: "0.61805em",
+//   d4: "0.50015em",
+//   d5: "0.38198em",
+//   d6: "0.35371em"
+// }
+#+END_SRC
+
+***** Unidirectional
+
+#+BEGIN_SRC js
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
+
+// Unitless by default
+console.log(tokens({ type: "unidirectional" }, scale));
+// {
+//   base: 1,
+//   x2: 1.414,
+//   x3: 1.618,
+//   x4: 1.9994,
+//   x5: 2.6179,
+//   x6: 2.8271,
+// }
+
+// As rems
+console.log(tokens({ type: "unidirectional", unit: "rem" }, scale));
+// {
+//   base: "1rem",
+//   x2: "1.414rem",
+//   x3: "1.618rem",
+//   x4: "1.9994rem",
+//   x5: "2.6179rem",
+//   x6: "2.8271rem",
+// }
+#+END_SRC
+
+***** Ranged
+
+#+BEGIN_SRC js
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
+
+// Unitless by default
+console.log(tokens({ type: "ranged", min: 1, max: 10 }, scale));
+// { base: 1, i2: 4.1834, i3: 4.4378, i4: 5.5014, i5: 6.5624, i6: 7.3649, max: 10 }
+
+// Sample: A measure (characters per line) scale
+console.log(tokens({
+  type: "ranged",
+  min: 45,
+  max: 75,
+  unit: "ch",
+  trunc: true,
+  context: "max"
+}, scale));
+// { base: "75ch", i2: "66ch", i3: "63ch", i4: "60ch", i5: "56ch", i6: "55ch", min: "45ch" }
+#+END_SRC
+
+***** Grid
+
+#+BEGIN_SRC js
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+const scale = ms({ ratio: 1.618, values: 5 }, 1);
+
+// Sample: Grid layout tokens
+console.log(tokens({ type: "grid" }, scale));
+// {
+//   columns: 5,
+//   rows: 3,
+//   col: {
+//     "1": 1,
+//     "2": 2,
+//     "3": 3,
+//     "4": 4,
+//     "5": 5,
+//     "-1": -1,
+//     "-2": -2,
+//     "-3": -3,
+//     "-4": -4,
+//     "-5": -5
+//   },
+//   row: { "1": 1, "2": 2, "3": 3, "-1": -1, "-2": -2, "-3": -3 }
+// }
+#+END_SRC
+
+**** Notes
+
+=tokens()= is designed to generate (mostly) content modular scale tokens, but it can be used for /any/ kind of numeric
+scale data. This means you can use it to generate tokens for, say, animation durations.
+
+If you're coming from v1, this means that the content =tokens()= utility completely replaces formulas because it builds
+on the fact that (generally) modular scales for content will be one of three configurations:
+
++ Bidirectional (=<- base ->=): base value, multiples, and inverse
++ Unidirectional (=base ->=): base value, multiples
++ Ranged (=min <-> max=): minimum value, generated intervals, maximum value
+
+The =grid= type generates columns and rows as CSS grid tracks where columns are equivalent to the number of scale values
+and rows are derived from the =columns / ratio=.

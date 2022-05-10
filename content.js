@@ -13,7 +13,7 @@
  * user `settings`.
  *
  * @param {object} settings - text settings
- * @param {TextWeights[]} [settings.weights] - set text weight tokens
+ * @param {TextWeights[]} [settings.weights] - set text weights
  * @param {TextSystem} [settings.system] - set system font stack
  *
  * @param {string} font - a custom font (or `""` for just the system stack)
@@ -44,8 +44,8 @@ export function text(settings, font) {
  * @param {number | number[]} [settings.ratio] - set scale ratio(s)
  * @param {number} [settings.values] - set number of scale values
  *
- * @param {number} base - the base value to generate from
- * @returns {ModularScale} the modular scale data
+ * @param {number} base - base value to generate from
+ * @returns {ModularScale} modular scale data
  *
  * @example
  * Modular scale generation examples
@@ -118,7 +118,7 @@ export function modify(calc, ms) {
  * @param {boolean} [settings.trunc] - truncate the values? (ranged)
  * @param {"min" | "max"} [settings.context] - set the token context (ranged)
  *
- * @param {ModularScale} - the input modular scale data
+ * @param {ModularScale} ms - the input modular scale data
  * @returns {DirectionalTokens | RangedTokens | GridTokens} the generated content tokens
  *
  * @example
