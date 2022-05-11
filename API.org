@@ -27,6 +27,10 @@
     - [[#mssettings-base][ms(settings, base)]]
     - [[#modifycalc-ms][modify(calc, ms)]]
     - [[#tokenssettings-ms][tokens(settings, ms)]]
+  - [[#exporter-1][Exporter]]
+    - [[#stylesheetformat-dict][stylesheet(format, dict)]]
+    - [[#dataformat-dict][data(format, dict)]]
+    - [[#interopformat-dict][interop(format, dict)]]
 
 * Summary
 
@@ -1620,3 +1624,802 @@ on the fact that (generally) modular scales for content will be one of three con
 
 The =grid= type generates columns and rows as CSS grid tracks where columns are equivalent to the number of scale values
 and rows are derived from the =columns / ratio=.
+
+** Exporter
+
+The =exporter.js= module handles all the functionality around outputting token dictionaries for various
+formats. QuarkSuite does not assume filesystem access, so the output is /file-ready/ rather than a file itself. This
+means you can directly write out to your filesystem using your environment's native API or a library of your choice.
+
+Exporters are defined by the domain target and include:
+
++ =stylesheet()=: target is a stylesheet format (CSS custom properties, common preprocessors)
++ =data()=: target is a general data format (JSON, YAML)
++ =interop()=: target is interop spec (TailwindCSS theme, Style Dictionary tokens)
+
+*** stylesheet(format, dict)
+
+An exporter that takes a complete token =dict= and prepares a file-ready template string for a given stylesheet =format=.
+
+**** Parameters
+
++ =format: css | scss | less | styl=: the target stylesheet format
++ =dict: {}=: the input token dictionary
+
+**** Returns
+
+=string=: file-ready stylesheet output
+
+**** Example
+
+#+BEGIN_SRC js
+import {
+  convert,
+  palette,
+  tokens: color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  text,
+  ms,
+  tokens: content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { stylesheet } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+
+const swatch = convert("rgb", "rebeccapurple");
+const scale = ms({ ratio: 1.414, values: 4 }, 1);
+
+// Sample dictionary
+const dict = {
+  project: {
+    name: "Sample Dictionary",
+    author: "Ed N. Bacon",
+    license: "MIT",
+    version: "0.1.0"
+  },
+  sd: {
+    color: color(palette({ configuration: "material", accents: true }, swatch)),
+    text: {
+      primary: text({ system: "sans", weights: ["regular", "bold"] }, ""),
+      secondary: text({ system: "serif", weights: ["light", "bold", "black"] }, ""),
+      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
+      measure: content({
+        type: "ranged",
+        min: 45,
+        max: 75,
+        trunc: true,
+        context: "max",
+        unit: "ch",
+      }, scale),
+      leading: content({
+        type: "ranged",
+        min: 1.25,
+        max: 1.5,
+        context: "max",
+      }, scale),
+    },
+    spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+  }
+};
+
+// CSS Custom Properties
+console.log(stylesheet("css", dict));
+//
+// /**
+//  * Project: Sample Dictionary (v0.1.0)
+//  * Owned by: Ed N. Bacon
+//  * License: MIT
+//  * ================================================================================
+//  *
+//  * DESCRIPTION: N/A
+//  * COMMENTS: N/A
+//  * --------------------------------------------------------------------------------
+//  * Updated on 5/11/2022 at 3:21:03 PM
+//  **/
+//
+// :root {
+//   --sd-color-50: rgb(238, 234, 246);
+//   --sd-color-100: rgb(209, 197, 228);
+//   --sd-color-200: rgb(181, 161, 210);
+//   --sd-color-300: rgb(154, 125, 192);
+//   --sd-color-400: rgb(127, 89, 173);
+//   --sd-color-500: rgb(85, 46, 126);
+//   --sd-color-600: rgb(69, 41, 100);
+//   --sd-color-700: rgb(53, 35, 75);
+//   --sd-color-800: rgb(38, 28, 52);
+//   --sd-color-900: rgb(24, 21, 29);
+//   --sd-color-bg: rgb(255, 255, 255);
+//   --sd-color-fg: rgb(17, 17, 17);
+//   --sd-color-a50: rgb(210, 244, 237);
+//   --sd-color-a100: rgb(156, 214, 223);
+//   --sd-color-a200: rgb(112, 181, 215);
+//   --sd-color-a300: rgb(93, 142, 206);
+//   --sd-color-a400: rgb(96, 99, 187);
+//   --sd-color-a500: rgb(100, 0, 103);
+//   --sd-color-a600: rgb(88, 0, 42);
+//   --sd-color-a700: rgb(66, 0, 0);
+//   --sd-color-a800: rgb(31, 0, 0);
+//   --sd-color-a900: rgb(0, 28, 0);
+//   --sd-text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+//   --sd-text-primary-regular: 400;
+//   --sd-text-primary-bold: 700;
+//   --sd-text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+//   --sd-text-secondary-light: 300;
+//   --sd-text-secondary-bold: 700;
+//   --sd-text-secondary-black: 900;
+//   --sd-text-size: 1rem;
+//   --sd-text-size-x2: 1.414rem;
+//   --sd-text-size-x3: 1.9994rem;
+//   --sd-text-size-x4: 2.8271rem;
+//   --sd-text-size-d2: 0.70721em;
+//   --sd-text-size-d3: 0.50015em;
+//   --sd-text-size-d4: 0.35371em;
+//   --sd-text-measure: 75ch;
+//   --sd-text-measure-i2: 66ch;
+//   --sd-text-measure-i3: 60ch;
+//   --sd-text-measure-i4: 55ch;
+//   --sd-text-measure-min: 45ch;
+//   --sd-text-leading: 1.5;
+//   --sd-text-leading-i2: 1.4268;
+//   --sd-text-leading-i3: 1.375;
+//   --sd-text-leading-i4: 1.3384;
+//   --sd-text-leading-min: 1.25;
+//   --sd-spacing: 1ex;
+//   --sd-spacing-x2: 1.414ex;
+//   --sd-spacing-x3: 1.9994ex;
+//   --sd-spacing-x4: 2.8271ex;
+//   --sd-spacing-d2: 0.70721ex;
+//   --sd-spacing-d3: 0.50015ex;
+//   --sd-spacing-d4: 0.35371ex;
+//
+// }
+//
+
+// Sass (SCSS) variables
+console.log(stylesheet("scss", dict));
+//
+// /*!
+//  * Project: Sample Dictionary (v0.1.0)
+//  * Owned by: Ed N. Bacon
+//  * License: MIT
+//  * ================================================================================
+//  *
+//  * DESCRIPTION: N/A
+//  * COMMENTS: N/A
+//  * --------------------------------------------------------------------------------
+//  * Updated on 5/11/2022 at 3:23:11 PM
+//  */
+//
+// $sd-color-50: rgb(238, 234, 246);
+// $sd-color-100: rgb(209, 197, 228);
+// $sd-color-200: rgb(181, 161, 210);
+// $sd-color-300: rgb(154, 125, 192);
+// $sd-color-400: rgb(127, 89, 173);
+// $sd-color-500: rgb(85, 46, 126);
+// $sd-color-600: rgb(69, 41, 100);
+// $sd-color-700: rgb(53, 35, 75);
+// $sd-color-800: rgb(38, 28, 52);
+// $sd-color-900: rgb(24, 21, 29);
+// $sd-color-bg: rgb(255, 255, 255);
+// $sd-color-fg: rgb(17, 17, 17);
+// $sd-color-a50: rgb(210, 244, 237);
+// $sd-color-a100: rgb(156, 214, 223);
+// $sd-color-a200: rgb(112, 181, 215);
+// $sd-color-a300: rgb(93, 142, 206);
+// $sd-color-a400: rgb(96, 99, 187);
+// $sd-color-a500: rgb(100, 0, 103);
+// $sd-color-a600: rgb(88, 0, 42);
+// $sd-color-a700: rgb(66, 0, 0);
+// $sd-color-a800: rgb(31, 0, 0);
+// $sd-color-a900: rgb(0, 28, 0);
+// $sd-text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+// $sd-text-primary-regular: 400;
+// $sd-text-primary-bold: 700;
+// $sd-text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+// $sd-text-secondary-light: 300;
+// $sd-text-secondary-bold: 700;
+// $sd-text-secondary-black: 900;
+// $sd-text-size: 1rem;
+// $sd-text-size-x2: 1.414rem;
+// $sd-text-size-x3: 1.9994rem;
+// $sd-text-size-x4: 2.8271rem;
+// $sd-text-size-d2: 0.70721em;
+// $sd-text-size-d3: 0.50015em;
+// $sd-text-size-d4: 0.35371em;
+// $sd-text-measure: 75ch;
+// $sd-text-measure-i2: 66ch;
+// $sd-text-measure-i3: 60ch;
+// $sd-text-measure-i4: 55ch;
+// $sd-text-measure-min: 45ch;
+// $sd-text-leading: 1.5;
+// $sd-text-leading-i2: 1.4268;
+// $sd-text-leading-i3: 1.375;
+// $sd-text-leading-i4: 1.3384;
+// $sd-text-leading-min: 1.25;
+// $sd-spacing: 1ex;
+// $sd-spacing-x2: 1.414ex;
+// $sd-spacing-x3: 1.9994ex;
+// $sd-spacing-x4: 2.8271ex;
+// $sd-spacing-d2: 0.70721ex;
+// $sd-spacing-d3: 0.50015ex;
+// $sd-spacing-d4: 0.35371ex;
+//
+
+// Less variables
+console.log(stylesheet("less", dict));
+//
+// /*
+//  * Project: Sample Dictionary (v0.1.0)
+//  * Owned by: Ed N. Bacon
+//  * License: MIT
+//  * ================================================================================
+//  *
+//  * DESCRIPTION: N/A
+//  * COMMENTS: N/A
+//  * --------------------------------------------------------------------------------
+//  * Updated on 5/11/2022 at 3:23:11 PM
+//  */
+//
+// @sd-color-50: rgb(238, 234, 246);
+// @sd-color-100: rgb(209, 197, 228);
+// @sd-color-200: rgb(181, 161, 210);
+// @sd-color-300: rgb(154, 125, 192);
+// @sd-color-400: rgb(127, 89, 173);
+// @sd-color-500: rgb(85, 46, 126);
+// @sd-color-600: rgb(69, 41, 100);
+// @sd-color-700: rgb(53, 35, 75);
+// @sd-color-800: rgb(38, 28, 52);
+// @sd-color-900: rgb(24, 21, 29);
+// @sd-color-bg: rgb(255, 255, 255);
+// @sd-color-fg: rgb(17, 17, 17);
+// @sd-color-a50: rgb(210, 244, 237);
+// @sd-color-a100: rgb(156, 214, 223);
+// @sd-color-a200: rgb(112, 181, 215);
+// @sd-color-a300: rgb(93, 142, 206);
+// @sd-color-a400: rgb(96, 99, 187);
+// @sd-color-a500: rgb(100, 0, 103);
+// @sd-color-a600: rgb(88, 0, 42);
+// @sd-color-a700: rgb(66, 0, 0);
+// @sd-color-a800: rgb(31, 0, 0);
+// @sd-color-a900: rgb(0, 28, 0);
+// @sd-text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+// @sd-text-primary-regular: 400;
+// @sd-text-primary-bold: 700;
+// @sd-text-secondary-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+// @sd-text-secondary-light: 300;
+// @sd-text-secondary-bold: 700;
+// @sd-text-secondary-black: 900;
+// @sd-text-size: 1rem;
+// @sd-text-size-x2: 1.414rem;
+// @sd-text-size-x3: 1.9994rem;
+// @sd-text-size-x4: 2.8271rem;
+// @sd-text-size-d2: 0.70721em;
+// @sd-text-size-d3: 0.50015em;
+// @sd-text-size-d4: 0.35371em;
+// @sd-text-measure: 75ch;
+// @sd-text-measure-i2: 66ch;
+// @sd-text-measure-i3: 60ch;
+// @sd-text-measure-i4: 55ch;
+// @sd-text-measure-min: 45ch;
+// @sd-text-leading: 1.5;
+// @sd-text-leading-i2: 1.4268;
+// @sd-text-leading-i3: 1.375;
+// @sd-text-leading-i4: 1.3384;
+// @sd-text-leading-min: 1.25;
+// @sd-spacing: 1ex;
+// @sd-spacing-x2: 1.414ex;
+// @sd-spacing-x3: 1.9994ex;
+// @sd-spacing-x4: 2.8271ex;
+// @sd-spacing-d2: 0.70721ex;
+// @sd-spacing-d3: 0.50015ex;
+// @sd-spacing-d4: 0.35371ex;
+//
+
+// Stylus variables
+console.log(stylesheet("styl", dict));
+//
+// /*!
+//  * Project: Sample Dictionary (v0.1.0)
+//  * Owned by: Ed N. Bacon
+//  * License: MIT
+//  * ================================================================================
+//  *
+//  * DESCRIPTION: N/A
+//  * COMMENTS: N/A
+//  * --------------------------------------------------------------------------------
+//  * Updated on 5/11/2022 at 3:27:39 PM
+//  */
+//
+// sd-color-50 = rgb(238, 234, 246)
+// sd-color-100 = rgb(209, 197, 228)
+// sd-color-200 = rgb(181, 161, 210)
+// sd-color-300 = rgb(154, 125, 192)
+// sd-color-400 = rgb(127, 89, 173)
+// sd-color-500 = rgb(85, 46, 126)
+// sd-color-600 = rgb(69, 41, 100)
+// sd-color-700 = rgb(53, 35, 75)
+// sd-color-800 = rgb(38, 28, 52)
+// sd-color-900 = rgb(24, 21, 29)
+// sd-color-bg = rgb(255, 255, 255)
+// sd-color-fg = rgb(17, 17, 17)
+// sd-color-a50 = rgb(210, 244, 237)
+// sd-color-a100 = rgb(156, 214, 223)
+// sd-color-a200 = rgb(112, 181, 215)
+// sd-color-a300 = rgb(93, 142, 206)
+// sd-color-a400 = rgb(96, 99, 187)
+// sd-color-a500 = rgb(100, 0, 103)
+// sd-color-a600 = rgb(88, 0, 42)
+// sd-color-a700 = rgb(66, 0, 0)
+// sd-color-a800 = rgb(31, 0, 0)
+// sd-color-a900 = rgb(0, 28, 0)
+// sd-text-primary-family = -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif
+// sd-text-primary-regular = 400
+// sd-text-primary-bold = 700
+// sd-text-secondary-family = Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol
+// sd-text-secondary-light = 300
+// sd-text-secondary-bold = 700
+// sd-text-secondary-black = 900
+// sd-text-size = 1rem
+// sd-text-size-x2 = 1.414rem
+// sd-text-size-x3 = 1.9994rem
+// sd-text-size-x4 = 2.8271rem
+// sd-text-size-d2 = 0.70721em
+// sd-text-size-d3 = 0.50015em
+// sd-text-size-d4 = 0.35371em
+// sd-text-measure = 75ch
+// sd-text-measure-i2 = 66ch
+// sd-text-measure-i3 = 60ch
+// sd-text-measure-i4 = 55ch
+// sd-text-measure-min = 45ch
+// sd-text-leading = 1.5
+// sd-text-leading-i2 = 1.4268
+// sd-text-leading-i3 = 1.375
+// sd-text-leading-i4 = 1.3384
+// sd-text-leading-min = 1.25
+// sd-spacing = 1ex
+// sd-spacing-x2 = 1.414ex
+// sd-spacing-x3 = 1.9994ex
+// sd-spacing-x4 = 2.8271ex
+// sd-spacing-d2 = 0.70721ex
+// sd-spacing-d3 = 0.50015ex
+// sd-spacing-d4 = 0.35371ex
+//
+#+END_SRC
+
+*** data(format, dict)
+
+An exporter that takes a complete token =dict= and prepares a file-ready template string for a given data =format=.
+
+**** Parameters
+
++ =format: json | yaml=: the target data format
++ =dict: {}=: the input token dictionary
+
+**** Returns
+
+=string=: file-ready data output
+
+**** Example
+
+#+BEGIN_SRC js
+import {
+  convert,
+  palette,
+  tokens: color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  text,
+  ms,
+  tokens: content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { data } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+
+const swatch = convert("rgb", "rebeccapurple");
+const scale = ms({ ratio: 1.414, values: 4 }, 1);
+
+// Sample dictionary
+const dict = {
+  project: {
+    name: "Sample Dictionary",
+    author: "Ed N. Bacon",
+    license: "MIT",
+    version: "0.1.0"
+  },
+  sd: {
+    color: color(palette({ configuration: "material", accents: true }, swatch)),
+    text: {
+      primary: text({ system: "sans", weights: ["regular", "bold"] }, ""),
+      secondary: text({ system: "serif", weights: ["light", "bold", "black"] }, ""),
+      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
+      measure: content({
+        type: "ranged",
+        min: 45,
+        max: 75,
+        trunc: true,
+        context: "max",
+        unit: "ch",
+      }, scale),
+      leading: content({
+        type: "ranged",
+        min: 1.25,
+        max: 1.5,
+        context: "max",
+      }, scale),
+    },
+    spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+  }
+};
+
+// JSON
+console.log(data("json", dict));
+// {
+//   "project": {
+//     "name": "Sample Dictionary",
+//     "author": "Ed N. Bacon",
+//     "license": "MIT",
+//     "version": "0.1.0"
+//   },
+//   "tokens": {
+//     "sd": {
+//       "color": {
+//         "50": "rgb(238, 234, 246)",
+//         "100": "rgb(209, 197, 228)",
+//         "200": "rgb(181, 161, 210)",
+//         "300": "rgb(154, 125, 192)",
+//         "400": "rgb(127, 89, 173)",
+//         "500": "rgb(85, 46, 126)",
+//         "600": "rgb(69, 41, 100)",
+//         "700": "rgb(53, 35, 75)",
+//         "800": "rgb(38, 28, 52)",
+//         "900": "rgb(24, 21, 29)",
+//         "bg": "rgb(255, 255, 255)",
+//         "fg": "rgb(17, 17, 17)",
+//         "a50": "rgb(210, 244, 237)",
+//         "a100": "rgb(156, 214, 223)",
+//         "a200": "rgb(112, 181, 215)",
+//         "a300": "rgb(93, 142, 206)",
+//         "a400": "rgb(96, 99, 187)",
+//         "a500": "rgb(100, 0, 103)",
+//         "a600": "rgb(88, 0, 42)",
+//         "a700": "rgb(66, 0, 0)",
+//         "a800": "rgb(31, 0, 0)",
+//         "a900": "rgb(0, 28, 0)"
+//       },
+//       "text": {
+//         "primary": {
+//           "family": "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+//           "regular": 400,
+//           "bold": 700
+//         },
+//         "secondary": {
+//           "family": "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+//           "light": 300,
+//           "bold": 700,
+//           "black": 900
+//         },
+//         "size": {
+//           "base": "1rem",
+//           "x2": "1.414rem",
+//           "x3": "1.9994rem",
+//           "x4": "2.8271rem",
+//           "d2": "0.70721em",
+//           "d3": "0.50015em",
+//           "d4": "0.35371em"
+//         },
+//         "measure": {
+//           "base": "75ch",
+//           "i2": "66ch",
+//           "i3": "60ch",
+//           "i4": "55ch",
+//           "min": "45ch"
+//         },
+//         "leading": {
+//           "base": 1.5,
+//           "i2": 1.4268,
+//           "i3": 1.375,
+//           "i4": 1.3384,
+//           "min": 1.25
+//         }
+//       },
+//       "spacing": {
+//         "base": "1ex",
+//         "x2": "1.414ex",
+//         "x3": "1.9994ex",
+//         "x4": "2.8271ex",
+//         "d2": "0.70721ex",
+//         "d3": "0.50015ex",
+//         "d4": "0.35371ex"
+//       }
+//     }
+//   }
+// }
+
+// YAML
+console.log(data("yaml", dict));
+//
+// # Updated on 5/11/2022 at 3:33:56 PM
+//
+// project:
+//   name: Sample Dictionary
+//   author: Ed N. Bacon
+//   license: MIT
+//   version: 0.1.0
+//
+// tokens:
+//   sd:
+//     color:
+//       50: rgb(238, 234, 246)
+//       100: rgb(209, 197, 228)
+//       200: rgb(181, 161, 210)
+//       300: rgb(154, 125, 192)
+//       400: rgb(127, 89, 173)
+//       500: rgb(85, 46, 126)
+//       600: rgb(69, 41, 100)
+//       700: rgb(53, 35, 75)
+//       800: rgb(38, 28, 52)
+//       900: rgb(24, 21, 29)
+//       bg: rgb(255, 255, 255)
+//       fg: rgb(17, 17, 17)
+//       a50: rgb(210, 244, 237)
+//       a100: rgb(156, 214, 223)
+//       a200: rgb(112, 181, 215)
+//       a300: rgb(93, 142, 206)
+//       a400: rgb(96, 99, 187)
+//       a500: rgb(100, 0, 103)
+//       a600: rgb(88, 0, 42)
+//       a700: rgb(66, 0, 0)
+//       a800: rgb(31, 0, 0)
+//       a900: rgb(0, 28, 0)
+//     text:
+//       primary:
+//         family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif
+//         regular: 400
+//         bold: 700
+//       secondary:
+//         family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol
+//         light: 300
+//         bold: 700
+//         black: 900
+//       size:
+//         base: 1rem
+//         x2: 1.414rem
+//         x3: 1.9994rem
+//         x4: 2.8271rem
+//         d2: 0.70721em
+//         d3: 0.50015em
+//         d4: 0.35371em
+//       measure:
+//         base: 75ch
+//         i2: 66ch
+//         i3: 60ch
+//         i4: 55ch
+//         min: 45ch
+//       leading:
+//         base: 1.5
+//         i2: 1.4268
+//         i3: 1.375
+//         i4: 1.3384
+//         min: 1.25
+//     spacing:
+//       base: 1ex
+//       x2: 1.414ex
+//       x3: 1.9994ex
+//       x4: 2.8271ex
+//       d2: 0.70721ex
+//       d3: 0.50015ex
+//       d4: 0.35371ex
+//
+#+END_SRC
+
+*** interop(format, dict)
+
+An exporter that takes a complete token =dict= and translates the schema to a given =format= data spec.
+
+**** Parameters
+
++ =format: tailwindcss | styledictionary=: the target data spec
++ =dict: {}=: the input token dictionary
+
+**** Returns
+
+={}=: the output data
+
+**** Example
+
+#+BEGIN_SRC deno
+import {
+  convert,
+  palette,
+  tokens: color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  text,
+  ms,
+  tokens: content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { interop } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+
+
+const swatch = convert("rgb", "rebeccapurple");
+const scale = ms({ ratio: 1.414, values: 4 }, 1);
+
+// Sample dictionary
+const dict = {
+  sd: {
+    color: color(palette({ configuration: "material", accents: true }, swatch)),
+    text: {
+      primary: text({ system: "sans", weights: ["regular", "bold"] }, ""),
+      secondary: text({ system: "serif", weights: ["light", "bold", "black"] }, ""),
+      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
+      measure: content({
+        type: "ranged",
+        min: 45,
+        max: 75,
+        trunc: true,
+        context: "max",
+        unit: "ch",
+      }, scale),
+      leading: content({
+        type: "ranged",
+        min: 1.25,
+        max: 1.5,
+        context: "max",
+      }, scale),
+    },
+    spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+  }
+};
+
+// TailwindCSS theme
+console.log(interop("tailwindcss", {
+  project: {},
+  theme: {
+    extend: {
+      colors: { main: dict.sd.color },
+      spacing: dict.sd.spacing
+    },
+  }
+}));
+// {
+//   theme: {
+//     extend: {
+//       colors: { main: [Object] },
+//       spacing: {
+//         DEFAULT: "1ex",
+//         x2: "1.414ex",
+//         x3: "1.9994ex",
+//         x4: "2.8271ex",
+//         d2: "0.70721ex",
+//         d3: "0.50015ex",
+//         d4: "0.35371ex"
+//       }
+//     }
+//   }
+// }
+
+// Style Dictionary tokens
+console.log(interop("styledictionary", { project: {}, ...dict }));
+// {
+//   sd: {
+//     color: {
+//       "50": { value: "rgb(238, 234, 246)" },
+//       "100": { value: "rgb(209, 197, 228)" },
+//       "200": { value: "rgb(181, 161, 210)" },
+//       "300": { value: "rgb(154, 125, 192)" },
+//       "400": { value: "rgb(127, 89, 173)" },
+//       "500": { value: "rgb(85, 46, 126)" },
+//       "600": { value: "rgb(69, 41, 100)" },
+//       "700": { value: "rgb(53, 35, 75)" },
+//       "800": { value: "rgb(38, 28, 52)" },
+//       "900": { value: "rgb(24, 21, 29)" },
+//       bg: { value: "rgb(255, 255, 255)" },
+//       fg: { value: "rgb(17, 17, 17)" },
+//       a50: { value: "rgb(210, 244, 237)" },
+//       a100: { value: "rgb(156, 214, 223)" },
+//       a200: { value: "rgb(112, 181, 215)" },
+//       a300: { value: "rgb(93, 142, 206)" },
+//       a400: { value: "rgb(96, 99, 187)" },
+//       a500: { value: "rgb(100, 0, 103)" },
+//       a600: { value: "rgb(88, 0, 42)" },
+//       a700: { value: "rgb(66, 0, 0)" },
+//       a800: { value: "rgb(31, 0, 0)" },
+//       a900: { value: "rgb(0, 28, 0)" }
+//     },
+//     text: {
+//       primary: { family: [Object], regular: [Object], bold: [Object] },
+//       secondary: { family: [Object], light: [Object], bold: [Object], black: [Object] },
+//       size: {
+//         base: [Object],
+//         x2: [Object],
+//         x3: [Object],
+//         x4: [Object],
+//         d2: [Object],
+//         d3: [Object],
+//         d4: [Object]
+//       },
+//       measure: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] },
+//       leading: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] }
+//     },
+//     spacing: {
+//       base: { value: "1ex" },
+//       x2: { value: "1.414ex" },
+//       x3: { value: "1.9994ex" },
+//       x4: { value: "2.8271ex" },
+//       d2: { value: "0.70721ex" },
+//       d3: { value: "0.50015ex" },
+//       d4: { value: "0.35371ex" }
+//     }
+//   }
+// }
+#+END_SRC
+
+#+RESULTS:
+#+begin_src deno
+{
+  theme: {
+    extend: {
+      colors: { main: [Object] },
+      spacing: {
+        DEFAULT: "1ex",
+        x2: "1.414ex",
+        x3: "1.9994ex",
+        x4: "2.8271ex",
+        d2: "0.70721ex",
+        d3: "0.50015ex",
+        d4: "0.35371ex"
+      }
+    }
+  }
+}
+{
+  sd: {
+    color: {
+      "50": { value: "rgb(238, 234, 246)" },
+      "100": { value: "rgb(209, 197, 228)" },
+      "200": { value: "rgb(181, 161, 210)" },
+      "300": { value: "rgb(154, 125, 192)" },
+      "400": { value: "rgb(127, 89, 173)" },
+      "500": { value: "rgb(85, 46, 126)" },
+      "600": { value: "rgb(69, 41, 100)" },
+      "700": { value: "rgb(53, 35, 75)" },
+      "800": { value: "rgb(38, 28, 52)" },
+      "900": { value: "rgb(24, 21, 29)" },
+      bg: { value: "rgb(255, 255, 255)" },
+      fg: { value: "rgb(17, 17, 17)" },
+      a50: { value: "rgb(210, 244, 237)" },
+      a100: { value: "rgb(156, 214, 223)" },
+      a200: { value: "rgb(112, 181, 215)" },
+      a300: { value: "rgb(93, 142, 206)" },
+      a400: { value: "rgb(96, 99, 187)" },
+      a500: { value: "rgb(100, 0, 103)" },
+      a600: { value: "rgb(88, 0, 42)" },
+      a700: { value: "rgb(66, 0, 0)" },
+      a800: { value: "rgb(31, 0, 0)" },
+      a900: { value: "rgb(0, 28, 0)" }
+    },
+    text: {
+      primary: { family: [Object], regular: [Object], bold: [Object] },
+      secondary: { family: [Object], light: [Object], bold: [Object], black: [Object] },
+      size: {
+        base: [Object],
+        x2: [Object],
+        x3: [Object],
+        x4: [Object],
+        d2: [Object],
+        d3: [Object],
+        d4: [Object]
+      },
+      measure: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] },
+      leading: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] }
+    },
+    spacing: {
+      base: { value: "1ex" },
+      x2: { value: "1.414ex" },
+      x3: { value: "1.9994ex" },
+      x4: { value: "2.8271ex" },
+      d2: { value: "0.70721ex" },
+      d3: { value: "0.50015ex" },
+      d4: { value: "0.35371ex" }
+    }
+  }
+}
+#+end_src

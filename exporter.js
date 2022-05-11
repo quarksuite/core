@@ -150,7 +150,7 @@ export function data(format, dict) {
  *
  * @param {InteropFormat} format - the target data spec
  * @param {Dictionary} dict - the input token dictionary
- * @returns {object} the output data spec
+ * @returns {object} the output data
  *
  * @remarks
  * As a rule, exporter functions do *not* assume read/write access to your system.
