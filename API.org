@@ -252,8 +252,6 @@ console.log(mix({ target, strength: 100, steps: 5 }, color));
 **** Notes
 
 + Percentage values lock at =±0-100=
-+ Hue locks at =±0-360=
-
 
 *** harmony(settings, color)
 
@@ -2225,7 +2223,7 @@ An exporter that takes a complete token =dict= and translates the schema to a gi
 
 **** Example
 
-#+BEGIN_SRC deno
+#+BEGIN_SRC js
 import {
   convert,
   palette,
