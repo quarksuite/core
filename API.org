@@ -1081,7 +1081,9 @@ an exporter.
 
 ={}=: assembled color tokens
 
-**** Example
+**** Examples
+
+***** Material
 
 #+BEGIN_SRC js
 import {
@@ -1089,7 +1091,7 @@ import {
   palette,
   accessibility,
   tokens
-} = from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -1239,6 +1241,138 @@ console.log(tokens(materialDarkText));
 // }
 #+END_SRC
 
+***** Artistic
+
+#+BEGIN_SRC js
+import {
+  convert,
+  palette,
+  accessibility,
+  tokens
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+
+const color = convert("rgb", "rebeccapurple");
+
+const contrast = 95;
+const artistic = palette({
+  configuration: "artistic",
+  contrast,
+  accents: true
+}, color);
+
+const artisticDark = palette({
+  configuration: "artistic",
+  contrast,
+  accents: true,
+  dark: true
+}, color);
+
+const artisticUI = accessibility({ rating: "AA", large: true }, artistic);
+const artisticHeading = accessibility({ rating: "AA" }, artistic);
+const artisticText = accessibility({ rating: "AAA" }, artistic);
+
+const artisticDarkUI = accessibility({ rating: "AA", large: true }, artisticDark);
+const artisticDarkHeading = accessibility({ rating: "AA" }, artisticDark);
+const artisticDarkText = accessibility({ rating: "AAA" }, artisticDark);
+
+// Accessible artistic UI (AA large)
+console.log(tokens(artisticUI));
+// {
+//   bg: "rgb(247, 245, 250)",
+//   fg: "rgb(21, 19, 23)",
+//   light: { 100: "rgb(142, 110, 184)" },
+//   muted: { 100: "rgb(120, 88, 160)", "200": "rgb(140, 121, 165)" },
+//   dark: { 100: "rgb(76, 43, 111)", 200: "rgb(51, 34, 71)", 300: "rgb(28, 23, 35)" },
+//   accent: {
+//     100: "rgb(113, 130, 193)",
+//     200: "rgb(110, 92, 173)",
+//     300: "rgb(73, 42, 110)",
+//     400: "rgb(55, 36, 84)",
+//     500: "rgb(38, 29, 59)",
+//     600: "rgb(22, 22, 35)",
+//     700: "rgb(7, 14, 13)"
+//   }
+// }
+
+// Accessible artistic dark UI (AA large)
+console.log(tokens(artisticDarkUI));
+// {
+//   bg: "rgb(21, 19, 23)",
+//   fg: "rgb(247, 245, 250)",
+//   light: {
+//     100: "rgb(142, 110, 184)",
+//     200: "rgb(186, 167, 213)",
+//     300: "rgb(231, 225, 241)"
+//   },
+//   muted: {
+//     100: "rgb(120, 88, 160)",
+//     200: "rgb(140, 121, 165)",
+//     300: "rgb(160, 154, 169)"
+//   },
+//   accent: {
+//     100: "rgb(103, 206, 231)",
+//     200: "rgb(112, 168, 212)",
+//     300: "rgb(113, 130, 193)",
+//     400: "rgb(110, 92, 173)"
+//   }
+// }
+
+// Accessible artistic heading (AA)
+console.log(tokens(artisticHeading));
+// {
+//   bg: "rgb(247, 245, 250)",
+//   fg: "rgb(21, 19, 23)",
+//   muted: { 100: "rgb(120, 88, 160)" },
+//   dark: { 100: "rgb(76, 43, 111)", 200: "rgb(51, 34, 71)", 300: "rgb(28, 23, 35)" },
+//   accent: {
+//     100: "rgb(110, 92, 173)",
+//     200: "rgb(73, 42, 110)",
+//     300: "rgb(55, 36, 84)",
+//     400: "rgb(38, 29, 59)",
+//     500: "rgb(22, 22, 35)",
+//     600: "rgb(7, 14, 13)"
+//   }
+// }
+
+// Accessible artistic dark heading (AA)
+console.log(tokens(artisticDarkHeading));
+// {
+//   bg: "rgb(21, 19, 23)",
+//   fg: "rgb(247, 245, 250)",
+//   light: { 100: "rgb(186, 167, 213)", 200: "rgb(231, 225, 241)" },
+//   muted: { 100: "rgb(140, 121, 165)", 200: "rgb(160, 154, 169)" },
+//   accent: {
+//     100: "rgb(103, 206, 231)",
+//     200: "rgb(112, 168, 212)",
+//     300: "rgb(113, 130, 193)"
+//   }
+// }
+
+// Accessible artistic text (AAA)
+console.log(tokens(artisticText));
+// {
+//   bg: "rgb(247, 245, 250)",
+//   fg: "rgb(21, 19, 23)",
+//   dark: { 100: "rgb(76, 43, 111)", 200: "rgb(51, 34, 71)", 300: "rgb(28, 23, 35)" },
+//   accent: {
+//     100: "rgb(73, 42, 110)",
+//     200: "rgb(55, 36, 84)",
+//     300: "rgb(38, 29, 59)",
+//     400: "rgb(22, 22, 35)",
+//     500: "rgb(7, 14, 13)"
+//   }
+// }
+
+// Accessible artistic dark text (AAA)
+console.log(tokens(artisticDarkText));
+// {
+//   bg: "rgb(21, 19, 23)",
+//   fg: "rgb(247, 245, 250)",
+//   light: { 100: "rgb(186, 167, 213)", 200: "rgb(231, 225, 241)" },
+//   accent: { 100: "rgb(103, 206, 231)", 200: "rgb(112, 168, 212)" }
+// }
+#+END_SRC
+
 *** output(format, dict)
 
 An exporter that takes a complete color =dict= and prepares it for a given palette =format=.
@@ -1318,7 +1452,7 @@ console.log(output("gpl", dict));
 //  47	 26	 66	LIGHT ACCENT 200 (#2f1a42)
 //  34	 19	 45	LIGHT ACCENT 300 (#22132d)
 //  22	 13	 26	LIGHT ACCENT 400 (#160d1a)
-//  11    6   8	LIGHT ACCENT 500 (#0b0608)
+//  11    6     8	LIGHT ACCENT 500 (#0b0608)
 //  32	 25	 41	DARK BG (#201929)
 // 222	213	236	DARK FG (#ded5ec)
 // 187	168	214	DARK LIGHT 100 (#bba8d6)
@@ -2383,13 +2517,13 @@ A workflow helper that converts an =action= into an emitter by presetting its =y
 
 **** Example
 
-#+BEGIN_SRC deno
-const {
+#+BEGIN_SRC js
+import {
   convert,
   adjust,
   mix
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
-const { preset } = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { preset } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2429,16 +2563,16 @@ A workflow helper that combines a sequence of =emitters= into a new emitter.
 
 **** Example
 
-#+BEGIN_SRC deno
-const {
+#+BEGIN_SRC js
+import {
   convert,
   adjust,
   mix
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
-const {
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
+import {
   preset,
   process
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
 
 const swatch = "rebeccapurple";
 
@@ -2480,17 +2614,17 @@ A workflow helper that transforms data of type =x= through a sequence of =emitte
 
 **** Example
 
-#+BEGIN_SRC deno
-const {
+#+BEGIN_SRC js
+import {
   convert,
   adjust,
   mix
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
-const {
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
   preset,
   process,
   pipeline
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2536,16 +2670,16 @@ A workflow helper that maps the execution result of an =emitter= to a collection
 
 **** Example
 
-#+BEGIN_SRC deno
-const {
+#+BEGIN_SRC js
+import {
   convert,
   mix,
   harmony
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
-const {
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
   preset,
   propagate
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 
@@ -2593,16 +2727,16 @@ A workflow helper that maps a collection of =xs= to a sequence of =emitters=.
 
 **** Example
 
-#+BEGIN_SRC deno
-const {
+#+BEGIN_SRC js
+import {
   convert,
   adjust,
   harmony
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
-const {
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
   preset,
   delegate
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 
