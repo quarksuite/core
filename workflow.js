@@ -1,3 +1,33 @@
+/**
+ * A workflow helper that converts an `action` into an emitter by presetting its
+ * `y` modifier.
+ *
+ * @template X, Y, Result
+ *
+ * @param {(y: Y, x: X) => Result} action - the action to convert
+ * @param {Y} y - the action modifier to preset
+ * @returns {(x: X) => Result} the resultant emitter
+ *
+ * @remarks
+ * This workflow helper will be invaluable when you find yourself repeating actions
+ * in multiple places on the same data. It's also what enables the powerful data
+ * composition patterns provided by the other helpers.
+ *
+ * `preset` is the fulcrum of advanced QuarkSuite use.
+ *
+ * @example
+ * Generate a rainbow hue from any valid CSS color
+ *
+ * ```js
+ * const rainbow = preset(adjust, { hue: 360, steps: 8 });
+ *
+ * rainbow("chartreuse");
+ * ```
+ */
+export function preset(action, y) {
+  return (x) => action(y, x);
+}
+
 // Last typedef is borrowed from: https://dev.to/badhusband/comment/1dk7c
 
 /**
@@ -16,7 +46,7 @@
  * @template {EmitterSequence} Sequence
  *
  * @param {Sequence} emitters - the sequence of emitters to combine
- * @returns {Last<Sequence>} The last emitter in the sequence
+ * @returns {Last<Sequence>} a new emitter from execution sequence
  *
  * @remarks
  * This workflow helper is excellent for combining simple emitters into complex
@@ -43,44 +73,14 @@ export function process(...emitters) {
 }
 
 /**
- * A workflow helper that converts an `action` into an emitter by presetting its
- * `y` modifier.
- *
- * @template X, Y, Result
- *
- * @param {(y: Y, x: X) => Result} action - the action to preset
- * @param {Y} y - the action modifier to preset
- * @returns {(x: X) => Result}
- *
- * @remarks
- * This workflow helper will be invaluable when you find yourself repeating actions
- * in multiple places on the same data. It's also what enables the powerful data
- * composition patterns provided by the other helpers.
- *
- * `preset` is the fulcrum of advanced QuarkSuite use.
- *
- * @example
- * Generate a rainbow hue from any valid CSS color
- *
- * ```js
- * const rainbow = preset(adjust, { hue: 360, steps: 8 });
- *
- * rainbow("chartreuse");
- * ```
- */
-export function preset(action, y) {
-  return (x) => action(y, x);
-}
-
-/**
  * A workflow helper that transforms data of type `x` (any valid data type)
  * through a sequence of `emitters`.
  *
  * @template X
  * @template {EmitterSequence} Sequence
  *
- * @param {X} x - the data to pass through the sequence
- * @param {Sequence} emitters - the sequence of emitters
+ * @param {X} x - the data to pass through
+ * @param {Sequence} emitters - the sequence of emitters to execute
  * @returns {ReturnType<Last<Sequence>>} the transformed data
  *
  * @remarks
@@ -113,7 +113,7 @@ export function pipeline(x, ...emitters) {
  * @template {X[]} Collection
  *
  * @param {(x: X) => R} emitter - the emitter to execute on each value
- * @param {Collection} xs - the collection of values to map execution
+ * @param {Collection} xs - the collection of values
  * @returns {R[]} the collection of results
  *
  * @remarks
@@ -158,7 +158,7 @@ export function propagate(emitter, xs) {
  * @template {X[]} Collection
  * @template {EmitterSequence} Sequence
  *
- * @param {Collection} xs - the collection to process
+ * @param {Collection} xs - the collection to delegate
  * @param {Sequence} emitters - the sequence of emitters
  * @returns {{ [P in keyof Sequence]: ReturnType<Sequence[P]> }} the collection of results
  *

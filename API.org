@@ -31,6 +31,14 @@
     - [[#stylesheetformat-dict][stylesheet(format, dict)]]
     - [[#dataformat-dict][data(format, dict)]]
     - [[#interopformat-dict][interop(format, dict)]]
+  - [[#workflow][Workflow]]
+    - [[#presetaction-y][preset(action, y)]]
+    - [[#processemitters][process(...emitters)]]
+    - [[#pipelinex-emitters][pipeline(x, ...emitters)]]
+    - [[#propagateemitter-xs][propagate(emitter, xs)]]
+    - [[#delegatexs-emitters][delegate(xs, ...emitters)]]
+- [[#extending-the-library][Extending the Library]]
+- [[#next-steps][Next Steps]]
 
 * Summary
 
@@ -2350,74 +2358,290 @@ console.log(interop("styledictionary", { project: {}, ...dict }));
 // }
 #+END_SRC
 
-#+RESULTS:
-#+begin_src deno
-{
-  theme: {
-    extend: {
-      colors: { main: [Object] },
-      spacing: {
-        DEFAULT: "1ex",
-        x2: "1.414ex",
-        x3: "1.9994ex",
-        x4: "2.8271ex",
-        d2: "0.70721ex",
-        d3: "0.50015ex",
-        d4: "0.35371ex"
-      }
-    }
-  }
-}
-{
-  sd: {
-    color: {
-      "50": { value: "rgb(238, 234, 246)" },
-      "100": { value: "rgb(209, 197, 228)" },
-      "200": { value: "rgb(181, 161, 210)" },
-      "300": { value: "rgb(154, 125, 192)" },
-      "400": { value: "rgb(127, 89, 173)" },
-      "500": { value: "rgb(85, 46, 126)" },
-      "600": { value: "rgb(69, 41, 100)" },
-      "700": { value: "rgb(53, 35, 75)" },
-      "800": { value: "rgb(38, 28, 52)" },
-      "900": { value: "rgb(24, 21, 29)" },
-      bg: { value: "rgb(255, 255, 255)" },
-      fg: { value: "rgb(17, 17, 17)" },
-      a50: { value: "rgb(210, 244, 237)" },
-      a100: { value: "rgb(156, 214, 223)" },
-      a200: { value: "rgb(112, 181, 215)" },
-      a300: { value: "rgb(93, 142, 206)" },
-      a400: { value: "rgb(96, 99, 187)" },
-      a500: { value: "rgb(100, 0, 103)" },
-      a600: { value: "rgb(88, 0, 42)" },
-      a700: { value: "rgb(66, 0, 0)" },
-      a800: { value: "rgb(31, 0, 0)" },
-      a900: { value: "rgb(0, 28, 0)" }
-    },
-    text: {
-      primary: { family: [Object], regular: [Object], bold: [Object] },
-      secondary: { family: [Object], light: [Object], bold: [Object], black: [Object] },
-      size: {
-        base: [Object],
-        x2: [Object],
-        x3: [Object],
-        x4: [Object],
-        d2: [Object],
-        d3: [Object],
-        d4: [Object]
-      },
-      measure: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] },
-      leading: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] }
-    },
-    spacing: {
-      base: { value: "1ex" },
-      x2: { value: "1.414ex" },
-      x3: { value: "1.9994ex" },
-      x4: { value: "2.8271ex" },
-      d2: { value: "0.70721ex" },
-      d3: { value: "0.50015ex" },
-      d4: { value: "0.35371ex" }
-    }
-  }
-}
-#+end_src
+** Workflow
+
+The =workflow.js= contains functionality around QuarkSuite's advanced data composition and reuse.
+
+It's important to note that the workflow module changes nothing about the way data is actually generated. Its main
+purpose is to expose /design patterns/ helpful to the advanced user.
+
+Collectively, the workflow module replaces the /configuration/ and /formula/ idioms that featured in v1 (if you're familiar
+with the last version).
+
+*** preset(action, y)
+
+A workflow helper that converts an =action= into an emitter by presetting its =y= modifier.
+
+**** Parameters
+
++ =action: (y: unknown, x: unknown) => unknown>=: the action to convert
++ =y: unknown=: the action modifier to preset
+
+**** Returns
+
++ =(x: unknown) => unknown=: the resultant emitter
+
+**** Example
+
+#+BEGIN_SRC deno
+const {
+  convert,
+  adjust,
+  mix
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
+const { preset } = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+
+const swatch = "rebeccapurple";
+
+const hex = preset(convert, "hex");
+const adjacent = preset(adjust, { hue: 30 });
+const withRed = preset(mix, { target: "crimson", strength: 30 });
+
+// swatch | hex -> adjacent -> withRed
+console.log(withRed(adjacent(hex(swatch)))); // #9d276a
+
+// order matters
+console.log(adjacent(withRed(hex(swatch)))); // #99315a
+
+// any color | hex -> adjacent -> withRed
+console.log(withRed(adjacent(hex("dodgerblue")))); // #a46dc7
+console.log(withRed(adjacent(hex("#ea7")))); // #de925b
+console.log(withRed(adjacent(hex("rgb(25, 128, 33)")))); // #747558
+console.log(withRed(adjacent(hex("hsl(210, 40%, 60%)")))); // #aa7a9d
+#+END_SRC
+
+**** Notes
+
+Using =preset()= to convert actions into emitters is the starting point of /all/ advanced QuarkSuite usage. The remaining
+helpers deal exclusively with harnessing the power unleashed by this simple function.
+
+*** process(...emitters)
+
+A workflow helper that combines a sequence of =emitters= into a new emitter.
+
+**** Parameters
+
++ =emitters: Array<(x: unknown) => unknown>=: the sequence of emitters to combine
+
+**** Returns
+
++ =(x: unknown) => unknown=: a new emitter from execution sequence
+
+**** Example
+
+#+BEGIN_SRC deno
+const {
+  convert,
+  adjust,
+  mix
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
+const {
+  preset,
+  process
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+
+const swatch = "rebeccapurple";
+
+const hex = preset(convert, "hex");
+const adjacent = preset(adjust, { hue: 30 });
+const withRed = preset(mix, { target: "crimson", strength: 30 });
+
+// Create primary (color) process
+const primary = process(hex, adjacent, withRed);
+
+// Processes are composable from other processes
+const secondary = process(primary, adjacent);
+const tertiary = process(secondary, adjacent, adjacent);
+
+console.log(primary(swatch)); // #9d276a
+console.log(secondary(swatch)) // #a72433
+console.log(tertiary(swatch)); // #934800
+#+END_SRC
+
+**** Notes
+
+Creating a =process= is ideal in situations where you want to repeat a sequence of transformations on different values
+of the same type, but you don't know ahead of time exactly what those values will be.
+
+It's a great way to create your own /configurations/ to share across projects.
+
+*** pipeline(x, ...emitters)
+
+A workflow helper that transforms data of type =x= through a sequence of =emitters=.
+
+**** Parameters
+
++ =x: unknown=: the data to pass through
++ =emitters: Array<(x: unknown) => unknown>=: the sequence of emitters to execute
+
+**** Returns
+
+=unknown=: the transformed data
+
+**** Example
+
+#+BEGIN_SRC deno
+const {
+  convert,
+  adjust,
+  mix
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
+const {
+  preset,
+  process,
+  pipeline
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+
+const swatch = "rebeccapurple";
+
+const hex = preset(convert, "hex");
+const adjacent = preset(adjust, { hue: 30 });
+const withRed = preset(mix, { target: "crimson", strength: 30 });
+
+// Create primary (color) process
+const primary = process(hex, adjacent, withRed);
+
+const main = pipeline(swatch, primary);
+
+// The output of a pipeline can be used as the input of other pipelines
+const accent = pipeline(main, adjacent);
+const highlight = pipeline(accent, adjacent, adjacent, withRed);
+
+console.log({ main, accent, highlight });
+// { main: "#9d276a", accent: "#a72433", highlight: "#a9411a" }
+#+END_SRC
+
+**** Notes
+
+A pipeline can be composed of a sequence of processes (because they are themselves emitters). A process can use the
+/output/ of a pipeline as its data.
+
+By this point, you've noticed that pipelines and processes can output identical results. This doesn't mean the choice of
+which to use is merely one of preference.
+
+Use a process when the data is unknown, use a pipeline otherwise.
+
+*** propagate(emitter, xs)
+
+A workflow helper that maps the execution result of an =emitter= to a collection of =xs=.
+
+**** Parameters
+
++ =emitter: (x: unknown) => unknown=: the emitter to execute on each value
++ =xs: unknown[]=: the collection of values
+
+**** Returns
+
+=unknown[]=: the collection of results
+
+**** Example
+
+#+BEGIN_SRC deno
+const {
+  convert,
+  mix,
+  harmony
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
+const {
+  preset,
+  propagate
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+
+const swatch = convert("hex", "rebeccapurple");
+
+const scheme = preset(harmony, { configuration: "analogous" });
+
+const light = preset(mix, {target: "#fff", strength: 75, steps: 3});
+const dark = preset(mix, {target: "#111", strength: 75, steps: 3});
+
+// Propagate over scheme to create variants
+console.log(propagate(light, scheme(swatch)));
+// [
+//   [ "#8967b4", "#af99ce", "#d6cbe7" ],
+//   [ "#a45d98", "#c492ba", "#e2c8dc" ],
+//   [ "#b35973", "#d0909f", "#e9c7ce" ]
+// ]
+
+console.log(propagate(dark, scheme(swatch)));
+// [
+//   [ "#4f2c74", "#392451", "#241b30" ],
+//   [ "#64225b", "#471e41", "#2c1928" ],
+//   [ "#701c3a", "#4f1b2c", "#30181e" ]
+// ]
+#+END_SRC
+
+**** Notes
+
+Propagation is a tool for when you have a scale of values and want to transform each value with the same emitter. You
+can also use it to transform arbitrary groupings of values as long as they're the same type.
+
+Not demonstrated but important to know: =propagate()= can be preset. This means you can slip propagation into processes
+and pipelines. From here, even more options for composing complex data open up to the advanced user.
+
+*** delegate(xs, ...emitters)
+
+A workflow helper that maps a collection of =xs= to a sequence of =emitters=.
+
+**** Parameters
+
++ =xs: unknown[]=: the collection to delegate
++ =emitters: Array<(x: unknown) => unknown>=: the sequence of emitters
+
+**** Returns
+
++ =unknown[]=: the collection of results
+
+**** Example
+
+#+BEGIN_SRC deno
+const {
+  convert,
+  adjust,
+  harmony
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
+const {
+  preset,
+  delegate
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+
+const swatch = convert("hex", "rebeccapurple");
+
+const scheme = preset(harmony, { configuration: "analogous" });
+
+// Adjust colors in scheme for greater contrast
+console.log(
+  delegate(
+    scheme(swatch),
+    undefined,
+    preset(adjust, { lightness: 20, chroma: -10 }),
+    preset(adjust, { lightness: -15, chroma: 10 })
+  )
+); // ["#663399", "#bd6baf", "#680021"]
+#+END_SRC
+
+**** Notes
+
+Reach for =delegate()= when you encounter a situation where you have a collection of data and want to assign a different
+transformation to each value or /selectively/ alter values.
+
+Not much more to say on that.
+
+* Extending the Library
+
+If you want to extend the library or build particular functionality on top of it, you can do that without much
+hassle. QuarkSuite is small and intentionally designed (especially in the shift from v1 to v2) to allow it.
+
+The key is awareness of the *types of data* that QuarkSuite passes around and its simple architectural idioms.
+
+As long as your extensions follow the minimal rules set by the design, you can build as many layers of abstraction on
+top as you or your team require.
+
+If you run into any issues with this, please let me know how I can help.
+
+* Next Steps
+
+Now that you have the technical overview of how this all works, give it a try in your own projects. I highly recommend
+you follow up this reading with the user handbook if you haven't already. Quite a bit of this documentation makes better
+sense in context. Especially advanced usage through the workflow module.
+
+Thanks for reading, and I hope you found it useful.
