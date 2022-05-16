@@ -2774,8 +2774,9 @@ If you run into any issues with this, please let me know how I can help.
 
 * Next Steps
 
-Now that you have the technical overview of how this all works, give it a try in your own projects. I highly recommend
-you follow up this reading with the user handbook if you haven't already. Quite a bit of this documentation makes better
-sense in context. Especially advanced usage through the workflow module.
+Now that you have the technical overview of how this all works, give it a try in your own projects. 
+
+I highly recommend you follow up this reading with the user handbook if you haven't already. Quite a bit of this 
+documentation makes better sense in context. Especially advanced usage through the workflow module.
 
 Thanks for reading, and I hope you found it useful.
