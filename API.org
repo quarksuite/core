@@ -1,5 +1,6 @@
-#+TITLE: QuarkSuite Core (v2.0.0)
-#+PROPERTY: header-args:deno :results output code :allow 'net
+#+TITLE: QuarkSuite Core API (v2.0.0)
+#+PROPERTY: header-args:deno :results output replace code :allow 'net :tangle no
+#+PROPERTY: header-args:js :tangle no
 
 * Table of Contents :TOC@3:
 - [[#summary][Summary]]
