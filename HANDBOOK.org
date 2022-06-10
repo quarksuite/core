@@ -1,6 +1,5 @@
 #+TITLE: QuarkSuite Core Handbook (v2.0.0)
-#+PROPERTY: header-args:deno :results output replace code :allow 'net :tangle no
-#+PROPERTY: header-args:js :results silent :tangle no
+#+PROPERTY: header-args:js :results silent :tangle no :comments none :mkdirp yes
 
 * Table of Contents :TOC@3:
 - [[#summary][Summary]]
@@ -13,11 +12,20 @@
     - [[#4-filter-palette-data-for-accessibility][4. Filter palette data for accessibility]]
   - [[#content][Content]]
   - [[#tokens][Tokens]]
-  - [[#output][Output]]
-  - [[#exporting][Exporting]]
-- [[#enhancements][Enhancements]]
-- [[#customization][Customization]]
-- [[#recipes][Recipes]]
+  - [[#tokensjs-output][=tokens.js= Output]]
+- [[#exporting][Exporting]]
+  - [[#1-import-exporterjs-module][1. Import =exporter.js= module]]
+  - [[#2-import-the-generated-tokens][2. Import the generated tokens]]
+  - [[#3-define-project][3. Define project]]
+  - [[#4-set-domain-targets][4. Set domain targets]]
+  - [[#5-write-to-filesystem][5. Write to filesystem]]
+  - [[#6-run-build][6. Run build]]
+  - [[#buildjs-output][=build.js= Output]]
+- [[#advanced-workflow][Advanced Workflow]]
+  - [[#refactoring][Refactoring]]
+  - [[#data-composition][Data Composition]]
+- [[#rules][Rules]]
+- [[#next-steps][Next Steps]]
 
 * Summary
 
@@ -28,7 +36,8 @@ This document /intentionally/ skips setup and environment details (see the READM
 example. We'll start with the basics of creating data and exporting design tokens. Then we'll apply advanced refactoring
 and data composition patterns to clean things up.
 
-After that, I'll show you some simple customizations and complex recipes.
+Finally, I'll show you how to create rules for your data generation. This will allow you to identify your habits and
+define programmable recipes you can use /across/ your projects.
 
 By the end of this document, I hope you learn a little something about how you can use QuarkSuite to create consistent,
 accessible baselines for your web projects.
@@ -44,7 +53,7 @@ QuarkSuite allows a lot of flexibility in how you can work, but for our purposes
 
 For our project, we'll need specific functionality from the =color.js= and =content.js= modules.
 
-#+BEGIN_SRC js
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 import {
   convert,
   adjust,
@@ -68,7 +77,7 @@ The first set of data we'll create is our color palette.
 
 Let's begin by setting a base color and slightly adjusting it for our use.
 
-#+BEGIN_SRC js
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 const swatch = convert("rgb", "#7ea");
 const base = adjust({ chroma: -5, hue: 60 }, swatch);
 #+END_SRC
@@ -77,7 +86,7 @@ const base = adjust({ chroma: -5, hue: 60 }, swatch);
 
 Next, we want to generate an analogous color harmony as the basis of our palette generation.
 
-#+BEGIN_SRC js
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 const scheme = harmony({ configuration: "analogous" }, base);
 #+END_SRC
 
@@ -88,7 +97,7 @@ palette from the first and second colors in our scheme.
 
 Assuming our web project is an app, we'll want to generate a =material= configuration.
 
-#+BEGIN_SRC js
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 const ui = palette({
   configuration: "material",
   accents: true,
@@ -102,7 +111,7 @@ const body = palette({ configuration: "material", accents: true }, scheme[1]);
 Let's ensure our palettes will be usable in our defined contexts (=ui, =body=) by performing a color accessibility check
 for each one (based on WCAG standards).
 
-#+BEGIN_SRC js
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 const uiA11y = accessibility({ mode: "standard", rating: "AA", large: true }, ui);
 const bodyA11y = accessibility({ mode: "standard", rating: "AAA" }, body);
 #+END_SRC
@@ -115,7 +124,7 @@ creating numeric token data.
 For that, we're going to generate a =5= value modular scale from a base of =1= and a somewhat unconventional ratio of
 =1.32=.
 
-#+BEGIN_SRC js
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 const scale = ms({ ratio: 1.32, values: 5 }, 1);
 #+END_SRC
 
@@ -124,7 +133,7 @@ const scale = ms({ ratio: 1.32, values: 5 }, 1);
 Now we're ready to actually create our tokens. For that, we'll create a token object to export. Let's wrap the tokens
 in a namespace of =hb= (for handbook) before slotting and transforming our data sets.
 
-#+BEGIN_SRC js
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 export default {
   hb: {
     color: {
@@ -154,7 +163,7 @@ export default {
 };
 #+END_SRC
 
-** Output
+** =tokens.js= Output
 
 Our =tokens.js= file should now look something like the following code.
 
@@ -219,14 +228,7 @@ export default {
 };
 #+END_SRC
 
-** Exporting
-
-If your web project uses JavaScript itself to style your interface (such as a CSS-in-JS library):
-congratulations. You're done already. Go forth and create.
-
-For the rest of us, we'll need to export our tokens to use in our target environments.
-
-Since we're still here, we'll now create a =build.js= file for the exporting process.
+* Exporting
 
 #+BEGIN_QUOTE
 At this point, it's important to note that it's a good idea to keep your token generating code apart from your exporting
@@ -244,8 +246,159 @@ Generally speaking, you will not need to export your tokens more than a few time
 can see the usefulness of this structure.
 #+END_QUOTE
 
-* Enhancements
+If your web project uses JavaScript itself to style your interface (such as a CSS-in-JS library):
+congratulations. You're done already. Go forth and create.
 
-* Customization
+For the rest of us, we'll need to export our tokens to use in our target environments.
 
-* Recipes
+Since we're still here, we'll now create a =build.js= file for the exporting process.
+
+** 1. Import =exporter.js= module
+
+First, we have to pull in the exporters themselves before we can do anything.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+import {
+  stylesheet,
+  data,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+#+END_SRC
+
+** 2. Import the generated tokens
+
+Next, we import the tokens we created in =tokens.js=.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+import tokens from "./tokens.js";
+#+END_SRC
+
+** 3. Define project
+
+This step is crucial. Unless we wrap the tokens in an object that contains a =project= property, the exporters *will
+throw an error*. This is by design; it prevents us from accidentally invoking an exporter on arbitrary token
+collections.
+
+In this sense, =project= works like a tag that tells an exporter "this is a complete dictionary. You may
+proceed". Otherwise, it's "stop what you're doing. Right now."
+
+We'll store the token dictionary as =dict= for later.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+const dict = {
+  project: {
+    name: "Handbook Example Tokens",
+    author: "Chatman R. Jr",
+    license: "Unlicense",
+    version: "0.1.0"
+  },
+  ...tokens
+};
+#+END_SRC
+
+** 4. Set domain targets
+
+#+BEGIN_QUOTE
+At this point, you should know that the exporter functions do not write to your filesystem. This is for security.
+
+Instead, they format the token dictionary to a file-ready state which you can then write to a file yourself using your
+environment's native API or a library.
+#+END_QUOTE
+
+Here's the fun part. We'll format our dictionary based on the domain targets.
+
+In this case, we want to export our tokens as CSS custom properties and JSON. And let's also store the results in
+=targets=.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+const targets = {
+  css: stylesheet("css", dict),
+  json: data("json", dict)
+};
+#+END_SRC
+
+** 5. Write to filesystem
+
+#+BEGIN_QUOTE
+Hint: if you're using QuarkSuite server side and you're exporting a single format, you can print the output of the
+exporter to the console and copy/paste or pipe the result to a new file.
+#+END_QUOTE
+
+Time to actually write the file to our OS. Let's assume we've been building our tokens in Deno (v1.20.5) so far.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+import { ensureDir } from "https://deno.land/std@0.143.0/fs/mod.ts";
+
+const out = "./dist";
+
+// This will create the output directory if it does not exist
+await ensureDir(out);
+
+Object.entries(targets).forEach(async ([ext, output]) => {
+  await Deno.writeTextFile(out.concat(`/tokens.${ext}`), output);
+});
+#+END_SRC
+
+** 6. Run build
+
+Finally, we run =build.js= to create our export files.
+
+#+BEGIN_SRC shell
+deno run --allow-read --allow-write build.js
+#+END_SRC
+
+This will output =./dist= with our exported tokens.
+
+#+BEGIN_SRC text
+dist
+├── tokens.css
+└── tokens.json
+#+END_SRC
+
+** =build.js= Output
+
+Our build file is now complete and we won't need to touch it again for a good while.
+
+#+BEGIN_SRC js
+import {
+  stylesheet,
+  data,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+
+import tokens from "./tokens.js";
+
+const dict = {
+  project: {
+    name: "Handbook Example Tokens",
+    author: "Chatman R. Jr",
+    license: "Unlicense",
+    version: "0.1.0"
+  },
+  ...tokens
+};
+
+const targets = {
+  css: stylesheet("css", dict),
+  json: data("json", dict)
+};
+
+import { ensureDir } from "https://deno.land/std@0.143.0/fs/mod.ts";
+
+const out = "./dist";
+
+// This will create the output directory if it does not exist
+await ensureDir(out);
+
+Object.entries(targets).forEach(async ([ext, output]) => {
+  await Deno.writeTextFile(out.concat(`/tokens.${ext}`), output);
+});
+#+END_SRC
+
+* Advanced Workflow
+
+** Refactoring
+
+** Data Composition
+
+* Rules
+
+* Next Steps
