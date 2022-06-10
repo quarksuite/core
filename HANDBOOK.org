@@ -22,8 +22,7 @@
   - [[#6-run-build][6. Run build]]
   - [[#buildjs-output][=build.js= Output]]
 - [[#advanced-workflow][Advanced Workflow]]
-  - [[#refactoring][Refactoring]]
-  - [[#data-composition][Data Composition]]
+  - [[#modules-1][Modules]]
 - [[#rules][Rules]]
 - [[#next-steps][Next Steps]]
 
@@ -33,8 +32,8 @@ This document is a practical guide to QuarkSuite Core. It's intended to introduc
 its purpose from a user perspective. For a technical overview, [[https://github.com/quarksuite/core/blob/v2-workspace/API.org][refer to the API]].
 
 This document /intentionally/ skips setup and environment details (see the README) to focus instead on a working
-example. We'll start with the basics of creating data and exporting design tokens. Then we'll apply advanced refactoring
-and data composition patterns to clean things up.
+example. We'll start with the basics of creating data and exporting design tokens. Then we'll apply advanced data
+composition patterns to clean things up.
 
 Finally, I'll show you how to create rules for your data generation. This will allow you to identify your habits and
 define programmable recipes you can use /across/ your projects.
@@ -395,9 +394,51 @@ Object.entries(targets).forEach(async ([ext, output]) => {
 
 * Advanced Workflow
 
-** Refactoring
+The basic workflow is great for small projects that need a singular data set.
 
-** Data Composition
+The second you require /multiple/ related token dictionaries or you want to replicate your process in other projects, the
+cracks begin to show.
+
+The library provides a =workflow.js= module to handle your advanced use cases. Its only purpose is altering the way
+library functions work to unlock design patterns that will be valuable for the user who needs to scale.
+
+Using the module for data composition follows its own logical flow:
+
++ Preset any actions
++ Create useful processes
++ Assemble data pipelines
+
+Generated data collections also gain some extra support:
+
++ Propagate a process through each collection value
++ Delegate processes selectively to collection values
+
+** Modules
+
+The first thing to do is import =workflow.js=, so let's do that now.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/refactoring/tokens.js"
+import {
+  convert,
+  adjust,
+  harmony,
+  palette,
+  accessibility,
+  tokens as color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  text,
+  ms,
+  tokens as content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import {
+  preset,
+  process,
+  pipeline,
+  propagate,
+  delegate
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+#+END_SRC
 
 * Rules
 
