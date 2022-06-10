@@ -1,0 +1,251 @@
+#+TITLE: QuarkSuite Core Handbook (v2.0.0)
+#+PROPERTY: header-args:deno :results output replace code :allow 'net :tangle no
+#+PROPERTY: header-args:js :results silent :tangle no
+
+* Table of Contents :TOC@3:
+- [[#summary][Summary]]
+- [[#basic-workflow][Basic Workflow]]
+  - [[#modules][Modules]]
+  - [[#color][Color]]
+    - [[#1-set-a-base-color][1. Set a base color]]
+    - [[#2-generate-a-base-scheme][2. Generate a base scheme]]
+    - [[#3-generate-raw-palette-data][3. Generate raw palette data]]
+    - [[#4-filter-palette-data-for-accessibility][4. Filter palette data for accessibility]]
+  - [[#content][Content]]
+  - [[#tokens][Tokens]]
+  - [[#output][Output]]
+  - [[#exporting][Exporting]]
+- [[#enhancements][Enhancements]]
+- [[#customization][Customization]]
+- [[#recipes][Recipes]]
+
+* Summary
+
+This document is a practical guide to QuarkSuite Core. It's intended to introduce you, the reader, to the library and
+its purpose from a user perspective. For a technical overview, [[https://github.com/quarksuite/core/blob/v2-workspace/API.org][refer to the API]].
+
+This document /intentionally/ skips setup and environment details (see the README) to focus instead on a working
+example. We'll start with the basics of creating data and exporting design tokens. Then we'll apply advanced refactoring
+and data composition patterns to clean things up.
+
+After that, I'll show you some simple customizations and complex recipes.
+
+By the end of this document, I hope you learn a little something about how you can use QuarkSuite to create consistent,
+accessible baselines for your web projects.
+
+If any part of the handbook is hard to understand, please open an issue and let me know.
+
+* Basic Workflow
+
+QuarkSuite allows a lot of flexibility in how you can work, but for our purposes, we'll begin by creating a single file named
+=tokens.js= and build our baseline up from there.
+
+** Modules
+
+For our project, we'll need specific functionality from the =color.js= and =content.js= modules.
+
+#+BEGIN_SRC js
+import {
+  convert,
+  adjust,
+  harmony,
+  palette,
+  accessibility,
+  tokens as color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  text,
+  ms,
+  tokens as content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+#+END_SRC
+
+** Color
+
+The first set of data we'll create is our color palette.
+
+*** 1. Set a base color
+
+Let's begin by setting a base color and slightly adjusting it for our use.
+
+#+BEGIN_SRC js
+const swatch = convert("rgb", "#7ea");
+const base = adjust({ chroma: -5, hue: 60 }, swatch);
+#+END_SRC
+
+*** 2. Generate a base scheme
+
+Next, we want to generate an analogous color harmony as the basis of our palette generation.
+
+#+BEGIN_SRC js
+const scheme = harmony({ configuration: "analogous" }, base);
+#+END_SRC
+
+*** 3. Generate raw palette data
+
+The next step is to generate the raw palette data for further processing. In this case, we'll create a =ui= and =body=
+palette from the first and second colors in our scheme.
+
+Assuming our web project is an app, we'll want to generate a =material= configuration.
+
+#+BEGIN_SRC js
+const ui = palette({
+  configuration: "material",
+  accents: true,
+  states: true
+}, scheme[0]);
+const body = palette({ configuration: "material", accents: true }, scheme[1]);
+#+END_SRC
+
+*** 4. Filter palette data for accessibility
+
+Let's ensure our palettes will be usable in our defined contexts (=ui, =body=) by performing a color accessibility check
+for each one (based on WCAG standards).
+
+#+BEGIN_SRC js
+const uiA11y = accessibility({ mode: "standard", rating: "AA", large: true }, ui);
+const bodyA11y = accessibility({ mode: "standard", rating: "AAA" }, body);
+#+END_SRC
+
+** Content
+
+The main concern for our content data at this point is to generate a global modular scale as the starting point for
+creating numeric token data.
+
+For that, we're going to generate a =5= value modular scale from a base of =1= and a somewhat unconventional ratio of
+=1.32=.
+
+#+BEGIN_SRC js
+const scale = ms({ ratio: 1.32, values: 5 }, 1);
+#+END_SRC
+
+** Tokens
+
+Now we're ready to actually create our tokens. For that, we'll create a token object to export. Let's wrap the tokens
+in a namespace of =hb= (for handbook) before slotting and transforming our data sets.
+
+#+BEGIN_SRC js
+export default {
+  hb: {
+    color: {
+      ui: color(uiA11y),
+      text: color(bodyA11y),
+      splash: scheme[2]
+    },
+    text: {
+      body: text({ system: "sans", weights: ["regular", "bold"] }, "Work Sans"),
+      heading: text({ system: "serif", weights: ["light", "black"] }, "Work Sans"),
+      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
+      leading: content({ type: "ranged", min: 1.2, max: 1.5, context: "max" }, scale),
+      measure: content({ type: "ranged", unit: "ch", min: 48, max: 75, context: "max" }, scale)
+    },
+    spacing: content({ type: "bidirectional", unit: "ex" }, scale),
+    grid: {
+      fr: content({ type: "bidirectional", unit: "fr" }, scale),
+      ...content({ type: "grid" }, scale)
+    },
+    viewport: {
+      w: content({ type: "ranged", unit: "vw", min: 10, max: 100, context: "max" }, scale),
+      h: content({ type: "ranged", unit: "vh", min: 10, max: 100, context: "max" }, scale),
+      min: content({ type: "ranged", unit: "vmin", min: 10, max: 100, context: "max" }, scale),
+      max: content({ type: "ranged", unit: "vmax", min: 10, max: 100, context: "max" }, scale),
+    }
+  }
+};
+#+END_SRC
+
+** Output
+
+Our =tokens.js= file should now look something like the following code.
+
+#+BEGIN_SRC js
+import {
+  convert,
+  adjust,
+  harmony,
+  palette,
+  accessibility,
+  tokens as color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  text,
+  ms,
+  tokens as content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+
+const swatch = convert("rgb", "#7ea");
+const base = adjust({ chroma: -5, hue: 60 }, swatch);
+
+const scheme = harmony({ configuration: "analogous" }, base);
+
+const ui = palette({
+  configuration: "material",
+  accents: true,
+  states: true
+}, scheme[0]);
+const body = palette({ configuration: "material", accents: true }, scheme[1]);
+
+const uiA11y = accessibility({ mode: "standard", rating: "AA", large: true }, ui);
+const bodyA11y = accessibility({ mode: "standard", rating: "AAA" }, body);
+
+const scale = ms({ ratio: 1.32, values: 5 }, 1);
+
+export default {
+  hb: {
+    color: {
+      ui: color(uiA11y),
+      text: color(bodyA11y),
+      splash: scheme[2]
+    },
+    text: {
+      body: text({ system: "sans", weights: ["regular", "bold"] }, "Work Sans"),
+      heading: text({ system: "serif", weights: ["light", "black"] }, "Work Sans"),
+      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
+      leading: content({ type: "ranged", min: 1.2, max: 1.5, context: "max" }, scale),
+      measure: content({ type: "ranged", unit: "ch", min: 48, max: 75, context: "max" }, scale)
+    },
+    spacing: content({ type: "bidirectional", unit: "ex" }, scale),
+    grid: {
+      fr: content({ type: "bidirectional", unit: "fr" }, scale),
+      ...content({ type: "grid" }, scale)
+    },
+    viewport: {
+      w: content({ type: "ranged", unit: "vw", min: 10, max: 100, context: "max" }, scale),
+      h: content({ type: "ranged", unit: "vh", min: 10, max: 100, context: "max" }, scale),
+      min: content({ type: "ranged", unit: "vmin", min: 10, max: 100, context: "max" }, scale),
+      max: content({ type: "ranged", unit: "vmax", min: 10, max: 100, context: "max" }, scale),
+    }
+  }
+};
+#+END_SRC
+
+** Exporting
+
+If your web project uses JavaScript itself to style your interface (such as a CSS-in-JS library):
+congratulations. You're done already. Go forth and create.
+
+For the rest of us, we'll need to export our tokens to use in our target environments.
+
+Since we're still here, we'll now create a =build.js= file for the exporting process.
+
+#+BEGIN_QUOTE
+At this point, it's important to note that it's a good idea to keep your token generating code apart from your exporting
+code. This will allow you to tailor your exporting process to a given JavaScript engine. And this means you can *safely
+adapt the exporting logic for different engines*.
+
+Example:
+
++ =build.web.js=: when using the native web
++ =build.node.js=: when using Node.js
++ =build.deno.js=: when using Deno
++ =build.qjs.js=: when using QuickJS
+
+Generally speaking, you will not need to export your tokens more than a few times during development, but I'm sure you
+can see the usefulness of this structure.
+#+END_QUOTE
+
+* Enhancements
+
+* Customization
+
+* Recipes
