@@ -13,14 +13,6 @@
   - [[#content][Content]]
   - [[#tokens][Tokens]]
   - [[#tokensjs-output][=tokens.js= Output]]
-- [[#exporting][Exporting]]
-  - [[#1-import-exporterjs-module][1. Import =exporter.js= module]]
-  - [[#2-import-the-generated-tokens][2. Import the generated tokens]]
-  - [[#3-define-project][3. Define project]]
-  - [[#4-set-domain-targets][4. Set domain targets]]
-  - [[#5-write-to-filesystem][5. Write to filesystem]]
-  - [[#6-run-build][6. Run build]]
-  - [[#buildjs-output][=build.js= Output]]
 - [[#advanced-workflow][Advanced Workflow]]
   - [[#modules-1][Modules]]
   - [[#color-1][Color]]
@@ -54,7 +46,14 @@
     - [[#result-1][Result]]
   - [[#tokens-1][Tokens]]
   - [[#tokensjs-output-1][=tokens.js= Output]]
-  - [[#exporting-1][Exporting]]
+- [[#exporting-tokens][Exporting Tokens]]
+  - [[#1-import-exporterjs-module][1. Import =exporter.js= module]]
+  - [[#2-import-the-generated-tokens][2. Import the generated tokens]]
+  - [[#3-define-project][3. Define project]]
+  - [[#4-set-domain-targets][4. Set domain targets]]
+  - [[#5-write-to-filesystem][5. Write to filesystem]]
+  - [[#6-run-build][6. Run build]]
+  - [[#buildjs-output][=build.js= Output]]
 - [[#next-steps][Next Steps]]
 
 * Summary
@@ -63,11 +62,17 @@ This document is a practical guide to QuarkSuite Core. It's intended to introduc
 its purpose from a user perspective. For a technical overview, [[https://github.com/quarksuite/core/blob/v2-workspace/API.org][refer to the API]].
 
 This document /intentionally/ skips setup and environment details (see the README) to focus instead on a working
-example. We'll start with the basics of creating data and exporting design tokens. Then we'll apply advanced data
-composition patterns to clean things up.
+example.
 
-Finally, I'll show you how to create rules for your data generation. This will allow you to identify your habits and
-define programmable recipes you can use /across/ your projects.
+We'll be covering three workflows in order of complexity:
+
++ Basic
++ Advanced
++ Modular
+
+The basic workflow will show you simple token generation and collection assembly. From there, you'll get into the
+advanced usage of defining rules and processes to scale collections. The modular workflow will show you how to
+distribute your rules and token structures to share with other projects.
 
 By the end of this document, I hope you learn a little something about how you can use QuarkSuite to create consistent,
 accessible baselines for your web projects.
@@ -256,174 +261,6 @@ export default {
     }
   }
 };
-#+END_SRC
-
-* Exporting
-
-#+BEGIN_QUOTE
-At this point, it's important to note that it's a good idea to keep your token generating code apart from your exporting
-code. This will allow you to tailor your exporting process to a given JavaScript engine. And this means you can *safely
-adapt the exporting logic for different engines*.
-
-Example:
-
-+ =build.web.js=: when using the native web
-+ =build.node.js=: when using Node.js
-+ =build.deno.js=: when using Deno
-+ =build.qjs.js=: when using QuickJS
-
-Generally speaking, you will not need to export your tokens more than a few times during development, but I'm sure you
-can see the usefulness of this structure.
-#+END_QUOTE
-
-If your web project uses JavaScript itself to style your interface (such as a CSS-in-JS library):
-congratulations. You're done already. Go forth and create.
-
-For the rest of us, we'll need to export our tokens to use in our target environments.
-
-Since we're still here, we'll now create a =build.js= file for the exporting process.
-
-** 1. Import =exporter.js= module
-
-First, we have to pull in the exporters themselves before we can do anything.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
-import {
-  stylesheet,
-  data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
-#+END_SRC
-
-** 2. Import the generated tokens
-
-Next, we import the tokens we created in =tokens.js=.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
-import tokens from "./tokens.js";
-#+END_SRC
-
-** 3. Define project
-
-This step is crucial. Unless we wrap the tokens in an object that contains a =project= property, the exporters *will
-throw an error*. This is by design; it prevents us from accidentally invoking an exporter on arbitrary token
-collections.
-
-In this sense, =project= works like a tag that tells an exporter "this is a complete dictionary. You may
-proceed". Otherwise, it's "stop what you're doing. Right now."
-
-We'll store the token dictionary as =dict= for later.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
-const dict = {
-  project: {
-    name: "Handbook Example Tokens",
-    author: "Chatman R. Jr",
-    license: "Unlicense",
-    version: "0.1.0"
-  },
-  ...tokens
-};
-#+END_SRC
-
-** 4. Set domain targets
-
-#+BEGIN_QUOTE
-At this point, you should know that the exporter functions do not write to your filesystem. This is for security.
-
-Instead, they format the token dictionary to a file-ready state which you can then write to a file yourself using your
-environment's native API or a library.
-#+END_QUOTE
-
-Here's the fun part. We'll format our dictionary based on the domain targets.
-
-In this case, we want to export our tokens as CSS custom properties and JSON. And let's also store the results in
-=targets=.
-
-As a bonus, exporters transform token collections in a dictionary /recursively/. This means the structure of your token
-collection is your choice.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
-const targets = {
-  css: stylesheet("css", dict),
-  json: data("json", dict)
-};
-#+END_SRC
-
-** 5. Write to filesystem
-
-#+BEGIN_QUOTE
-Hint: if you're using QuarkSuite server side and you're exporting a single format, you can print the output of the
-exporter to the console and copy/paste or pipe the result to a new file.
-#+END_QUOTE
-
-Time to actually write the file to our OS. Let's assume we've been building our tokens in Deno (v1.20.5) so far.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
-import { ensureDir } from "https://deno.land/std@0.143.0/fs/mod.ts";
-
-const out = "./dist";
-
-// This will create the output directory if it does not exist
-await ensureDir(out);
-
-Object.entries(targets).forEach(async ([ext, output]) => {
-  await Deno.writeTextFile(out.concat(`/tokens.${ext}`), output);
-});
-#+END_SRC
-
-** 6. Run build
-
-Finally, we run =build.js= to create our export files.
-
-#+BEGIN_SRC shell
-deno run --allow-read --allow-write build.js
-#+END_SRC
-
-This will output =./dist= with our exported tokens.
-
-#+BEGIN_SRC text
-dist
-├── tokens.css
-└── tokens.json
-#+END_SRC
-
-** =build.js= Output
-
-Our build file is now complete and we won't need to touch it again for a good while.
-
-#+BEGIN_SRC js
-import {
-  stylesheet,
-  data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
-
-import tokens from "./tokens.js";
-
-const dict = {
-  project: {
-    name: "Handbook Example Tokens",
-    author: "Chatman R. Jr",
-    license: "Unlicense",
-    version: "0.1.0"
-  },
-  ...tokens
-};
-
-const targets = {
-  css: stylesheet("css", dict),
-  json: data("json", dict)
-};
-
-import { ensureDir } from "https://deno.land/std@0.143.0/fs/mod.ts";
-
-const out = "./dist";
-
-// This will create the output directory if it does not exist
-await ensureDir(out);
-
-Object.entries(targets).forEach(async ([ext, output]) => {
-  await Deno.writeTextFile(out.concat(`/tokens.${ext}`), output);
-});
 #+END_SRC
 
 * Advanced Workflow
@@ -829,8 +666,172 @@ export default {
 }
 #+END_SRC
 
-** Exporting
+* Exporting Tokens
 
-Since the token output hasn't changed, the same exporting steps apply. We can leave =build.js= alone.
+#+BEGIN_QUOTE
+At this point, it's important to note that it's a good idea to keep your token generating code apart from your exporting
+code. This will allow you to tailor your exporting process to a given JavaScript engine. And this means you can *safely
+adapt the exporting logic for different engines*.
+
+Example:
+
++ =build.web.js=: when using the native web
++ =build.node.js=: when using Node.js
++ =build.deno.js=: when using Deno
++ =build.qjs.js=: when using QuickJS
+
+Generally speaking, you will not need to export your tokens more than a few times during development, but I'm sure you
+can see the usefulness of this structure.
+#+END_QUOTE
+
+If your web project uses JavaScript itself to style your interface (such as a CSS-in-JS library):
+congratulations. You're done already. Go forth and create.
+
+For the rest of us, we'll need to export our tokens to use in our target environments.
+
+Since we're still here, we'll now create a =build.js= file for the exporting process.
+
+** 1. Import =exporter.js= module
+
+First, we have to pull in the exporters themselves before we can do anything.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+import {
+  stylesheet,
+  data,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+#+END_SRC
+
+** 2. Import the generated tokens
+
+Next, we import the tokens we created in =tokens.js=.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+import tokens from "./tokens.js";
+#+END_SRC
+
+** 3. Define project
+
+This step is crucial. Unless we wrap the tokens in an object that contains a =project= property, the exporters *will
+throw an error*. This is by design; it prevents us from accidentally invoking an exporter on arbitrary token
+collections.
+
+In this sense, =project= works like a tag that tells an exporter "this is a complete dictionary. You may
+proceed". Otherwise, it's "stop what you're doing. Right now."
+
+We'll store the token dictionary as =dict= for later.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+const dict = {
+  project: {
+    name: "Handbook Example Tokens",
+    author: "Chatman R. Jr",
+    license: "Unlicense",
+    version: "0.1.0"
+  },
+  ...tokens
+};
+#+END_SRC
+
+** 4. Set domain targets
+
+#+BEGIN_QUOTE
+At this point, you should know that the exporter functions do not write to your filesystem. This is for security.
+
+Instead, they format the token dictionary to a file-ready state which you can then write to a file yourself using your
+environment's native API or a library.
+#+END_QUOTE
+
+Here's the fun part. We'll format our dictionary based on the domain targets.
+
+In this case, we want to export our tokens as CSS custom properties and JSON. And let's also store the results in
+=targets=.
+
+As a bonus, exporters transform token collections in a dictionary /recursively/. This means the structure of your token
+collection is your choice.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+const targets = {
+  css: stylesheet("css", dict),
+  json: data("json", dict)
+};
+#+END_SRC
+
+** 5. Write to filesystem
+
+#+BEGIN_QUOTE
+Hint: if you're using QuarkSuite server side and you're exporting a single format, you can print the output of the
+exporter to the console and copy/paste or pipe the result to a new file.
+#+END_QUOTE
+
+Time to actually write the file to our OS. Let's assume we've been building our tokens in Deno (v1.20.5) so far.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
+import { ensureDir } from "https://deno.land/std@0.143.0/fs/mod.ts";
+
+const out = "./dist";
+
+// This will create the output directory if it does not exist
+await ensureDir(out);
+
+Object.entries(targets).forEach(async ([ext, output]) => {
+  await Deno.writeTextFile(out.concat(`/tokens.${ext}`), output);
+});
+#+END_SRC
+
+** 6. Run build
+
+Finally, we run =build.js= to create our export files.
+
+#+BEGIN_SRC shell
+deno run --allow-read --allow-write build.js
+#+END_SRC
+
+This will output =./dist= with our exported tokens.
+
+#+BEGIN_SRC text
+dist
+├── tokens.css
+└── tokens.json
+#+END_SRC
+
+** =build.js= Output
+
+Our build file is now complete and we won't need to touch it again for a good while.
+
+#+BEGIN_SRC js
+import {
+  stylesheet,
+  data,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+
+import tokens from "./tokens.js";
+
+const dict = {
+  project: {
+    name: "Handbook Example Tokens",
+    author: "Chatman R. Jr",
+    license: "Unlicense",
+    version: "0.1.0"
+  },
+  ...tokens
+};
+
+const targets = {
+  css: stylesheet("css", dict),
+  json: data("json", dict)
+};
+
+import { ensureDir } from "https://deno.land/std@0.143.0/fs/mod.ts";
+
+const out = "./dist";
+
+// This will create the output directory if it does not exist
+await ensureDir(out);
+
+Object.entries(targets).forEach(async ([ext, output]) => {
+  await Deno.writeTextFile(out.concat(`/tokens.${ext}`), output);
+});
+#+END_SRC
 
 * Next Steps
