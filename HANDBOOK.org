@@ -53,6 +53,7 @@
         - [[#5a-viewport-dimensions-are-ranged-set-for-width-height-min-and-max][5a. Viewport dimensions are ranged set for width, height, min, and max]]
     - [[#result-1][Result]]
   - [[#tokens-1][Tokens]]
+  - [[#tokensjs-output-1][=tokens.js= Output]]
   - [[#exporting-1][Exporting]]
 - [[#next-steps][Next Steps]]
 
@@ -692,6 +693,131 @@ separated token generation behavior from token collection structure. This means 
 collection as needed.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+export default {
+  hb: {
+    color: { ui: main, text: accent, splash },
+    text: { body, heading, size, leading, measure },
+    spacing,
+    grid: { fr: fractionals, ...grid },
+    viewport: { w, h, min, max }
+  }
+}
+#+END_SRC
+
+** =tokens.js= Output
+
+We're done, so let's take a final look at what we've done.
+
+#+BEGIN_SRC js
+import {
+  convert,
+  adjust,
+  harmony,
+  palette,
+  accessibility,
+  tokens as color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  text,
+  ms,
+  tokens as content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import {
+  preset,
+  process,
+  pipeline,
+  propagate,
+  delegate
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+
+const toRgb = preset(convert, "rgb");
+
+const reduceChroma5 = preset(adjust, { chroma: -5 });
+const shiftHueRight60 = preset(adjust, { hue: 60 });
+
+const scaleToAnalogous = preset(harmony, { configuration: "analogous" });
+
+const paletteOpts = { configuration: "material", accents: true };
+const genPalette = preset(palette, { ...paletteOpts, states: true });
+const genTextPalette = preset(palette, paletteOpts);
+
+const a11yOpts = { mode: "standard" };
+const a11y = preset(accessibility, { ...a11yOpts, rating: "AA", large: true });
+const a11yText = preset(accessibility, { ...a11yOpts, rating: "AAA" });
+
+const generatePaletteTokens = process(genPalette, a11y, color);
+const generateTextPaletteTokens = process(genTextPalette, a11yText, color);
+
+const scheme = pipeline(
+  "#7ea",
+  toRgb,
+  reduceChroma5,
+  shiftHueRight60,
+  scaleToAnalogous
+);
+
+const [main, accent, splash] = delegate(
+  scheme,
+  generatePaletteTokens,
+  generateTextPaletteTokens
+);
+
+const genGlobalScale = preset(ms, { ratio: 1.32, values: 5});
+
+const bodyAttrs = preset(text, { system: "sans", weights: ["regular", "bold"]});
+
+const headingAttrs = preset(text, { system: "serif", weights: ["light", "black"]});
+
+const sizeAttrs = preset(content, { type: "bidirectional", unit: "rem", inversion: "em" });
+
+const leadingAttrs = preset(content, { type: "ranged", min: 1.2, max: 1.5, context: "max" });
+
+const measureAttrs = preset(content, { type: "ranged", unit: "ch", min: 48, max: 75, context: "max" });
+
+const spacingAttrs = preset(content, { type: "bidirectional", unit: "ex" });
+
+const gridFractionalAttrs = preset(content, { type: "bidirectional", unit: "fr" });
+
+const gridAttrs = preset(content, { type: "grid" });
+
+const viewportOpts = { type: "ranged", min: 10, max: 100, context: "max" };
+const viewportAttrs = [
+  preset(content, { ...viewportOpts, unit: "vw"}),
+  preset(content, { ...viewportOpts, unit: "vh"}),
+  preset(content, { ...viewportOpts, unit: "vmin"}),
+  preset(content, { ...viewportOpts, unit: "vmax"}),
+];
+
+const scaleFactory = preset(propagate, genGlobalScale);
+
+const [
+  body,
+  heading,
+  size,
+  leading,
+  measure
+] = delegate(
+  scaleFactory([1, 1, 1, 1, 1]),
+  bodyAttrs,
+  headingAttrs,
+  sizeAttrs,
+  leadingAttrs,
+  measureAttrs
+);
+
+const spacing = pipeline(1, genGlobalScale, spacingAttrs);
+
+const [fractionals, grid] = delegate(
+  scaleFactory([1, 1]),
+  gridFractionalAttrs,
+  gridAttrs
+);
+
+const [w, h, min, max] = delegate(
+  scaleFactory([1, 1, 1, 1]),
+  ...viewportAttrs
+);
+
 export default {
   hb: {
     color: { ui: main, text: accent, splash },
