@@ -47,6 +47,23 @@
   - [[#tokens-1][Tokens]]
   - [[#tokensjs-output-1][=tokens.js= Output]]
 - [[#modular-workflow][Modular Workflow]]
+  - [[#color-2][Color]]
+    - [[#modules-2][Modules]]
+    - [[#constants][Constants]]
+    - [[#recipe][Recipe]]
+  - [[#content-2][Content]]
+    - [[#modules-3][Modules]]
+    - [[#text][Text]]
+      - [[#constants-1][Constants]]
+      - [[#recipe-1][Recipe]]
+    - [[#spacing][Spacing]]
+      - [[#recipe-2][Recipe]]
+    - [[#grid][Grid]]
+      - [[#recipe-3][Recipe]]
+    - [[#viewport][Viewport]]
+      - [[#constants-2][Constants]]
+      - [[#recipe-4][Recipe]]
+  - [[#tokens-2][Tokens]]
 - [[#exporting-tokens][Exporting Tokens]]
   - [[#1-import-exporterjs-module][1. Import =exporter.js= module]]
   - [[#2-import-the-generated-tokens][2. Import the generated tokens]]
@@ -668,7 +685,261 @@ export default {
 
 * Modular Workflow
 
+The more complex our token generation needs become, the more we'll start identifying habits in our process. These
+habits will replicate over projects and it will become tedious to set up the boilerplate. The solution here is to
+/automate/ our habits.
 
+Wrapping them in functions is the simplest approach. That's the one we'll use.
+
+A modular workflow involves shifting your rules and processes from active to passive behavior. Think about what remains
+constant and what changes, and then expose /only/ those knobs.
+
+You may have also noticed that =tokens.js= is growing with each rule and process we define. Time to break things up.
+
+** Color
+
+First, we'll create a new file named =color-recipe.js=.
+
+The key to refactoring our color token generation is to identify the variables and turn them into knobs without changing
+the meaning of our rules. How can we do that?
+
+*** Modules
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/color-recipe.js"
+import {
+  convert,
+  adjust,
+  harmony,
+  palette,
+  accessibility,
+  tokens as color
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import {
+  preset,
+  process,
+  pipeline,
+  delegate
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+#+END_SRC
+
+*** Constants
+
+We look at our constants:
+
++ The palettes will always output with material configurations
++ The palettes will always output with accents and interface states
++ UI and text contexts will always be delegated to the first two indexes
++ Any remaining indexes are left untouched
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/color-recipe.js"
+const paletteOpts = { configuration: "material", accents: true };
+const genPalette = preset(palette, { ...paletteOpts, states: true });
+const genTextPalette = preset(palette, paletteOpts);
+
+const a11yOpts = { mode: "standard" };
+const a11y = preset(accessibility, { ...a11yOpts, rating: "AA", large: true });
+const a11yText = preset(accessibility, { ...a11yOpts, rating: "AAA" });
+
+const generatePaletteTokens = process(genPalette, a11y, color);
+const generateTextPaletteTokens = process(genTextPalette, a11yText, color);
+#+END_SRC
+
+*** Recipe
+
+And derive a recipe from our variables:
+
++ The color won't always have its properties adjusted
++ The color won't always scale to an analogous harmony
++ The output won't always be in RGB format
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/color-recipe.js"
+export default function({ scheme = "analogous", format = "rgb" }, swatch) {
+  const setFormat = preset(convert, format);
+  const setScheme = preset(harmony, { configuration: scheme });
+
+  const base = pipeline(swatch, setFormat, setScheme);
+
+  return delegate(
+    Array.isArray(base)
+      ? base
+      : [base, base],
+    generatePaletteTokens,
+    generateTextPaletteTokens
+  );
+}
+#+END_SRC
+
+** Content
+
+First, create a new file named =content-recipes.js=.
+
+Now we're going to modularize one category at a time.
+
+*** Modules
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
+import {
+  text,
+  ms,
+  tokens as content
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import {
+  preset,
+  delegate
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+#+END_SRC
+
+*** Text
+
+**** Constants
+
++ Body family always outputs with regular and bold weights
++ Heading family always outputs with light and black weights
+
++ Size is always bidirectional in rems with em inversion
++ Leading is always a unitless range
++ Measure is always ranged in ch
+
+**** Recipe
+
++ Body system fallback is not always sans-serif
++ Heading system fallback is not always serif
+
++ The default minimum and maximum leading is not always a good fit
++ The default minimum and maximum measure is not always a good fit
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
+export function textRecipe({ body = "sans", heading = "serif" }, font) {
+  const bodyAttrs = preset(text, { system: body, weights: ["regular", "bold"] });
+  const headingAttrs = preset(text, { system: heading, weights: ["light", "black"] });
+
+  return delegate([font, font], bodyAttrs, headingAttrs);
+}
+
+export function typographyRecipe({ leading = [1.2, 1.5], measure = [48, 75] }, ms) {
+  const sizeAttrs = preset(content, { type: "bidirectional", unit: "rem", inversion: "em" });
+
+  const [leadingMin, leadingMax] = leading;
+  const leadingAttrs = preset(content, {
+    type: "ranged",
+    min: leadingMin,
+    max: leadingMax,
+    context: "max"
+  });
+
+  const [measureMin, measureMax] = measure;
+  const measureAttrs = preset(content, {
+    type: "ranged",
+    unit: "ch",
+    min: measureMin,
+    max: measureMax,
+    context: "max"
+  });
+
+  return delegate([ms, ms, ms], sizeAttrs, leadingAttrs, measureAttrs);
+}
+#+END_SRC
+
+*** Spacing
+
+**** Recipe
+
++ The spacing will not always be in ex
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
+export function spacingRecipe(unit, ms) {
+  return content({ type: "bidirectional", unit }, ms);
+}
+#+END_SRC
+
+*** Grid
+
+**** Recipe
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
+export function gridRecipe(ms) {
+  const gridFractionalAttrs = preset(content, { type: "bidirectional", unit: "fr" });
+  const gridAttrs = preset(content, { type: "grid" });
+
+  return delegate([ms, ms], gridFractionalAttrs, gridAttrs);
+}
+#+END_SRC
+
+*** Viewport
+
+**** Constants
+
++ The output will always be viewport relative corresponding with dimensions
+
+**** Recipe
+
++ The output will not always need every dimension
++ The default minimum and maximum length is not always a good fit
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
+export function viewportRecipe({
+  dimensions = ["width", "height", "min", "max"],
+  min = 10,
+  max = 100
+}, ms) {
+  const viewportOpts = { type: "ranged", min, max, context: "max" };
+
+  const targets = [
+    ["width", "vw"],
+    ["height", "vh"],
+    ["min", "vmin"],
+    ["max", "vmax"]
+  ];
+
+  return targets
+    .filter(([length], index) => length === dimensions[index])
+    .map(([length, unit]) => content({ ...viewportOpts, unit }, ms));
+}
+#+END_SRC
+
+** Tokens
+
+Finally, let's reassemble our tokens using the recipes we just made.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/tokens.js"
+import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { ms } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import paletteRecipe from "./color-recipe.js";
+import {
+  textRecipe,
+  typographyRecipe,
+  spacingRecipe,
+  gridRecipe,
+  viewportRecipe
+} from "./content-recipes.js";
+
+const [main, accent, splash] = paletteRecipe({}, adjust({
+    chroma: -5,
+    hue: 60
+}, "#7ea"));
+
+const [body, heading] = textRecipe({}, "Work Sans");
+
+const scale = ms({ ratio: 1.32, values: 5 }, 1);
+
+const [size, leading, measure] = typographyRecipe({}, scale);
+
+const spacing = spacingRecipe("ex", scale);
+
+const [fractionals, grid] = gridRecipe(scale);
+
+const [w, h, min, max] = viewportRecipe({}, scale);
+
+export default {
+  hb: {
+    color: { ui: main, text: accent, splash },
+    text: { body, heading, size, leading, measure },
+    spacing,
+    grid: { fr: fractionals, ...grid },
+    viewport: { w, h, min, max }
+  }
+}
+#+END_SRC
 
 * Exporting Tokens
 
