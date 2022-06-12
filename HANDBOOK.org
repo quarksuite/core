@@ -1,7 +1,7 @@
 #+TITLE: QuarkSuite Core Handbook (v2.0.0)
 #+PROPERTY: header-args:js :results silent :tangle no :comments none :mkdirp yes
 
-* Table of Contents :TOC@3:
+* Table of Contents :TOC@5:
 - [[#summary][Summary]]
 - [[#basic-workflow][Basic Workflow]]
   - [[#modules][Modules]]
@@ -23,7 +23,32 @@
   - [[#buildjs-output][=build.js= Output]]
 - [[#advanced-workflow][Advanced Workflow]]
   - [[#modules-1][Modules]]
-- [[#rules][Rules]]
+  - [[#color-1][Color]]
+    - [[#rules][Rules]]
+      - [[#1-color][1. Color]]
+        - [[#1a-color-should-be-converted-to-rgb][1a. Color should be converted to RGB]]
+        - [[#1b-color-chroma-should-be-reduced-by-5-and-hue-adjusted-clockwise-60-degrees][1b. Color chroma should be reduced by 5% and hue adjusted clockwise 60 degrees]]
+        - [[#1c-color-should-be-scaled-to-an-analogous-harmony][1c. Color should be scaled to an analogous harmony]]
+      - [[#2-palette][2. Palette]]
+        - [[#2a-generate-material-palettes-for-ui-and-text-with-accents-and-state][2a. Generate material palettes for UI and text (with accents and state)]]
+        - [[#2b-check-palette-validity-against-wcag-standards-where-ui-is-aa-large-and-text-is-aaa][2b. Check palette validity against WCAG standards (where UI is AA large and text is AAA)]]
+    - [[#processes][Processes]]
+    - [[#result][Result]]
+  - [[#content-1][Content]]
+    - [[#rules-1][Rules]]
+      - [[#1-global][1. Global]]
+        - [[#1a-the-global-modular-scale-is-5-values-derived-from-a-ratio-of-132][1a. The global modular scale is 5 values derived from a ratio of 1.32]]
+      - [[#2-text][2. Text]]
+        - [[#2a-body-uses-regular-and-bold-weights-with-a-sans-serif-system-fallback][2a. Body uses regular and bold weights with a sans-serif system fallback]]
+        - [[#2b-headings-use-light-and-black-weights-with-a-serif-system-fallback][2b. Headings use light and black weights with a serif system fallback]]
+        - [[#2c-size-is-bidirectional-in-rem-units-with-an-em-inversion][2c. Size is bidirectional in rem units with an em inversion]]
+        - [[#2d-leading-is-ranged-with-minimum-of-12-to-a-maximum-of-15][2d. Leading is ranged with minimum of 1.2 to a maximum of 1.5]]
+        - [[#2e-measure-is-ranged-in-ch-with-a-minimum-of-48-to-a-maximum-of-75][2e. Measure is ranged in ch with a minimum of 48 to a maximum of 75]]
+      - [[#3-spacing][3. Spacing]]
+        - [[#3a-spacing-is-bidirectional-in-ex-units][3a. Spacing is bidirectional in ex units]]
+      - [[#4-grid][4. Grid]]
+        - [[#4a-fractionals-are-bidirectional][4a. Fractionals are bidirectional]]
+        - [[#4b-grid-dimensions-are-set][4b. Grid dimensions are set]]
 - [[#next-steps][Next Steps]]
 
 * Summary
@@ -402,22 +427,14 @@ cracks begin to show.
 The library provides a =workflow.js= module to handle your advanced use cases. Its only purpose is altering the way
 library functions work to unlock design patterns that will be valuable for the user who needs to scale.
 
-Using the module for data composition follows its own logical flow:
-
-+ Preset any actions
-+ Create useful processes
-+ Assemble data pipelines
-
-Generated data collections also gain some extra support:
-
-+ Propagate a process through each collection value
-+ Delegate processes selectively to collection values
+If the basic workflow is a bottom-up procedure where we assemble data from a known value, then advanced usage dictates a
+top-down *set of rules* for the expected result to an unknown value.
 
 ** Modules
 
 The first thing to do is import =workflow.js=, so let's do that now.
 
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/refactoring/tokens.js"
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
 import {
   convert,
   adjust,
@@ -435,11 +452,159 @@ import {
   preset,
   process,
   pipeline,
-  propagate,
   delegate
 } from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
 #+END_SRC
 
-* Rules
+** Color
+
+Now, what set of rules directs our color token generation? Think about it for a second before we go on.
+
+*** Rules
+
+**** 1. Color
+
+***** 1a. Color should be converted to RGB
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const toRgb = preset(convert, "rgb");
+#+END_SRC
+
+***** 1b. Color chroma should be reduced by 5% and hue adjusted clockwise 60 degrees
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const reduceChroma5 = preset(adjust, { chroma: -5 });
+const shiftHueRight60 = preset(adjust, { hue: 60 });
+#+END_SRC
+
+***** 1c. Color should be scaled to an analogous harmony
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const scaleToAnalogous = preset(harmony, { configuration: "analogous" });
+#+END_SRC
+
+**** 2. Palette
+
+***** 2a. Generate material palettes for UI and text (with accents and state)
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const paletteOpts = { configuration: "material", accents: true };
+const genPalette = preset(palette, { ...paletteOpts, states: true });
+const genTextPalette = preset(palette, paletteOpts);
+#+END_SRC
+
+***** 2b. Check palette validity against WCAG standards (where UI is AA large and text is AAA)
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const a11yOpts = { mode: "standard" };
+const a11y = preset(accessibility, { ...a11yOpts, rating: "AA", large: true });
+const a11yText = preset(accessibility, { ...a11yOpts, rating: "AAA" });
+#+END_SRC
+
+*** Processes
+
+We can now define reusable processes that will actually carry out our rules. Particularly we want to create some to
+properly generate our UI and text palettes. Notice how the token emitter (=color=) is dropped right in at the end.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const generatePaletteTokens = process(genPalette, a11y, color);
+const generateTextPaletteTokens = process(genTextPalette, a11yText, color);
+#+END_SRC
+
+*** Result
+
+All of the above makes our actual color generation code read like an order.
+
+#+BEGIN_QUOTE
+"Convert =#7ea= to RGB. Reduce chroma by 5 and shift hue 60 degrees right. Next, scale the result to an analogous
+harmony. Then delegate the UI and text color token processes as =main= and =accent=. Leave =splash= alone."
+#+END_QUOTE
+
+The output is identical to the basic procedure but expressed in a more declarative way.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const scheme = pipeline(
+  "#7ea",
+  toRgb,
+  reduceChroma5,
+  shiftHueRight60,
+  scaleToAnalogous
+);
+
+const [main, accent, splash] = delegate(
+  scheme,
+  generatePaletteTokens,
+  generateTextPaletteTokens
+);
+#+END_SRC
+
+** Content
+
+Content modular scales are so simple compared to color that applying a top-down approach to them usually isn't
+necessary. Let's say we do it anyway, though. How would that look?
+
+*** Rules
+
+**** 1. Global
+
+***** 1a. The global modular scale is 5 values derived from a ratio of 1.32
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const genGlobalScale = preset(ms, { ratio: 1.32, values: 5});
+#+END_SRC
+
+**** 2. Text
+
+***** 2a. Body uses regular and bold weights with a sans-serif system fallback
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const bodyAttrs = preset(text, { system: "sans", weights: ["regular", "bold"]});
+#+END_SRC
+
+***** 2b. Headings use light and black weights with a serif system fallback
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const headingAttrs = preset(text, { system: "serif", weights: ["light", "black"]});
+#+END_SRC
+
+***** 2c. Size is bidirectional in rem units with an em inversion
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const sizeAttrs = preset(content, { type: "bidirectional", unit: "rem", inversion: "em" });
+#+END_SRC
+
+***** 2d. Leading is ranged with minimum of 1.2 to a maximum of 1.5
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const leadingAttrs = preset(content, { type: "ranged", min: 1.2, max: 1.5, context: "max" });
+#+END_SRC
+
+***** 2e. Measure is ranged in ch with a minimum of 48 to a maximum of 75
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const measureAttrs = preset(content, { type: "ranged", unit: "ch", min: 48, max: 75, context: "max" });
+#+END_SRC
+
+**** 3. Spacing
+
+***** 3a. Spacing is bidirectional in ex units
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const spacingAttrs = preset(content, { type: "bidirectional", unit: "ex" });
+#+END_SRC
+
+**** 4. Grid
+
+***** 4a. Fractionals are bidirectional
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const gridFractionalAttrs = preset(content, { type: "bidirectional", unit: "fr" });
+#+END_SRC
+
+***** 4b. Grid dimensions are set
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const gridAttrs = preset(content, { type: "grid" });
+#+END_SRC
 
 * Next Steps
