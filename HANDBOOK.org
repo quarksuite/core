@@ -49,6 +49,11 @@
       - [[#4-grid][4. Grid]]
         - [[#4a-fractionals-are-bidirectional][4a. Fractionals are bidirectional]]
         - [[#4b-grid-dimensions-are-set][4b. Grid dimensions are set]]
+      - [[#5-viewport][5. Viewport]]
+        - [[#5a-viewport-dimensions-are-ranged-set-for-width-height-min-and-max][5a. Viewport dimensions are ranged set for width, height, min, and max]]
+    - [[#result-1][Result]]
+  - [[#tokens-1][Tokens]]
+  - [[#exporting-1][Exporting]]
 - [[#next-steps][Next Steps]]
 
 * Summary
@@ -333,6 +338,9 @@ Here's the fun part. We'll format our dictionary based on the domain targets.
 In this case, we want to export our tokens as CSS custom properties and JSON. And let's also store the results in
 =targets=.
 
+As a bonus, exporters transform token collections in a dictionary /recursively/. This means the structure of your token
+collection is your choice.
+
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/build.js"
 const targets = {
   css: stylesheet("css", dict),
@@ -452,6 +460,7 @@ import {
   preset,
   process,
   pipeline,
+  propagate,
   delegate
 } from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
 #+END_SRC
@@ -606,5 +615,96 @@ const gridFractionalAttrs = preset(content, { type: "bidirectional", unit: "fr" 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
 const gridAttrs = preset(content, { type: "grid" });
 #+END_SRC
+
+**** 5. Viewport
+
+***** 5a. Viewport dimensions are ranged set for width, height, min, and max
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const viewportOpts = { type: "ranged", min: 10, max: 100, context: "max" };
+const viewportAttrs = [
+  preset(content, { ...viewportOpts, unit: "vw"}),
+  preset(content, { ...viewportOpts, unit: "vh"}),
+  preset(content, { ...viewportOpts, unit: "vmin"}),
+  preset(content, { ...viewportOpts, unit: "vmax"}),
+];
+#+END_SRC
+
+*** Result
+
+Let's assume for the sake of experimentation that instead of generating content tokens from a single global scale, we
+want to generate a unique scale for each rule. Then we'll generate the tokens by category.
+
+First, we'll set up a factory to generate modular scales on demand.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const scaleFactory = preset(propagate, genGlobalScale);
+#+END_SRC
+
+Now we'll delegate our content scale rules to generated scales. The text category has five subcategories.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const [
+  body,
+  heading,
+  size,
+  leading,
+  measure
+] = delegate(
+  scaleFactory([1, 1, 1, 1, 1]),
+  bodyAttrs,
+  headingAttrs,
+  sizeAttrs,
+  leadingAttrs,
+  measureAttrs
+);
+#+END_SRC
+
+Spacing is its own category.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const spacing = pipeline(1, genGlobalScale, spacingAttrs);
+#+END_SRC
+
+Then we want to generate two subcategories for our grid category.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const [fractionals, grid] = delegate(
+  scaleFactory([1, 1]),
+  gridFractionalAttrs,
+  gridAttrs
+);
+#+END_SRC
+
+Finally, we apply the viewport rules to four subcategories.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const [w, h, min, max] = delegate(
+  scaleFactory([1, 1, 1, 1]),
+  ...viewportAttrs
+);
+#+END_SRC
+
+** Tokens
+
+Since we've used a top-down approach, our token dictionary is going to look a little different. We've now effectively
+separated token generation behavior from token collection structure. This means it's easier to restructure our
+collection as needed.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+export default {
+  hb: {
+    color: { ui: main, text: accent, splash },
+    text: { body, heading, size, leading, measure },
+    spacing,
+    grid: { fr: fractionals, ...grid },
+    viewport: { w, h, min, max }
+  }
+}
+#+END_SRC
+
+** Exporting
+
+Since the token output hasn't changed, the same exporting steps apply. We can leave =build.js= alone.
 
 * Next Steps
