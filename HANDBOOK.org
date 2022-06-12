@@ -46,6 +46,7 @@
     - [[#result-1][Result]]
   - [[#tokens-1][Tokens]]
   - [[#tokensjs-output-1][=tokens.js= Output]]
+- [[#modular-workflow][Modular Workflow]]
 - [[#exporting-tokens][Exporting Tokens]]
   - [[#1-import-exporterjs-module][1. Import =exporter.js= module]]
   - [[#2-import-the-generated-tokens][2. Import the generated tokens]]
@@ -267,10 +268,9 @@ export default {
 
 The basic workflow is great for small projects that need a singular data set.
 
-The second you require /multiple/ related token dictionaries or you want to replicate your process in other projects, the
-cracks begin to show.
+The cracks in this approach starts to show the second you want to work with /multiple/ data sets.
 
-The library provides a =workflow.js= module to handle your advanced use cases. Its only purpose is altering the way
+The library provides a =workflow.js= module to handle these advanced use cases. Its only purpose is altering the way
 library functions work to unlock design patterns that will be valuable for the user who needs to scale.
 
 If the basic workflow is a bottom-up procedure where we assemble data from a known value, then advanced usage dictates a
@@ -665,6 +665,10 @@ export default {
   }
 }
 #+END_SRC
+
+* Modular Workflow
+
+
 
 * Exporting Tokens
 
