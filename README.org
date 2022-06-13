@@ -111,7 +111,7 @@ that next.
 * API
 
 The [[https://github.com/quarksuite/core/blob/v2-workspace/API.org][QuarkSuite Core API]] is a technical overview of the library that also serves as documentation of its functions. It
-may make more sense after reading the handbook, but some of you may get more out of it reading it beforehand.
+may make more sense after reading the handbook, but some of you may get more out of reading it beforehand.
 
 * Contributing
 
