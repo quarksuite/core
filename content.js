@@ -94,8 +94,8 @@ export function modify(calc, ms) {
 /**
  * @typedef {string | number} ContentValue
  * @typedef {{base: ContentValue; [scale: string]: ContentValue}} DirectionalTokens
- * @typedef {{base: ContentValue [scale: string]: ContentValue; max: ContentValue}} MinimumRangedContext
- * @typedef {{base: ContentValue [scale: string]: ContentValue; min: ContentValue}} MaximumRangedContext
+ * @typedef {{base: ContentValue; [scale: string]: ContentValue; max: ContentValue}} MinimumRangedContext
+ * @typedef {{base: ContentValue; [scale: string]: ContentValue; min: ContentValue}} MaximumRangedContext
  * @typedef {MinimumRangedContext | MaximumRangedContext} RangedTokens
  *
  * @typedef {{ [tracks: string]: number; }} GridTracks
