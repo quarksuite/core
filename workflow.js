@@ -37,12 +37,9 @@ export function preset(action, y) {
  */
 
 /**
- * @template {readonly [(x: any) => any, ...Array<(x: any) => any>, (x: any) => any]>} EmitterSequence
- */
-
-/**
  * A workflow helper that combines a sequence of `emitters` into a new emitter.
  *
+ * @template {readonly [(x: any) => any, ...Array<(x: any) => any>, (x: any) => any]} EmitterSequence
  * @template {EmitterSequence} Sequence
  *
  * @param {Sequence} emitters - the sequence of emitters to combine
@@ -69,6 +66,7 @@ export function preset(action, y) {
  * @see {@link preset}
  */
 export function process(...emitters) {
+  // @ts-ignore: The return type is correct but TypeScript thinks it's (x: any) => any
   return compose(...emitters);
 }
 
@@ -77,6 +75,7 @@ export function process(...emitters) {
  * through a sequence of `emitters`.
  *
  * @template X
+ * @template {readonly [(x: any) => any, ...Array<(x: any) => any>, (x: any) => any]} EmitterSequence
  * @template {EmitterSequence} Sequence
  *
  * @param {X} x - the data to pass through
@@ -156,6 +155,7 @@ export function propagate(emitter, xs) {
  *
  * @template X
  * @template {X[]} Collection
+ * @template {readonly [(x: any) => any, ...Array<(x: any) => any>, (x: any) => any]} EmitterSequence
  * @template {EmitterSequence} Sequence
  *
  * @param {Collection} xs - the collection to delegate
@@ -191,6 +191,7 @@ export function propagate(emitter, xs) {
  * @see {@link preset}
  */
 export function delegate(xs, ...emitters) {
+  // @ts-ignore: The return type is correct, but TypeScript thinks it's any[]
   return xs.map((x, pos) => (emitters[pos] ? emitters[pos](x) : x));
 }
 
