@@ -7,6 +7,7 @@
 - [[#getting-started][Getting Started]]
   - [[#live][Live]]
   - [[#local-development][Local Development]]
+    - [[#node][Node]]
   - [[#offline][Offline]]
 - [[#handbook][Handbook]]
 - [[#api][API]]
@@ -57,6 +58,7 @@ QuarkSuite Core is written in vanilla JavaScript (ES2017+).
 + [[https://jsdelivr.com][JSDelivr]]: =https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/[module]=
 + [[https://statically.io][Statically]]: =https://cdn.statically.io/gh/quarksuite/core/2.0.0/[module]=
 + [[https://nest.land][Nest.land]]: =https://x.nest.land/quarksuite:core@2.0.0/[module]=
++ [[https://nodejs.org/][Node]] (NPM): =@quarksuite/core@2.0.0=
 
 In general, prefer the JSDelivr/Statically CDN for availability, features, and speed. The Nest.land package is a
 failsafe for the repo disappearing or GitHub going down.
@@ -88,6 +90,30 @@ import {
   exporter,
   workflow
 } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/mod.js";
+#+END_SRC
+
+*** Node
+
+Ensure that =type: module= is set in your =package.json= so that Node is set for
+ES Modules. Then install the package.
+
+#+BEGIN_SRC shell
+npm install @quarksuite/core@2.0.0
+
+# OR
+
+yarn add @quarksuite/core@2.0.0
+#+END_SRC
+
+And then in your source files:
+
+#+BEGIN_SRC js
+import {
+  color,
+  content,
+  exporter,
+  workflow
+} from "@quarksuite/core";
 #+END_SRC
 
 ** Offline
