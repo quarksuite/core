@@ -1,0 +1,22 @@
+{
+  "name": "@quarksuite/core",
+  "description": "A web-focused toolkit for creating, assembling and distributing design tokens for custom design systems.",
+  "version": "2.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quarksuite/core.git"
+  },
+  "keywords": [
+    "quarksuite",
+    "core",
+    "design tokens",
+    "front-end design"
+  ],
+  "bugs": {
+    "url": "https://github.com/quarksuite/core/issues"
+  },
+  "homepage": "https://github.com/quarksuite/core",
+  "type": "module",
+  "main": "./mod.js",
+  "types": "./types/*.d.ts"
+}
