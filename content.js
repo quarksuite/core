@@ -1,3 +1,5 @@
+/// <reference types="./types/content.d.ts" />
+
 /**
  * @typedef {"thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black"} TextWeights
  * @typedef {"sans" | "serif" | "monospace"} TextSystem

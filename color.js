@@ -1,3 +1,5 @@
+/// <reference types="./types/color.d.ts" />
+
 /** @typedef {"hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "lab" | "lch" | "oklab" | "oklch"} CSSColorFormats */
 
 /**

@@ -1,3 +1,5 @@
+/// <reference types="./types/exporter.d.ts" />
+
 /**
  * @typedef {Partial<{
  *   name: string;

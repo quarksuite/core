@@ -1,3 +1,5 @@
+/// <reference types="./types/workflow.d.ts" />
+
 /**
  * A workflow helper that converts an `action` into an emitter by presetting its
  * `y` modifier.

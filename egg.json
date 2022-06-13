@@ -1,16 +1,14 @@
 {
   "$schema": "https://x.nest.land/eggs@0.3.9/src/schema.json",
   "name": "quarksuite:core",
-  "description": "Quarks System Core is a library for creating, assembling, and distributing foundational design tokens using web technologies.",
+  "description": "A web-focused toolkit for creating, assembling and distributing design tokens for custom design systems.",
   "homepage": "https://github.com/quarksuite/core",
   "version": "2.0.0-20",
   "releaseType": "pre",
   "stable": "true",
   "unlisted": true,
   "entry": "./mod.js",
-  "files": [
-    "*.js"
-  ],
+  "files": ["*.js", "types/*.d.ts"],
   "checkFormat": false,
   "checkTests": false,
   "checkInstallation": false,

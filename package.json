@@ -2,6 +2,7 @@
   "name": "@quarksuite/core",
   "description": "A web-focused toolkit for creating, assembling and distributing design tokens for custom design systems.",
   "version": "2.0.0",
+  "license": "Unlicense",
   "repository": {
     "type": "git",
     "url": "https://github.com/quarksuite/core.git"
@@ -10,7 +11,8 @@
     "quarksuite",
     "core",
     "design tokens",
-    "front-end design"
+    "front-end design",
+    "buildless"
   ],
   "bugs": {
     "url": "https://github.com/quarksuite/core/issues"
@@ -18,5 +20,9 @@
   "homepage": "https://github.com/quarksuite/core",
   "type": "module",
   "main": "./mod.js",
-  "types": "./types/*.d.ts"
+  "types": "./types/*.d.ts",
+  "files": [
+    "*.js",
+    "types"
+  ]
 }
