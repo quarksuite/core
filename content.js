@@ -36,6 +36,49 @@ export function text(settings, font) {
   return textFamily({ system, weights }, font);
 }
 
+const SYSTEM_FONT_STACKS = {
+  sans:
+    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+  serif:
+    "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+  monospace:
+    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+};
+
+function generateStack(fallback, font) {
+  if (font === null || font === "") return SYSTEM_FONT_STACKS[fallback];
+  return [font, SYSTEM_FONT_STACKS[fallback]].join(", ");
+}
+
+function fontWeights(key) {
+  return new Map([
+    ["thin", 100],
+    ["extralight", 200],
+    ["light", 300],
+    ["regular", 400],
+    ["medium", 500],
+    ["semibold", 600],
+    ["bold", 700],
+    ["extrabold", 800],
+    ["black", 900],
+  ]).get(key);
+}
+
+function generateWeights(weights) {
+  return weights.reduce((acc, key) => {
+    const value = fontWeights(key);
+
+    return { ...acc, [key]: value };
+  }, {});
+}
+
+function textFamily({ system = "sans", weights = ["regular", "bold"] }, font) {
+  return {
+    family: generateStack(system, font),
+    ...generateWeights(weights),
+  };
+}
+
 /**
  * @typedef {{ [fr: string]: string; }} GridFr
  * @typedef {{
@@ -86,6 +129,29 @@ export function grid(settings, columns) {
   return generateGrid({ rows, ratio }, columns);
 }
 
+function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
+  return {
+    columns,
+    rows,
+    ...[columns, rows].reduce((acc, values, i) => {
+      const axes = ["col", "row"];
+      const tracks = (dim) =>
+        Array(dim)
+          .fill(0)
+          .map((x, pos) => ++x + pos)
+          .reduce((acc, v) => ({ ...acc, [-v]: -v, [v]: v }), {});
+
+      return {
+        ...acc,
+        [axes[i]]: {
+          ...tracks(values),
+          fr: assemble({ type: "bidirectional", ratio, values }, "1fr"),
+        },
+      };
+    }, {}),
+  };
+}
+
 /**
  * @typedef {string | number} ScaleValue - scale value (may be unitless)
  * @typedef {`${"bi" | "uni"}directional` | "ranged"} ScaleType
@@ -128,72 +194,6 @@ export function grid(settings, columns) {
  */
 export function scale(settings, root) {
   return assemble(settings, root);
-}
-
-const SYSTEM_FONT_STACKS = {
-  sans:
-    "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
-  serif:
-    "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
-  monospace:
-    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
-};
-
-function generateStack(fallback, font) {
-  if (font === null || font === "") return SYSTEM_FONT_STACKS[fallback];
-  return [font, SYSTEM_FONT_STACKS[fallback]].join(", ");
-}
-
-function fontWeights(key) {
-  return new Map([
-    ["thin", 100],
-    ["extralight", 200],
-    ["light", 300],
-    ["regular", 400],
-    ["medium", 500],
-    ["semibold", 600],
-    ["bold", 700],
-    ["extrabold", 800],
-    ["black", 900],
-  ]).get(key);
-}
-
-function generateWeights(weights) {
-  return weights.reduce((acc, key) => {
-    const value = fontWeights(key);
-
-    return { ...acc, [key]: value };
-  }, {});
-}
-
-function textFamily({ system = "sans", weights = ["regular", "bold"] }, font) {
-  return {
-    family: generateStack(system, font),
-    ...generateWeights(weights),
-  };
-}
-
-function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
-  return {
-    columns,
-    rows,
-    ...[columns, rows].reduce((acc, values, i) => {
-      const axes = ["col", "row"];
-      const tracks = (dim) =>
-        Array(dim)
-          .fill(0)
-          .map((x, pos) => ++x + pos)
-          .reduce((acc, v) => ({ ...acc, [-v]: -v, [v]: v }), {});
-
-      return {
-        ...acc,
-        [axes[i]]: {
-          ...tracks(values),
-          fr: assemble({ type: "bidirectional", ratio, values }, "1fr"),
-        },
-      };
-    }, {}),
-  };
 }
 
 function create({ ratio = 1.5, values = 6 }, root) {
