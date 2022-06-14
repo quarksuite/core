@@ -1,6 +1,11 @@
-import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
+import {
+  describe,
+  expect,
+  it,
+  run,
+} from "https://deno.land/x/tincan@1.0.1/mod.ts";
 import { palette, tokens as color } from "../../color.js";
-import { text, ms, tokens as content } from "../../content.js";
+import { ms, text, tokens as content } from "../../content.js";
 import { stylesheet } from "../../exporter.js";
 
 const swatch = "rebeccapurple";
@@ -14,7 +19,7 @@ const dict = {
     version: "0.1.0",
     license: "Unlicense",
   },
-  color: color(palette({}, "rebeccapurple")),
+  color: color(palette({}, swatch)),
   text: {
     primary: text({}, ""),
     secondary: text({ system: "serif", weights: ["light", "black"] }, ""),
@@ -22,7 +27,7 @@ const dict = {
     size: content({ unit: "rem", inversion: "em" }, scale),
     leading: content(
       { type: "ranged", min: 1.25, max: 1.5, context: "max" },
-      scale
+      scale,
     ),
     measure: content(
       {
@@ -33,7 +38,7 @@ const dict = {
         trunc: true,
         context: "max",
       },
-      scale
+      scale,
     ),
   },
   layout: {
@@ -55,7 +60,7 @@ describe("stylesheet(format, dict)", () => {
   const removeTimestamp = (format) =>
     format.replace(
       /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
-      "[Timestamp replaced for testing]"
+      "[Timestamp replaced for testing]",
     );
 
   describe("format = 'css'", () => {
@@ -75,14 +80,14 @@ describe("stylesheet(format, dict)", () => {
 
 :root {
   --color-50: #eeeaf6;
-  --color-100: #d6cbe7;
-  --color-200: #beadd8;
-  --color-300: #a78fc9;
-  --color-400: #9171ba;
-  --color-500: #7b53aa;
-  --color-600: #512d78;
-  --color-700: #3d2658;
-  --color-800: #2a1e39;
+  --color-100: #d1c5e4;
+  --color-200: #b5a1d2;
+  --color-300: #9a7dc0;
+  --color-400: #7f59ad;
+  --color-500: #552e7e;
+  --color-600: #452964;
+  --color-700: #35234b;
+  --color-800: #261c34;
   --color-900: #18151d;
   --color-bg: #ffffff;
   --color-fg: #111111;
@@ -184,14 +189,14 @@ describe("stylesheet(format, dict)", () => {
  */
 
 $color-50: #eeeaf6;
-$color-100: #d6cbe7;
-$color-200: #beadd8;
-$color-300: #a78fc9;
-$color-400: #9171ba;
-$color-500: #7b53aa;
-$color-600: #512d78;
-$color-700: #3d2658;
-$color-800: #2a1e39;
+$color-100: #d1c5e4;
+$color-200: #b5a1d2;
+$color-300: #9a7dc0;
+$color-400: #7f59ad;
+$color-500: #552e7e;
+$color-600: #452964;
+$color-700: #35234b;
+$color-800: #261c34;
 $color-900: #18151d;
 $color-bg: #ffffff;
 $color-fg: #111111;
@@ -292,14 +297,14 @@ $layout-dimensions-max-max: 100vmax;
  */
 
 @color-50: #eeeaf6;
-@color-100: #d6cbe7;
-@color-200: #beadd8;
-@color-300: #a78fc9;
-@color-400: #9171ba;
-@color-500: #7b53aa;
-@color-600: #512d78;
-@color-700: #3d2658;
-@color-800: #2a1e39;
+@color-100: #d1c5e4;
+@color-200: #b5a1d2;
+@color-300: #9a7dc0;
+@color-400: #7f59ad;
+@color-500: #552e7e;
+@color-600: #452964;
+@color-700: #35234b;
+@color-800: #261c34;
 @color-900: #18151d;
 @color-bg: #ffffff;
 @color-fg: #111111;
@@ -400,14 +405,14 @@ $layout-dimensions-max-max: 100vmax;
  */
 
 color-50 = #eeeaf6
-color-100 = #d6cbe7
-color-200 = #beadd8
-color-300 = #a78fc9
-color-400 = #9171ba
-color-500 = #7b53aa
-color-600 = #512d78
-color-700 = #3d2658
-color-800 = #2a1e39
+color-100 = #d1c5e4
+color-200 = #b5a1d2
+color-300 = #9a7dc0
+color-400 = #7f59ad
+color-500 = #552e7e
+color-600 = #452964
+color-700 = #35234b
+color-800 = #261c34
 color-900 = #18151d
 color-bg = #ffffff
 color-fg = #111111

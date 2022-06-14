@@ -1,6 +1,6 @@
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette, tokens as color } from "../../color.js";
-import { text, ms, tokens as content } from "../../content.js";
+import { ms, text, tokens as content } from "../../content.js";
 import { data } from "../../exporter.js";
 
 const swatch = "rebeccapurple";
@@ -22,7 +22,7 @@ const dict = {
     size: content({ unit: "rem", inversion: "em" }, scale),
     leading: content(
       { type: "ranged", min: 1.25, max: 1.5, context: "max" },
-      scale
+      scale,
     ),
     measure: content(
       {
@@ -33,7 +33,7 @@ const dict = {
         trunc: true,
         context: "max",
       },
-      scale
+      scale,
     ),
   },
   layout: {
@@ -55,7 +55,7 @@ describe("data(format, dict)", () => {
   const removeTimestamp = (format) =>
     format.replace(
       /Updated on [\d/]+ at [\d:]+ (?:AM|PM)?/,
-      "[Timestamp replaced for testing]"
+      "[Timestamp replaced for testing]",
     );
 
   describe("format = 'json'", () => {
@@ -70,14 +70,14 @@ describe("data(format, dict)", () => {
         tokens: {
           color: {
             50: "#eeeaf6",
-            100: "#d6cbe7",
-            200: "#beadd8",
-            300: "#a78fc9",
-            400: "#9171ba",
-            500: "#7b53aa",
-            600: "#512d78",
-            700: "#3d2658",
-            800: "#2a1e39",
+            100: "#d1c5e4",
+            200: "#b5a1d2",
+            300: "#9a7dc0",
+            400: "#7f59ad",
+            500: "#552e7e",
+            600: "#452964",
+            700: "#35234b",
+            800: "#261c34",
             900: "#18151d",
             bg: "#ffffff",
             fg: "#111111",
@@ -85,19 +85,19 @@ describe("data(format, dict)", () => {
           text: {
             primary: {
               family:
-              "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+                "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
               regular: 400,
               bold: 700,
             },
             secondary: {
               family:
-              "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+                "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
               light: 300,
               black: 900,
             },
             source: {
               family:
-              "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+                "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
               regular: 400,
               bold: 700,
             },
@@ -209,14 +209,14 @@ project:
 tokens:
   color:
     50: #eeeaf6
-    100: #d6cbe7
-    200: #beadd8
-    300: #a78fc9
-    400: #9171ba
-    500: #7b53aa
-    600: #512d78
-    700: #3d2658
-    800: #2a1e39
+    100: #d1c5e4
+    200: #b5a1d2
+    300: #9a7dc0
+    400: #7f59ad
+    500: #552e7e
+    600: #452964
+    700: #35234b
+    800: #261c34
     900: #18151d
     bg: #ffffff
     fg: #111111
