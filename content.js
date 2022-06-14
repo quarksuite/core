@@ -184,13 +184,12 @@ function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
           .fill(0)
           .map((x, pos) => ++x + pos)
           .reduce((acc, v) => ({ ...acc, [-v]: -v, [v]: v }), {});
-      const frScale = create({ ratio, values }, "1fr");
 
       return {
         ...acc,
         [axes[i]]: {
           ...tracks(values),
-          fr: assemble({ type: "bidirectional" }, frScale),
+          fr: assemble({ type: "bidirectional", ratio, values }, "1fr"),
         },
       };
     }, {}),
