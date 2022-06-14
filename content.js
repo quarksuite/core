@@ -80,17 +80,17 @@ function textFamily({ system = "sans", weights = ["regular", "bold"] }, font) {
 }
 
 /**
- * @typedef {{ [fr: string]: string; }} GridFr
+ * @typedef {{ [fraction: string]: string; }} GridFr
  * @typedef {{
  *   columns: number;
  *   rows: number;
  *   col: {
  *     [tracks: string]: number;
- *     fr: GridCells;
+ *     fr: GridFr;
  *   },
  *   row: {
  *     [tracks: string]: number;
- *     fr: GridCells;
+ *     fr: GridFr;
  *   }
  * }} GridTokens
  */
@@ -129,7 +129,7 @@ export function grid(settings, columns) {
   return generateGrid({ rows, ratio }, columns);
 }
 
-function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
+function generateGrid({ rows, ratio = 1.5 }, columns) {
   return {
     columns,
     rows,
@@ -154,7 +154,7 @@ function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
 
 /**
  * @typedef {string | number} ScaleValue - scale value (may be unitless)
- * @typedef {`${"bi" | "uni"}directional` | "ranged"} ScaleType
+ * @typedef {`${"bi" | "uni"}directional` | "ranged"} ScaleConfiguration
  * @typedef {ScaleValue} RootValue - scale root (initial) value
  * @typedef {{base: ScaleValue; [variants: string]: ScaleValue}} DirectionalTokens
  * @typedef {{base: ScaleValue; [range: string]: ScaleValue; max: ScaleValue}} MinimumRangedContext
@@ -177,7 +177,7 @@ function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
  * @param {boolean} [settings.reverse] - reverse the context (ranged)
  *
  * @param {RootValue} root - the root value to generate from
- * @returns {ScaleScale} the generated scale scale
+ * @returns {ScaleValue} the generated scale tokens
  *
  * @example
  * Scale generation examples
@@ -252,7 +252,7 @@ function assemble(settings, root) {
     return {
       base: initial,
       ...x.reduce((acc, value, pos) => {
-        return { ...acc, ["x".concat(++pos + 1)]: value };
+        return { ...acc, ["x".concat(String(++pos + 1))]: value };
       }, {}),
     };
   }
@@ -268,6 +268,7 @@ function assemble(settings, root) {
     const range = x
       .map((value) => {
         const [n] = parse(value);
+        // @ts-ignore: parse() always returns a number or NaN
         const calculated = floor + (ceiling - floor) / n;
 
         return trunc ? Math.trunc(calculated) : calculated;
@@ -280,19 +281,23 @@ function assemble(settings, root) {
       ? {
         base: serialize([floor, unit]),
         ...range.reduce(
-          (acc, value, pos) => ({ ...acc, ["i".concat(++pos + 1)]: value }),
+          (acc, value, pos) => ({
+            ...acc,
+            ["i".concat(String(++pos + 1))]: value,
+          }),
           {},
         ),
         max: serialize([ceiling, unit]),
       }
       : {
         base: serialize([ceiling, unit]),
-        ...range
-          .reverse()
-          .reduce(
-            (acc, value, pos) => ({ ...acc, ["i".concat(++pos + 1)]: value }),
-            {},
-          ),
+        ...range.reverse().reduce(
+          (acc, value, pos) => ({
+            ...acc,
+            ["i".concat(String(++pos + 1))]: value,
+          }),
+          {},
+        ),
         min: serialize([floor, unit]),
       };
   }
@@ -300,16 +305,18 @@ function assemble(settings, root) {
   const d = x.map((value) => {
     const [base] = parse(initial);
     const [n] = parse(value);
+
+    // @ts-ignore: parse() always returns a number or NaN
     return serialize([base ** 2 / n, inversion]);
   });
 
   return {
     base: initial,
     ...x.reduce((acc, value, pos) => {
-      return { ...acc, ["x".concat(++pos + 1)]: value };
+      return { ...acc, ["x".concat(String(++pos + 1))]: value };
     }, {}),
     ...d.reduce((acc, value, pos) => {
-      return { ...acc, ["d".concat(++pos + 1)]: value };
+      return { ...acc, ["d".concat(String(++pos + 1))]: value };
     }, {}),
   };
 }

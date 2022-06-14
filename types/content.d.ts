@@ -31,17 +31,17 @@ export function text(settings: {
     system?: TextSystem;
 }, font: string): TextTokens;
 /**
- * @typedef {{ [fr: string]: string; }} GridFr
+ * @typedef {{ [fraction: string]: string; }} GridFr
  * @typedef {{
  *   columns: number;
  *   rows: number;
  *   col: {
  *     [tracks: string]: number;
- *     fr: GridCells;
+ *     fr: GridFr;
  *   },
  *   row: {
  *     [tracks: string]: number;
- *     fr: GridCells;
+ *     fr: GridFr;
  *   }
  * }} GridTokens
  */
@@ -79,7 +79,7 @@ export function grid(settings: {
 }, columns: number): GridTokens;
 /**
  * @typedef {string | number} ScaleValue - scale value (may be unitless)
- * @typedef {`${"bi" | "uni"}directional` | "ranged"} ScaleType
+ * @typedef {`${"bi" | "uni"}directional` | "ranged"} ScaleConfiguration
  * @typedef {ScaleValue} RootValue - scale root (initial) value
  * @typedef {{base: ScaleValue; [variants: string]: ScaleValue}} DirectionalTokens
  * @typedef {{base: ScaleValue; [range: string]: ScaleValue; max: ScaleValue}} MinimumRangedContext
@@ -101,7 +101,7 @@ export function grid(settings: {
  * @param {boolean} [settings.reverse] - reverse the context (ranged)
  *
  * @param {RootValue} root - the root value to generate from
- * @returns {ScaleScale} the generated scale scale
+ * @returns {ScaleValue} the generated scale tokens
  *
  * @example
  * Scale generation examples
@@ -122,7 +122,7 @@ export function scale(settings: {
     floor?: ScaleValue;
     trunc?: boolean;
     reverse?: boolean;
-}, root: RootValue): ScaleScale;
+}, root: RootValue): ScaleValue;
 export type TextWeights = "thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black";
 export type TextSystem = "sans" | "serif" | "monospace";
 export type TextWeightsTokens = {
@@ -132,14 +132,25 @@ export type TextTokens = {
     family: string;
 } & TextWeightsTokens;
 export type GridFr = {
-    [fr: string]: string;
+    [fraction: string]: string;
 };
-export type GridTokens = GridTokens;
+export type GridTokens = {
+    columns: number;
+    rows: number;
+    col: {
+        [tracks: string]: number;
+        fr: GridFr;
+    };
+    row: {
+        [tracks: string]: number;
+        fr: GridFr;
+    };
+};
 /**
  * - scale value (may be unitless)
  */
 export type ScaleValue = string | number;
-export type ScaleType = `${"bi" | "uni"}directional` | "ranged";
+export type ScaleConfiguration = `${"bi" | "uni"}directional` | "ranged";
 /**
  * - scale root (initial) value
  */
