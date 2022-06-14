@@ -53,8 +53,8 @@ export function text(settings, font) {
  */
 
 /**
- * An action that takes a generated `ms` and outputs grid tokens according to
- * user `settings`.
+ * An action that takes a number of `columns` and outputs grid tokens according
+ * to user `settings`.
  *
  * @param {object} settings - grid settings
  * @param {number} [settings.ratio] - grid fraction ratio
@@ -68,13 +68,16 @@ export function text(settings, font) {
  * Grid token generation examples
  *
  * ```js
- * const scale = ms({ ratio: 1.25, values: 4 }, 1);
+ * const columns = 5
  *
  * // Setting just columns will also set the rows
- * grid({ columns: 5 }, scale);
+ * grid({}, columns);
  *
- * // Setting columns and rows
- * grid({ columns: 5, rows: 3}, scale);
+ * // Setting rows explicitly
+ * grid({ rows: 3 }, columns);
+ *
+ * // Setting the grid fraction ratio
+ * grid({ ratio: 1.25 }, columns);
  * ```
  */
 export function grid(settings, columns) {
@@ -83,163 +86,48 @@ export function grid(settings, columns) {
   return generateGrid({ rows, ratio }, columns);
 }
 
-/** @typedef {number[]} ModularScale */
-
 /**
- * An action that takes a `base` value and generates modular scale data
- * according to user `settings`.
- *
- * @param {object} settings - modular scale settings
- * @param {number | number[]} [settings.ratio] - set scale ratio(s)
- * @param {number} [settings.values] - set number of scale values
- *
- * @param {number} base - base value to generate from
- * @returns {ModularScale} modular scale data
- *
- * @example
- * Modular scale generation examples
- *
- * ```js
- * ms({ ratio: 1.5, values: 6 }, 1);
- * ms({ ratio: [1.25, 1.5, 1.75], values: 6 }, 1); // multiple ratios allowed
- * ```
- *
- * @see {@link modify}
- * @see {@link tokens}
- */
-export function ms(settings, base) {
-  // Set defaults
-  const { ratio = 1.5, values = 6 } = settings;
-
-  return create({ ratio, values }, base);
-}
-
-/**
- * An action that takes a generated `ms` and updates each value via a
- * `calc` modifier.
- *
- * @param {(n: number) => number} calc - the recalculation function
- * @param {ModularScale} ms - the input modular scale data
- * @returns {ModularScale} the modified scale data
- *
- * @example
- * Modular scale modification examples
- *
- * ```js
- * const scale = ms({ ratio: 1.25, values: 4 }, 1);
- *
- * modify((n) => n ** 3, scale);
- * modify((n) => n / 2, scale);
- * ```
- *
- * @see {@link tokens}
- */
-export function modify(calc, ms) {
-  return update(calc, ms);
-}
-
-/**
- * @typedef {`${"bi" | "uni"}directional` | "ranged"} ContentType
- * @typedef {string | number} ContentValue
- * @typedef {{base: ContentValue; [scale: string]: ContentValue}} DirectionalTokens
- * @typedef {{base: ContentValue; [scale: string]: ContentValue; max: ContentValue}} MinimumRangedContext
- * @typedef {{base: ContentValue; [scale: string]: ContentValue; min: ContentValue}} MaximumRangedContext
+ * @typedef {string | number} ScaleValue - scale value (may be unitless)
+ * @typedef {`${"bi" | "uni"}directional` | "ranged"} ScaleType
+ * @typedef {ScaleValue} RootValue - scale root (initial) value
+ * @typedef {{base: ScaleValue; [variants: string]: ScaleValue}} DirectionalTokens
+ * @typedef {{base: ScaleValue; [range: string]: ScaleValue; max: ScaleValue}} MinimumRangedContext
+ * @typedef {{base: ScaleValue; [range: string]: ScaleValue; min: ScaleValue}} MaximumRangedContext
  * @typedef {MinimumRangedContext | MaximumRangedContext} RangedTokens
- * @typedef {DirectionalTokens | RangedTokens} ContentTokens
+ * @typedef {DirectionalTokens | RangedTokens} ScaleTokens
  */
 
 /**
- * An action that takes a generated `ms` and outputs content tokens according
+ * An action that takes a `root` CSS value and outputs a modular scale according
  * to user `settings`.
  *
- * @param {object} settings - content token settings
- * @param {ContentType} [settings.type] - set the content type
- *
- * @param {string} [settings.unit] - set the output units (bidirectional, unidirectional, ranged)
+ * @param {object} settings - scale token settings
+ * @param {ScaleConfiguration} [settings.configuration] - set the scale configuration
  *
  * @param {string} [settings.inversion] - set the output units for the inverse (bidirectional)
  *
- * @param {number} [settings.min] - set the minimum range value (ranged)
- * @param {number} [settings.max] - set the maximum range value (ranged)
+ * @param {ScaleValue} [settings.floor] - set the range floor (ranged)
  * @param {boolean} [settings.trunc] - truncate the values? (ranged)
- * @param {"min" | "max"} [settings.context] - set the token context (ranged)
+ * @param {boolean} [settings.reverse] - reverse the context (ranged)
  *
- * @param {ModularScale} ms - the input modular scale data
- * @returns {ContentTokens} the generated content tokens
+ * @param {RootValue} root - the root value to generate from
+ * @returns {ScaleScale} the generated scale scale
  *
  * @example
- * Content token generation examples
+ * Scale generation examples
  *
  * ```js
- * const scale = ms({ ratio: 1.4, values: 7 }, 1);
- *
- * tokens({ type: "bidirectional", unit: "rem", inversion: "em" }, scale) // text size
- * tokens({ type: "ranged", min: 45, max: 75, unit: "ch", context: "max" }, scale) // text measure
- * tokens({ type: "ranged", min: 1.25, max: 1.5, context: "max" }, scale) // text leading
- *
- * tokens({ type: "grid" }, scale) // CSS grid tracks
+ * scale({ configuration: "bidirectional", inversion: "em" }, "1rem"); // text size
+ * scale({ configuration: "ranged", floor: "45ch", trunc: true }, "75ch"); // text measure
+ * scale({ configuration: "ranged", floor: 1.25 }, 1.5) // text leading
  * ```
+ *
+ * @remarks
+ * When using the ranged type, you must set your *maximum* value as the root.
+ * Otherwise, use the minimum value for directional types.
  */
-export function tokens(settings, ms) {
-  // Set defaults
-  const { type = "bidirectional", unit = undefined } = settings;
-
-  return assemble({ ...settings, type, unit }, ms);
-}
-
-function create({ values = 6, ratio = 1.5 }, base) {
-  if (Array.isArray(ratio)) {
-    return [
-      ...new Set(
-        Array(values)
-          .fill(base)
-          .reduce(
-            (acc, base, pos) => [...acc, ...ratio.map((r) => base * r ** pos)],
-            [],
-          ),
-      ),
-    ]
-      .slice(0, values)
-      .sort((a, b) => a - b);
-  }
-
-  return Array(values)
-    .fill(base)
-    .map((base, pos) => base * ratio ** pos);
-}
-
-function update(calc, ms) {
-  return ms.map((n) => calc(n));
-}
-
-function unidirectional(ms) {
-  const [base, ...x] = ms;
-
-  return [base, x];
-}
-
-function bidirectional(ms) {
-  const [base, ...x] = ms;
-  const d = update((n) => base ** 2 / n, x);
-
-  return [base, x, d];
-}
-
-function ranged({ min = 1, max = 10, trunc = false }, ms) {
-  const [, ...x] = ms;
-
-  const range = update((n) => {
-    const value = min + (max - min) / n;
-    return trunc ? Math.trunc(value) : value;
-  }, x)
-    .filter((n) => n > min && n < max)
-    .sort((a, b) => a - b);
-
-  return [min, range, max];
-}
-
-function output(unit, n) {
-  return unit ? String(+n.toPrecision(5)).concat(unit) : +n.toPrecision(5);
+export function scale(settings, root) {
+  return assemble(settings, root);
 }
 
 const SYSTEM_FONT_STACKS = {
@@ -296,74 +184,133 @@ function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
           .fill(0)
           .map((x, pos) => ++x + pos)
           .reduce((acc, v) => ({ ...acc, [-v]: -v, [v]: v }), {});
-      const frScale = create({ ratio, values }, 1);
+      const frScale = create({ ratio, values }, "1fr");
 
       return {
         ...acc,
         [axes[i]]: {
           ...tracks(values),
-          fr: assemble({ type: "bidirectional", unit: "fr" }, frScale),
+          fr: assemble({ type: "bidirectional" }, frScale),
         },
       };
     }, {}),
   };
 }
 
-function assemble(settings, ms) {
+function create({ ratio = 1.5, values = 6 }, root) {
+  const [value, unit] = parse(root);
+
+  if (Array.isArray(ratio)) {
+    return [
+      ...new Set(
+        Array(values)
+          .fill(value)
+          .reduce(
+            (acc, base, pos) => [
+              ...acc,
+              ...ratio.map((r) => serialize([base * r ** pos, unit])),
+            ],
+            [],
+          ),
+      ),
+    ]
+      .slice(0, values)
+      .sort((a, b) => a - b);
+  }
+
+  return Array(values)
+    .fill(value)
+    .map((base, pos) => serialize([base * ratio ** pos, unit]));
+}
+
+function parse(root) {
+  const [value, unit] = typeof root === "string"
+    ? root.split(/(\d+(?:\.\d+){0,})/g).slice(1)
+    : [root, ""];
+  return [Number(value), unit.startsWith(".") ? unit.slice(1) : unit];
+}
+
+function serialize([n, unit]) {
+  if (unit) {
+    return String(+n.toPrecision(5)).concat(unit);
+  }
+
+  return +n.toPrecision(5);
+}
+
+function assemble(settings, root) {
+  const [, unit] = parse(root);
+
   const {
-    type = "bidirectional",
-    unit = undefined,
+    configuration = "bidirectional",
     inversion = unit,
+    ratio = 1.5,
+    values = 6,
   } = settings;
+  const [initial, ...x] = create({ ratio, values }, root);
 
-  if (type === "unidirectional") {
-    const [base, x] = unidirectional(ms);
-
+  if (configuration === "unidirectional") {
     return {
-      base: output(unit, base),
-      ...x
-        .map((v) => output(unit, v))
-        .reduce((acc, v, pos) => ({ ...acc, ["x".concat(++pos + 1)]: v }), {}),
+      base: initial,
+      ...x.reduce((acc, value, pos) => {
+        return { ...acc, ["x".concat(++pos + 1)]: value };
+      }, {}),
     };
   }
 
-  if (type === "ranged") {
-    const { min = 1, max = 10, trunc = false, context = "min" } = settings;
-    const [, range] = ranged({ min, max, trunc }, ms);
+  if (configuration === "ranged") {
+    const { floor: min = 1, trunc = false, reverse = false } = settings;
 
-    return context === "max"
+    const [, ...x] = create({ ratio, values }, 1);
+
+    const [floor] = parse(min);
+    const [ceiling] = parse(initial);
+
+    const range = x
+      .map((value) => {
+        const [n] = parse(value);
+        const calculated = floor + (ceiling - floor) / n;
+
+        return trunc ? Math.trunc(calculated) : calculated;
+      })
+      .filter((n) => n > floor && n < ceiling)
+      .sort((a, b) => a - b)
+      .map((n) => serialize([n, unit]));
+
+    return reverse
       ? {
-        base: output(unit, max),
-        ...range
-          .map((v) => output(unit, v))
-          .reverse()
-          .reduce(
-            (acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }),
-            {},
-          ),
-        min: output(unit, min),
+        base: serialize([floor, unit]),
+        ...range.reduce(
+          (acc, value, pos) => ({ ...acc, ["i".concat(++pos + 1)]: value }),
+          {},
+        ),
+        max: serialize([ceiling, unit]),
       }
       : {
-        base: output(unit, min),
+        base: serialize([ceiling, unit]),
         ...range
-          .map((v) => output(unit, v))
+          .reverse()
           .reduce(
-            (acc, v, pos) => ({ ...acc, ["i".concat(++pos + 1)]: v }),
+            (acc, value, pos) => ({ ...acc, ["i".concat(++pos + 1)]: value }),
             {},
           ),
-        max: output(unit, max),
+        min: serialize([floor, unit]),
       };
   }
 
-  const [base, x, d] = bidirectional(ms);
+  const d = x.map((value) => {
+    const [base] = parse(initial);
+    const [n] = parse(value);
+    return serialize([base ** 2 / n, inversion]);
+  });
 
   return {
-    base: output(unit, base),
-    ...x
-      .map((v) => output(unit, v))
-      .reduce((acc, v, pos) => ({ ...acc, ["x".concat(++pos + 1)]: v }), {}),
-    ...d
-      .map((v) => output(inversion, v))
-      .reduce((acc, v, pos) => ({ ...acc, ["d".concat(++pos + 1)]: v }), {}),
+    base: initial,
+    ...x.reduce((acc, value, pos) => {
+      return { ...acc, ["x".concat(++pos + 1)]: value };
+    }, {}),
+    ...d.reduce((acc, value, pos) => {
+      return { ...acc, ["d".concat(++pos + 1)]: value };
+    }, {}),
   };
 }
