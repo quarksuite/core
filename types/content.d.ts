@@ -30,106 +30,99 @@ export function text(settings: {
     weights?: TextWeights[];
     system?: TextSystem;
 }, font: string): TextTokens;
-/** @typedef {number[]} ModularScale */
 /**
- * An action that takes a `base` value and generates modular scale data
- * according to user `settings`.
- *
- * @param {object} settings - modular scale settings
- * @param {number | number[]} [settings.ratio] - set scale ratio(s)
- * @param {number} [settings.values] - set number of scale values
- *
- * @param {number} base - base value to generate from
- * @returns {ModularScale} modular scale data
- *
- * @example
- * Modular scale generation examples
- *
- * ```js
- * ms({ ratio: 1.5, values: 6 }, 1);
- * ms({ ratio: [1.25, 1.5, 1.75], values: 6 }, 1); // multiple ratios allowed
- * ```
- *
- * @see {@link modify}
- * @see {@link tokens}
- */
-export function ms(settings: {
-    ratio?: number | number[];
-    values?: number;
-}, base: number): ModularScale;
-/**
- * An action that takes a generated `ms` and updates each value via a
- * `calc` modifier.
- *
- * @param {(n: number) => number} calc - the recalculation function
- * @param {ModularScale} ms - the input modular scale data
- * @returns {ModularScale} the modified scale data
- *
- * @example
- * Modular scale modification examples
- *
- * ```js
- * const scale = ms({ ratio: 1.25, values: 4 }, 1);
- *
- * modify((n) => n ** 3, scale);
- * modify((n) => n / 2, scale);
- * ```
- *
- * @see {@link tokens}
- */
-export function modify(calc: (n: number) => number, ms: ModularScale): ModularScale;
-/** @typedef {`${"bi" | "uni"}directional` | "ranged" | "grid"} OutputType */
-/**
- * @typedef {string | number} ContentValue
- * @typedef {{base: ContentValue; [scale: string]: ContentValue}} DirectionalTokens
- * @typedef {{base: ContentValue; [scale: string]: ContentValue; max: ContentValue}} MinimumRangedContext
- * @typedef {{base: ContentValue; [scale: string]: ContentValue; min: ContentValue}} MaximumRangedContext
- * @typedef {MinimumRangedContext | MaximumRangedContext} RangedTokens
- *
- * @typedef {{ [tracks: string]: number; }} GridTracks
- * @typedef {{columns: number; rows: number; cols: GridTracks; row: GridTracks; }} GridTokens
+ * @typedef {{ [fr: string]: string; }} GridFr
+ * @typedef {{
+ *   columns: number;
+ *   rows: number;
+ *   col: {
+ *     [tracks: string]: number;
+ *     fr: GridCells;
+ *   },
+ *   row: {
+ *     [tracks: string]: number;
+ *     fr: GridCells;
+ *   }
+ * }} GridTokens
  */
 /**
- * An action that takes a generated `ms` and outputs content tokens according
+ * An action that takes a number of `columns` and outputs grid tokens according
  * to user `settings`.
  *
- * @param {object} settings - content token settings
- * @param {OutputType} [settings.type] - set the output type
+ * @param {object} settings - grid settings
+ * @param {number} [settings.ratio] - grid fraction ratio
+ * @param {number} [settings.rows] - number of rows to generate
  *
- * @param {string} [settings.unit] - set the output units (bidirectional, unidirectional, ranged)
+ * @param {number} columns - number of columns to generate
+ *
+ * @returns {GridTokens} the generated grid tokens
+ *
+ * @example
+ * Grid token generation examples
+ *
+ * ```js
+ * const columns = 5
+ *
+ * // Setting just columns will also set the rows
+ * grid({}, columns);
+ *
+ * // Setting rows explicitly
+ * grid({ rows: 3 }, columns);
+ *
+ * // Setting the grid fraction ratio
+ * grid({ ratio: 1.25 }, columns);
+ * ```
+ */
+export function grid(settings: {
+    ratio?: number;
+    rows?: number;
+}, columns: number): GridTokens;
+/**
+ * @typedef {string | number} ScaleValue - scale value (may be unitless)
+ * @typedef {`${"bi" | "uni"}directional` | "ranged"} ScaleType
+ * @typedef {ScaleValue} RootValue - scale root (initial) value
+ * @typedef {{base: ScaleValue; [variants: string]: ScaleValue}} DirectionalTokens
+ * @typedef {{base: ScaleValue; [range: string]: ScaleValue; max: ScaleValue}} MinimumRangedContext
+ * @typedef {{base: ScaleValue; [range: string]: ScaleValue; min: ScaleValue}} MaximumRangedContext
+ * @typedef {MinimumRangedContext | MaximumRangedContext} RangedTokens
+ * @typedef {DirectionalTokens | RangedTokens} ScaleTokens
+ */
+/**
+ * An action that takes a `root` CSS value and outputs a modular scale according
+ * to user `settings`.
+ *
+ * @param {object} settings - scale token settings
+ * @param {ScaleConfiguration} [settings.configuration] - set the scale configuration
  *
  * @param {string} [settings.inversion] - set the output units for the inverse (bidirectional)
  *
- * @param {number} [settings.min] - set the minimum range value (ranged)
- * @param {number} [settings.max] - set the maximum range value (ranged)
+ * @param {ScaleValue} [settings.floor] - set the range floor (ranged)
  * @param {boolean} [settings.trunc] - truncate the values? (ranged)
- * @param {"min" | "max"} [settings.context] - set the token context (ranged)
+ * @param {boolean} [settings.reverse] - reverse the context (ranged)
  *
- * @param {ModularScale} ms - the input modular scale data
- * @returns {DirectionalTokens | RangedTokens | GridTokens} the generated content tokens
+ * @param {RootValue} root - the root value to generate from
+ * @returns {ScaleScale} the generated scale scale
  *
  * @example
- * Content token generation examples
+ * Scale generation examples
  *
  * ```js
- * const scale = ms({ ratio: 1.4, values: 7 }, 1);
- *
- * tokens({ type: "bidirectional", unit: "rem", inversion: "em" }, scale) // text size
- * tokens({ type: "ranged", min: 45, max: 75, unit: "ch", context: "max" }, scale) // text measure
- * tokens({ type: "ranged", min: 1.25, max: 1.5, context: "max" }, scale) // text leading
- *
- * tokens({ type: "grid" }, scale) // CSS grid tracks
+ * scale({ configuration: "bidirectional", inversion: "em" }, "1rem"); // text size
+ * scale({ configuration: "ranged", floor: "45ch", trunc: true }, "75ch"); // text measure
+ * scale({ configuration: "ranged", floor: 1.25 }, 1.5) // text leading
  * ```
+ *
+ * @remarks
+ * When using the ranged type, you must set your *maximum* value as the root.
+ * Otherwise, use the minimum value for directional types.
  */
-export function tokens(settings: {
-    type?: OutputType;
-    unit?: string;
+export function scale(settings: {
+    configuration?: ScaleConfiguration;
     inversion?: string;
-    min?: number;
-    max?: number;
+    floor?: ScaleValue;
     trunc?: boolean;
-    context?: "min" | "max";
-}, ms: ModularScale): DirectionalTokens | RangedTokens | GridTokens;
+    reverse?: boolean;
+}, root: RootValue): ScaleScale;
 export type TextWeights = "thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black";
 export type TextSystem = "sans" | "serif" | "monospace";
 export type TextWeightsTokens = {
@@ -138,30 +131,32 @@ export type TextWeightsTokens = {
 export type TextTokens = {
     family: string;
 } & TextWeightsTokens;
-export type ModularScale = number[];
-export type OutputType = `${"bi" | "uni"}directional` | "ranged" | "grid";
-export type ContentValue = string | number;
+export type GridFr = {
+    [fr: string]: string;
+};
+export type GridTokens = GridTokens;
+/**
+ * - scale value (may be unitless)
+ */
+export type ScaleValue = string | number;
+export type ScaleType = `${"bi" | "uni"}directional` | "ranged";
+/**
+ * - scale root (initial) value
+ */
+export type RootValue = ScaleValue;
 export type DirectionalTokens = {
-    [scale: string]: ContentValue;
-    base: ContentValue;
+    [variants: string]: ScaleValue;
+    base: ScaleValue;
 };
 export type MinimumRangedContext = {
-    [scale: string]: ContentValue;
-    base: ContentValue;
-    max: ContentValue;
+    [range: string]: ScaleValue;
+    base: ScaleValue;
+    max: ScaleValue;
 };
 export type MaximumRangedContext = {
-    [scale: string]: ContentValue;
-    base: ContentValue;
-    min: ContentValue;
+    [range: string]: ScaleValue;
+    base: ScaleValue;
+    min: ScaleValue;
 };
 export type RangedTokens = MinimumRangedContext | MaximumRangedContext;
-export type GridTracks = {
-    [tracks: string]: number;
-};
-export type GridTokens = {
-    columns: number;
-    rows: number;
-    cols: GridTracks;
-    row: GridTracks;
-};
+export type ScaleTokens = DirectionalTokens | RangedTokens;
