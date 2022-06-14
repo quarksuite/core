@@ -36,6 +36,53 @@ export function text(settings, font) {
   return textFamily({ system, weights }, font);
 }
 
+/**
+ * @typedef {{ [fr: string]: string; }} GridFr
+ * @typedef {{
+ *   columns: number;
+ *   rows: number;
+ *   col: {
+ *     [tracks: string]: number;
+ *     fr: GridCells;
+ *   },
+ *   row: {
+ *     [tracks: string]: number;
+ *     fr: GridCells;
+ *   }
+ * }} GridTokens
+ */
+
+/**
+ * An action that takes a generated `ms` and outputs grid tokens according to
+ * user `settings`.
+ *
+ * @param {object} settings - grid settings
+ * @param {number} [settings.ratio] - grid fraction ratio
+ * @param {number} [settings.rows] - number of rows to generate
+ *
+ * @param {number} columns - number of columns to generate
+ *
+ * @returns {GridTokens} the generated grid tokens
+ *
+ * @example
+ * Grid token generation examples
+ *
+ * ```js
+ * const scale = ms({ ratio: 1.25, values: 4 }, 1);
+ *
+ * // Setting just columns will also set the rows
+ * grid({ columns: 5 }, scale);
+ *
+ * // Setting columns and rows
+ * grid({ columns: 5, rows: 3}, scale);
+ * ```
+ */
+export function grid(settings, columns) {
+  const { rows = columns, ratio = 1.5 } = settings;
+
+  return generateGrid({ rows, ratio }, columns);
+}
+
 /** @typedef {number[]} ModularScale */
 
 /**
@@ -91,17 +138,14 @@ export function modify(calc, ms) {
   return update(calc, ms);
 }
 
-/** @typedef {`${"bi" | "uni"}directional` | "ranged" | "grid"} OutputType */
-
 /**
+ * @typedef {`${"bi" | "uni"}directional` | "ranged"} ContentType
  * @typedef {string | number} ContentValue
  * @typedef {{base: ContentValue; [scale: string]: ContentValue}} DirectionalTokens
  * @typedef {{base: ContentValue; [scale: string]: ContentValue; max: ContentValue}} MinimumRangedContext
  * @typedef {{base: ContentValue; [scale: string]: ContentValue; min: ContentValue}} MaximumRangedContext
  * @typedef {MinimumRangedContext | MaximumRangedContext} RangedTokens
- *
- * @typedef {{ [tracks: string]: number; }} GridTracks
- * @typedef {{columns: number; rows: number; cols: GridTracks; row: GridTracks; }} GridTokens
+ * @typedef {DirectionalTokens | RangedTokens} ContentTokens
  */
 
 /**
@@ -109,7 +153,7 @@ export function modify(calc, ms) {
  * to user `settings`.
  *
  * @param {object} settings - content token settings
- * @param {OutputType} [settings.type] - set the output type
+ * @param {ContentType} [settings.type] - set the content type
  *
  * @param {string} [settings.unit] - set the output units (bidirectional, unidirectional, ranged)
  *
@@ -121,7 +165,7 @@ export function modify(calc, ms) {
  * @param {"min" | "max"} [settings.context] - set the token context (ranged)
  *
  * @param {ModularScale} ms - the input modular scale data
- * @returns {DirectionalTokens | RangedTokens | GridTokens} the generated content tokens
+ * @returns {ContentTokens} the generated content tokens
  *
  * @example
  * Content token generation examples
@@ -241,6 +285,30 @@ function textFamily({ system = "sans", weights = ["regular", "bold"] }, font) {
   };
 }
 
+function generateGrid({ rows = columns, ratio = 1.5 }, columns) {
+  return {
+    columns,
+    rows,
+    ...[columns, rows].reduce((acc, values, i) => {
+      const axes = ["col", "row"];
+      const tracks = (dim) =>
+        Array(dim)
+          .fill(0)
+          .map((x, pos) => ++x + pos)
+          .reduce((acc, v) => ({ ...acc, [-v]: -v, [v]: v }), {});
+      const frScale = create({ ratio, values }, 1);
+
+      return {
+        ...acc,
+        [axes[i]]: {
+          ...tracks(values),
+          fr: assemble({ type: "bidirectional", unit: "fr" }, frScale),
+        },
+      };
+    }, {}),
+  };
+}
+
 function assemble(settings, ms) {
   const {
     type = "bidirectional",
@@ -285,24 +353,6 @@ function assemble(settings, ms) {
           ),
         max: output(unit, max),
       };
-  }
-
-  if (type === "grid") {
-    const columns = ms.length;
-    const [, ratio] = ms;
-    const rows = Math.round(columns / ratio);
-    const cells = (dim) =>
-      Array(dim)
-        .fill(0)
-        .map((x, pos) => ++x + pos)
-        .reduce((acc, v) => ({ ...acc, [-v]: -v, [v]: v }), {});
-
-    return {
-      columns,
-      rows,
-      col: cells(columns),
-      row: cells(rows),
-    };
   }
 
   const [base, x, d] = bidirectional(ms);

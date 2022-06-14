@@ -103,7 +103,7 @@ describe("tokens(settings, ms)", () => {
 
     it("should activate min/max settings", () => {
       expect(
-        tokens({ type: "ranged", min: 25, max: 100, unit: "vmin" }, $ms)
+        tokens({ type: "ranged", min: 25, max: 100, unit: "vmin" }, $ms),
       ).toEqual({
         base: "25vmin",
         i2: "34.877vmin",
@@ -114,7 +114,7 @@ describe("tokens(settings, ms)", () => {
         max: "100vmin",
       });
       expect(
-        tokens({ type: "ranged", min: 16, max: 72, unit: "px" }, $ms)
+        tokens({ type: "ranged", min: 16, max: 72, unit: "px" }, $ms),
       ).toEqual({
         base: "16px",
         i2: "23.374px",
@@ -130,8 +130,8 @@ describe("tokens(settings, ms)", () => {
       expect(
         tokens(
           { type: "ranged", min: 45, max: 75, unit: "ch", trunc: true },
-          $ms
-        )
+          $ms,
+        ),
       ).toEqual({
         base: "45ch",
         i2: "48ch",
@@ -144,8 +144,8 @@ describe("tokens(settings, ms)", () => {
       expect(
         tokens(
           { type: "ranged", min: 5, max: 100, unit: "vh", trunc: true },
-          $ms
-        )
+          $ms,
+        ),
       ).toEqual({
         base: "5vh",
         i2: "17vh",
@@ -161,8 +161,8 @@ describe("tokens(settings, ms)", () => {
       expect(
         tokens(
           { type: "ranged", min: 5, max: 100, unit: "vw", context: "max" },
-          $ms
-        )
+          $ms,
+        ),
       ).toEqual({
         base: "100vw",
         i2: "68.333vw",
@@ -171,30 +171,6 @@ describe("tokens(settings, ms)", () => {
         i5: "23.765vw",
         i6: "17.51vw",
         min: "5vw",
-      });
-    });
-  });
-
-  describe("settings.type = 'grid'", () => {
-    it("should generate grid tokens from input scale when active", () => {
-      expect(tokens({ type: "grid" }, $ms)).toEqual({
-        columns: 6,
-        rows: 4,
-        col: {
-          1: 1,
-          2: 2,
-          3: 3,
-          4: 4,
-          5: 5,
-          6: 6,
-          "-1": -1,
-          "-2": -2,
-          "-3": -3,
-          "-4": -4,
-          "-5": -5,
-          "-6": -6,
-        },
-        row: { 1: 1, 2: 2, 3: 3, 4: 4, "-1": -1, "-2": -2, "-3": -3, "-4": -4 },
       });
     });
   });
