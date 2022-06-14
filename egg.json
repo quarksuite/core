@@ -3,12 +3,15 @@
   "name": "quarksuite:core",
   "description": "A web-focused toolkit for creating, assembling and distributing design tokens for custom design systems.",
   "homepage": "https://github.com/quarksuite/core",
-  "version": "2.0.0-20",
+  "version": "2.0.0-27",
   "releaseType": "pre",
   "stable": "true",
   "unlisted": true,
   "entry": "./mod.js",
-  "files": ["*.js", "types/*.d.ts"],
+  "files": [
+    "*.js",
+    "types/*.d.ts"
+  ],
   "checkFormat": false,
   "checkTests": false,
   "checkInstallation": false,
