@@ -1473,7 +1473,10 @@ function hslSerializer([, hslResult]) {
   const H = hueCorrection(+h.toFixed(3));
 
   // format saturation, lightness to percentages
-  const [S, L] = [s, l].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
+  const [S, L] = [s, l].map(
+    (n) =>
+      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
+  );
 
   return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
 }
@@ -1503,7 +1506,10 @@ function hwbSerializer([, hslResult]) {
   const H = hueCorrection(+h.toFixed(3));
 
   // format white, black to percentages
-  const [W, BLK] = [w, blk].map((n) => `${+numberToPercentage(n).toFixed(3)}%`);
+  const [W, BLK] = [w, blk].map(
+    (n) =>
+      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
+  );
 
   return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
     H,
@@ -2716,3 +2722,5 @@ function accessibility(settings, palette) {
 function tokens(palette) {
   return tokenizePalette(palette);
 }
+
+console.log(convert("hwb", "hsl(327.379, -2376.923%, -2.549%)"));
