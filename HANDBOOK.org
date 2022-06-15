@@ -8,8 +8,7 @@
   - [[#color][Color]]
     - [[#1-set-a-base-color][1. Set a base color]]
     - [[#2-generate-a-base-scheme][2. Generate a base scheme]]
-    - [[#3-generate-raw-palette-data][3. Generate raw palette data]]
-    - [[#4-filter-palette-data-for-accessibility][4. Filter palette data for accessibility]]
+    - [[#3-generate-palettes][3. Generate palettes]]
   - [[#content][Content]]
   - [[#tokens][Tokens]]
   - [[#tokensjs-output][=tokens.js= Output]]
@@ -23,26 +22,21 @@
         - [[#1c-color-should-be-scaled-to-an-analogous-harmony][1c. Color should be scaled to an analogous harmony]]
       - [[#2-palette][2. Palette]]
         - [[#2a-generate-material-palettes-for-ui-and-text-with-accents-and-state][2a. Generate material palettes for UI and text (with accents and state)]]
-        - [[#2b-check-palette-validity-against-wcag-standards-where-ui-is-aa-large-and-text-is-aaa][2b. Check palette validity against WCAG standards (where UI is AA large and text is AAA)]]
-    - [[#processes][Processes]]
     - [[#result][Result]]
   - [[#content-1][Content]]
     - [[#rules-1][Rules]]
-      - [[#1-global][1. Global]]
-        - [[#1a-the-global-modular-scale-is-5-values-derived-from-a-ratio-of-132][1a. The global modular scale is 5 values derived from a ratio of 1.32]]
-      - [[#2-text][2. Text]]
-        - [[#2a-body-uses-regular-and-bold-weights-with-a-sans-serif-system-fallback][2a. Body uses regular and bold weights with a sans-serif system fallback]]
-        - [[#2b-headings-use-light-and-black-weights-with-a-serif-system-fallback][2b. Headings use light and black weights with a serif system fallback]]
-        - [[#2c-size-is-bidirectional-in-rem-units-with-an-em-inversion][2c. Size is bidirectional in rem units with an em inversion]]
-        - [[#2d-leading-is-ranged-with-minimum-of-12-to-a-maximum-of-15][2d. Leading is ranged with minimum of 1.2 to a maximum of 1.5]]
-        - [[#2e-measure-is-ranged-in-ch-with-a-minimum-of-48-to-a-maximum-of-75][2e. Measure is ranged in ch with a minimum of 48 to a maximum of 75]]
-      - [[#3-spacing][3. Spacing]]
-        - [[#3a-spacing-is-bidirectional-in-ex-units][3a. Spacing is bidirectional in ex units]]
-      - [[#4-grid][4. Grid]]
-        - [[#4a-fractionals-are-bidirectional][4a. Fractionals are bidirectional]]
-        - [[#4b-grid-dimensions-are-set][4b. Grid dimensions are set]]
-      - [[#5-viewport][5. Viewport]]
-        - [[#5a-viewport-dimensions-are-ranged-set-for-width-height-min-and-max][5a. Viewport dimensions are ranged set for width, height, min, and max]]
+      - [[#1-text][1. Text]]
+        - [[#1a-body-uses-regular-and-bold-weights-with-a-sans-serif-system-fallback][1a. Body uses regular and bold weights with a sans-serif system fallback]]
+        - [[#1b-headings-use-light-and-black-weights-with-a-serif-system-fallback][1b. Headings use light and black weights with a serif system fallback]]
+        - [[#1c-size-is-bidirectional-in-rem-units-with-an-em-inversion][1c. Size is bidirectional in rem units with an em inversion]]
+        - [[#1d-leading-is-ranged-with-a-root-of-15-and-a-floor-of-12][1d. Leading is ranged with a root of 1.5 and a floor of 1.2]]
+        - [[#1e-measure-is-ranged-with-a-root-of-75ch-and-a-floor-of-48ch][1e. Measure is ranged with a root of =75ch= and a floor of =48ch=]]
+      - [[#2-spacing][2. Spacing]]
+        - [[#2a-spacing-is-bidirectional-in-ex-units][2a. Spacing is bidirectional in ex units]]
+      - [[#3-grid][3. Grid]]
+        - [[#2a-grid-is-4-columnsrows-and-fractionals-use-global-ratio][2a. Grid is 4 columns/rows and fractionals use global ratio]]
+      - [[#4-lengths][4. Lengths]]
+        - [[#4a-lengths-are-viewport-relative-and-ranged-with-a-root-value-of-100-and-a-floor-of-10][4a. Lengths are viewport relative and ranged with a root value of =100= and a floor of =10=.]]
     - [[#result-1][Result]]
   - [[#tokens-1][Tokens]]
   - [[#tokensjs-output-1][=tokens.js= Output]]
@@ -107,19 +101,17 @@ QuarkSuite allows a lot of flexibility in how you can work, but for our purposes
 For our project, we'll need specific functionality from the =color.js= and =content.js= modules.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
-import {
-  convert,
+export {
   adjust,
+  convert,
   harmony,
   palette,
-  accessibility,
-  tokens as color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-import {
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/color.js";
+export {
+  grid,
+  scale,
   text,
-  ms,
-  tokens as content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/content.js";
 #+END_SRC
 
 ** Color
@@ -143,42 +135,47 @@ Next, we want to generate an analogous color harmony as the basis of our palette
 const scheme = harmony({ configuration: "analogous" }, base);
 #+END_SRC
 
-*** 3. Generate raw palette data
+*** 3. Generate palettes
 
-The next step is to generate the raw palette data for further processing. In this case, we'll create a =ui= and =body=
-palette from the first and second colors in our scheme.
+The next step is to generate palettes for our desired contexts. In this case, we'll create a =ui= and =body= palette
+from the first and second colors in our scheme.
 
 Assuming our web project is an app, we'll want to generate a =material= configuration.
 
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
-const ui = palette({
-  configuration: "material",
-  accents: true,
-  states: true
-}, scheme[0]);
-const body = palette({ configuration: "material", accents: true }, scheme[1]);
-#+END_SRC
-
-*** 4. Filter palette data for accessibility
-
-Let's ensure our palettes will be usable in our defined contexts (=ui, =body=) by performing a color accessibility check
-for each one (based on WCAG standards).
+We'll also limit our palette to the most accessible colors for our contexts. In our example, that's AA large adherence
+for the =ui= palette and a AA adherence for the =body= palette.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
-const uiA11y = accessibility({ mode: "standard", rating: "AA", large: true }, ui);
-const bodyA11y = accessibility({ mode: "standard", rating: "AAA" }, body);
+const ui = palette(
+  {
+    configuration: "material",
+    accents: true,
+    states: true,
+    a11y: { mode: "standard", rating: "AA", large: true },
+  },
+  scheme[0],
+);
+
+const body = palette(
+  {
+    configuration: "material",
+    accents: true,
+    a11y: { mode: "standard", rating: "AA" },
+  },
+  scheme[1],
+);
 #+END_SRC
 
 ** Content
 
-The main concern for our content data at this point is to generate a global modular scale as the starting point for
-creating numeric token data.
+The main concern for our content at this point is to set a global =ratio= and =values= that the content modular scales
+can use to generate their data later.
 
-For that, we're going to generate a =5= value modular scale from a base of =1= and a somewhat unconventional ratio of
-=1.32=.
+You see that we want our ratio to be =1.32= and for our scales to output =5= values.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
-const scale = ms({ ratio: 1.32, values: 5 }, 1);
+const ratio = 1.32;
+const values = 4;
 #+END_SRC
 
 ** Tokens
@@ -190,29 +187,81 @@ in a namespace of =hb= (for handbook) before slotting and transforming our data 
 export default {
   hb: {
     color: {
-      ui: color(uiA11y),
-      text: color(bodyA11y),
-      splash: scheme[2]
+      ui,
+      text: body,
+      splash: scheme[2],
     },
     text: {
       body: text({ system: "sans", weights: ["regular", "bold"] }, "Work Sans"),
-      heading: text({ system: "serif", weights: ["light", "black"] }, "Work Sans"),
-      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
-      leading: content({ type: "ranged", min: 1.2, max: 1.5, context: "max" }, scale),
-      measure: content({ type: "ranged", unit: "ch", min: 48, max: 75, context: "max" }, scale)
+      heading: text(
+        { system: "serif", weights: ["light", "black"] },
+        "Work Sans",
+      ),
+      size: scale(
+        {
+          configuration: "bidirectional",
+          inversion: "em",
+          ratio,
+          values,
+        },
+        "1rem",
+      ),
+      leading: scale(
+        { configuration: "ranged", floor: 1.2, ratio, values },
+        1.5,
+      ),
+      measure: scale(
+        {
+          configuration: "ranged",
+          floor: "48ch",
+          trunc: true,
+          ratio,
+          values,
+        },
+        "75ch",
+      ),
     },
-    spacing: content({ type: "bidirectional", unit: "ex" }, scale),
-    grid: {
-      fr: content({ type: "bidirectional", unit: "fr" }, scale),
-      ...content({ type: "grid" }, scale)
+    spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex"),
+    grid: grid({ ratio, rows: 3 }, values),
+    lengths: {
+      width: scale(
+        {
+          configuration: "ranged",
+          floor: "10vw",
+          ratio,
+          values,
+        },
+        "100vw",
+      ),
+      height: scale(
+        {
+          configuration: "ranged",
+          floor: "10vh",
+          ratio,
+          values,
+        },
+        "100vh",
+      ),
+      smallest: scale(
+        {
+          configuration: "ranged",
+          floor: "10vmin",
+          ratio,
+          values,
+        },
+        "100vmin",
+      ),
+      largest: scale(
+        {
+          configuration: "ranged",
+          floor: "10vmax",
+          ratio,
+          values,
+        },
+        "100vmax",
+      ),
     },
-    viewport: {
-      w: content({ type: "ranged", unit: "vw", min: 10, max: 100, context: "max" }, scale),
-      h: content({ type: "ranged", unit: "vh", min: 10, max: 100, context: "max" }, scale),
-      min: content({ type: "ranged", unit: "vmin", min: 10, max: 100, context: "max" }, scale),
-      max: content({ type: "ranged", unit: "vmax", min: 10, max: 100, context: "max" }, scale),
-    }
-  }
+  },
 };
 #+END_SRC
 
@@ -222,62 +271,122 @@ Our =tokens.js= file should now look something like the following code.
 
 #+BEGIN_SRC js
 import {
-  convert,
   adjust,
+  convert,
   harmony,
   palette,
-  accessibility,
-  tokens as color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/color.js";
 import {
+  grid,
+  scale,
   text,
-  ms,
-  tokens as content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/content.js";
 
 const swatch = convert("rgb", "#7ea");
 const base = adjust({ chroma: -5, hue: 60 }, swatch);
 
 const scheme = harmony({ configuration: "analogous" }, base);
 
-const ui = palette({
-  configuration: "material",
-  accents: true,
-  states: true
-}, scheme[0]);
-const body = palette({ configuration: "material", accents: true }, scheme[1]);
+const ui = palette(
+  {
+    configuration: "material",
+    accents: true,
+    states: true,
+    a11y: { mode: "standard", rating: "AA", large: true },
+  },
+  scheme[0],
+);
 
-const uiA11y = accessibility({ mode: "standard", rating: "AA", large: true }, ui);
-const bodyA11y = accessibility({ mode: "standard", rating: "AAA" }, body);
+const body = palette(
+  {
+    configuration: "material",
+    accents: true,
+    a11y: { mode: "standard", rating: "AA" },
+  },
+  scheme[1],
+);
 
-const scale = ms({ ratio: 1.32, values: 5 }, 1);
+const ratio = 1.32;
+const values = 4;
 
 export default {
   hb: {
     color: {
-      ui: color(uiA11y),
-      text: color(bodyA11y),
-      splash: scheme[2]
+      ui,
+      text: body,
+      splash: scheme[2],
     },
     text: {
       body: text({ system: "sans", weights: ["regular", "bold"] }, "Work Sans"),
-      heading: text({ system: "serif", weights: ["light", "black"] }, "Work Sans"),
-      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
-      leading: content({ type: "ranged", min: 1.2, max: 1.5, context: "max" }, scale),
-      measure: content({ type: "ranged", unit: "ch", min: 48, max: 75, context: "max" }, scale)
+      heading: text(
+        { system: "serif", weights: ["light", "black"] },
+        "Work Sans",
+      ),
+      size: scale(
+        {
+          configuration: "bidirectional",
+          inversion: "em",
+          ratio,
+          values,
+        },
+        "1rem",
+      ),
+      leading: scale(
+        { configuration: "ranged", floor: 1.2, ratio, values },
+        1.5,
+      ),
+      measure: scale(
+        {
+          configuration: "ranged",
+          floor: "48ch",
+          trunc: true,
+          ratio,
+          values,
+        },
+        "75ch",
+      ),
     },
-    spacing: content({ type: "bidirectional", unit: "ex" }, scale),
-    grid: {
-      fr: content({ type: "bidirectional", unit: "fr" }, scale),
-      ...content({ type: "grid" }, scale)
+    spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex"),
+    grid: grid({ ratio, rows: 3 }, values),
+    lengths: {
+      width: scale(
+        {
+          configuration: "ranged",
+          floor: "10vw",
+          ratio,
+          values,
+        },
+        "100vw",
+      ),
+      height: scale(
+        {
+          configuration: "ranged",
+          floor: "10vh",
+          ratio,
+          values,
+        },
+        "100vh",
+      ),
+      smallest: scale(
+        {
+          configuration: "ranged",
+          floor: "10vmin",
+          ratio,
+          values,
+        },
+        "100vmin",
+      ),
+      largest: scale(
+        {
+          configuration: "ranged",
+          floor: "10vmax",
+          ratio,
+          values,
+        },
+        "100vmax",
+      ),
     },
-    viewport: {
-      w: content({ type: "ranged", unit: "vw", min: 10, max: 100, context: "max" }, scale),
-      h: content({ type: "ranged", unit: "vh", min: 10, max: 100, context: "max" }, scale),
-      min: content({ type: "ranged", unit: "vmin", min: 10, max: 100, context: "max" }, scale),
-      max: content({ type: "ranged", unit: "vmax", min: 10, max: 100, context: "max" }, scale),
-    }
-  }
+  },
 };
 #+END_SRC
 
@@ -299,25 +408,21 @@ The first thing to do is import =workflow.js=, so let's do that now.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
 import {
-  convert,
   adjust,
+  convert,
   harmony,
   palette,
-  accessibility,
-  tokens as color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/color.js";
 import {
+  grid,
+  scale,
   text,
-  ms,
-  tokens as content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/content.js";
 import {
   preset,
-  process,
   pipeline,
-  propagate,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-29/workflow.js";
 #+END_SRC
 
 ** Color
@@ -353,26 +458,17 @@ const scaleToAnalogous = preset(harmony, { configuration: "analogous" });
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
 const paletteOpts = { configuration: "material", accents: true };
-const genPalette = preset(palette, { ...paletteOpts, states: true });
-const genTextPalette = preset(palette, paletteOpts);
-#+END_SRC
 
-***** 2b. Check palette validity against WCAG standards (where UI is AA large and text is AAA)
+const generatePaletteTokens = preset(palette, {
+  ...paletteOpts,
+  states: true,
+  a11y: { mode: "standard", rating: "AA", large: true },
+});
 
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const a11yOpts = { mode: "standard" };
-const a11y = preset(accessibility, { ...a11yOpts, rating: "AA", large: true });
-const a11yText = preset(accessibility, { ...a11yOpts, rating: "AAA" });
-#+END_SRC
-
-*** Processes
-
-We can now define reusable processes that will actually carry out our rules. Particularly we want to create some to
-properly generate our UI and text palettes. Notice how the token emitter (=color=) is dropped right in at the end.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const generatePaletteTokens = process(genPalette, a11y, color);
-const generateTextPaletteTokens = process(genTextPalette, a11yText, color);
+const generateTextPaletteTokens = preset(palette, {
+  ...paletteOpts,
+  a11y: { mode: "standard", rating: "AA" }
+});
 #+END_SRC
 
 *** Result
@@ -407,136 +503,124 @@ const [main, accent, splash] = delegate(
 Content modular scales are so simple compared to color that applying a top-down approach to them usually isn't
 necessary. Let's say we do it anyway, though. How would that look?
 
+We're going to reuse our global settings as well.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const ratio = 1.32;
+const values = 4;
+#+END_SRC
+
 *** Rules
 
-**** 1. Global
+**** 1. Text
 
-***** 1a. The global modular scale is 5 values derived from a ratio of 1.32
+***** 1a. Body uses regular and bold weights with a sans-serif system fallback
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const genGlobalScale = preset(ms, { ratio: 1.32, values: 5});
+const bodyTokens = preset(text, { system: "sans", weights: ["regular", "bold"]});
 #+END_SRC
 
-**** 2. Text
-
-***** 2a. Body uses regular and bold weights with a sans-serif system fallback
+***** 1b. Headings use light and black weights with a serif system fallback
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const bodyAttrs = preset(text, { system: "sans", weights: ["regular", "bold"]});
+const headingTokens = preset(text, { system: "serif", weights: ["light", "black"]});
 #+END_SRC
 
-***** 2b. Headings use light and black weights with a serif system fallback
+***** 1c. Size is bidirectional in rem units with an em inversion
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const headingAttrs = preset(text, { system: "serif", weights: ["light", "black"]});
+const sizeTokens = preset(scale, { configuration: "bidirectional", inversion: "em", ratio, values });
 #+END_SRC
 
-***** 2c. Size is bidirectional in rem units with an em inversion
+***** 1d. Leading is ranged with a root of 1.5 and a floor of 1.2
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const sizeAttrs = preset(content, { type: "bidirectional", unit: "rem", inversion: "em" });
+const leadingTokens = preset(scale, { configuration: "ranged", floor: 1.2, ratio, values });
 #+END_SRC
 
-***** 2d. Leading is ranged with minimum of 1.2 to a maximum of 1.5
+***** 1e. Measure is ranged with a root of =75ch= and a floor of =48ch=
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const leadingAttrs = preset(content, { type: "ranged", min: 1.2, max: 1.5, context: "max" });
+const measureTokens = preset(scale, {
+  configuration: "ranged",
+  floor: "48ch",
+  trunc: true,
+  ratio,
+  values
+});
 #+END_SRC
 
-***** 2e. Measure is ranged in ch with a minimum of 48 to a maximum of 75
+**** 2. Spacing
+
+***** 2a. Spacing is bidirectional in ex units
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const measureAttrs = preset(content, { type: "ranged", unit: "ch", min: 48, max: 75, context: "max" });
+const spacingTokens = preset(scale, { configuration: "bidirectional", ratio, values });
 #+END_SRC
 
-**** 3. Spacing
+**** 3. Grid
 
-***** 3a. Spacing is bidirectional in ex units
+***** 2a. Grid is 4 columns/rows and fractionals use global ratio
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const spacingAttrs = preset(content, { type: "bidirectional", unit: "ex" });
+const gridTokens = preset(grid, { ratio });
 #+END_SRC
 
-**** 4. Grid
+**** 4. Lengths
 
-***** 4a. Fractionals are bidirectional
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const gridFractionalAttrs = preset(content, { type: "bidirectional", unit: "fr" });
-#+END_SRC
-
-***** 4b. Grid dimensions are set
+***** 4a. Lengths are viewport relative and ranged with a root value of =100= and a floor of =10=.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const gridAttrs = preset(content, { type: "grid" });
-#+END_SRC
-
-**** 5. Viewport
-
-***** 5a. Viewport dimensions are ranged set for width, height, min, and max
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const viewportOpts = { type: "ranged", min: 10, max: 100, context: "max" };
-const viewportAttrs = [
-  preset(content, { ...viewportOpts, unit: "vw"}),
-  preset(content, { ...viewportOpts, unit: "vh"}),
-  preset(content, { ...viewportOpts, unit: "vmin"}),
-  preset(content, { ...viewportOpts, unit: "vmax"}),
+const lengthOpts = { configuration: "ranged", floor: 10, ratio, values };
+const lengthTokens = [
+  preset(scale, lengthOpts),
+  preset(scale, lengthOpts),
+  preset(scale, lengthOpts),
+  preset(scale, lengthOpts),
 ];
 #+END_SRC
 
 *** Result
 
-Let's assume for the sake of experimentation that instead of generating content tokens from a single global scale, we
-want to generate a unique scale for each rule. Then we'll generate the tokens by category.
-
-First, we'll set up a factory to generate modular scales on demand.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const scaleFactory = preset(propagate, genGlobalScale);
-#+END_SRC
-
 Now we'll delegate our content scale rules to generated scales. The text category has five subcategories.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const [body, heading] = delegate(
+  ["Work Sans", "Work Sans"],
+  bodyTokens,
+  headingTokens
+);
+
 const [
-  body,
-  heading,
   size,
   leading,
   measure
 ] = delegate(
-  scaleFactory([1, 1, 1, 1, 1]),
-  bodyAttrs,
-  headingAttrs,
-  sizeAttrs,
-  leadingAttrs,
-  measureAttrs
+  ["1rem", 1.5, "75ch"],
+  sizeTokens,
+  leadingTokens,
+  measureTokens
 );
 #+END_SRC
 
 Spacing is its own category.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const spacing = pipeline(1, genGlobalScale, spacingAttrs);
+const spacing = spacingTokens("1ex");
 #+END_SRC
 
-Then we want to generate two subcategories for our grid category.
+Then we want to generate our grid category.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const [fractionals, grid] = delegate(
-  scaleFactory([1, 1]),
-  gridFractionalAttrs,
-  gridAttrs
-);
+const gridOut = gridTokens(values);
 #+END_SRC
 
-Finally, we apply the viewport rules to four subcategories.
+Finally, we apply the length rules to four subcategories.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const [w, h, min, max] = delegate(
-  scaleFactory([1, 1, 1, 1]),
-  ...viewportAttrs
+const [w, h, smallest, largest] = delegate(
+  ["100vw", "100vh", "100vmin", "100vmax"],
+  ...lengthTokens
 );
 #+END_SRC
 
@@ -552,8 +636,8 @@ export default {
     color: { ui: main, text: accent, splash },
     text: { body, heading, size, leading, measure },
     spacing,
-    grid: { fr: fractionals, ...grid },
-    viewport: { w, h, min, max }
+    grid: gridOut,
+    viewport: { w, h, smallest, largest }
   }
 }
 #+END_SRC
@@ -564,25 +648,21 @@ We're done, so let's take a final look at what we've done.
 
 #+BEGIN_SRC js
 import {
-  convert,
   adjust,
+  convert,
   harmony,
   palette,
-  accessibility,
-  tokens as color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/color.js";
 import {
+  grid,
+  scale,
   text,
-  ms,
-  tokens as content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/content.js";
 import {
   preset,
-  process,
-  pipeline,
-  propagate,
+  pipeline
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-29/workflow.js";
 
 const toRgb = preset(convert, "rgb");
 
@@ -592,15 +672,17 @@ const shiftHueRight60 = preset(adjust, { hue: 60 });
 const scaleToAnalogous = preset(harmony, { configuration: "analogous" });
 
 const paletteOpts = { configuration: "material", accents: true };
-const genPalette = preset(palette, { ...paletteOpts, states: true });
-const genTextPalette = preset(palette, paletteOpts);
 
-const a11yOpts = { mode: "standard" };
-const a11y = preset(accessibility, { ...a11yOpts, rating: "AA", large: true });
-const a11yText = preset(accessibility, { ...a11yOpts, rating: "AAA" });
+const generatePaletteTokens = preset(palette, {
+  ...paletteOpts,
+  states: true,
+  a11y: { mode: "standard", rating: "AA", large: true },
+});
 
-const generatePaletteTokens = process(genPalette, a11y, color);
-const generateTextPaletteTokens = process(genTextPalette, a11yText, color);
+const generateTextPaletteTokens = preset(palette, {
+  ...paletteOpts,
+  a11y: { mode: "standard", rating: "AA" }
+});
 
 const scheme = pipeline(
   "#7ea",
@@ -616,60 +698,61 @@ const [main, accent, splash] = delegate(
   generateTextPaletteTokens
 );
 
-const genGlobalScale = preset(ms, { ratio: 1.32, values: 5});
+const ratio = 1.32;
+const values = 4;
 
-const bodyAttrs = preset(text, { system: "sans", weights: ["regular", "bold"]});
+const bodyTokens = preset(text, { system: "sans", weights: ["regular", "bold"]});
 
-const headingAttrs = preset(text, { system: "serif", weights: ["light", "black"]});
+const headingTokens = preset(text, { system: "serif", weights: ["light", "black"]});
 
-const sizeAttrs = preset(content, { type: "bidirectional", unit: "rem", inversion: "em" });
+const sizeTokens = preset(scale, { configuration: "bidirectional", inversion: "em", ratio, values });
 
-const leadingAttrs = preset(content, { type: "ranged", min: 1.2, max: 1.5, context: "max" });
+const leadingTokens = preset(scale, { configuration: "ranged", floor: 1.2, ratio, values });
 
-const measureAttrs = preset(content, { type: "ranged", unit: "ch", min: 48, max: 75, context: "max" });
+const measureTokens = preset(scale, {
+  configuration: "ranged",
+  floor: "48ch",
+  trunc: true,
+  ratio,
+  values
+});
 
-const spacingAttrs = preset(content, { type: "bidirectional", unit: "ex" });
+const spacingTokens = preset(scale, { configuration: "bidirectional", ratio, values });
 
-const gridFractionalAttrs = preset(content, { type: "bidirectional", unit: "fr" });
+const gridTokens = preset(grid, { ratio });
 
-const gridAttrs = preset(content, { type: "grid" });
-
-const viewportOpts = { type: "ranged", min: 10, max: 100, context: "max" };
-const viewportAttrs = [
-  preset(content, { ...viewportOpts, unit: "vw"}),
-  preset(content, { ...viewportOpts, unit: "vh"}),
-  preset(content, { ...viewportOpts, unit: "vmin"}),
-  preset(content, { ...viewportOpts, unit: "vmax"}),
+const lengthOpts = { configuration: "ranged", floor: 10, ratio, values };
+const lengthTokens = [
+  preset(scale, lengthOpts),
+  preset(scale, lengthOpts),
+  preset(scale, lengthOpts),
+  preset(scale, lengthOpts),
 ];
 
-const scaleFactory = preset(propagate, genGlobalScale);
+const [body, heading] = delegate(
+  ["Work Sans", "Work Sans"],
+  bodyTokens,
+  headingTokens
+);
 
 const [
-  body,
-  heading,
   size,
   leading,
   measure
 ] = delegate(
-  scaleFactory([1, 1, 1, 1, 1]),
-  bodyAttrs,
-  headingAttrs,
-  sizeAttrs,
-  leadingAttrs,
-  measureAttrs
+  ["1rem", 1.5, "75ch"],
+  sizeTokens,
+  leadingTokens,
+  measureTokens
 );
 
-const spacing = pipeline(1, genGlobalScale, spacingAttrs);
+const spacing = spacingTokens("1ex");
 
-const [fractionals, grid] = delegate(
-  scaleFactory([1, 1]),
-  gridFractionalAttrs,
-  gridAttrs
-);
+const gridOut = gridTokens(values);
 
-const [w, h, min, max] = delegate(
-  scaleFactory([1, 1, 1, 1]),
-  ...viewportAttrs
+const [w, h, smallest, largest] = delegate(
+  ["100vw", "100vh", "100vmin", "100vmax"],
+  ...lengthTokens
 );
 
 export default {
@@ -677,8 +760,8 @@ export default {
     color: { ui: main, text: accent, splash },
     text: { body, heading, size, leading, measure },
     spacing,
-    grid: { fr: fractionals, ...grid },
-    viewport: { w, h, min, max }
+    grid: gridOut,
+    viewport: { w, h, smallest, largest }
   }
 }
 #+END_SRC
@@ -693,6 +776,9 @@ Wrapping them in functions is the simplest approach. That's the one we'll use.
 
 A modular workflow involves shifting your rules and processes from active to passive behavior. Think about what remains
 constant and what changes, and then expose /only/ those knobs.
+
+At the modular level, it'll also be a good idea to break away from the data-last architecture we've been using up until
+now. This will save us from defining defaults every time we invoke our custom functions.
 
 You may have also noticed that =tokens.js= is growing with each rule and process we define. Time to break things up.
 
@@ -711,15 +797,13 @@ import {
   adjust,
   harmony,
   palette,
-  accessibility,
-  tokens as color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/color.js";
 import {
   preset,
   process,
   pipeline,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-29/workflow.js";
 #+END_SRC
 
 *** Constants
@@ -729,19 +813,23 @@ We look at our constants:
 + The palettes will always output with material configurations
 + The palettes will always output with accents and interface states
 + UI and text contexts will always be delegated to the first two indexes
++ UI context will always be calibrated for AA large accessibility
++ Text context will always be calibrated for AA accessibility
 + Any remaining indexes are left untouched
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/color-recipe.js"
 const paletteOpts = { configuration: "material", accents: true };
-const genPalette = preset(palette, { ...paletteOpts, states: true });
-const genTextPalette = preset(palette, paletteOpts);
 
-const a11yOpts = { mode: "standard" };
-const a11y = preset(accessibility, { ...a11yOpts, rating: "AA", large: true });
-const a11yText = preset(accessibility, { ...a11yOpts, rating: "AAA" });
+const generatePaletteTokens = preset(palette, {
+  ...paletteOpts,
+  states: true,
+  a11y: { mode: "standard", rating: "AA", large: true },
+});
 
-const generatePaletteTokens = process(genPalette, a11y, color);
-const generateTextPaletteTokens = process(genTextPalette, a11yText, color);
+const generateTextPaletteTokens = preset(palette, {
+  ...paletteOpts,
+  a11y: { mode: "standard", rating: "AA" }
+});
 #+END_SRC
 
 *** Recipe
@@ -753,11 +841,11 @@ And derive a recipe from our variables:
 + The output won't always be in RGB format
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/color-recipe.js"
-export default function({ scheme = "analogous", format = "rgb" }, swatch) {
+export default function(color, scheme = "analogous", format = "rgb") {
   const setFormat = preset(convert, format);
   const setScheme = preset(harmony, { configuration: scheme });
 
-  const base = pipeline(swatch, setFormat, setScheme);
+  const base = pipeline(color, setFormat, setScheme);
 
   return delegate(
     Array.isArray(base)
@@ -773,20 +861,27 @@ export default function({ scheme = "analogous", format = "rgb" }, swatch) {
 
 First, create a new file named =content-recipes.js=.
 
+We'll also need our global settings here.
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
+const ratio = 1.32;
+const values = 4;
+#+END_SRC
+
 Now we're going to modularize one category at a time.
 
 *** Modules
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
 import {
-  text,
-  ms,
-  tokens as content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+  grid,
+  scale,
+  text
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/content.js";
 import {
   preset,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-29/workflow.js";
 #+END_SRC
 
 *** Text
@@ -809,34 +904,39 @@ import {
 + The default minimum and maximum measure is not always a good fit
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
-export function textRecipe({ body = "sans", heading = "serif" }, font) {
-  const bodyAttrs = preset(text, { system: body, weights: ["regular", "bold"] });
-  const headingAttrs = preset(text, { system: heading, weights: ["light", "black"] });
+export function Font(font, bodyFallback = "sans", headingFallback = "serif") {
+  const bodyTokens = preset(text, { system: bodyFallback, weights: ["regular", "bold"] });
+  const headingTokens = preset(text, { system: headingFallback, weights: ["light", "black"] });
 
-  return delegate([font, font], bodyAttrs, headingAttrs);
+  return delegate([font, font], bodyTokens, headingTokens);
 }
 
-export function typographyRecipe({ leading = [1.2, 1.5], measure = [48, 75] }, ms) {
-  const sizeAttrs = preset(content, { type: "bidirectional", unit: "rem", inversion: "em" });
+export function Content([size, leading, measure], measureFloor = 48, leadingFloor = 1.2) {
+  const sizeTokens = preset(scale, {
+    configuration: "bidirectional",
+    inversion: "em",
+    ratio,
+    values
+  });
 
-  const [leadingMin, leadingMax] = leading;
-  const leadingAttrs = preset(content, {
-    type: "ranged",
-    min: leadingMin,
-    max: leadingMax,
-    context: "max"
+  const leadingTokens = preset(scale, {
+    configuration: "ranged",
+    floor: leadingFloor,
+    ratio,
+    values
   });
 
   const [measureMin, measureMax] = measure;
-  const measureAttrs = preset(content, {
-    type: "ranged",
-    unit: "ch",
-    min: measureMin,
-    max: measureMax,
-    context: "max"
+  const measureTokens = preset(scale, {
+    configuration: "ranged",
+    floor: measureFloor,
+    trunc: true,
+    ratio,
+    values
+
   });
 
-  return delegate([ms, ms, ms], sizeAttrs, leadingAttrs, measureAttrs);
+  return delegate([size, leading, measure], sizeTokens, leadingTokens, measureTokens);
 }
 #+END_SRC
 
@@ -847,8 +947,8 @@ export function typographyRecipe({ leading = [1.2, 1.5], measure = [48, 75] }, m
 + The spacing will not always be in ex
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
-export function spacingRecipe(unit, ms) {
-  return content({ type: "bidirectional", unit }, ms);
+export function Spacing(root) {
+  return scale({ configuration: "bidirectional" }, root);
 }
 #+END_SRC
 
@@ -856,12 +956,11 @@ export function spacingRecipe(unit, ms) {
 
 **** Recipe
 
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
-export function gridRecipe(ms) {
-  const gridFractionalAttrs = preset(content, { type: "bidirectional", unit: "fr" });
-  const gridAttrs = preset(content, { type: "grid" });
++ The grid will not always be 4 columns/rows
 
-  return delegate([ms, ms], gridFractionalAttrs, gridAttrs);
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
+export function Grid(columns = 4, rows = columns) {
+  return grid({ ratio, rows }, columns);
 }
 #+END_SRC
 
@@ -877,12 +976,12 @@ export function gridRecipe(ms) {
 + The default minimum and maximum length is not always a good fit
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
-export function viewportRecipe({
+export function Dimensions(
+  root,
   dimensions = ["width", "height", "min", "max"],
-  min = 10,
-  max = 100
-}, ms) {
-  const viewportOpts = { type: "ranged", min, max, context: "max" };
+  floor = 10
+) {
+  const lengthOpts = { configuration: "ranged", floor, ratio, values };
 
   const targets = [
     ["width", "vw"],
@@ -892,8 +991,8 @@ export function viewportRecipe({
   ];
 
   return targets
-    .filter(([length], index) => length === dimensions[index])
-    .map(([length, unit]) => content({ ...viewportOpts, unit }, ms));
+    .filter(([context], index) => context === dimensions[index])
+    .map(([, length]) => scale(lengthOpts, String(root).concat(length)));
 }
 #+END_SRC
 
@@ -902,41 +1001,32 @@ export function viewportRecipe({
 Finally, let's reassemble our tokens using the recipes we just made.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/tokens.js"
-import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-import { ms } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
-import paletteRecipe from "./color-recipe.js";
-import {
-  textRecipe,
-  typographyRecipe,
-  spacingRecipe,
-  gridRecipe,
-  viewportRecipe
-} from "./content-recipes.js";
+import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/color.js";
+import Palette from "./color-recipe.js";
+import { Font, Content, Spacing, Grid, Dimensions } from "./content-recipes.js";
 
-const [main, accent, splash] = paletteRecipe({}, adjust({
+const [main, accent, splash] = Palette(adjust({
     chroma: -5,
     hue: 60
 }, "#7ea"));
 
-const [body, heading] = textRecipe({}, "Work Sans");
+const [body, heading] = Font("Work Sans");
 
-const scale = ms({ ratio: 1.32, values: 5 }, 1);
+const [size, leading, measure] = Content(["1rem", 1.5, "75ch"]);
 
-const [size, leading, measure] = typographyRecipe({}, scale);
+const spacing = Spacing("1ex");
 
-const spacing = spacingRecipe("ex", scale);
+const grid = Grid();
 
-const [fractionals, grid] = gridRecipe(scale);
-
-const [w, h, min, max] = viewportRecipe({}, scale);
+const [w, h, smallest, largest] = Dimensions(100);
 
 export default {
   hb: {
     color: { ui: main, text: accent, splash },
     text: { body, heading, size, leading, measure },
     spacing,
-    grid: { fr: fractionals, ...grid },
-    viewport: { w, h, min, max }
+    grid,
+    lengths: { w, h, smallest, largest }
   }
 }
 #+END_SRC
@@ -974,7 +1064,7 @@ First, we have to pull in the exporters themselves before we can do anything.
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/exporter.js";
 #+END_SRC
 
 ** 2. Import the generated tokens
@@ -1078,7 +1168,7 @@ Our build file is now complete and we won't need to touch it again for a good wh
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-29/exporter.js";
 
 import tokens from "./tokens.js";
 
