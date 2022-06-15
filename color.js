@@ -6,6 +6,7 @@
  * An action that takes any valid CSS `color` and converts it `to` another format.
  *
  * @param {CSSColorFormats} to - the target format
+ *
  * @param {string} color - the color to convert
  * @returns {string} the converted color
  *
@@ -182,378 +183,7 @@ export function harmony(settings, color) {
  * @typedef {"prot" | "deuter" | "trit"} CVD
  * @typedef {"brettel" | "vienot"} CVDMethod
  * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
- */
-
-/**
- * An action that takes any valid CSS `color` and checks it against color vision
- * deficiency (colorblindness) according to user `settings`.
  *
- * @param {object} settings - color vision settings
- * @param {ColorVision} [settings.as] - set the type of colorblindness
- * @param {CVDMethod} [settings.method] - set the algorithm to use
- * @param {number} [settings.severity] - set the severity of anomalous trichromacy checks (as a percentage)
- * @param {number} [settings.steps] - activates interpolated color vision check (up to number of steps)
- *
- * @param {string} color - the input color
- * @returns {string | string[]} the color vision check or interpolation results
- *
- * @example
- * A color vision check for a single color
- *
- * ```js
- * const swatch = "crimson";
- *
- * vision({ as: "protanopia" }, swatch);
- * vision({ as: "deuteranopia" }, swatch);
- * vision({ as: "tritanopia" }, swatch);
- *
- * // Severity property applies to anomalous trichromacy checks
- * vision({ as: "protanomaly", severity: 75 }, swatch);
- *
- * // Optionally set the algorithm
- * vision({ as: "deuteranopia", method: "vienot" }, swatch);
- *
- * // Interpolated
- * vision({ as: "deuteranomaly", severity: 85, steps: 4 }, swatch);
- * ```
- *
- * @example
- * A color vision contrast check for a color harmony
- *
- * ```js
- * const swatch = "dodgerblue";
- * const scheme = harmony({ configuration: "analogous", accented: true }, swatch);
- *
- * // Advanced: propagate the color vision check over the whole color harmony scale
- * propagate(preset(vision, { as: "achromatopsia" }), scheme);
- * ```
- *
- * @see `workflow.js` module for `propagate` and `preset` helpers
- */
-export function vision(settings, color) {
-  // Set defaults
-  const { as = "protanopia", method = "brettel", steps = 0 } = settings;
-
-  // Achromatopsia through reducing the chroma to zero
-  if (as === "achromatopsia") {
-    const chroma = -100;
-
-    return colorAdjustment({ chroma }, color);
-  }
-
-  // Protanomaly, Deuteranomaly, and Tritanomaly have a severity setting
-  if (as.endsWith("anomaly")) {
-    const type = as.replace(/anomaly/g, "anope");
-    const { severity = 50 } = settings;
-
-    if (steps) {
-      return colorInterpolation(
-        checkColorblindness,
-        { method, type, strength: severity, steps },
-        color,
-      );
-    }
-
-    return checkColorblindness({ method, type, strength: severity }, color);
-  }
-
-  // Protanopia, Deuteranopia, Tritanopia by definition do not
-  const type = as.replace(/anopia/g, "anope");
-
-  if (steps) {
-    return colorInterpolation(
-      checkColorblindness,
-      { method, type, strength: 100, steps },
-      color,
-    );
-  }
-
-  return checkColorblindness({ method, type, strength: 100 }, color);
-}
-
-/**
- * An action that takes any valid CSS `color` and checks it against contrast
- * sensitivity according to user `settings`.
- *
- * @param {object} settings - contrast sensitivity settings
- * @param {number} [settings.factor] - set the gray factor (as a percentage)
- * @param {number} [settings.severity] - set the severity of sensitivity (as a percentage)
- * @param {number} [settings.steps] - activates interpolated contrast sensitivity check (up to number of steps)
- *
- * @param {string} color - the input color
- * @returns {string | string[]} the contrast sensitivity check or interpolation results
- *
- * @example
- * A contrast sensitivity check for a single color
- *
- * ```js
- * const swatch = "crimson";
- *
- * contrast({ factor: 0, severity: 80 }, swatch); // 0 means black
- * contrast({ factor: 50, severity: 80 }, swatch); // 50 means gray
- * contrast({ factor: 100, severity: 80 }, swatch); // 100 means black
- *
- * // Interpolated
- * contrast({ factor: 58, severity: 100, steps: 8 }, swatch);
- * ```
- *
- * @example
- * A contrast sensitivity check for a color harmony
- *
- * ```js
- * const swatch = "dodgerblue";
- * const scheme = harmony({ configuration: "analogous", accented: true }, swatch);
- *
- * // Advanced: propagate the contrast sensitivity check over the whole color harmony scale
- * propagate(preset(contrast, { factor: 40, severity: 80 }), scheme);
- * ```
- *
- * @see `workflow.js` module for `propagate` and `preset` helpers
- */
-export function contrast(settings, color) {
-  // Set defaults
-  const { factor = 0, severity = 50, steps = 0 } = settings;
-
-  if (steps) {
-    return colorInterpolation(
-      checkSensitivity,
-      {
-        contrast: factor,
-        strength: severity,
-        steps,
-      },
-      color,
-    );
-  }
-
-  return checkSensitivity({ contrast: factor, strength: severity }, color);
-}
-
-/**
- * An action tha takes any valid CSS `color` and checks it against an illuminant
- * (light source) according to user `settings`.
- *
- * @param {object} settings - illuminant settings
- * @param {number} [settings.K] - set the illuminant temperature (in kelvin)
- * @param {number} [settings.intensity] - set the intensity of the illuminant (as a percentage)
- * @param {number} [settings.steps] - activates interpolated illuminant check (up to number of steps)
- *
- * @param {string} color - the input color
- * @returns {string | string[]} the illuminant check or interpolation results
- *
- * @example
- * An illuminant check for a single color
- *
- * ```js
- * const swatch = "crimson";
- *
- * illuminant({ K: 1850, intensity: 80 }, swatch); // candlelight
- * illuminant({ K: 2400, intensity: 80 }, swatch); // standard incandescent bulb
- * illuminant({ K: 6700, intensity: 80 }, swatch); // LCD screen
- *
- * // Interpolated
- * illuminant({ K: 3200, intensity: 100, steps: 8 }, swatch);
- * ```
- *
- * @example
- * An illuminant check for a color harmony
- *
- * ```js
- * const swatch = "dodgerblue";
- * const scheme = harmony({ configuration: "analogous", accented: true }, swatch);
- *
- * // Advanced: propagate the illuminant check over the whole color harmony scale
- * propagate(preset(illuminant, { K: 6500, intensity: 80 }), scheme);
- * ```
- *
- * @see `workflow.js` module for `propagate` and `preset` helpers
- */
-export function illuminant(settings, color) {
-  // Set defaults
-  const { K = 1850, intensity = 50, steps = 0 } = settings;
-
-  if (steps) {
-    return colorInterpolation(
-      checkIlluminant,
-      {
-        temperature: K,
-        strength: intensity,
-        steps,
-      },
-      color,
-    );
-  }
-
-  return checkIlluminant({ temperature: K, strength: intensity }, color);
-}
-
-/**
- * @typedef {(string[] | string[][])[]} PaletteData - palette data configurations
- * material: [[bg, fg], [main, accents | []], states | []]
- * artsitic: [[bg, fg], [tints | [], tones | [], shades | []], accents | []]
- */
-
-/**
- * An action that takes any valid CSS `color` and generates a palette according
- * to user `settings`.
- *
- * @param {object} settings - palette settings
- * @param {"material" | "artistic"} [settings.configuration] - set the palette configuration
- * @param {number} [settings.contrast] - set the overall palette contrast (both configurations)
- * @param {boolean} [settings.accents] - include accent colors? (both configurations)
- * @param {boolean} [settings.dark] - toggle dark mode? (both configurations)
- *
- * @param {boolean} [settings.states] - include interface states? (material)
- *
- * @param {number} [settings.tints] - number of tints to generate (artistic)
- * @param {number} [settings.tones] - number of tones to generate (artistic)
- * @param {number} [settings.shades] - number of shades to generate (artistic)
- *
- * @param {string} color - the input color
- * @returns {PaletteData} generated palette data
- *
- * @example
- * Generating a material palette
- *
- * ```js
- * const swatch = "#fac99a";
- *
- * palette({ configuration: "material" }, swatch);
- *
- * // Optionally adjusting the contrast
- * palette({ configuration: "material", contrast: 90 }, swatch);
- *
- * // Optionally including accent colors
- * palette({ configuration: "material", accents: true }, swatch);
- *
- * // Optionally including interface states
- * palette({ configuration: "material", states: true }, swatch);
- *
- * // Optionally set dark mode
- * palette({ configuration: "material", dark: true }, swatch);
- * ```
- *
- * @example
- * Generating an artistic palette
- *
- * ```js
- * const swatch = "#fac99a";
- *
- * palette({ configuration: "artistic" }, swatch);
- *
- * // Optionally adjusting the contrast
- * palette({ configuration: "artistic", contrast: 90 }, swatch);
- *
- * // Optionally adjusting variant output
- * palette({ configuration: "artistic", tints: 5 }, swatch);
- * palette({ configuration: "artistic", tints: 4, tones: 0, shades: 2 }, swatch); // setting a variant to 0 excludes
- * palette({ configuration: "artistic", tints: 4, tones: 1, shades: 2 }, swatch);
- *
- * // Optionally including accents
- * palette({ configuration: "artistic", accents: true }, swatch);
- *
- * // Optionally set dark mode
- * palette({ configuration: "artistic", dark: true }, swatch);
- * ```
- *
- * @see {@link accessibility}
- * @see {@link tokens}
- */
-export function palette(settings, color) {
-  // Set default configuration and settings and exclude interface states until requested
-  const {
-    configuration = "material",
-    contrast = 100,
-    accents = false,
-    states = false,
-    dark = false,
-  } = settings;
-
-  // Generate from material-esque or artistic configuration depending on configuration
-  if (configuration === "artistic") {
-    const { tints = 3, tones = 3, shades = 3 } = settings;
-
-    return artisticConfiguration(
-      { contrast, tints, tones, shades, accented: accents, dark },
-      color,
-    );
-  }
-
-  return materialConfiguration(
-    {
-      contrast,
-      accented: accents,
-      stated: states,
-      dark,
-    },
-    color,
-  );
-}
-
-/**
- * An action that takes a generated `palette` and filters it for accessibility
- * according to user `settings`.
- *
- * @param {object} settings - accessibility settings
- * @param {"standard" | "custom"} [settings.mode] - set the accessibility mode
- *
- * @param {"AA" | "AAA"} [settings.rating] - WCAG contrast rating to filter by (standard)
- * @param {boolean} [settings.large] - use adjusted contrast ratio for larger text? (standard)
- *
- * @param {number} [settings.min] - minimum percentage of contrast against the background (custom)
- * @param {number} [settings.max] - maximum percentage of contrast against the background (custom)
- *
- * @param {PaletteData} palette - palette data
- * @returns {PaletteData} filtered palette data
- *
- * @remarks
- * For most use cases, stick with the standard WCAG contrast ratio mode. Only
- * use custom mode if you *absolutely require* the precision.
- *
- * @example
- * Palette data accessibility filtering (standard)
- *
- * ```js
- * const swatch = "#ace";
- * const data = palette({ configuration: "material", contrast: 95 }, swatch);
- *
- * accessibility({ mode: "standard", rating: "AA" }, swatch);
- *
- * // Optionally set large text ratio
- * accessibility({ mode: "standard", rating: "AA", large: true }, swatch);
- *
- * // Optionally set enhanced rating
- * accessibility({ mode: "standard", rating: "AAA" }, swatch);
- * ```
- *
- * @example
- * Palette data accessibility filtering (custom)
- *
- * ```js
- * const swatch = "#ace";
- * const data = palette({ configuration: "material", contrast: 95 }, swatch);
- *
- * accessibility({ mode: "custom", min: 78 }, swatch);
- *
- * // Optionally set maximum contrast
- * accessibility({ mode: "custom", min: 78, max: 95 }, swatch);
- * ```
- */
-export function accessibility(settings, palette) {
-  // Set action defaults
-  const { mode = "standard", rating = "AA", large = false } = settings;
-
-  // If mode is custom
-  if (mode === "custom") {
-    const { min = 85, max } = settings;
-
-    return paletteColorimetricContrast({ min, max }, palette);
-  }
-
-  return paletteWcagContrast({ rating, large }, palette);
-}
-
-/**
  * @typedef {{ bg: string; fg: string }} SurfaceTokens - BG, FG
  *
  * @typedef {Partial<{
@@ -576,7 +206,7 @@ export function accessibility(settings, palette) {
  *   a600: string;
  *   a700: string;
  *   a800: string;
- *   a900: string; }>} MaterialVariantTokens - MAIN, ACCENT?
+ *   a900: string; }>} MaterialVariantTokens - MAIN, ACCENTS?
  *
  * @typedef {Partial<{
  *   light: { [key: string]: string };
@@ -599,47 +229,81 @@ export function accessibility(settings, palette) {
  */
 
 /**
- * An emitter that takes a generated `palette` and assembles it into a collection
- * of color tokens for use as-is or with an exporter.
+ * An action that takes any valid CSS `color` and generates color tokens
+ * according to user settings.
  *
- * @param {PaletteData} palette - generated palette data
- * @returns {PaletteTokens} assembled color tokens
+ * @param {object} settings - palette settings
+ * @param {"material" | "artistic"} [settings.configuration] - set the palette configuration
+ * @param {number} [settings.contrast] - set the overall palette contrast
+ * @param {boolean} [settings.accents] - generate accent colors?
+ * @param {boolean} [settings.dark] - using dark mode?
  *
- * @example
- * Generating a collection of palette tokens from accessible palette data
+ * @param {boolean} [settings.states] - generate interface states? (material)
  *
- * ```js
- * const swatch = "chartreuse";
+ * @param {number} [settings.tints] - set number of tints to generate (artistic)
+ * @param {number} [settings.tones] - set number of tones to generate (artistic)
+ * @param {number} [settings.shades] - set number of shades to generate (artistic)
  *
- * const data = palette({ configuration: "material", contrast: 90 }, swatch);
- * const safeColors = accessibility({ mode: "standard", rating: "AA" }, data);
+ * @param {object} [settings.perception] - color perception simulation settings
+ * @param {"vision" | "contrast" | "illuminant"} [settings.perception.check] - set simulation target
+ * @param {number} [settings.perception.severity] - set severity of simulation (where applicable)
  *
- * tokens(safeColors);
- * ```
+ * @param {ColorVision} [settings.perception.as] - set colorblindness to target
+ * @param {CVDMethod} [settings.perception.method] - set colorblindness algorithm to use
  *
- * @example
- * Contextual palette example
+ * @param {number} [settings.perception.factor] - set contrast sensitivity gray factor
  *
- * ```js
- * const swatch = "chartreuse";
+ * @param {number} [settings.perception.K] - set illuminant temperature
  *
- * const data = palette({ configuration: "material", contrast: 90 }, swatch);
+ * @param {object} [settings.a11y] - color accessibility filter settings
+ * @param {"standard" | "custom"} [settings.a11y.mode] - set color accessibility mode
  *
- * const ui = accessibility({ mode: "standard", rating: "AA", large: true }, data);
- * const heading = accessibility({ mode: "standard", rating: "AA" }, data);
- * const text = accessibility({ mode: "standard", rating: "AAA" }, data);
+ * @param {"AA" | "AAA"} [settings.a11y.rating] - set color contrast rating
+ * @param {boolean} [settings.a11y.large] - use large text rating?
  *
- * const color = {
- *   ui: tokens(ui),
- *   heading: tokens(heading),
- *   text: tokens(text)
- * };
- * ```
+ * @param {number} [settings.a11y.min] - set minimum contrast from background (as a percentage)
+ * @param {number} [settings.a11y.max] - set maximum contrast from background (as a percentage)
  *
- * @see {@link output}
+ * @param {string} color - the input color
+ * @returns {PaletteTokens} the generated palette
  */
-export function tokens(palette) {
-  return tokenizePalette(palette);
+export function palette(settings, color) {
+  const { configuration = "material", perception = {}, a11y = {} } = settings;
+
+  let swatch = color;
+
+  // Perceptual simulations
+  if (perception.check === "vision") {
+    const { as = "protanopia", method = "brettel", severity = 50 } = perception;
+    swatch = vision({ as, method, severity }, swatch);
+  }
+
+  if (perception.check === "contrast") {
+    const { factor = 0, severity = 50 } = perception;
+    swatch = contrast({ factor, severity }, swatch);
+  }
+
+  if (perception.check === "illuminant") {
+    const { K = 1850, severity = 50 } = perception;
+    swatch = illuminant({ K, intensity: severity }, swatch);
+  }
+
+  // Generate palette
+  let palette = generatePalette(configuration, settings, swatch);
+
+  // Accessibility filter
+  if (a11y.mode === "standard") {
+    const { mode, rating = "AA", large = false } = a11y;
+    palette = accessibility({ mode, rating, large }, palette);
+  }
+
+  if (a11y.mode === "custom") {
+    const { mode, min = 85, max } = a11y;
+    palette = accessibility({ mode, min, max }, palette);
+  }
+
+  // Output tokens
+  return tokens(palette);
 }
 
 /**
@@ -691,15 +355,13 @@ export function tokens(palette) {
  * ```js
  * const swatch = "dodgerblue";
  *
- * const color = tokens(
- *   palette({
- *     configuration: "artistic",
- *     contrast: 95,
- *     tints: 9,
- *     tones: 9,
+ * const color = palette({
+ *   configuration: "artistic",
+ *   contrast: 95,
+ *   tints: 9,
+ *   tones: 9,
  *     shades: 9
- *   }, swatch)
- * );
+ * }, swatch);
  *
  * output("gpl", { project: {}, ...color }); // project required by every exporter
  * ```
@@ -710,15 +372,13 @@ export function tokens(palette) {
  * ```js
  * const swatch = "dodgerblue";
  *
- * const color = tokens(
- *   palette({
- *     configuration: "artistic",
- *     contrast: 95,
- *     tints: 9,
- *     tones: 9,
+ * const color = palette({
+ *   configuration: "artistic",
+ *   contrast: 95,
+ *   tints: 9,
+ *   tones: 9,
  *     shades: 9
- *   }, swatch)
- * );
+ * }, swatch);
  *
  * output("sketchpalette", { project: {}, ...color }); // project required by every exporter
  * ```
@@ -2929,4 +2589,117 @@ function sketchpalette(dict) {
     pluginVersion: "1.4",
     compatibleVersion: "1.4",
   });
+}
+
+function vision(
+  { as = "protanopia", method = "brettel", severity = 50 },
+  color,
+) {
+  // Achromatopsia through reducing the chroma to zero
+  if (as === "achromatopsia") {
+    const chroma = -100;
+
+    return colorAdjustment({ chroma }, color);
+  }
+
+  // Protanomaly, Deuteranomaly, and Tritanomaly have a severity setting
+  if (as.endsWith("anomaly")) {
+    const type = as.replace(/anomaly/g, "anope");
+
+    return checkColorblindness({ method, type, strength: severity }, color);
+  }
+
+  // Protanopia, Deuteranopia, Tritanopia by definition do not
+  const type = as.replace(/anopia/g, "anope");
+
+  return checkColorblindness({ method, type, strength: 100 }, color);
+}
+
+function contrast({ factor = 0, severity = 50 }, color) {
+  return checkSensitivity({ contrast: factor, strength: severity }, color);
+}
+
+function illuminant({ K = 1850, intensity = 50 }, color) {
+  return checkIlluminant({ temperature: K, strength: intensity }, color);
+}
+
+function create(settings, color) {
+  // Set default configuration and settings and exclude interface states until requested
+  const {
+    configuration = "material",
+    contrast = 100,
+    accents = false,
+    states = false,
+    dark = false,
+  } = settings;
+
+  // Generate from material-esque or artistic configuration depending on configuration
+  if (configuration === "artistic") {
+    const { tints = 3, tones = 3, shades = 3 } = settings;
+
+    return artisticConfiguration(
+      { contrast, tints, tones, shades, accented: accents, dark },
+      color,
+    );
+  }
+
+  return materialConfiguration(
+    {
+      contrast,
+      accented: accents,
+      stated: states,
+      dark,
+    },
+    color,
+  );
+}
+
+function generatePalette(configuration, settings, color) {
+  const { contrast = 100, accents = false, dark = false } = settings;
+
+  if (configuration === "artistic") {
+    const { tints = 3, tones = 3, shades = 3 } = settings;
+    return create(
+      {
+        configuration,
+        contrast,
+        tints,
+        tones,
+        shades,
+        accents,
+        dark,
+      },
+      color,
+    );
+  }
+
+  const { states = false } = settings;
+  return create(
+    {
+      configuration,
+      contrast,
+      accents,
+      states,
+      dark,
+    },
+    color,
+  );
+}
+
+function accessibility(settings, palette) {
+  // Set action defaults
+  const { mode = "standard", rating = "AA", large = false } = settings;
+
+  // If mode is custom
+  if (mode === "custom") {
+    const { min = 85, max } = settings;
+
+    return paletteColorimetricContrast({ min, max }, palette);
+  }
+
+  return paletteWcagContrast({ rating, large }, palette);
+}
+
+function tokens(palette) {
+  return tokenizePalette(palette);
 }
