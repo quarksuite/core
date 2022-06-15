@@ -1,52 +1,42 @@
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { palette, tokens as color } from "../../color.js";
-import { ms, text, tokens as content } from "../../content.js";
+import { palette } from "../../color.js";
+import { grid, scale, text } from "../../content.js";
 import { data } from "../../exporter.js";
 
 const swatch = "rebeccapurple";
-const scale = ms({ values: 4, ratio: 1.337 }, 1);
 
 // Whip up a sample dictionary
 const dict = {
   project: {
-    name: "Example Data Export",
+    name: "Example Data Dictionary",
     author: "Chatman R. Jr",
     version: "0.1.0",
     license: "Unlicense",
   },
-  color: color(palette({}, swatch)),
+  color: palette({}, swatch),
   text: {
     primary: text({}, ""),
     secondary: text({ system: "serif", weights: ["light", "black"] }, ""),
     source: text({ system: "monospace" }, ""),
-    size: content({ unit: "rem", inversion: "em" }, scale),
-    leading: content(
-      { type: "ranged", min: 1.25, max: 1.5, context: "max" },
-      scale,
-    ),
-    measure: content(
+    size: scale({ inversion: "em" }, "1rem"),
+    leading: scale({ configuration: "ranged", floor: 1.25 }, 1.5),
+    measure: scale(
       {
-        type: "ranged",
-        min: 45,
-        max: 75,
-        unit: "ch",
+        configuration: "ranged",
+        floor: "45ch",
         trunc: true,
-        context: "max",
       },
-      scale,
+      "75ch",
     ),
   },
   layout: {
-    grid: {
-      ...content({ type: "grid" }, scale),
-      fr: content({ unit: "fr" }, scale),
-    },
-    spacing: content({ unit: "ex" }, scale),
+    grid: grid({}, 3),
+    spacing: scale({}, "1rem"),
     dimensions: {
-      width: content({ type: "ranged", min: 25, max: 100, unit: "vw" }, scale),
-      height: content({ type: "ranged", min: 25, max: 100, unit: "vh" }, scale),
-      min: content({ type: "ranged", min: 25, max: 100, unit: "vmin" }, scale),
-      max: content({ type: "ranged", min: 25, max: 100, unit: "vmax" }, scale),
+      width: scale({ configuration: "ranged", floor: "25vw" }, "100vw"),
+      height: scale({ configuration: "ranged", floor: "25vh" }, "100vh"),
+      smallest: scale({ configuration: "ranged", floor: "25vmin" }, "100vmin"),
+      largest: scale({ configuration: "ranged", floor: "25vmax" }, "100vmax"),
     },
   },
 };
@@ -62,7 +52,7 @@ describe("data(format, dict)", () => {
     it("should correctly export sample dictionary as JSON data", () => {
       expect(JSON.parse(data("json", dict))).toEqual({
         project: {
-          name: "Example Data Export",
+          name: "Example Data Dictionary",
           author: "Chatman R. Jr",
           version: "0.1.0",
           license: "Unlicense",
@@ -103,90 +93,120 @@ describe("data(format, dict)", () => {
             },
             size: {
               base: "1rem",
-              x2: "1.337rem",
-              x3: "1.7876rem",
-              x4: "2.39rem",
-              d2: "0.74794em",
-              d3: "0.55942em",
-              d4: "0.41841em",
+              x2: "1.5rem",
+              x3: "2.25rem",
+              x4: "3.375rem",
+              x5: "5.0625rem",
+              x6: "7.5938rem",
+              d2: "0.66667em",
+              d3: "0.44444em",
+              d4: "0.2963em",
+              d5: "0.19753em",
+              d6: "0.13169em",
             },
             leading: {
               base: 1.5,
-              i2: 1.437,
-              i3: 1.3899,
-              i4: 1.3546,
+              i2: 1.4167,
+              i3: 1.3611,
+              i4: 1.3241,
+              i5: 1.2994,
+              i6: 1.2829,
               min: 1.25,
             },
             measure: {
               base: "75ch",
-              i2: "67ch",
-              i3: "61ch",
-              i4: "57ch",
+              i2: "65ch",
+              i3: "58ch",
+              i4: "53ch",
+              i5: "50ch",
+              i6: "48ch",
               min: "45ch",
             },
           },
           layout: {
             grid: {
-              columns: 4,
+              columns: 3,
               rows: 3,
               col: {
                 1: 1,
                 2: 2,
                 3: 3,
-                4: 4,
                 "-1": -1,
                 "-2": -2,
                 "-3": -3,
-                "-4": -4,
+                fr: {
+                  base: "1fr",
+                  x2: "1.5fr",
+                  x3: "2.25fr",
+                  d2: "0.66667fr",
+                  d3: "0.44444fr",
+                },
               },
-              row: { 1: 1, 2: 2, 3: 3, "-1": -1, "-2": -2, "-3": -3 },
-              fr: {
-                base: "1fr",
-                x2: "1.337fr",
-                x3: "1.7876fr",
-                x4: "2.39fr",
-                d2: "0.74794fr",
-                d3: "0.55942fr",
-                d4: "0.41841fr",
+              row: {
+                1: 1,
+                2: 2,
+                3: 3,
+                "-1": -1,
+                "-2": -2,
+                "-3": -3,
+                fr: {
+                  base: "1fr",
+                  x2: "1.5fr",
+                  x3: "2.25fr",
+                  d2: "0.66667fr",
+                  d3: "0.44444fr",
+                },
               },
             },
             spacing: {
-              base: "1ex",
-              x2: "1.337ex",
-              x3: "1.7876ex",
-              x4: "2.39ex",
-              d2: "0.74794ex",
-              d3: "0.55942ex",
-              d4: "0.41841ex",
+              base: "1rem",
+              x2: "1.5rem",
+              x3: "2.25rem",
+              x4: "3.375rem",
+              x5: "5.0625rem",
+              x6: "7.5938rem",
+              d2: "0.66667rem",
+              d3: "0.44444rem",
+              d4: "0.2963rem",
+              d5: "0.19753rem",
+              d6: "0.13169rem",
             },
             dimensions: {
               width: {
-                base: "25vw",
-                i2: "56.381vw",
-                i3: "66.956vw",
-                i4: "81.096vw",
-                max: "100vw",
+                base: "100vw",
+                i2: "75vw",
+                i3: "58.333vw",
+                i4: "47.222vw",
+                i5: "39.815vw",
+                i6: "34.876vw",
+                min: "25vw",
               },
               height: {
-                base: "25vh",
-                i2: "56.381vh",
-                i3: "66.956vh",
-                i4: "81.096vh",
-                max: "100vh",
+                base: "100vh",
+                i2: "75vh",
+                i3: "58.333vh",
+                i4: "47.222vh",
+                i5: "39.815vh",
+                i6: "34.876vh",
+                min: "25vh",
               },
-              min: {
-                base: "25vmin",
-                i2: "56.381vmin",
-                i3: "66.956vmin",
-                i4: "81.096vmin",
-                max: "100vmin",
+              smallest: {
+                base: "100vmin",
+                i2: "75vmin",
+                i3: "58.333vmin",
+                i4: "47.222vmin",
+                i5: "39.815vmin",
+                i6: "34.876vmin",
+                min: "25vmin",
               },
-              max: {
-                base: "25vmax",
-                i2: "56.381vmax",
-                i3: "66.956vmax",
-                i4: "81.096vmax",
-                max: "100vmax",
+              largest: {
+                base: "100vmax",
+                i2: "75vmax",
+                i3: "58.333vmax",
+                i4: "47.222vmax",
+                i5: "39.815vmax",
+                i6: "34.876vmax",
+                min: "25vmax",
               },
             },
           },
@@ -201,7 +221,7 @@ describe("data(format, dict)", () => {
 # [Timestamp replaced for testing]
 
 project:
-  name: Example Data Export
+  name: Example Data Dictionary
   author: Chatman R. Jr
   version: 0.1.0
   license: Unlicense
@@ -235,37 +255,49 @@ tokens:
       bold: 700
     size:
       base: 1rem
-      x2: 1.337rem
-      x3: 1.7876rem
-      x4: 2.39rem
-      d2: 0.74794em
-      d3: 0.55942em
-      d4: 0.41841em
+      x2: 1.5rem
+      x3: 2.25rem
+      x4: 3.375rem
+      x5: 5.0625rem
+      x6: 7.5938rem
+      d2: 0.66667em
+      d3: 0.44444em
+      d4: 0.2963em
+      d5: 0.19753em
+      d6: 0.13169em
     leading:
       base: 1.5
-      i2: 1.437
-      i3: 1.3899
-      i4: 1.3546
+      i2: 1.4167
+      i3: 1.3611
+      i4: 1.3241
+      i5: 1.2994
+      i6: 1.2829
       min: 1.25
     measure:
       base: 75ch
-      i2: 67ch
-      i3: 61ch
-      i4: 57ch
+      i2: 65ch
+      i3: 58ch
+      i4: 53ch
+      i5: 50ch
+      i6: 48ch
       min: 45ch
   layout:
     grid:
-      columns: 4
+      columns: 3
       rows: 3
       col:
         1: 1
         2: 2
         3: 3
-        4: 4
         -1: -1
         -2: -2
         -3: -3
-        -4: -4
+        fr:
+          base: 1fr
+          x2: 1.5fr
+          x3: 2.25fr
+          d2: 0.66667fr
+          d3: 0.44444fr
       row:
         1: 1
         2: 2
@@ -273,47 +305,57 @@ tokens:
         -1: -1
         -2: -2
         -3: -3
-      fr:
-        base: 1fr
-        x2: 1.337fr
-        x3: 1.7876fr
-        x4: 2.39fr
-        d2: 0.74794fr
-        d3: 0.55942fr
-        d4: 0.41841fr
+        fr:
+          base: 1fr
+          x2: 1.5fr
+          x3: 2.25fr
+          d2: 0.66667fr
+          d3: 0.44444fr
     spacing:
-      base: 1ex
-      x2: 1.337ex
-      x3: 1.7876ex
-      x4: 2.39ex
-      d2: 0.74794ex
-      d3: 0.55942ex
-      d4: 0.41841ex
+      base: 1rem
+      x2: 1.5rem
+      x3: 2.25rem
+      x4: 3.375rem
+      x5: 5.0625rem
+      x6: 7.5938rem
+      d2: 0.66667rem
+      d3: 0.44444rem
+      d4: 0.2963rem
+      d5: 0.19753rem
+      d6: 0.13169rem
     dimensions:
       width:
-        base: 25vw
-        i2: 56.381vw
-        i3: 66.956vw
-        i4: 81.096vw
-        max: 100vw
+        base: 100vw
+        i2: 75vw
+        i3: 58.333vw
+        i4: 47.222vw
+        i5: 39.815vw
+        i6: 34.876vw
+        min: 25vw
       height:
-        base: 25vh
-        i2: 56.381vh
-        i3: 66.956vh
-        i4: 81.096vh
-        max: 100vh
-      min:
-        base: 25vmin
-        i2: 56.381vmin
-        i3: 66.956vmin
-        i4: 81.096vmin
-        max: 100vmin
-      max:
-        base: 25vmax
-        i2: 56.381vmax
-        i3: 66.956vmax
-        i4: 81.096vmax
-        max: 100vmax
+        base: 100vh
+        i2: 75vh
+        i3: 58.333vh
+        i4: 47.222vh
+        i5: 39.815vh
+        i6: 34.876vh
+        min: 25vh
+      smallest:
+        base: 100vmin
+        i2: 75vmin
+        i3: 58.333vmin
+        i4: 47.222vmin
+        i5: 39.815vmin
+        i6: 34.876vmin
+        min: 25vmin
+      largest:
+        base: 100vmax
+        i2: 75vmax
+        i3: 58.333vmax
+        i4: 47.222vmax
+        i5: 39.815vmax
+        i6: 34.876vmax
+        min: 25vmax
 `);
     });
   });
