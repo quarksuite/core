@@ -2722,5 +2722,3 @@ function accessibility(settings, palette) {
 function tokens(palette) {
   return tokenizePalette(palette);
 }
-
-console.log(convert("hwb", "hsl(327.379, -2376.923%, -2.549%)"));
