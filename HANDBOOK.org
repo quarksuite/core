@@ -560,7 +560,7 @@ const spacingTokens = preset(scale, { configuration: "bidirectional", ratio, val
 
 **** 3. Grid
 
-***** 2a. Grid is 4 columns/rows and fractionals use global ratio
+***** 3a. Grid is 4 columns/rows and fractionals use global ratio
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
 const gridTokens = preset(grid, { ratio });
@@ -964,7 +964,7 @@ export function Grid(columns = 4, rows = columns) {
 }
 #+END_SRC
 
-*** Viewport
+*** Lengths
 
 **** Constants
 
