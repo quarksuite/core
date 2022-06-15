@@ -80,19 +80,19 @@ function textFamily({ system = "sans", weights = ["regular", "bold"] }, font) {
 }
 
 /**
- * @typedef {{ [fraction: string]: string; }} GridFr
+ * @typedef {{ [fraction: string]: string; }} GridFr - grid fractionals (derived from ratio)
  * @typedef {{
  *   columns: number;
  *   rows: number;
  *   col: {
- *     [tracks: string]: number;
+ *     [tracks: string]: string | number | GridFr;
  *     fr: GridFr;
  *   },
  *   row: {
- *     [tracks: string]: number;
+ *     [tracks: string]: string | number | GridFr;
  *     fr: GridFr;
  *   }
- * }} GridTokens
+ * }} GridTokens - generated grid token structure
  */
 
 /**
@@ -169,6 +169,8 @@ function generateGrid({ rows, ratio = 1.5 }, columns) {
  *
  * @param {object} settings - scale token settings
  * @param {ScaleConfiguration} [settings.configuration] - set the scale configuration
+ * @param {number} [settings.ratio] - the scale ratio
+ * @param {number} [settings.values] - the number of scale values to generate
  *
  * @param {string} [settings.inversion] - set the output units for the inverse (bidirectional)
  *
@@ -177,7 +179,7 @@ function generateGrid({ rows, ratio = 1.5 }, columns) {
  * @param {boolean} [settings.reverse] - reverse the context (ranged)
  *
  * @param {RootValue} root - the root value to generate from
- * @returns {ScaleValue} the generated scale tokens
+ * @returns {ScaleTokens} the generated scale tokens
  *
  * @example
  * Scale generation examples
@@ -193,7 +195,22 @@ function generateGrid({ rows, ratio = 1.5 }, columns) {
  * Otherwise, use the minimum value for directional types.
  */
 export function scale(settings, root) {
-  return assemble(settings, root);
+  const {
+    configuration = "bidirectional",
+    inversion,
+    ratio = 1.5,
+    values = 6,
+  } = settings;
+
+  if (configuration === "ranged") {
+    const { floor = 1, trunc = false, reverse = false } = settings;
+    return assemble(
+      { configuration, floor, trunc, reverse, ratio, values },
+      root,
+    );
+  }
+
+  return assemble({ configuration, inversion, ratio, values }, root);
 }
 
 function create({ ratio = 1.5, values = 6 }, root) {

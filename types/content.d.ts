@@ -31,19 +31,19 @@ export function text(settings: {
     system?: TextSystem;
 }, font: string): TextTokens;
 /**
- * @typedef {{ [fraction: string]: string; }} GridFr
+ * @typedef {{ [fraction: string]: string; }} GridFr - grid fractionals (derived from ratio)
  * @typedef {{
  *   columns: number;
  *   rows: number;
  *   col: {
- *     [tracks: string]: number;
+ *     [tracks: string]: string | number | GridFr;
  *     fr: GridFr;
  *   },
  *   row: {
- *     [tracks: string]: number;
+ *     [tracks: string]: string | number | GridFr;
  *     fr: GridFr;
  *   }
- * }} GridTokens
+ * }} GridTokens - generated grid token structure
  */
 /**
  * An action that takes a number of `columns` and outputs grid tokens according
@@ -93,6 +93,8 @@ export function grid(settings: {
  *
  * @param {object} settings - scale token settings
  * @param {ScaleConfiguration} [settings.configuration] - set the scale configuration
+ * @param {number} [settings.ratio] - the scale ratio
+ * @param {number} [settings.values] - the number of scale values to generate
  *
  * @param {string} [settings.inversion] - set the output units for the inverse (bidirectional)
  *
@@ -101,7 +103,7 @@ export function grid(settings: {
  * @param {boolean} [settings.reverse] - reverse the context (ranged)
  *
  * @param {RootValue} root - the root value to generate from
- * @returns {ScaleValue} the generated scale tokens
+ * @returns {ScaleTokens} the generated scale tokens
  *
  * @example
  * Scale generation examples
@@ -118,11 +120,13 @@ export function grid(settings: {
  */
 export function scale(settings: {
     configuration?: ScaleConfiguration;
+    ratio?: number;
+    values?: number;
     inversion?: string;
     floor?: ScaleValue;
     trunc?: boolean;
     reverse?: boolean;
-}, root: RootValue): ScaleValue;
+}, root: RootValue): ScaleTokens;
 export type TextWeights = "thin" | "extralight" | "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold" | "black";
 export type TextSystem = "sans" | "serif" | "monospace";
 export type TextWeightsTokens = {
@@ -131,18 +135,24 @@ export type TextWeightsTokens = {
 export type TextTokens = {
     family: string;
 } & TextWeightsTokens;
+/**
+ * - grid fractionals (derived from ratio)
+ */
 export type GridFr = {
     [fraction: string]: string;
 };
+/**
+ * - generated grid token structure
+ */
 export type GridTokens = {
     columns: number;
     rows: number;
     col: {
-        [tracks: string]: number;
+        [tracks: string]: string | number | GridFr;
         fr: GridFr;
     };
     row: {
-        [tracks: string]: number;
+        [tracks: string]: string | number | GridFr;
         fr: GridFr;
     };
 };
