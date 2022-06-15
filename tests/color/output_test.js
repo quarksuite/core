@@ -1,11 +1,11 @@
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
-import { output, palette, tokens } from "../../color.js";
+import { output, palette } from "../../color.js";
 
 describe("output(format, dict)", () => {
   const swatch = "rebeccapurple";
   const [material, artistic] = [
-    tokens(palette({}, swatch)),
-    tokens(palette({ configuration: "artistic" }, swatch)),
+    palette({}, swatch),
+    palette({ configuration: "artistic" }, swatch),
   ];
 
   const removeTimestamp = (format) =>

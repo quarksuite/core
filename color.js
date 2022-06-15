@@ -272,22 +272,6 @@ export function palette(settings, color) {
 
   let swatch = color;
 
-  // Perceptual simulations
-  if (perception.check === "vision") {
-    const { as = "protanopia", method = "brettel", severity = 50 } = perception;
-    swatch = vision({ as, method, severity }, swatch);
-  }
-
-  if (perception.check === "contrast") {
-    const { factor = 0, severity = 50 } = perception;
-    swatch = contrast({ factor, severity }, swatch);
-  }
-
-  if (perception.check === "illuminant") {
-    const { K = 1850, severity = 50 } = perception;
-    swatch = illuminant({ K, intensity: severity }, swatch);
-  }
-
   // Generate palette
   let palette = generatePalette(configuration, settings, swatch);
 
@@ -300,6 +284,29 @@ export function palette(settings, color) {
   if (a11y.mode === "custom") {
     const { mode, min = 85, max } = a11y;
     palette = accessibility({ mode, min, max }, palette);
+  }
+
+  // Perceptual simulations
+  const simulate = (check, settings, data) => {
+    return data.map((value) => {
+      if (Array.isArray(value)) return simulate(check, settings, value);
+      return check(settings, value);
+    });
+  };
+
+  if (perception.check === "vision") {
+    const { as = "protanopia", method = "brettel", severity = 50 } = perception;
+    palette = simulate(vision, { as, method, severity }, palette);
+  }
+
+  if (perception.check === "contrast") {
+    const { factor = 0, severity = 50 } = perception;
+    palette = simulate(contrast, { factor, severity }, palette);
+  }
+
+  if (perception.check === "illuminant") {
+    const { K = 1850, severity = 50 } = perception;
+    palette = simulate(illuminant, { K, severity }, palette);
   }
 
   // Output tokens
@@ -2156,7 +2163,7 @@ function generateMaterialAccents(
   accented = false,
   dark = false,
 ) {
-  const PERCENTAGE = 50;
+  const PERCENTAGE = 50 / 1.618;
   const HUE = 120;
 
   const limit = (max = 90) => max * numberFromPercentage(contrast);
@@ -2195,46 +2202,46 @@ function generateArtisticVariants(contrast, { tints, tones, shades }, color) {
   ];
 }
 
-function generateArtisticAccents(contrast, color, accented = false) {
-  const limit = (max = 90) => max * numberFromPercentage(contrast);
-  const interpolate = (percentage, hue, steps) =>
-    colorInterpolation(
-      colorMix,
-      {
-        target: colorAdjustment(
-          {
-            lightness: limit(percentage),
-            hue: limit(hue),
-            color,
-          },
-          color,
-        ),
-        strength: limit(percentage),
-        steps,
-      },
-      color,
-    );
-
-  const PERCENTAGE = 80;
+function generateArtisticAccents(
+  contrast,
+  color,
+  accented = false,
+  dark = false,
+) {
+  const PERCENTAGE = 50 / 1.618;
   const HUE = 120;
+
+  const limit = (max = 90) => max * numberFromPercentage(contrast);
+  const interpolate = (properties) =>
+    colorInterpolation(colorAdjustment, properties, color);
 
   return accented
     ? [
-      ...interpolate(PERCENTAGE, -HUE, 4).reverse(),
-      ...interpolate(-PERCENTAGE, HUE, 5).reverse(),
+      ...interpolate({
+        lightness: limit(dark ? -PERCENTAGE : PERCENTAGE),
+        chroma: limit(-PERCENTAGE),
+        hue: limit(-HUE),
+        steps: 5,
+      }).reverse(),
+      ...interpolate({
+        lightness: limit(dark ? PERCENTAGE : -PERCENTAGE),
+        chroma: limit(PERCENTAGE),
+        hue: limit(HUE),
+        steps: 4,
+      }),
     ]
     : [];
 }
 
 function generateStates(contrast, [, fg], color, stated = false) {
-  const strength = 90 * numberFromPercentage(contrast);
+  const strength = 80 * numberFromPercentage(contrast);
   return stated
     ? [
       colorMix({ target: "#dddddd", strength }, color),
       colorMix({ target: "#2ecc40", strength }, color),
       colorMix({ target: "#ffdc00", strength }, color),
       colorMix({ target: "#ff4136", strength }, color),
-    ].map((states) => colorMix({ target: fg, strength: strength / 3 }, states))
+    ].map((states) => colorMix({ target: fg, strength: strength / 2 }, states))
     : [];
 }
 
@@ -2285,7 +2292,7 @@ function artisticConfiguration(
   );
 
   // [100, 200, 300, 400, 500, 600, 700, 800, 900]
-  const accents = generateArtisticAccents(contrast, color, accented);
+  const accents = generateArtisticAccents(contrast, color, accented, dark);
 
   return [ui, variants, accents];
 }
@@ -2655,7 +2662,25 @@ function create(settings, color) {
 }
 
 function generatePalette(configuration, settings, color) {
-  const { contrast = 100, accents = false, dark = false } = settings;
+  const {
+    contrast = 100,
+    accents = false,
+    states = false,
+    dark = false,
+  } = settings;
+
+  if (configuration === "material") {
+    return create(
+      {
+        configuration,
+        contrast,
+        accents,
+        states,
+        dark,
+      },
+      color,
+    );
+  }
 
   if (configuration === "artistic") {
     const { tints = 3, tones = 3, shades = 3 } = settings;
@@ -2672,18 +2697,6 @@ function generatePalette(configuration, settings, color) {
       color,
     );
   }
-
-  const { states = false } = settings;
-  return create(
-    {
-      configuration,
-      contrast,
-      accents,
-      states,
-      dark,
-    },
-    color,
-  );
 }
 
 function accessibility(settings, palette) {
