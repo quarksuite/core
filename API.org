@@ -16,18 +16,11 @@
     - [[#adjustsettings-color][adjust(settings, color)]]
     - [[#mixsettings-color][mix(settings, color)]]
     - [[#harmonysettings-color][harmony(settings, color)]]
-    - [[#visionsettings-color][vision(settings, color)]]
-    - [[#contrastsettings-color][contrast(settings, color)]]
-    - [[#illuminantsettings-color][illuminant(settings, color)]]
     - [[#palettesettings-color][palette(settings, color)]]
-    - [[#accessibilitysettings-palette][accessibility(settings, palette)]]
-    - [[#tokenspalette][tokens(palette)]]
     - [[#outputformat-dict][output(format, dict)]]
   - [[#content][Content]]
     - [[#textsettings-font][text(settings, font)]]
-    - [[#mssettings-base][ms(settings, base)]]
-    - [[#modifycalc-ms][modify(calc, ms)]]
-    - [[#tokenssettings-ms][tokens(settings, ms)]]
+    - [[#scalesettings-root][scale(settings, root)]]
   - [[#exporter-1][Exporter]]
     - [[#stylesheetformat-dict][stylesheet(format, dict)]]
     - [[#dataformat-dict][data(format, dict)]]
@@ -44,7 +37,7 @@
 * Summary
 
 This is the API documentation for QuarkSuite Core. It's a technical overview of everything you can do with the
-library. For general use, you'll want to read the handbook instead. The utilities are organized based on the module
+library. For general use, you'll want to [[https://github.com/quarksuite/core/blob/v2-workspace/HANDBOOK.org][read the handbook]] instead. The utilities are organized based on the module
 they're associated with.
 
 This is a very straightforward document, but if something is unclear, please open an issue and let me know.
@@ -59,13 +52,11 @@ When we talk about types in QuarkSuite, we mean /input and output/ types. This i
 what kind of data a utility takes and gives back. The types as of this writing are:
 
 + =color=: any valid CSS color string
-+ =palette=: generated palette data
-+ =ms=: generated modular scale data
-+ =tokens=: assembled data object
-+ =dict=: prepared data object with a required =project= property
++ =root=: any CSS value (unitless allowed)
++ =tokens=: generated token collection
++ =dict=:  a wrapped token dictionary with a required =project= property for exporting
 
-Any type that is not explicitly mentioned here is local to the given utility. Now, let's go into a little more detail
-about each type.
+Any type that is not explicitly mentioned here is local to the given utility.
 
 *** Tokens
 
@@ -130,7 +121,7 @@ An action that takes any valid CSS =color= and converts it =to= a given target f
 **** Example
 
 #+BEGIN_SRC js
-import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = "rebeccapurple";
 
@@ -174,7 +165,7 @@ An action that takes any valid CSS =color= and adjusts its properties according 
 **** Example
 
 #+BEGIN_SRC js
-import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -228,7 +219,7 @@ An action that takes any valid CSS =color= and mixes it according to user =setti
 **** Example
 
 #+BEGIN_SRC js
-import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = convert("hsl", "rebeccapurple");
 const target = "crimson";
@@ -281,7 +272,7 @@ An action that takes any valid CSS =color= and a generates an artistic color har
 **** Example
 
 #+BEGIN_SRC js
-import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -307,177 +298,6 @@ console.log(harmony({ configuration: "split", accented: true }, color)); // ["#6
 console.log(harmony({ configuration: "triadic", accented: true }, color)); // [ "#663399", "#8c3400", "#425e00", "#006c5c" ]
 #+END_SRC
 
-*** vision(settings, color)
-
-An action that takes any valid CSS =color= and checks it against color vision deficiency (colorblindness) according to
-user =settings=.
-
-**** Parameters
-
-+ =settings: {}=: color vision settings
-  + =settings.as = protanopia: achromatopsia | protanopia | deuteranopia | tritanopia | protanomaly | deuteranomaly |
-    tritanomaly=: set the color vision to check
-  + =settings.method = brettel: brettel | vienot=: set the color vision algorithm
-  + =settings.severity = 50: number=: set the severity (for anaomalous trichromacy checks as a percentage)
-  + =settings.steps = 0: number=: interpolates the color vision checks (up to number of steps)
-+ =color: string=: the input color
-
-**** Returns
-
-+ =string | string[]=: the color checked against color vision or interpolation data
-
-**** Example
-
-#+BEGIN_SRC js
-import { convert, vision } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-
-const color = convert("rgb", "rebeccapurple");
-
-// Rod monochromatism (achromatopsia)
-console.log(vision({ as: "achromatopsia" }, color)); // rgb(82, 82, 82)
-
-// Dichromacy
-console.log(vision({ as: "protanopia" }, color)); // rgb(0, 66, 153)
-console.log(vision({ as: "deuteranopia" }, color)); // rgb(14, 83, 152)
-console.log(vision({ as: "tritanopia" }, color)); // rgb(85, 76, 77)
-
-// Anomalous trichromacy
-console.log(vision({ as: "protanomaly" }, color)); // rgb(61, 59, 153)
-console.log(vision({ as: "deuteranomaly" }, color)); // rgb(74, 69, 153)
-console.log(vision({ as: "tritanomaly" }, color)); // rgb(94, 65, 123)
-
-// Interpolation activated
-console.log(vision({ as: "protanopia", steps: 5 }, color));
-// [
-//   "rgb(88, 54, 153)",
-//   "rgb(71, 58, 153)",
-//   "rgb(48, 61, 153)",
-//   "rgb(0, 64, 153)",
-//   "rgb(0, 66, 153)"
-// ]
-#+END_SRC
-
-**** Notes
-
-You'll notice that achromatomaly and blue-cone monochromatism (BCM) are missing.
-
-This is a deliberate omission.
-
-I realized that because of the sparse papers on cone monochromatism (and whether achromatomaly even is a correct term),
-I wasn't comfortable with my attempts to implement it.
-
-/Incomplete achromatopsia/ is the term that actually showed up in medical research, while the only references I've found
-to achromatomaly were specific to CVD simulation research and implementation.
-
-It feels strange that there's such a disparity between the vision science and software, so I concluded the responsible
-choice was to not implement it at all.
-
-If I find accurate algorithms to simulate them, I will in a future version. For now, doing so would be irresponsible of
-me as a developer at the risk that someone might use these simulations to self-diagnose.
-
-The =vision()= utility is intended for designers/developers to determine whether their colors are distinct enough to accomodate their
-colorblind users and adjust them accordingly without having to rely on a browser extension or SVG filters.
-
-It's definitely not intended for any kind of corrective image processing, so please don't.
-
-*** contrast(settings, color)
-
-An action that takes any valid CSS =color= and checks it against contrast sensitivity according to user =settings=.
-
-**** Parameters
-
-+ =settings: {}=: contrast sensitivity settings
-  + =settings.factor = 0: number=: sets the gray factor to check against (as a percentage)
-  + =settings.severity = 50: number=: set the severity of contrast loss (as a percentage)
-  + =settings.steps = 0: number=: interpolates the contrast sensitivity check (up to number of steps)
-+ =color: string=: the input color
-
-**** Returns
-
-+ =string | string[]=: the color checked against contrast sensitivity or interpolation data
-
-**** Example
-
-#+BEGIN_SRC js
-import { convert, contrast } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-
-const color = convert("hsl", "rebeccapurple");
-
-// Factor percentage goes from black -> gray -> white
-const severity = 50;
-console.log(contrast({ factor: 0, severity }, color)); // hsl(270.698, 62.319%, 13.529%)
-console.log(contrast({ factor: 25, severity }, color)); // hsl(266.667, 32.847%, 26.863%)
-console.log(contrast({ factor: 50, severity }, color)); // hsl(265.714, 23.671%, 40.588%)
-console.log(contrast({ factor: 75, severity }, color)); // hsl(265.882, 22.271%, 55.098%)
-console.log(contrast({ factor: 100, severity }, color)); // hsl(264.906, 35.099%, 70.392%)
-
-// Severity setting against factor 50 (pure gray)
-const factor = 50;
-console.log(contrast({ severity: 0, factor }, color)); // hsl(270, 50%, 40%)
-console.log(contrast({ severity: 25, factor }, color)); // hsl(267.568, 35.577%, 40.784%)
-console.log(contrast({ severity: 50, factor }, color)); // hsl(265.714, 23.671%, 40.588%)
-console.log(contrast({ severity: 75, factor }, color)); // hsl(262.5, 11.765%, 40%)
-console.log(contrast({ severity: 100, factor }, color)); // hsl(0, 0%, 38.824%)
-
-// Interpolation activated
-console.log(contrast({ factor, severity, steps: 5 }, color));
-// [
-//   "hsl(269.663, 49.171%, 35.49%)",
-//   "hsl(269.231, 45.349%, 33.725%)",
-//   "hsl(267.761, 38.728%, 33.922%)",
-//   "hsl(266.316, 30.811%, 36.275%)",
-//   "hsl(265.714, 23.671%, 40.588%)"
-// ]
-#+END_SRC
-
-*** illuminant(settings, color)
-
-An action that takes any valid CSS =color= and checks it against an illuminant (light source) according to user =settings=.
-
-**** Parameters
-
-+ =settings: {}=: illuminant settings
-  + =settings.K = 1850: number=: sets the illuminant temperature (in Kelvin)
-  + =settings.intensity = 50: number=: set the intensity of the illuminant (as a percentage)
-  + =settings.steps = 0: number=: interpolates the illuminant check (up to number of steps)
-+ =color: string=: the input color
-
-**** Returns
-
-+ =string | string[]=: the color checked against an illuminant or interpolation data
-
-**** Example
-
-#+BEGIN_SRC js
-import { convert, illuminant } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-
-const color = convert("hex", "rebeccapurple");
-
-// Check the illuminants in order at 50% intensity:
-// - candlelight (1850K)
-// - incandescent bulb (2400K)
-// - studio lamp (3200K)
-// - tubular fluorescent lamps (5000K)
-// - LCD screens (approximate) (6500K-9500K)
-const intensity = 50;
-console.log(illuminant({ K: 1850, intensity}, color)); // #ad6275
-console.log(illuminant({ K: 2400, intensity}, color)); // #ad6d80
-console.log(illuminant({ K: 3200, intensity}, color)); // #ad7a95
-console.log(illuminant({ K: 5000, intensity}, color)); // #ae8db8
-console.log(illuminant({ K: 7400, intensity}, color)); // #a58fcd
-
-// Check illuminant candlelight at varying intensity
-const K = 1850;
-console.log(illuminant({ K, intensity: 0 }, color)); // #663399
-console.log(illuminant({ K, intensity: 25 }, color)); // #884e8a
-console.log(illuminant({ K, intensity: 50 }, color)); // #ad6275
-console.log(illuminant({ K, intensity: 75 }, color)); // #d57457
-console.log(illuminant({ K, intensity: 100 }, color)); // #ff8100
-
-// Interpolation activated
-console.log(illuminant({ K, intensity, steps: 5 }, color)); // ["#743a92", "#82408a", "#904682", "#9f537c", "#ad6275"]
-#+END_SRC
-
 *** palette(settings, color)
 
 An action that takes any valid CSS =color= and generates a palette according to user =settings=.
@@ -489,98 +309,124 @@ An action that takes any valid CSS =color= and generates a palette according to 
   + =settings.contrast = 100: number=: set the overall palette contrast (both configurations)
   + =settings.accents = false: boolean= include accent colors? (both configurations)
   + =settings.dark = false: boolean=: toggle dark mode? (both configurations)
+
   + =settings.states = false: boolean=: include interface states? (=material=)
+
   + =settings.tints = 3: number=: number of tints to generate (=artistic=)
   + =settings.tones = 3: number=: number of tones to generate (=artistic=)
   + =settings.shades = 3: number=: number of shades to generate (=artistic=)
+
+  + =settings.perception: {}=: color perception simulation settings
+    + =settings.perception.check: vision | contrast | illuminant=: set simulation target
+    + =settings.perception.severity = 50: number=: set severity of simulation (where applicable)
+    + =settings.perception.as = protanopia: achromatopsia | protanomaly | protanopia | deuteranomaly | deuteranopia |
+      tritanomaly | tritanopia=: set colorblindness to target
+    + =settings.perception.method = brettel: brettel | vienot=: set colorblindness algorithm to use
+    + =settings.perception.factor = 0: number=: set contrast sensitivity gray factor (as a percentage)
+    + =settings.perception.K = 1850: number=: set illuminant temperature (in kelvins)
+
+  + =settings.a11y=: color accessibility filter settings
+    + =settings.a11y.mode: standard | custom=: set color accessibility mode
+
+    + =settings.a11y.rating = AA: AA | AAA=: set color contrast rating (=standard=)
+    + =settings.a11y.large = false: boolean=: use large text rating? (=standard=)
+
+    + =settings.a11y.min = 85: number=: set minimum contrast from background (as a percentage)
+    + =settings.a11y.max: number=: set maximum contrast from background (as a percentage)
+
 + =color: string=: the input color
 
 **** Returns
 
-+ =string[][]=: generated palette data
++ ={}=: the generated palette tokens
 
 **** Examples
 
 ***** Material Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
 // Material configuration:
 console.log(palette({ configuration: "material" }, color));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [
-//       "#eeeaf6", "#d1c5e4",
-//       "#b5a1d2", "#9a7dc0",
-//       "#7f59ad", "#552e7e",
-//       "#452964", "#35234b",
-//       "#261c34", "#18151d"
-//     ],
-//     []
-//   ],
-//   []
-// ]
+// {
+//   50: "#eeeaf6",
+//   100: "#d1c5e4",
+//   200: "#b5a1d2",
+//   300: "#9a7dc0",
+//   400: "#7f59ad",
+//   500: "#552e7e",
+//   600: "#452964",
+//   700: "#35234b",
+//   800: "#261c34",
+//   900: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111"
+// }
 
 // Material contrast adjustment
 console.log(palette({ configuration: "material", contrast: 80 }, color));
-// [
-//   [ "#ded5ec", "#201929" ],
-//   [
-//     [
-//       "#baa8d6", "#a991ca",
-//       "#977abe", "#8663b2",
-//       "#764ca6", "#5b3088",
-//       "#512d77", "#462966",
-//       "#3c2556", "#322146"
-//     ],
-//     []
-//   ],
-//   []
-// ]
+// {
+//   50: "#baa8d6",
+//   100: "#a991ca",
+//   200: "#977abe",
+//   300: "#8663b2",
+//   400: "#764ca6",
+//   500: "#5b3088",
+//   600: "#512d77",
+//   700: "#462966",
+//   800: "#3c2556",
+//   900: "#322146",
+//   bg: "#ded5ec",
+//   fg: "#201929"
+// }
 
 // Material with accents
 console.log(palette({ configuration: "material", accents: true }, color));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [
-//       "#eeeaf6", "#d1c5e4",
-//       "#b5a1d2", "#9a7dc0",
-//       "#7f59ad", "#552e7e",
-//       "#452964", "#35234b",
-//       "#261c34", "#18151d"
-//     ],
-//     [
-//       "#d2f4ed", "#9cd6df",
-//       "#70b5d7", "#5d8ece",
-//       "#6063bb", "#640067",
-//       "#58002a", "#420000",
-//       "#1f0000", "#001c00"
-//     ]
-//   ],
-//   []
-// ]
+// {
+//   50: "#eeeaf6",
+//   100: "#d1c5e4",
+//   200: "#b5a1d2",
+//   300: "#9a7dc0",
+//   400: "#7f59ad",
+//   500: "#552e7e",
+//   600: "#452964",
+//   700: "#35234b",
+//   800: "#261c34",
+//   900: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#6dbfb3",
+//   a100: "#3facba",
+//   a200: "#2993c0",
+//   a300: "#3c76c0",
+//   a400: "#5556b4",
+//   a500: "#6e0070",
+//   a600: "#6d003d",
+//   a700: "#650000",
+//   a800: "#530000",
+//   a900: "#370000"
+// }
 
 // Material with interface states
 console.log(palette({ configuration: "material", states: true }, color));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [
-//       "#eeeaf6", "#d1c5e4",
-//       "#b5a1d2", "#9a7dc0",
-//       "#7f59ad", "#552e7e",
-//       "#452964", "#35234b",
-//       "#261c34", "#18151d"
-//     ],
-//     []
-//   ],
-//   [ "#908d95", "#368540", "#a48e3a", "#a63838" ]
-// ]
+// {
+//   50: "#eeeaf6",
+//   100: "#d1c5e4",
+//   200: "#b5a1d2",
+//   300: "#9a7dc0",
+//   400: "#7f59ad",
+//   500: "#552e7e",
+//   600: "#452964",
+//   700: "#35234b",
+//   800: "#261c34",
+//   900: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   state: { pending: "#75707c", success: "#366b41", warning: "#83713f", error: "#86343a" }
+// }
 
 // Material dark mode
 console.log(palette({
@@ -589,58 +435,59 @@ console.log(palette({
   accents: true,
   states: true
 }, color));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [
-//     [
-//       "#18151d", "#261c34",
-//       "#35234b", "#452964",
-//       "#552e7e", "#7f59ad",
-//       "#9a7dc0", "#b5a1d2",
-//       "#d1c5e4", "#eeeaf6"
-//     ],
-//     [
-//       "#000000", "#000003",
-//       "#000a25", "#001b51",
-//       "#2e287b", "#a43ca5",
-//       "#e4449b", "#ff5679",
-//       "#ff7a1a", "#ffb200"
-//     ]
-//   ],
-//   [ "#dedbe3", "#84d38a", "#f3dc89", "#fb857f" ]
-// ]
+// {
+//   50: "#18151d",
+//   100: "#261c34",
+//   200: "#35234b",
+//   300: "#452964",
+//   400: "#552e7e",
+//   500: "#7f59ad",
+//   600: "#9a7dc0",
+//   700: "#b5a1d2",
+//   800: "#d1c5e4",
+//   900: "#eeeaf6",
+//   bg: "#111111",
+//   fg: "#ffffff",
+//   a50: "#00100b",
+//   a100: "#001d2b",
+//   a200: "#00284f",
+//   a300: "#002e71",
+//   a400: "#36318c",
+//   a500: "#953496",
+//   a600: "#c23582",
+//   a700: "#e93e5d",
+//   a800: "#ff5700",
+//   a900: "#ff7f00",
+//   state: { pending: "#dbd6e3", success: "#99d0a1", warning: "#ebd7a2", error: "#f39698" }
+// }
 #+END_SRC
 
 ***** Artistic Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
 // Artistic configuration:
 console.log(palette({ configuration: "artistic" }, color));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#9171ba", "#beadd8", "#eeeaf6" ],
-//     [ "#795aa0", "#8e7da6", "#a39fa9" ],
-//     [ "#4a2a6d", "#302143", "#18151d" ]
-//   ],
-//   []
-// ]
+// {
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   light: { 100: "#9171ba", 200: "#beadd8", 300: "#eeeaf6" },
+//   muted: { 100: "#795aa0", 200: "#8e7da6", 300: "#a39fa9" },
+//   dark: { 100: "#4a2a6d", 200: "#302143", 300: "#18151d" }
+// }
 
 // Artistic contrast adjustment
 console.log(palette({ configuration: "artistic", contrast: 80 }, color));
-// [
-//   [ "#ded5ec", "#201929" ],
-//   [
-//     [ "#8865b3", "#ac95cc", "#d1c5e4" ],
-//     [ "#75539f", "#856fa4", "#968aa8" ],
-//     [ "#502c75", "#3a2553", "#261c34" ]
-//   ],
-//   []
-// ]
+// {
+//   bg: "#ded5ec",
+//   fg: "#201929",
+//   light: { 100: "#8865b3", 200: "#ac95cc", 300: "#d1c5e4" },
+//   muted: { 100: "#75539f", 200: "#856fa4", 300: "#968aa8" },
+//   dark: { 100: "#502c75", 200: "#3a2553", 300: "#261c34" }
+// }
 
 // Artistic with adjusted variants
 console.log(palette({
@@ -649,45 +496,57 @@ console.log(palette({
   tones: 2,
   shades: 4
 }, color));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#7b53aa", "#9171ba", "#a78fc9", "#beadd8", "#d6cbe7", "#eeeaf6" ],
-//     [ "#836ba3", "#a39fa9" ],
-//     [ "#512d78", "#3d2658", "#2a1e39", "#18151d" ]
-//   ],
-//   []
-// ]
+// {
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   light: {
+//     100: "#7b53aa",
+//     200: "#9171ba",
+//     300: "#a78fc9",
+//     400: "#beadd8",
+//     500: "#d6cbe7",
+//     600: "#eeeaf6"
+//   },
+//   muted: { 100: "#836ba3", 200: "#a39fa9" },
+//   dark: { 100: "#512d78", 200: "#3d2658", 300: "#2a1e39", 400: "#18151d" }
+// }
 
 // Artistic with omitted variants
 console.log(palette({ configuration: "artistic", tints: 6, tones: 0, shades: 4 }, color));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#7b53aa", "#9171ba", "#a78fc9", "#beadd8", "#d6cbe7", "#eeeaf6" ],
-//     [],
-//     [ "#512d78", "#3d2658", "#2a1e39", "#18151d" ]
-//   ],
-//   []
-// ]
+// {
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   light: {
+//     100: "#7b53aa",
+//     200: "#9171ba",
+//     300: "#a78fc9",
+//     400: "#beadd8",
+//     500: "#d6cbe7",
+//     600: "#eeeaf6"
+//   },
+//   dark: { 100: "#512d78", 200: "#3d2658", 300: "#2a1e39", 400: "#18151d" }
+// }
 
 // Artistic with accents
 console.log(palette({ configuration: "artistic", accents: true }, color));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#9171ba", "#beadd8", "#eeeaf6" ],
-//     [ "#795aa0", "#8e7da6", "#a39fa9" ],
-//     [ "#4a2a6d", "#302143", "#18151d" ]
-//   ],
-//   [
-//     "#6ad6eb", "#72aed7",
-//     "#7386c3", "#6f5eae",
-//     "#4e2c75", "#3b2659",
-//     "#291f3f", "#191826",
-//     "#08100f"
-//   ]
-// ]
+// {
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   light: { 100: "#9171ba", 200: "#beadd8", 300: "#eeeaf6" },
+//   muted: { 100: "#795aa0", 200: "#8e7da6", 300: "#a39fa9" },
+//   dark: { 100: "#4a2a6d", 200: "#302143", 300: "#18151d" },
+//   accent: {
+//     100: "#6dbfb3",
+//     200: "#3facba",
+//     300: "#2993c0",
+//     400: "#3c76c0",
+//     500: "#5556b4",
+//     600: "#6f0064",
+//     700: "#6a0020",
+//     800: "#580000",
+//     900: "#370000"
+//   }
+// }
 
 // Artistic dark mode
 console.log(palette({
@@ -695,684 +554,555 @@ console.log(palette({
   accents: true,
   dark: true,
 }, color));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [
-//     [ "#9171ba", "#beadd8", "#eeeaf6" ],
-//     [ "#795aa0", "#8e7da6", "#a39fa9" ],
-//     [ "#4a2a6d", "#302143", "#18151d" ]
-//   ],
-//   [
-//     "#6ad6eb", "#72aed7",
-//     "#7386c3", "#6f5eae",
-//     "#4e2c75", "#3b2659",
-//     "#291f3f", "#191826",
-//     "#08100f"
-//   ]
-// ]
+// {
+//   bg: "#111111",
+//   fg: "#ffffff",
+//   light: { 100: "#9171ba", 200: "#beadd8", 300: "#eeeaf6" },
+//   muted: { 100: "#795aa0", 200: "#8e7da6", 300: "#a39fa9" },
+//   dark: { 100: "#4a2a6d", 200: "#302143", 300: "#18151d" },
+//   accent: {
+//     "100": "#00100b",
+//     "200": "#001d2b",
+//     "300": "#00284f",
+//     "400": "#002e71",
+//     "500": "#36318c",
+//     "600": "#a13493",
+//     "700": "#d73772",
+//     "800": "#ff4f2a",
+//     "900": "#ff7f00"
+//   }
+// }
 #+END_SRC
 
-**** Notes
-
-The =material= configuration is especially suited for app palettes. If you include accents and interface states, you
-likely won't need to generate any more colors for your app even after filtering for accessibility.
-
-The =artistic= configuration is ideal for graphic design and content websites. The optional accents are generated much
-like the material accents but are chromatically less extreme to reflect their different use case.
-
-*** accessibility(settings, palette)
-
-An action that takes generated =palette= data and filters it for accessibiility according to user =settings=.
-
-**** Parameters
-
-+ =settings: {}=: accessibility settings
-  - =settings.mode = standard: standard | custom=: set the accessibility mode
-  - =settings.rating = AA: AA | AAA=: set the WCAG contrast rating (=standard=)
-  - =settings.large = false: boolean=: use adjusted contrast ratio for large text/UI? (=standard=)
-  - =settings.min = 85: number=: minimum percentage of contrast against the background (=custom=)
-  - =settings.max = undefined: number=: maximum percentage of contrast against the background (=custom=)
-+ =palette: string[][]=: the input palette data
-
-**** Returns
-
-+ =string[][]=: the filtered palette data
-
-**** Examples
-
-***** Material Configuration
+***** Color Accessibility
 
 #+BEGIN_SRC js
-import {
-  convert,
-  palette,
-  accessibility
-} = from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = convert("hex", "rebeccapurple");
-const light = palette({ configuration: "material", accents: true }, color);
-const dark = palette({ configuration: "material", accents: true, dark: true }, color);
 
-// Valid colors for standard mode "AA" rating
-console.log(accessibility({ mode: "standard", rating: "AA" }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#7f59ad", "#552e7e", "#452964", "#35234b", "#261c34", "#18151d" ],
-//     [ "#6063bb", "#640067", "#58002a", "#420000", "#1f0000", "#001c00" ]
-//   ],
-//   []
-// ]
-
-// Valid colors for standard mode "AA" rating (dark)
-console.log(accessibility({ mode: "standard", rating: "AA" }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [
-//     [ "#9a7dc0", "#b5a1d2", "#d1c5e4", "#eeeaf6" ],
-//     [ "#e4449b", "#ff5679", "#ff7a1a", "#ffb200" ]
-//   ],
-//   []
-// ]
-
-// Valid colors for standard mode "AA" large rating
-console.log(accessibility({ mode: "standard", rating: "AA", large: true }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [
-//       "#9a7dc0",
-//       "#7f59ad",
-//       "#552e7e",
-//       "#452964",
-//       "#35234b",
-//       "#261c34",
-//       "#18151d"
-//     ],
-//     [
-//       "#5d8ece",
-//       "#6063bb",
-//       "#640067",
-//       "#58002a",
-//       "#420000",
-//       "#1f0000",
-//       "#001c00"
-//     ]
-//   ],
-//   []
-// ]
-
-// Valid colors for standard mode "AA" large rating (dark)
-console.log(accessibility({ mode: "standard", rating: "AA", large: true }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [
-//     [ "#7f59ad", "#9a7dc0", "#b5a1d2", "#d1c5e4", "#eeeaf6" ],
-//     [ "#a43ca5", "#e4449b", "#ff5679", "#ff7a1a", "#ffb200" ]
-//   ],
-//   []
-// ]
-
-// Valid colors for standard mode "AAA" rating
-console.log(accessibility({ mode: "standard", rating: "AAA" }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#552e7e", "#452964", "#35234b", "#261c34", "#18151d" ],
-//     [ "#640067", "#58002a", "#420000", "#1f0000", "#001c00" ]
-//   ],
-//   []
-// ]
-
-// Valid colors for standard mode "AAA" rating (dark)
-console.log(accessibility({ mode: "standard", rating: "AAA" }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [ [ "#b5a1d2", "#d1c5e4", "#eeeaf6" ], [ "#ff7a1a", "#ffb200" ] ],
-//   []
-// ]
-
-// Valid colors for custom mode at 70% contrast from background
-console.log(accessibility({ mode: "custom", min: 70 }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#35234b", "#261c34", "#18151d" ],
-//     [ "#58002a", "#420000", "#1f0000", "#001c00" ]
-//   ],
-//   []
-// ]
-
-// Valid colors for custom mode at 50% contrast from background (dark)
-console.log(accessibility({ mode: "custom", min: 50 }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [ [ "#b5a1d2", "#d1c5e4", "#eeeaf6" ], [ "#ff5679", "#ff7a1a", "#ffb200" ] ],
-//   []
-// ]
-
-// Valid colors for custom mode at 55-75% contrast from background
-console.log(accessibility({ mode: "custom", min: 55, max: 75 }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [ [ "#552e7e", "#452964", "#35234b", "#261c34" ], [ "#640067", "#58002a" ] ],
-//   []
-// ]
-
-// Valid colors for custom mode at 45-60% contrast from background (dark)
-console.log(accessibility({ mode: "custom", min: 45, max: 60 }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [ [ "#9a7dc0", "#b5a1d2" ], [ "#e4449b", "#ff5679", "#ff7a1a" ] ],
-//   []
-// ]
-#+END_SRC
-
-***** Artistic Configuration
-
-#+BEGIN_SRC js
-import {
-  convert,
-  palette,
-  accessibility
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-
-const color = convert("hex", "rebeccapurple");
-const values = 10;
-const variants = { tints: values, tones: values, shades: values };
-const light = palette({ configuration: "artistic", ...variants, accents: true, }, color);
-const dark = palette({ configuration: "artistic", ...variants, accents: true, dark: true }, color);
-
-// Valid colors for standard mode "AA" rating
-console.log(accessibility({ mode: "standard", rating: "AA" }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#7247a3", "#7f59ad" ],
-//     [ "#6c409b", "#714b9e", "#7756a0", "#7d61a2", "#836ba3" ],
-//     [
-//       "#5d318b", "#552e7e",
-//       "#4d2b71", "#452964",
-//       "#3d2658", "#35234b",
-//       "#2e203f", "#261c34",
-//       "#1f1928", "#18151d"
-//     ]
-//   ],
-//   [ "#6f5eae", "#4e2c75", "#3b2659", "#291f3f", "#191826", "#08100f" ]
-// ]
-
-// Valid colors for standard mode "AA" rating (dark)
-console.log(accessibility({ mode: "standard", rating: "AA" }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [
-//     [
-//       "#9a7dc0",
-//       "#a78fc9",
-//       "#b5a1d2",
-//       "#c3b3db",
-//       "#d1c5e4",
-//       "#e0d7ed",
-//       "#eeeaf6"
-//     ],
-//     [ "#8a76a5", "#9080a6", "#968aa8", "#9c94a9", "#a39fa9" ],
-//     []
-//   ],
-//   [ "#6ad6eb", "#72aed7", "#7386c3" ]
-// ]
-
-// Valid colors for standard mode "AA" large rating
-console.log(accessibility({ mode: "standard", rating: "AA", large: true }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#7247a3", "#7f59ad", "#8c6bb6", "#9a7dc0" ],
-//     [
-//       "#6c409b", "#714b9e",
-//       "#7756a0", "#7d61a2",
-//       "#836ba3", "#8a76a5",
-//       "#9080a6", "#968aa8"
-//     ],
-//     [
-//       "#5d318b", "#552e7e",
-//       "#4d2b71", "#452964",
-//       "#3d2658", "#35234b",
-//       "#2e203f", "#261c34",
-//       "#1f1928", "#18151d"
-//     ]
-//   ],
-//   [
-//     "#7386c3",
-//     "#6f5eae",
-//     "#4e2c75",
-//     "#3b2659",
-//     "#291f3f",
-//     "#191826",
-//     "#08100f"
-//   ]
-// ]
-
-// Valid colors for standard mode "AA" large rating (dark)
-console.log(accessibility({ mode: "standard", rating: "AA", large: true }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [
-//     [
-//       "#7f59ad", "#8c6bb6",
-//       "#9a7dc0", "#a78fc9",
-//       "#b5a1d2", "#c3b3db",
-//       "#d1c5e4", "#e0d7ed",
-//       "#eeeaf6"
-//     ],
-//     [
-//       "#7756a0", "#7d61a2",
-//       "#836ba3", "#8a76a5",
-//       "#9080a6", "#968aa8",
-//       "#9c94a9", "#a39fa9"
-//     ],
-//     []
-//   ],
-//   [ "#6ad6eb", "#72aed7", "#7386c3", "#6f5eae" ]
-// ]
-
-// Valid colors for standard mode "AAA" rating
-console.log(accessibility({ mode: "standard", rating: "AAA" }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [],
-//     [ "#6c409b" ],
-//     [
-//       "#5d318b", "#552e7e",
-//       "#4d2b71", "#452964",
-//       "#3d2658", "#35234b",
-//       "#2e203f", "#261c34",
-//       "#1f1928", "#18151d"
-//     ]
-//   ],
-//   [ "#4e2c75", "#3b2659", "#291f3f", "#191826", "#08100f" ]
-// ]
-
-// Valid colors for standard mode "AAA" rating (dark)
-console.log(accessibility({ mode: "standard", rating: "AAA" }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [ [ "#b5a1d2", "#c3b3db", "#d1c5e4", "#e0d7ed", "#eeeaf6" ], [ "#a39fa9" ], [] ],
-//   [ "#6ad6eb", "#72aed7" ]
-// ]
-
-// Valid colors for custom mode at 50% contrast from background
-console.log(accessibility({ mode: "custom", min: 50 }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#7247a3" ],
-//     [ "#6c409b", "#714b9e" ],
-//     [
-//       "#5d318b", "#552e7e",
-//       "#4d2b71", "#452964",
-//       "#3d2658", "#35234b",
-//       "#2e203f", "#261c34",
-//       "#1f1928", "#18151d"
-//     ]
-//   ],
-//   [ "#4e2c75", "#3b2659", "#291f3f", "#191826", "#08100f" ]
-// ]
-
-// Valid colors for custom mode at 50% contrast from background (dark)
-console.log(accessibility({ mode: "custom", min: 50 }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [
-//     [ "#a78fc9", "#b5a1d2", "#c3b3db", "#d1c5e4", "#e0d7ed", "#eeeaf6" ],
-//     [ "#9c94a9", "#a39fa9" ],
-//     []
-//   ],
-//   [ "#6ad6eb", "#72aed7" ]
-// ]
-
-// Valid colors for custom mode at 50-70% contrast from background
-console.log(accessibility({ mode: "custom", min: 50, max: 70 }, light));
-// [
-//   [ "#ffffff", "#111111" ],
-//   [
-//     [ "#7247a3" ],
-//     [ "#6c409b", "#714b9e" ],
-//     [ "#5d318b", "#552e7e", "#4d2b71", "#452964", "#3d2658" ]
-//   ],
-//   [ "#4e2c75", "#3b2659" ]
-// ]
-
-// Valid colors for custom mode at 50-70% contrast from background (dark)
-console.log(accessibility({ mode: "custom", min: 50, max: 70 }, dark));
-// [
-//   [ "#111111", "#ffffff" ],
-//   [ [ "#a78fc9", "#b5a1d2", "#c3b3db", "#d1c5e4" ], [ "#9c94a9", "#a39fa9" ], [] ],
-//   [ "#6ad6eb", "#72aed7" ]
-// ]
-#+END_SRC
-
-**** Notes
-
-Remember that QuarkSuite palette data is nothing but an array with static grouping.
-
-If you want to check the accessibility of color variants against an arbitrary background, you can change the background
-color in the surface grouping (=[bg, fg]=) and the accessibility utility will use it as the background context.
-
-If you want to check the accessibility of a random grouping of variants, you can swap out the variants grouping =[main,
-accents]= with your own colors. The function only cares that the shape of the palette data matches a known
-configuration. It doesn't necessarily care what kind of colors are grouped.
-
-The reason for this major shift from v1 in packaging palette data is because I realized there should be a straight path
-from a base color to a fully accessible palette.
-
-The user is still free to access the assembled data for further transformation in any way they want, but the actual
-palette creation process is intentionally simple.
-
-*** tokens(palette)
-
-An emitter that takes generated =palette= data and assembles it into a collection of color tokens for use as-is or with
-an exporter.
-
-**** Parameter
-
-+ =palette: string[][]=: the generated palette data
-
-**** Returns
-
-={}=: assembled color tokens
-
-**** Examples
-
-***** Material
-
-#+BEGIN_SRC js
-import {
-  convert,
-  palette,
-  accessibility,
-  tokens
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-
-const color = convert("rgb", "rebeccapurple");
-
-const contrast = 95;
-const material = palette({ contrast, accents: true, states: true }, color);
-const materialDark = palette({ contrast, accents: true, dark: true, states: true }, color);
-
-const materialUI = accessibility({ rating: "AA", large: true }, material);
-const materialHeading = accessibility({ rating: "AA" }, material);
-const materialText = accessibility({ rating: "AAA" }, material);
-
-const materialDarkUI = accessibility({ rating: "AA", large: true }, materialDark);
-const materialDarkHeading = accessibility({ rating: "AA" }, materialDark);
-const materialDarkText = accessibility({ rating: "AAA" }, materialDark);
-
-// Accessible material UI (AA large)
-console.log(tokens(materialUI));
-// {
-//   50: "rgb(148, 118, 188)",
-//   100: "rgb(125, 86, 171)",
-//   200: "rgb(87, 47, 129)",
-//   300: "rgb(72, 42, 105)",
-//   400: "rgb(58, 36, 82)",
-//   500: "rgb(44, 31, 61)",
-//   600: "rgb(31, 25, 40)",
-//   bg: "rgb(247, 245, 250)",
-//   fg: "rgb(21, 19, 23)",
-//   a50: "rgb(99, 140, 206)",
-//   a100: "rgb(102, 103, 189)",
-//   a200: "rgb(107, 20, 112)",
-//   a300: "rgb(96, 14, 55)",
-//   a400: "rgb(76, 9, 9)",
-//   a500: "rgb(45, 4, 5)",
-//   a600: "rgb(4, 28, 6)",
-//   state: {
-//     pending: "rgb(145, 140, 152)",
-//     success: "rgb(60, 132, 73)",
-//     warning: "rgb(163, 141, 68)",
-//     error: "rgb(165, 58, 64)"
-//   }
-// }
-
-// Accessible material dark UI (AA large)
-console.log(tokens(materialDarkUI));
-// {
-//   50: "rgb(125, 86, 171)",
-//   100: "rgb(148, 118, 188)",
-//   200: "rgb(173, 150, 205)",
-//   300: "rgb(198, 183, 221)",
-//   400: "rgb(224, 216, 237)",
-//   bg: "rgb(21, 19, 23)",
-//   fg: "rgb(247, 245, 250)",
-//   a50: "rgb(211, 66, 152)",
-//   a100: "rgb(244, 80, 126)",
-//   a200: "rgb(245, 110, 68)",
-//   a300: "rgb(246, 157, 38)"
-//   state: {
-//     pending: "rgb(215, 210, 223)",
-//     success: "rgb(128, 202, 138)",
-//     warning: "rgb(235, 211, 137)",
-//     error: "rgb(242, 127, 128)"
-//   }
-// }
-
-// Accessible material heading (AA)
-console.log(tokens(materialHeading));
-// {
-//   50: "rgb(125, 86, 171)",
-//   100: "rgb(87, 47, 129)",
-//   200: "rgb(72, 42, 105)",
-//   300: "rgb(58, 36, 82)",
-//   400: "rgb(44, 31, 61)",
-//   500: "rgb(31, 25, 40)",
-//   bg: "rgb(247, 245, 250)",
-//   fg: "rgb(21, 19, 23)",
-//   a50: "rgb(102, 103, 189)",
-//   a100: "rgb(107, 20, 112)",
-//   a200: "rgb(96, 14, 55)",
-//   a300: "rgb(76, 9, 9)",
-//   a400: "rgb(45, 4, 5)",
-//   a500: "rgb(4, 28, 6)"
-//   state: {
-//     pending: "rgb(145, 140, 152)",
-//     success: "rgb(60, 132, 73)",
-//     warning: "rgb(163, 141, 68)",
-//     error: "rgb(165, 58, 64)"
-//   }
-// }
-
-// Accessible material dark heading (AA)
-console.log(tokens(materialDarkHeading));
-// {
-//   50: "rgb(148, 118, 188)",
-//   100: "rgb(173, 150, 205)",
-//   200: "rgb(198, 183, 221)",
-//   300: "rgb(224, 216, 237)",
-//   bg: "rgb(21, 19, 23)",
-//   fg: "rgb(247, 245, 250)",
-//   a50: "rgb(244, 80, 126)",
-//   a100: "rgb(245, 110, 68)",
-//   a200: "rgb(246, 157, 38)",
-//   state: {
-//     pending: "rgb(215, 210, 223)",
-//     success: "rgb(128, 202, 138)",
-//     warning: "rgb(235, 211, 137)",
-//     error: "rgb(242, 127, 128)"
-//   }
-// }
-
-// Accessible material text (AAA)
-console.log(tokens(materialText));
-// {
-//   50: "rgb(87, 47, 129)",
-//   100: "rgb(72, 42, 105)",
-//   200: "rgb(58, 36, 82)",
-//   300: "rgb(44, 31, 61)",
-//   400: "rgb(31, 25, 40)",
-//   bg: "rgb(247, 245, 250)",
-//   fg: "rgb(21, 19, 23)",
-//   a50: "rgb(107, 20, 112)",
-//   a100: "rgb(96, 14, 55)",
-//   a200: "rgb(76, 9, 9)",
-//   a300: "rgb(45, 4, 5)",
-//   a400: "rgb(4, 28, 6)",
-//   state: {
-//     pending: "rgb(145, 140, 152)",
-//     success: "rgb(60, 132, 73)",
-//     warning: "rgb(163, 141, 68)",
-//     error: "rgb(165, 58, 64)"
-//   }
-// }
-
-// Accessible material dark text (AAA)
-console.log(tokens(materialDarkText));
-// {
-//   "50": "rgb(198, 183, 221)",
-//   "100": "rgb(224, 216, 237)",
-//   bg: "rgb(21, 19, 23)",
-//   fg: "rgb(247, 245, 250)",
-//   a50: "rgb(246, 157, 38)",
-//   state: {
-//     pending: "rgb(215, 210, 223)",
-//     success: "rgb(128, 202, 138)",
-//     warning: "rgb(235, 211, 137)",
-//     error: "rgb(242, 127, 128)"
-//   }
-// }
-#+END_SRC
-
-***** Artistic
-
-#+BEGIN_SRC js
-import {
-  convert,
-  palette,
-  accessibility,
-  tokens
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-
-const color = convert("rgb", "rebeccapurple");
-
-const contrast = 95;
-const artistic = palette({
-  configuration: "artistic",
-  contrast,
-  accents: true
-}, color);
-
-const artisticDark = palette({
-  configuration: "artistic",
-  contrast,
+// Standard: AA large
+console.log(palette({
   accents: true,
-  dark: true
-}, color);
-
-const artisticUI = accessibility({ rating: "AA", large: true }, artistic);
-const artisticHeading = accessibility({ rating: "AA" }, artistic);
-const artisticText = accessibility({ rating: "AAA" }, artistic);
-
-const artisticDarkUI = accessibility({ rating: "AA", large: true }, artisticDark);
-const artisticDarkHeading = accessibility({ rating: "AA" }, artisticDark);
-const artisticDarkText = accessibility({ rating: "AAA" }, artisticDark);
-
-// Accessible artistic UI (AA large)
-console.log(tokens(artisticUI));
+  a11y: { mode: "standard", rating: "AA", large: true }
+}, color));
 // {
-//   bg: "rgb(247, 245, 250)",
-//   fg: "rgb(21, 19, 23)",
-//   light: { 100: "rgb(142, 110, 184)" },
-//   muted: { 100: "rgb(120, 88, 160)", "200": "rgb(140, 121, 165)" },
-//   dark: { 100: "rgb(76, 43, 111)", 200: "rgb(51, 34, 71)", 300: "rgb(28, 23, 35)" },
-//   accent: {
-//     100: "rgb(113, 130, 193)",
-//     200: "rgb(110, 92, 173)",
-//     300: "rgb(73, 42, 110)",
-//     400: "rgb(55, 36, 84)",
-//     500: "rgb(38, 29, 59)",
-//     600: "rgb(22, 22, 35)",
-//     700: "rgb(7, 14, 13)"
-//   }
+//   50: "#9a7dc0",
+//   100: "#7f59ad",
+//   200: "#552e7e",
+//   300: "#452964",
+//   400: "#35234b",
+//   500: "#261c34",
+//   600: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#2993c0",
+//   a100: "#3c76c0",
+//   a200: "#5556b4",
+//   a300: "#6e0070",
+//   a400: "#6d003d",
+//   a500: "#650000",
+//   a600: "#530000",
+//   a700: "#370000"
 // }
 
-// Accessible artistic dark UI (AA large)
-console.log(tokens(artisticDarkUI));
+// Standard: AA large (dark)
+console.log(palette({
+  accents: true,
+  dark: true,
+  a11y: { mode: "standard", rating: "AA", large: true }
+}, color));
 // {
-//   bg: "rgb(21, 19, 23)",
-//   fg: "rgb(247, 245, 250)",
-//   light: {
-//     100: "rgb(142, 110, 184)",
-//     200: "rgb(186, 167, 213)",
-//     300: "rgb(231, 225, 241)"
-//   },
-//   muted: {
-//     100: "rgb(120, 88, 160)",
-//     200: "rgb(140, 121, 165)",
-//     300: "rgb(160, 154, 169)"
-//   },
-//   accent: {
-//     100: "rgb(103, 206, 231)",
-//     200: "rgb(112, 168, 212)",
-//     300: "rgb(113, 130, 193)",
-//     400: "rgb(110, 92, 173)"
-//   }
+//   50: "#7f59ad",
+//   100: "#9a7dc0",
+//   200: "#b5a1d2",
+//   300: "#d1c5e4",
+//   400: "#eeeaf6",
+//   bg: "#111111",
+//   fg: "#ffffff",
+//   a50: "#c23582",
+//   a100: "#e93e5d",
+//   a200: "#ff5700",
+//   a300: "#ff7f00"
 // }
 
-// Accessible artistic heading (AA)
-console.log(tokens(artisticHeading));
+// Standard: AA
+console.log(palette({ accents: true, a11y: { mode: "standard", rating: "AA" } }, color));
 // {
-//   bg: "rgb(247, 245, 250)",
-//   fg: "rgb(21, 19, 23)",
-//   muted: { 100: "rgb(120, 88, 160)" },
-//   dark: { 100: "rgb(76, 43, 111)", 200: "rgb(51, 34, 71)", 300: "rgb(28, 23, 35)" },
-//   accent: {
-//     100: "rgb(110, 92, 173)",
-//     200: "rgb(73, 42, 110)",
-//     300: "rgb(55, 36, 84)",
-//     400: "rgb(38, 29, 59)",
-//     500: "rgb(22, 22, 35)",
-//     600: "rgb(7, 14, 13)"
-//   }
+//   50: "#7f59ad",
+//   100: "#552e7e",
+//   200: "#452964",
+//   300: "#35234b",
+//   400: "#261c34",
+//   500: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#3c76c0",
+//   a100: "#5556b4",
+//   a200: "#6e0070",
+//   a300: "#6d003d",
+//   a400: "#650000",
+//   a500: "#530000",
+//   a600: "#370000"
 // }
 
-// Accessible artistic dark heading (AA)
-console.log(tokens(artisticDarkHeading));
+// Standard: AA (dark)
+console.log(palette({ accents: true, dark: true, a11y: { mode: "standard", rating: "AA" } }, color));
 // {
-//   bg: "rgb(21, 19, 23)",
-//   fg: "rgb(247, 245, 250)",
-//   light: { 100: "rgb(186, 167, 213)", 200: "rgb(231, 225, 241)" },
-//   muted: { 100: "rgb(140, 121, 165)", 200: "rgb(160, 154, 169)" },
-//   accent: {
-//     100: "rgb(103, 206, 231)",
-//     200: "rgb(112, 168, 212)",
-//     300: "rgb(113, 130, 193)"
-//   }
+//   50: "#9a7dc0",
+//   100: "#b5a1d2",
+//   200: "#d1c5e4",
+//   300: "#eeeaf6",
+//   bg: "#111111",
+//   fg: "#ffffff",
+//   a50: "#e93e5d",
+//   a100: "#ff5700",
+//   a200: "#ff7f00"
 // }
 
-// Accessible artistic text (AAA)
-console.log(tokens(artisticText));
+// Standard: AAA large
+console.log(palette({
+  accents: true,
+  a11y: { mode: "standard", rating: "AAA", large: true }
+}, color));
 // {
-//   bg: "rgb(247, 245, 250)",
-//   fg: "rgb(21, 19, 23)",
-//   dark: { 100: "rgb(76, 43, 111)", 200: "rgb(51, 34, 71)", 300: "rgb(28, 23, 35)" },
-//   accent: {
-//     100: "rgb(73, 42, 110)",
-//     200: "rgb(55, 36, 84)",
-//     300: "rgb(38, 29, 59)",
-//     400: "rgb(22, 22, 35)",
-//     500: "rgb(7, 14, 13)"
-//   }
+//   50: "#7f59ad",
+//   100: "#552e7e",
+//   200: "#452964",
+//   300: "#35234b",
+//   400: "#261c34",
+//   500: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#3c76c0",
+//   a100: "#5556b4",
+//   a200: "#6e0070",
+//   a300: "#6d003d",
+//   a400: "#650000",
+//   a500: "#530000",
+//   a600: "#370000"
 // }
 
-// Accessible artistic dark text (AAA)
-console.log(tokens(artisticDarkText));
+// Standard: AAA large (dark)
+console.log(palette({
+  accents: true,
+  dark: true,
+  a11y: { mode: "standard", rating: "AAA", large: true }
+}, color));
 // {
-//   bg: "rgb(21, 19, 23)",
-//   fg: "rgb(247, 245, 250)",
-//   light: { 100: "rgb(186, 167, 213)", 200: "rgb(231, 225, 241)" },
-//   accent: { 100: "rgb(103, 206, 231)", 200: "rgb(112, 168, 212)" }
+//   50: "#9a7dc0",
+//   100: "#b5a1d2",
+//   200: "#d1c5e4",
+//   300: "#eeeaf6",
+//   bg: "#111111",
+//   fg: "#ffffff",
+//   a50: "#e93e5d",
+//   a100: "#ff5700",
+//   a200: "#ff7f00"
+// }
+
+// Standard: AAA
+console.log(palette({ accents: true, a11y: { mode: "standard", rating: "AAA" } }, color));
+// {
+//   50: "#552e7e",
+//   100: "#452964",
+//   200: "#35234b",
+//   300: "#261c34",
+//   400: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#6e0070",
+//   a100: "#6d003d",
+//   a200: "#650000",
+//   a300: "#530000",
+//   a400: "#370000"
+// }
+
+// Standard: AAA (dark)
+console.log(palette({ accents: true, dark: true, a11y: { mode: "standard", rating: "AAA" } }, color));
+// {
+//   50: "#b5a1d2",
+//   100: "#d1c5e4",
+//   200: "#eeeaf6",
+//   bg: "#111111",
+//   fg: "#ffffff",
+//   a50: "#ff7f00"
+// }
+
+// Custom: from 64%
+console.log(palette({ accents: true, a11y: { mode: "custom", min: 64 } }, color));
+// {
+//   50: "#452964",
+//   100: "#35234b",
+//   200: "#261c34",
+//   300: "#18151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#6d003d",
+//   a100: "#650000",
+//   a200: "#530000",
+//   a300: "#370000"
+// }
+
+// Custom: from 45% (dark)
+console.log(palette({
+  accents: true,
+  dark: true,
+  a11y: { mode: "custom", min: 45 }
+}, color));
+// {
+//   50: "#9a7dc0",
+//   100: "#b5a1d2",
+//   200: "#d1c5e4",
+//   300: "#eeeaf6",
+//   bg: "#111111",
+//   fg: "#ffffff",
+//   a50: "#ff5700",
+//   a100: "#ff7f00"
+// }
+
+// Custom: from 64% to 70%
+console.log(palette({ accents: true, a11y: { mode: "custom", min: 64, max: 70 } }, color));
+// { "50": "#452964", bg: "#ffffff", fg: "#111111", a50: "#6d003d", a100: "#650000" }
+
+// Custom: from 45% to 70% (dark)
+console.log(palette({
+  accents: true,
+  dark: true,
+  a11y: { mode: "custom", min: 45, max: 70 }
+}, color));
+// { "50": "#9a7dc0", bg: "#111111", fg: "#ffffff" }
+#+END_SRC
+
+***** Color Perception
+
+#+BEGIN_SRC js
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+
+const color = convert("hex", "rebeccapurple");
+
+const settings = {
+  configuration: "material",
+  accents: true,
+  a11y: { mode: "standard", rating: "AAA" }
+};
+
+// Vision: achromatopsia
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "achromatopsia" }
+}));
+// {
+//   50: "#464646",
+//   100: "#393939",
+//   200: "#2d2d2d",
+//   300: "#222222",
+//   400: "#171717",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#424242",
+//   a100: "#3a3a3a",
+//   a200: "#323232",
+//   a300: "#282828",
+//   a400: "#191919"
+// }
+
+// Vision: protanopia
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "protanopia" }
+}));
+// {
+//   "50": "#00397e",
+//   "100": "#003164",
+//   "200": "#0a284b",
+//   "300": "#111e34",
+//   "400": "#12161d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#002a70",
+//   a100: "#16253d",
+//   a200: "#261f02",
+//   a300: "#1e1801",
+//   a400: "#110d00"
+// }
+
+// Vision: protanopia (vienot)
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "protanopia", method: "vienot" }
+}));
+// {
+//   50: "#34347e",
+//   100: "#2d2d64",
+//   200: "#25254b",
+//   300: "#1d1d34",
+//   400: "#15151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#242470",
+//   a100: "#23233d",
+//   a200: "#202002",
+//   a300: "#191901",
+//   a400: "#0e0e01"
+// }
+
+// Vision: protanomaly
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "protanomaly" }
+}));
+// {
+//   50: "#35347e",
+//   100: "#2e2d64",
+//   200: "#26254b",
+//   300: "#1d1d34",
+//   400: "#15151d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#481c70",
+//   a100: "#50183d",
+//   a200: "#4d1401",
+//   a300: "#3f0f01",
+//   a400: "#290700"
+// }
+
+// Vision: deuteranopia
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "deuteranopia" }
+}));
+// {
+//   50: "#18467d",
+//   100: "#1c3a63",
+//   200: "#1c2e4b",
+//   300: "#182234",
+//   400: "#14171d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#27436f",
+//   a100: "#3c3c3b",
+//   a200: "#3e3400",
+//   a300: "#322900",
+//   a400: "#201900"
+// }
+
+// Vision: deuteranopia (vienot)
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "deuteranopia", method: "vienot" }
+}));
+// {
+//   50: "#3c3c7e",
+//   100: "#333364",
+//   200: "#29294b",
+//   300: "#1f1f34",
+//   400: "#16161d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#3c3c6f",
+//   a100: "#3c3c3b",
+//   a200: "#373700",
+//   a300: "#2c2c00",
+//   a400: "#1b1b00"
+// }
+
+// Vision: deuteranomaly
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "deuteranomaly" }
+}));
+// {
+//   50: "#3f3b7e",
+//   100: "#353264",
+//   200: "#2a294b",
+//   300: "#201f34",
+//   400: "#16161d",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#542f6f",
+//   a100: "#59293c",
+//   a200: "#542300",
+//   a300: "#451b00",
+//   a400: "#2d0f00"
+// }
+
+// Vision: tritanopia
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "tritanopia" }
+}));
+// {
+//   50: "#484142",
+//   100: "#3b3637",
+//   200: "#2f2b2b",
+//   300: "#222021",
+//   400: "#171616",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#662831",
+//   a100: "#6b0f23",
+//   a200: "#660019",
+//   a300: "#540013",
+//   a400: "#37000a"
+// }
+
+// Vision: tritanomaly
+console.log(palette({
+  ...settings,
+  perception: { check: "vision", as: "tritanomaly" }
+}));
+// {
+//   50: "#4f3865",
+//   100: "#403051",
+//   200: "#32273e",
+//   300: "#241e2b",
+//   400: "#17161a",
+//   bg: "#ffffff",
+//   fg: "#111111",
+//   a50: "#6a1b58",
+//   a100: "#6c0832",
+//   a200: "#65000f",
+//   a300: "#53000b",
+//   a400: "#370005"
+// }
+
+// Contrast: black (55%)
+console.log(palette({
+  ...settings,
+  perception: { check: "contrast", factor: 0, severity: 55 }
+}));
+// {
+//   50: "#1c0b2d",
+//   100: "#150922",
+//   200: "#0e0717",
+//   300: "#08050e",
+//   400: "#040305",
+//   bg: "#636363",
+//   fg: "#020202",
+//   a50: "#260027",
+//   a100: "#260012",
+//   a200: "#220000",
+//   a300: "#1b0000",
+//   a400: "#0f0000"
+// }
+
+// Contrast: gray (25%)
+console.log(palette({
+  ...settings,
+  perception: { check: "contrast", factor: 50, severity: 25 }
+}));
+// {
+//   50: "#583e78",
+//   100: "#4c3965",
+//   200: "#403352",
+//   300: "#342d40",
+//   400: "#29272d",
+//   bg: "#d6d6d6",
+//   fg: "#232323",
+//   a50: "#6e2a6e",
+//   a100: "#6e2646",
+//   a200: "#68251e",
+//   a300: "#5a211b",
+//   a400: "#451b16"
+// }
+
+// Contrast: white (38%)
+console.log(palette({
+  ...settings,
+  perception: { check: "contrast", factor: 100, severity: 38 }
+}));
+// {
+//   50: "#917bb0",
+//   100: "#86769e",
+//   200: "#7b708c",
+//   300: "#706a7b",
+//   400: "#66646a",
+//   bg: "#ffffff",
+//   fg: "#606060",
+//   a50: "#a76ca6",
+//   a100: "#a96881",
+//   a200: "#a4675d",
+//   a300: "#97625a",
+//   a400: "#835b54"
+// }
+
+// Illuminant: Incandescent bulb (2400K)
+console.log(palette({
+  ...settings,
+  perception: { check: "illuminant", K: 2400 }
+}));
+// {
+//   "50": "#a46871",
+//   "100": "#9b6463",
+//   "200": "#935f54",
+//   "300": "#8a5946",
+//   "400": "#825435",
+//   bg: "#ffcfa6",
+//   fg: "#7e512c",
+//   a50: "#b35a69",
+//   a100: "#b45447",
+//   a200: "#b0511b",
+//   a300: "#a64e1a",
+//   a400: "#964918"
+// }
+
+// Illuminant: Studio lamp (3200K)
+console.log(palette({
+  ...settings,
+  perception: { check: "illuminant", K: 3200 }
+}));
+// {
+//   50: "#a47586",
+//   100: "#9b7078",
+//   200: "#926b69",
+//   300: "#8a665b",
+//   400: "#82614c",
+//   bg: "#ffdcbf",
+//   fg: "#7d5e44",
+//   a50: "#b4687e",
+//   a100: "#b5625e",
+//   a200: "#b2603c",
+//   a300: "#a75d3a",
+//   a400: "#975736"
+// }
+
+// Illuminant: LCD Screen (6500-7800K)
+console.log(palette({
+  ...settings,
+  perception: { check: "illuminant", K: 7200 }
+}));
+// {
+//   50: "#9d8cbf",
+//   100: "#9488b0",
+//   200: "#8b83a1",
+//   300: "#827d93",
+//   400: "#797885",
+//   bg: "#f6f7ff",
+//   fg: "#75767d",
+//   a50: "#b180b7",
+//   a100: "#b27d98",
+//   a200: "#ae7c7c",
+//   a300: "#a47878",
+//   a400: "#927273"
 // }
 #+END_SRC
+
+**** Notes
+
+Palette generation in QuarkSuite Core v2 is organized around systems thinking. For example: the =bg= and =fg= colors are
+meant to be local to the elements they apply to. That may or may not be the HTML body.
+
+The =material= configuration is especially suited for apps. If you include accents and interface states, you likely
+won't need to generate any more colors for your app even after filtering for accessibility.
+
+The =artistic= configuration is ideal for graphic design, [[https://en.wikipedia.org/wiki/Creative_coding][creative coding]] projects, and content websites.
+
+You'll prefer the =standard= accessibility mode in the majority of cases as it [[https://accessibleweb.com/color-contrast-checker/][enforces WCAG compliance]]. The =custom=
+mode will be more valuable for colorimetrically contrasted palettes under rare circumstances.
+
+The perceptual simulations are applied /after/ the palette is generated. In a previous iteration they were applied to
+the input color, and this caused some wackiness when generating accent colors.
 
 *** output(format, dict)
 
@@ -1393,15 +1123,13 @@ An exporter that takes a complete color =dict= and prepares it for a given palet
 import {
   convert,
   palette,
-  accessibility,
-  tokens,
   output
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
 const contrast = 80;
-const graphic = palette({
+const graphicPalette = palette({
   configuration: "artistic",
   contrast,
   tints: 5,
@@ -1410,7 +1138,7 @@ const graphic = palette({
   accents: true,
 }, color);
 
-const graphicDark = palette({
+const graphicPaletteDark = palette({
   configuration: "artistic",
   contrast,
   tints: 5,
@@ -1420,9 +1148,6 @@ const graphicDark = palette({
   dark: true
 }, color);
 
-const highContrast = accessibility({ rating: "AAA" }, graphic);
-const highContrastDark = accessibility({ rating: "AAA" }, graphicDark);
-
 const dict = {
   project: {
     name: "High Contrast Accessible Palette",
@@ -1430,8 +1155,8 @@ const dict = {
     license: "Attribution 4.0 International (CC BY 4.0)",
     version: "0.1.0"
   },
-  light: tokens(highContrast),
-  dark: tokens(highContrastDark)
+  day: graphicPalette,
+  night: graphicPaletteDark
 };
 
 // GIMP/Inkscape Palette
@@ -1440,29 +1165,28 @@ console.log(output("gpl", dict));
 // Name: High Contrast Accessible Palette (v0.1.0)
 // # Owned by Chatman R. Jr
 // # License: Attribution 4.0 International (CC BY 4.0)
-// # 4/30/2022 2:55:38 PM
+// # 6/15/2022 10:53:31 PM
 //
 // Columns: 6
-// 222	213	236	LIGHT BG (#ded5ec)
-//  32	 25	 41	LIGHT FG (#201929)
-//  85	 46	126	LIGHT DARK 100 (#552e7e)
-//  69	 41	100	LIGHT DARK 200 (#452964)
-//  53	 35	 75	LIGHT DARK 300 (#35234b)
-//  38	 28	 52	LIGHT DARK 400 (#261c34)
-//  61	 33	 87	LIGHT ACCENT 100 (#3d2157)
-//  47	 26	 66	LIGHT ACCENT 200 (#2f1a42)
-//  34	 19	 45	LIGHT ACCENT 300 (#22132d)
-//  22	 13	 26	LIGHT ACCENT 400 (#160d1a)
-//  11    6	  8	LIGHT ACCENT 500 (#0b0608)
-//  32	 25	 41	DARK BG (#201929)
-// 222	213	236	DARK FG (#ded5ec)
-// 187	168	214	DARK LIGHT 100 (#bba8d6)
-// 209	197	228	DARK LIGHT 200 (#d1c5e4)
-// 108	182	219	DARK ACCENT 100 (#6cb6db)
+// 222	213	236	DAY BG (#ded5ec)
+//  32	 25	 41	DAY FG (#201929)
+//  85	 46	126	DAY DARK 100 (#552e7e)
+//  69	 41	100	DAY DARK 200 (#452964)
+//  53	 35	 75	DAY DARK 300 (#35234b)
+//  38	 28	 52	DAY DARK 400 (#261c34)
+// 110    0	112	DAY ACCENT 100 (#6e0070)
+// 109    0	 61	DAY ACCENT 200 (#6d003d)
+// 101    0   0	DAY ACCENT 300 (#650000)
+//  83    0   0	DAY ACCENT 400 (#530000)
+//  32	 25	 41	NIGHT BG (#201929)
+// 222	213	236	NIGHT FG (#ded5ec)
+// 187	168	214	NIGHT LIGHT 100 (#bba8d6)
+// 209	197	228	NIGHT LIGHT 200 (#d1c5e4)
+
 
 // Sketch Palette
 console.log(output("sketchpalette", dict));
-// {"colors":[{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.3333333333333333,"green":0.1803921568627451,"blue":0.49411764705882355,"alpha":1},{"red":0.27058823529411763,"green":0.1607843137254902,"blue":0.39215686274509803,"alpha":1},{"red":0.20784313725490197,"green":0.13725490196078433,"blue":0.29411764705882354,"alpha":1},{"red":0.14901960784313725,"green":0.10980392156862745,"blue":0.20392156862745098,"alpha":1},{"red":0.23921568627450981,"green":0.12941176470588237,"blue":0.3411764705882353,"alpha":1},{"red":0.1843137254901961,"green":0.10196078431372549,"blue":0.25882352941176473,"alpha":1},{"red":0.13333333333333333,"green":0.07450980392156863,"blue":0.17647058823529413,"alpha":1},{"red":0.08627450980392157,"green":0.050980392156862744,"blue":0.10196078431372549,"alpha":1},{"red":0.043137254901960784,"green":0.023529411764705882,"blue":0.03137254901960784,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.7333333333333333,"green":0.6588235294117647,"blue":0.8392156862745098,"alpha":1},{"red":0.8196078431372549,"green":0.7725490196078432,"blue":0.8941176470588236,"alpha":1},{"red":0.4235294117647059,"green":0.7137254901960784,"blue":0.8588235294117647,"alpha":1}],"pluginVersion":"1.4","compatibleVersion":"1.4"}
+// {"colors":[{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.3333333333333333,"green":0.1803921568627451,"blue":0.49411764705882355,"alpha":1},{"red":0.27058823529411763,"green":0.1607843137254902,"blue":0.39215686274509803,"alpha":1},{"red":0.20784313725490197,"green":0.13725490196078433,"blue":0.29411764705882354,"alpha":1},{"red":0.14901960784313725,"green":0.10980392156862745,"blue":0.20392156862745098,"alpha":1},{"red":0.43137254901960786,"green":0,"blue":0.4392156862745098,"alpha":1},{"red":0.42745098039215684,"green":0,"blue":0.23921568627450981,"alpha":1},{"red":0.396078431372549,"green":0,"blue":0,"alpha":1},{"red":0.3254901960784314,"green":0,"blue":0,"alpha":1},{"red":0.12549019607843137,"green":0.09803921568627451,"blue":0.1607843137254902,"alpha":1},{"red":0.8705882352941177,"green":0.8352941176470589,"blue":0.9254901960784314,"alpha":1},{"red":0.7333333333333333,"green":0.6588235294117647,"blue":0.8392156862745098,"alpha":1},{"red":0.8196078431372549,"green":0.7725490196078432,"blue":0.8941176470588236,"alpha":1}],"pluginVersion":"1.4","compatibleVersion":"1.4"}
 #+END_SRC
 
 ** Content
@@ -1493,7 +1217,7 @@ An action that takes a =font= string and generates text tokens according to user
 **** Example
 
 #+BEGIN_SRC js
-import { text } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { text } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
 
 // Change the system stack
 console.log(text({ system: "serif", weights: ["regular", "bold"] }, ""));
@@ -1521,78 +1245,7 @@ console.log(text({ system: "serif", weights: ["regular", "bold"] }, "Mozilla Sla
 // }
 #+END_SRC
 
-*** ms(settings, base)
-
-An action that takes a =base= value and generates modular scale data according to user =settings=.
-
-**** Parameters
-
-+ =settings: {}=: modular scale settings
-  + =settings.ratio = 1.5: number | number[]=: set scale ratio(s)
-  + =settings.values = 6: number=: set number of scale values
-+ =base: number=: base value to generate from
-
-**** Returns
-
-=number[]=: modular scale data
-
-**** Example
-
-#+BEGIN_SRC js
-import { ms } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
-
-// Setting ratio as 1.25
-console.log(ms({ ratio: 1.25, values: 6 }, 1)); // [1, 1.25, 1.5625, 1.953125, 2.44140625, 3.0517578125]
-
-// Multiple ratios can be set
-console.log(ms({ ratio: [1.25, 1.5, 1.75], values: 6 }, 1)); // [1, 1.25, 1.5, 1.5625, 1.75, 2.25]
-
-// Adjust output values
-console.log(ms({ ratio: 1.5, values: 8 }, 1));
-// [
-//           1,        1.5,
-//        2.25,      3.375,
-//      5.0625,    7.59375,
-//   11.390625, 17.0859375
-// ]
-
-// Set a different base
-console.log(ms({ ratio: 1.5, values: 6 }, 16)); // [16, 24, 36, 54, 81, 121.5]
-#+END_SRC
-
-**** Notes
-
-+ At this point, the precision of the output is untouched. Raw modular scales should remain unprocessed for precision to
-  ensure recalculations are accurate as well. Precision comes in later.
-
-*** modify(calc, ms)
-
-An action that takes a generated =ms= and updates each value via a =calc= modifier.
-
-**** Parameters
-
-+ =calc: (n: number) => number=: the recalculation function
-+ =ms: number[]=: the input modular scale data
-
-**** Returns
-
-=number[]=: the modified scale data
-
-**** Example
-
-#+BEGIN_SRC js
-import { ms, modify } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
-
-const scale = ms({ ratio: 2, values: 6 }, 1);
-
-// multiply each value by 1.2
-console.log(modify((n) => n * 1.2, scale)); // [1.2, 2.4, 4.8, 9.6, 19.2, 38.4]
-
-// divide each value by 10
-console.log(modify((n) => n / 10, scale)); // [0.1, 0.2, 0.4, 0.8, 1.6, 3.2]
-#+END_SRC
-
-*** tokens(settings, ms)
+*** scale(settings, root)
 
 An action that takes a generated =ms= and outputs content tokens according to user =settings=.
 
@@ -1617,7 +1270,7 @@ An action that takes a generated =ms= and outputs content tokens according to us
 ***** Bidirectional
 
 #+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
 
 const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
 
@@ -1673,7 +1326,7 @@ console.log(tokens({ type: "bidirectional", unit: "rem", inversion: "em" }, scal
 ***** Unidirectional
 
 #+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
 
 const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
 
@@ -1703,7 +1356,7 @@ console.log(tokens({ type: "unidirectional", unit: "rem" }, scale));
 ***** Ranged
 
 #+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
 
 const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
 
@@ -1726,7 +1379,7 @@ console.log(tokens({
 ***** Grid
 
 #+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
+import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
 
 const scale = ms({ ratio: 1.618, values: 5 }, 1);
 
@@ -1798,13 +1451,13 @@ import {
   convert,
   palette,
   tokens: color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 import {
   text,
   ms,
   tokens: content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
-import { stylesheet } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { stylesheet } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
 
 const swatch = convert("rgb", "rebeccapurple");
 const scale = ms({ ratio: 1.414, values: 4 }, 1);
@@ -2146,13 +1799,13 @@ import {
   convert,
   palette,
   tokens: color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 import {
   text,
   ms,
   tokens: content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
-import { data } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { data } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
 
 const swatch = convert("rgb", "rebeccapurple");
 const scale = ms({ ratio: 1.414, values: 4 }, 1);
@@ -2371,13 +2024,13 @@ import {
   convert,
   palette,
   tokens: color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 import {
   text,
   ms,
   tokens: content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/content.js";
-import { interop } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { interop } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
 
 
 const swatch = convert("rgb", "rebeccapurple");
@@ -2523,8 +2176,8 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
-import { preset } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { preset } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2569,11 +2222,11 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js");
 import {
   preset,
   process
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js");
 
 const swatch = "rebeccapurple";
 
@@ -2620,12 +2273,12 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 import {
   preset,
   process,
   pipeline
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2676,11 +2329,11 @@ import {
   convert,
   mix,
   harmony
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 import {
   preset,
   propagate
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 
@@ -2733,11 +2386,11 @@ import {
   convert,
   adjust,
   harmony
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 import {
   preset,
   delegate
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-26/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 
@@ -2775,9 +2428,9 @@ If you run into any issues with this, please let me know how I can help.
 
 * Next Steps
 
-Now that you have the technical overview of how this all works, give it a try in your own projects. 
+Now that you have the technical overview of how this all works, give it a try in your own projects.
 
-I highly recommend you follow up this reading with the user handbook if you haven't already. Quite a bit of this 
+I highly recommend you follow up this reading with [[https://github.com/quarksuite/core/blob/v2-workspace/HANDBOOK.org][the user handbook]] if you haven't already. Quite a bit of this
 documentation makes better sense in context. Especially advanced usage through the workflow module.
 
 Thanks for reading, and I hope you found it useful.
