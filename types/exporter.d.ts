@@ -25,7 +25,7 @@
 /**
  * @typedef {"css" | "scss" | "less" | "styl"} StylesheetFormat
  * @typedef {"json" | "yaml"} DataFormat
- * @typedef {"tailwindcss" | "styledictionary"} InteropFormat
+ * @typedef {"tailwindcss" | "style-dictionary"} SchemaFormat
  */
 /**
  * An exporter that takes a complete token `dict` and prepares a file-ready
@@ -47,12 +47,14 @@
  * Token dictionary stylesheet export example
  *
  * ```js
- * import { palette, tokens as color } from "https://x.nest.land/quarksuite:core@2.0.0/color.js";
- * import { text, ms, tokens as content } from "https://x.nest.land/quarksuite:core@2.0.0/content.js";
+ * import { palette } from "https://x.nest.land/quarksuite:core@2.0.0/color.js";
+ * import { text, scale } from "https://x.nest.land/quarksuite:core@2.0.0/content.js";
  * import { stylesheet } from "https://x.nest.land/quarksuite:core@2.0.0/exporter.js";
  *
  * const swatch = "dodgerblue";
- * const scale = ms({ ratio: 1.5, values: 6 }, 1);
+ *
+ * ratio = 1.5;
+ * values = 6;
  *
  * const dict = {
  *   project: {
@@ -62,13 +64,13 @@
  *     license: "MIT",
  *   }, // required by every exporter
  *   esv: {
- *     color: tokens(palette({ configuration: "material" }, "dodgerblue")),
+ *     color: palette({ configuration: "material" }, "dodgerblue"),
  *     text: {
  *       body: text({ system: "sans", weights: ["regular", "bold"] }, ""),
- *       size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
- *       measure: content({ type: "ranged", min: 45, max: 75, trunc: true, context: "max" }, scale),
- *       leading: content({ type: "ranged", min: 1.25, max: 1.5, context: "max" }, scale),
- *       spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+ *       size: scale({ configuration: "bidirectional", ratio, values }, "1rem"),
+ *       measure: scale({ configuration: "ranged", floor: 45, trunc: true, ratio, values }, "75ch"),
+ *       leading: scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5),
+ *       spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex")
  *     }
  *   }
  * }
@@ -100,12 +102,14 @@ export function stylesheet(format: StylesheetFormat, dict: Dictionary): string;
  * Token dictionary data export example
  *
  * ```js
- * import { palette, tokens as color } from "https://x.nest.land/quarksuite:core@2.0.0/color.js";
- * import { text, ms, tokens as content } from "https://x.nest.land/quarksuite:core@2.0.0/content.js";
+ * import { palette } from "https://x.nest.land/quarksuite:core@2.0.0/color.js";
+ * import { text, scale } from "https://x.nest.land/quarksuite:core@2.0.0/content.js";
  * import { data } from "https://x.nest.land/quarksuite:core@2.0.0/exporter.js";
  *
  * const swatch = "dodgerblue";
- * const scale = ms({ ratio: 1.5, values: 6 }, 1);
+ *
+ * ratio = 1.5;
+ * values = 6;
  *
  * const dict = {
  *   project: {
@@ -115,13 +119,13 @@ export function stylesheet(format: StylesheetFormat, dict: Dictionary): string;
  *     license: "MIT",
  *   }, // required by every exporter
  *   esv: {
- *     color: tokens(palette({ configuration: "material" }, "dodgerblue")),
+ *     color: palette({ configuration: "material" }, "dodgerblue"),
  *     text: {
  *       body: text({ system: "sans", weights: ["regular", "bold"] }, ""),
- *       size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
- *       measure: content({ type: "ranged", min: 45, max: 75, trunc: true, context: "max" }, scale),
- *       leading: content({ type: "ranged", min: 1.25, max: 1.5, context: "max" }, scale),
- *       spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+ *       size: scale({ configuration: "bidirectional", ratio, values }, "1rem"),
+ *       measure: scale({ configuration: "ranged", floor: 45, trunc: true, ratio, values }, "75ch"),
+ *       leading: scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5),
+ *       spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex")
  *     }
  *   }
  * }
@@ -132,10 +136,10 @@ export function stylesheet(format: StylesheetFormat, dict: Dictionary): string;
  */
 export function data(format: DataFormat, dict: Dictionary): string;
 /**
- * An exporter that takes a complete token `dict` and translates the schema
- * to a given `format` data spec.
+ * An exporter that takes a complete token `dict` and translates the data
+ * to a given `format` schema.
  *
- * @param {InteropFormat} format - the target data spec
+ * @param {SchemaFormat} format - the target schema
  * @param {Dictionary} dict - the input token dictionary
  * @returns {object} the output data
  *
@@ -151,12 +155,14 @@ export function data(format: DataFormat, dict: Dictionary): string;
  * Token dictionary stylesheet export example
  *
  * ```js
- * import { palette, tokens as color } from "https://x.nest.land/quarksuite:core@2.0.0/color.js";
- * import { text, ms, tokens as content } from "https://x.nest.land/quarksuite:core@2.0.0/content.js";
- * import { interop } from "https://x.nest.land/quarksuite:core@2.0.0/exporter.js";
+ * import { palette } from "https://x.nest.land/quarksuite:core@2.0.0/color.js";
+ * import { text, scale } from "https://x.nest.land/quarksuite:core@2.0.0/content.js";
+ * import { schema } from "https://x.nest.land/quarksuite:core@2.0.0/exporter.js";
  *
  * const swatch = "dodgerblue";
- * const scale = ms({ ratio: 1.5, values: 6 }, 1);
+ *
+ * ratio = 1.5;
+ * values = 6;
  *
  * const dict = {
  *   project: {
@@ -166,22 +172,22 @@ export function data(format: DataFormat, dict: Dictionary): string;
  *     license: "MIT",
  *   }, // required by every exporter
  *   esv: {
- *     color: tokens(palette({ configuration: "material" }, "dodgerblue")),
+ *     color: palette({ configuration: "material" }, "dodgerblue"),
  *     text: {
  *       body: text({ system: "sans", weights: ["regular", "bold"] }, ""),
- *       size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
- *       measure: content({ type: "ranged", min: 45, max: 75, trunc: true, context: "max" }, scale),
- *       leading: content({ type: "ranged", min: 1.25, max: 1.5, context: "max" }, scale),
- *       spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+ *       size: scale({ configuration: "bidirectional", ratio, values }, "1rem"),
+ *       measure: scale({ configuration: "ranged", floor: 45, trunc: true, ratio, values }, "75ch"),
+ *       leading: scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5),
+ *       spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex")
  *     }
  *   }
  * }
  *
- * export const theme = interop("tailwindcss", dict);
- * export const tokens = interop("styledictionary", dict);
+ * export const theme = schema("tailwindcss", dict);
+ * export const tokens = schema("style-dictionary", dict);
  * ```
  */
-export function interop(format: InteropFormat, dict: Dictionary): object;
+export function schema(format: SchemaFormat, dict: Dictionary): object;
 export type ProjectSettings = Partial<{
     name: string;
     author: string;
@@ -207,4 +213,4 @@ export type Dictionary = {
 };
 export type StylesheetFormat = "css" | "scss" | "less" | "styl";
 export type DataFormat = "json" | "yaml";
-export type InteropFormat = "tailwindcss" | "styledictionary";
+export type SchemaFormat = "tailwindcss" | "style-dictionary";

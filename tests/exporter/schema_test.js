@@ -1,7 +1,7 @@
 import { describe, expect, it, run } from "https://deno.land/x/tincan/mod.ts";
 import { palette } from "../../color.js";
 import { grid, scale, text } from "../../content.js";
-import { interop } from "../../exporter.js";
+import { schema } from "../../exporter.js";
 
 const swatch = "rebeccapurple";
 
@@ -41,10 +41,10 @@ const dict = {
   },
 };
 
-describe("interop(format, dict)", () => {
+describe("schema(format, dict)", () => {
   describe("format = 'tailwindcss'", () => {
     it("should translate sample dictionary to a tailwindcss theme", () => {
-      expect(interop("tailwindcss", dict)).toEqual({
+      expect(schema("tailwindcss", dict)).toEqual({
         color: {
           50: "#eeeaf6",
           100: "#d1c5e4",
@@ -203,7 +203,7 @@ describe("interop(format, dict)", () => {
 
   describe("format = 'styledictionary'", () => {
     it("should translate sample dictionary to Style Dictionary tokens", () => {
-      expect(interop("styledictionary", dict)).toEqual({
+      expect(schema("style-dictionary", dict)).toEqual({
         color: {
           50: { value: "#eeeaf6" },
           100: { value: "#d1c5e4" },
