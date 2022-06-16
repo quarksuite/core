@@ -2574,11 +2574,11 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 import {
   preset,
   process
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2602,8 +2602,6 @@ console.log(tertiary(swatch)); // #934800
 
 Creating a =process= is ideal in situations where you want to repeat a sequence of transformations on different values
 of the same type, but you don't know ahead of time exactly what those values will be.
-
-It's a great way to create your own /configurations/ to share across projects.
 
 *** pipeline(x, ...emitters)
 
@@ -2655,11 +2653,6 @@ console.log({ main, accent, highlight });
 
 A pipeline can be composed of a sequence of processes (because they are themselves emitters). A process can use the
 /output/ of a pipeline as its data.
-
-By this point, you've noticed that pipelines and processes can output identical results. This doesn't mean the choice of
-which to use is merely one of preference.
-
-Use a process when the data is unknown, use a pipeline otherwise.
 
 *** propagate(emitter, xs)
 
@@ -2761,10 +2754,8 @@ console.log(
 
 **** Notes
 
-Reach for =delegate()= when you encounter a situation where you have a collection of data and want to assign a different
-transformation to each value or /selectively/ alter values.
-
-Not much more to say on that.
+Reach for =delegate()= when you want to assign emitters to specific values. It's really powerful for grouping and
+distributing processes across different sets of data.
 
 * Extending the Library
 
