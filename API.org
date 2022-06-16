@@ -25,7 +25,7 @@
   - [[#exporter-1][Exporter]]
     - [[#stylesheetformat-dict][stylesheet(format, dict)]]
     - [[#dataformat-dict][data(format, dict)]]
-    - [[#interopformat-dict][interop(format, dict)]]
+    - [[#schemaformat-dict][schema(format, dict)]]
   - [[#workflow][Workflow]]
     - [[#presetaction-y][preset(action, y)]]
     - [[#processemitters][process(...emitters)]]
@@ -88,9 +88,10 @@ The included utilities are structured around three key idioms:
 
 *** Exporter
 
-The shared rule between all exporters (with the exception of those for interop because they translate rather than
-export): assume no access to the user's filesystem. The output of exporters is /file-ready/ for the target formats, but
-you'll have to take it the rest of the way with your JS environment's native filesystem API or a library of your choice.
+The shared rule between all exporters (with the exception of those for interop because they translate schemas rather
+than export): assume no access to the user's filesystem. The output of exporters is /file-ready/ for the target formats,
+but you'll have to take it the rest of the way with your JS environment's native filesystem API or a library of your
+choice.
 
 For security reasons, QuarkSuite does not generate output files.
 
@@ -122,7 +123,7 @@ An action that takes any valid CSS =color= and converts it =to= a given target f
 **** Example
 
 #+BEGIN_SRC js
-import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = "rebeccapurple";
 
@@ -166,7 +167,7 @@ An action that takes any valid CSS =color= and adjusts its properties according 
 **** Example
 
 #+BEGIN_SRC js
-import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -220,7 +221,7 @@ An action that takes any valid CSS =color= and mixes it according to user =setti
 **** Example
 
 #+BEGIN_SRC js
-import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("hsl", "rebeccapurple");
 const target = "crimson";
@@ -273,7 +274,7 @@ An action that takes any valid CSS =color= and a generates an artistic color har
 **** Example
 
 #+BEGIN_SRC js
-import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -346,7 +347,7 @@ An action that takes any valid CSS =color= and generates a palette according to 
 ***** Material Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -466,7 +467,7 @@ console.log(palette({
 ***** Artistic Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -578,7 +579,7 @@ console.log(palette({
 ***** Color Accessibility
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -778,7 +779,7 @@ console.log(palette({
 ***** Color Perception
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -1125,7 +1126,7 @@ import {
   convert,
   palette,
   output
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -1219,7 +1220,7 @@ An action that takes a =font= string and generates text tokens according to user
 **** Example
 
 #+BEGIN_SRC js
-import { text } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { text } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/content.js";
 
 // Change the system stack
 console.log(text({ system: "serif", weights: ["regular", "bold"] }, ""));
@@ -1265,7 +1266,7 @@ An action that takes a number of =columns= and outputs grid tokens according to 
 **** Examples
 
 #+BEGIN_SRC js
-import { grid } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { grid } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/content.js";
 
 // Rows will be set the same as columns if undefined
 console.log(grid({}, 5));
@@ -1463,7 +1464,7 @@ An action that takes a =root= CSS value and outputs a modular scale according to
 ***** Bidirectional/Unidirectional
 
 #+BEGIN_SRC js
-import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/content.js";
 
 // Roots can be unitless
 console.log(scale({ configuration: "bidirectional" }, 1));
@@ -1565,7 +1566,7 @@ console.log(scale({ configuration: "bidirectional", values: 4 }, "16px"));
 ***** Ranged
 
 #+BEGIN_SRC js
-import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/content.js";
 
 // IMPORTANT: pass in the maximum value as the root and set a floor
 console.log(scale({ configuration: "ranged", floor: 2 }, "8px"));
@@ -1661,7 +1662,7 @@ Exporters are defined by the domain target and include:
 
 + =stylesheet()=: target is a stylesheet format (CSS custom properties, common preprocessors)
 + =data()=: target is a general data format (JSON, YAML)
-+ =interop()=: target is interop spec (TailwindCSS theme, Style Dictionary tokens)
++ =schema()=: target is another token schema (TailwindCSS theme, Style Dictionary tokens)
 
 *** stylesheet(format, dict)
 
@@ -1682,17 +1683,17 @@ An exporter that takes a complete token =dict= and prepares a file-ready templat
 import {
   convert,
   palette,
-  tokens: color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 import {
   text,
-  ms,
-  tokens: content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
-import { stylesheet } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
+  scale,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/content.js";
+import { stylesheet } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/exporter.js";
 
-const swatch = convert("rgb", "rebeccapurple");
-const scale = ms({ ratio: 1.414, values: 4 }, 1);
+const color = convert("rgb", "rebeccapurple");
+
+const ratio = 1.414;
+const values: 4;
 
 // Sample dictionary
 const dict = {
@@ -1703,33 +1704,20 @@ const dict = {
     version: "0.1.0"
   },
   sd: {
-    color: color(palette({ configuration: "material", accents: true }, swatch)),
+    color: palette({ configuration: "material", accents: true }, color),
     text: {
       primary: text({ system: "sans", weights: ["regular", "bold"] }, ""),
       secondary: text({ system: "serif", weights: ["light", "bold", "black"] }, ""),
-      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
-      measure: content({
-        type: "ranged",
-        min: 45,
-        max: 75,
-        trunc: true,
-        context: "max",
-        unit: "ch",
-      }, scale),
-      leading: content({
-        type: "ranged",
-        min: 1.25,
-        max: 1.5,
-        context: "max",
-      }, scale),
+      size: scale({ configuration: "bidirectional", ratio, values }, "1rem"),
+      measure: scale({ configuration: "ranged", floor: 45, trunc: true, ratio, values }, "75ch"),
+      leading: scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5),
     },
-    spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+    spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex")
   }
 };
 
 // CSS Custom Properties
 console.log(stylesheet("css", dict));
-//
 // /**
 //  * Project: Sample Dictionary (v0.1.0)
 //  * Owned by: Ed N. Bacon
@@ -1739,7 +1727,7 @@ console.log(stylesheet("css", dict));
 //  * DESCRIPTION: N/A
 //  * COMMENTS: N/A
 //  * --------------------------------------------------------------------------------
-//  * Updated on 5/11/2022 at 3:21:03 PM
+//  * Updated on 6/16/2022 at 5:53:22 PM
 //  **/
 //
 // :root {
@@ -1755,16 +1743,16 @@ console.log(stylesheet("css", dict));
 //   --sd-color-900: rgb(24, 21, 29);
 //   --sd-color-bg: rgb(255, 255, 255);
 //   --sd-color-fg: rgb(17, 17, 17);
-//   --sd-color-a50: rgb(210, 244, 237);
-//   --sd-color-a100: rgb(156, 214, 223);
-//   --sd-color-a200: rgb(112, 181, 215);
-//   --sd-color-a300: rgb(93, 142, 206);
-//   --sd-color-a400: rgb(96, 99, 187);
-//   --sd-color-a500: rgb(100, 0, 103);
-//   --sd-color-a600: rgb(88, 0, 42);
-//   --sd-color-a700: rgb(66, 0, 0);
-//   --sd-color-a800: rgb(31, 0, 0);
-//   --sd-color-a900: rgb(0, 28, 0);
+//   --sd-color-a50: rgb(109, 191, 179);
+//   --sd-color-a100: rgb(63, 172, 186);
+//   --sd-color-a200: rgb(41, 147, 192);
+//   --sd-color-a300: rgb(60, 118, 192);
+//   --sd-color-a400: rgb(85, 86, 180);
+//   --sd-color-a500: rgb(110, 0, 112);
+//   --sd-color-a600: rgb(109, 0, 61);
+//   --sd-color-a700: rgb(101, 0, 0);
+//   --sd-color-a800: rgb(83, 0, 0);
+//   --sd-color-a900: rgb(55, 0, 0);
 //   --sd-text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
 //   --sd-text-primary-regular: 400;
 //   --sd-text-primary-bold: 700;
@@ -1776,9 +1764,9 @@ console.log(stylesheet("css", dict));
 //   --sd-text-size-x2: 1.414rem;
 //   --sd-text-size-x3: 1.9994rem;
 //   --sd-text-size-x4: 2.8271rem;
-//   --sd-text-size-d2: 0.70721em;
-//   --sd-text-size-d3: 0.50015em;
-//   --sd-text-size-d4: 0.35371em;
+//   --sd-text-size-d2: 0.70721rem;
+//   --sd-text-size-d3: 0.50015rem;
+//   --sd-text-size-d4: 0.35372rem;
 //   --sd-text-measure: 75ch;
 //   --sd-text-measure-i2: 66ch;
 //   --sd-text-measure-i3: 60ch;
@@ -1795,10 +1783,9 @@ console.log(stylesheet("css", dict));
 //   --sd-spacing-x4: 2.8271ex;
 //   --sd-spacing-d2: 0.70721ex;
 //   --sd-spacing-d3: 0.50015ex;
-//   --sd-spacing-d4: 0.35371ex;
+//   --sd-spacing-d4: 0.35372ex;
 //
 // }
-//
 
 // Sass (SCSS) variables
 console.log(stylesheet("scss", dict));
@@ -1812,7 +1799,7 @@ console.log(stylesheet("scss", dict));
 //  * DESCRIPTION: N/A
 //  * COMMENTS: N/A
 //  * --------------------------------------------------------------------------------
-//  * Updated on 5/11/2022 at 3:23:11 PM
+//  * Updated on 6/16/2022 at 5:56:09 PM
 //  */
 //
 // $sd-color-50: rgb(238, 234, 246);
@@ -1827,16 +1814,16 @@ console.log(stylesheet("scss", dict));
 // $sd-color-900: rgb(24, 21, 29);
 // $sd-color-bg: rgb(255, 255, 255);
 // $sd-color-fg: rgb(17, 17, 17);
-// $sd-color-a50: rgb(210, 244, 237);
-// $sd-color-a100: rgb(156, 214, 223);
-// $sd-color-a200: rgb(112, 181, 215);
-// $sd-color-a300: rgb(93, 142, 206);
-// $sd-color-a400: rgb(96, 99, 187);
-// $sd-color-a500: rgb(100, 0, 103);
-// $sd-color-a600: rgb(88, 0, 42);
-// $sd-color-a700: rgb(66, 0, 0);
-// $sd-color-a800: rgb(31, 0, 0);
-// $sd-color-a900: rgb(0, 28, 0);
+// $sd-color-a50: rgb(109, 191, 179);
+// $sd-color-a100: rgb(63, 172, 186);
+// $sd-color-a200: rgb(41, 147, 192);
+// $sd-color-a300: rgb(60, 118, 192);
+// $sd-color-a400: rgb(85, 86, 180);
+// $sd-color-a500: rgb(110, 0, 112);
+// $sd-color-a600: rgb(109, 0, 61);
+// $sd-color-a700: rgb(101, 0, 0);
+// $sd-color-a800: rgb(83, 0, 0);
+// $sd-color-a900: rgb(55, 0, 0);
 // $sd-text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
 // $sd-text-primary-regular: 400;
 // $sd-text-primary-bold: 700;
@@ -1848,9 +1835,9 @@ console.log(stylesheet("scss", dict));
 // $sd-text-size-x2: 1.414rem;
 // $sd-text-size-x3: 1.9994rem;
 // $sd-text-size-x4: 2.8271rem;
-// $sd-text-size-d2: 0.70721em;
-// $sd-text-size-d3: 0.50015em;
-// $sd-text-size-d4: 0.35371em;
+// $sd-text-size-d2: 0.70721rem;
+// $sd-text-size-d3: 0.50015rem;
+// $sd-text-size-d4: 0.35372rem;
 // $sd-text-measure: 75ch;
 // $sd-text-measure-i2: 66ch;
 // $sd-text-measure-i3: 60ch;
@@ -1867,7 +1854,7 @@ console.log(stylesheet("scss", dict));
 // $sd-spacing-x4: 2.8271ex;
 // $sd-spacing-d2: 0.70721ex;
 // $sd-spacing-d3: 0.50015ex;
-// $sd-spacing-d4: 0.35371ex;
+// $sd-spacing-d4: 0.35372ex;
 //
 
 // Less variables
@@ -1882,7 +1869,7 @@ console.log(stylesheet("less", dict));
 //  * DESCRIPTION: N/A
 //  * COMMENTS: N/A
 //  * --------------------------------------------------------------------------------
-//  * Updated on 5/11/2022 at 3:23:11 PM
+//  * Updated on 6/16/2022 at 5:57:30 PM
 //  */
 //
 // @sd-color-50: rgb(238, 234, 246);
@@ -1897,16 +1884,16 @@ console.log(stylesheet("less", dict));
 // @sd-color-900: rgb(24, 21, 29);
 // @sd-color-bg: rgb(255, 255, 255);
 // @sd-color-fg: rgb(17, 17, 17);
-// @sd-color-a50: rgb(210, 244, 237);
-// @sd-color-a100: rgb(156, 214, 223);
-// @sd-color-a200: rgb(112, 181, 215);
-// @sd-color-a300: rgb(93, 142, 206);
-// @sd-color-a400: rgb(96, 99, 187);
-// @sd-color-a500: rgb(100, 0, 103);
-// @sd-color-a600: rgb(88, 0, 42);
-// @sd-color-a700: rgb(66, 0, 0);
-// @sd-color-a800: rgb(31, 0, 0);
-// @sd-color-a900: rgb(0, 28, 0);
+// @sd-color-a50: rgb(109, 191, 179);
+// @sd-color-a100: rgb(63, 172, 186);
+// @sd-color-a200: rgb(41, 147, 192);
+// @sd-color-a300: rgb(60, 118, 192);
+// @sd-color-a400: rgb(85, 86, 180);
+// @sd-color-a500: rgb(110, 0, 112);
+// @sd-color-a600: rgb(109, 0, 61);
+// @sd-color-a700: rgb(101, 0, 0);
+// @sd-color-a800: rgb(83, 0, 0);
+// @sd-color-a900: rgb(55, 0, 0);
 // @sd-text-primary-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
 // @sd-text-primary-regular: 400;
 // @sd-text-primary-bold: 700;
@@ -1918,9 +1905,9 @@ console.log(stylesheet("less", dict));
 // @sd-text-size-x2: 1.414rem;
 // @sd-text-size-x3: 1.9994rem;
 // @sd-text-size-x4: 2.8271rem;
-// @sd-text-size-d2: 0.70721em;
-// @sd-text-size-d3: 0.50015em;
-// @sd-text-size-d4: 0.35371em;
+// @sd-text-size-d2: 0.70721rem;
+// @sd-text-size-d3: 0.50015rem;
+// @sd-text-size-d4: 0.35372rem;
 // @sd-text-measure: 75ch;
 // @sd-text-measure-i2: 66ch;
 // @sd-text-measure-i3: 60ch;
@@ -1937,7 +1924,7 @@ console.log(stylesheet("less", dict));
 // @sd-spacing-x4: 2.8271ex;
 // @sd-spacing-d2: 0.70721ex;
 // @sd-spacing-d3: 0.50015ex;
-// @sd-spacing-d4: 0.35371ex;
+// @sd-spacing-d4: 0.35372ex;
 //
 
 // Stylus variables
@@ -1952,7 +1939,7 @@ console.log(stylesheet("styl", dict));
 //  * DESCRIPTION: N/A
 //  * COMMENTS: N/A
 //  * --------------------------------------------------------------------------------
-//  * Updated on 5/11/2022 at 3:27:39 PM
+//  * Updated on 6/16/2022 at 5:59:16 PM
 //  */
 //
 // sd-color-50 = rgb(238, 234, 246)
@@ -1967,16 +1954,16 @@ console.log(stylesheet("styl", dict));
 // sd-color-900 = rgb(24, 21, 29)
 // sd-color-bg = rgb(255, 255, 255)
 // sd-color-fg = rgb(17, 17, 17)
-// sd-color-a50 = rgb(210, 244, 237)
-// sd-color-a100 = rgb(156, 214, 223)
-// sd-color-a200 = rgb(112, 181, 215)
-// sd-color-a300 = rgb(93, 142, 206)
-// sd-color-a400 = rgb(96, 99, 187)
-// sd-color-a500 = rgb(100, 0, 103)
-// sd-color-a600 = rgb(88, 0, 42)
-// sd-color-a700 = rgb(66, 0, 0)
-// sd-color-a800 = rgb(31, 0, 0)
-// sd-color-a900 = rgb(0, 28, 0)
+// sd-color-a50 = rgb(109, 191, 179)
+// sd-color-a100 = rgb(63, 172, 186)
+// sd-color-a200 = rgb(41, 147, 192)
+// sd-color-a300 = rgb(60, 118, 192)
+// sd-color-a400 = rgb(85, 86, 180)
+// sd-color-a500 = rgb(110, 0, 112)
+// sd-color-a600 = rgb(109, 0, 61)
+// sd-color-a700 = rgb(101, 0, 0)
+// sd-color-a800 = rgb(83, 0, 0)
+// sd-color-a900 = rgb(55, 0, 0)
 // sd-text-primary-family = -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif
 // sd-text-primary-regular = 400
 // sd-text-primary-bold = 700
@@ -1988,9 +1975,9 @@ console.log(stylesheet("styl", dict));
 // sd-text-size-x2 = 1.414rem
 // sd-text-size-x3 = 1.9994rem
 // sd-text-size-x4 = 2.8271rem
-// sd-text-size-d2 = 0.70721em
-// sd-text-size-d3 = 0.50015em
-// sd-text-size-d4 = 0.35371em
+// sd-text-size-d2 = 0.70721rem
+// sd-text-size-d3 = 0.50015rem
+// sd-text-size-d4 = 0.35372rem
 // sd-text-measure = 75ch
 // sd-text-measure-i2 = 66ch
 // sd-text-measure-i3 = 60ch
@@ -2007,7 +1994,7 @@ console.log(stylesheet("styl", dict));
 // sd-spacing-x4 = 2.8271ex
 // sd-spacing-d2 = 0.70721ex
 // sd-spacing-d3 = 0.50015ex
-// sd-spacing-d4 = 0.35371ex
+// sd-spacing-d4 = 0.35372ex
 //
 #+END_SRC
 
@@ -2030,17 +2017,17 @@ An exporter that takes a complete token =dict= and prepares a file-ready templat
 import {
   convert,
   palette,
-  tokens: color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 import {
   text,
-  ms,
-  tokens: content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
-import { data } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
+  scale,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/content.js";
+import { data } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/exporter.js";
 
-const swatch = convert("rgb", "rebeccapurple");
-const scale = ms({ ratio: 1.414, values: 4 }, 1);
+const color = convert("rgb", "rebeccapurple");
+
+const ratio = 1.414;
+const values: 4;
 
 // Sample dictionary
 const dict = {
@@ -2051,27 +2038,15 @@ const dict = {
     version: "0.1.0"
   },
   sd: {
-    color: color(palette({ configuration: "material", accents: true }, swatch)),
+    color: palette({ configuration: "material", accents: true }, color),
     text: {
       primary: text({ system: "sans", weights: ["regular", "bold"] }, ""),
       secondary: text({ system: "serif", weights: ["light", "bold", "black"] }, ""),
-      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
-      measure: content({
-        type: "ranged",
-        min: 45,
-        max: 75,
-        trunc: true,
-        context: "max",
-        unit: "ch",
-      }, scale),
-      leading: content({
-        type: "ranged",
-        min: 1.25,
-        max: 1.5,
-        context: "max",
-      }, scale),
+      size: scale({ configuration: "bidirectional", ratio, values }, "1rem"),
+      measure: scale({ configuration: "ranged", floor: 45, trunc: true, ratio, values }, "75ch"),
+      leading: scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5),
     },
-    spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+    spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex")
   }
 };
 
@@ -2099,16 +2074,16 @@ console.log(data("json", dict));
 //         "900": "rgb(24, 21, 29)",
 //         "bg": "rgb(255, 255, 255)",
 //         "fg": "rgb(17, 17, 17)",
-//         "a50": "rgb(210, 244, 237)",
-//         "a100": "rgb(156, 214, 223)",
-//         "a200": "rgb(112, 181, 215)",
-//         "a300": "rgb(93, 142, 206)",
-//         "a400": "rgb(96, 99, 187)",
-//         "a500": "rgb(100, 0, 103)",
-//         "a600": "rgb(88, 0, 42)",
-//         "a700": "rgb(66, 0, 0)",
-//         "a800": "rgb(31, 0, 0)",
-//         "a900": "rgb(0, 28, 0)"
+//         "a50": "rgb(109, 191, 179)",
+//         "a100": "rgb(63, 172, 186)",
+//         "a200": "rgb(41, 147, 192)",
+//         "a300": "rgb(60, 118, 192)",
+//         "a400": "rgb(85, 86, 180)",
+//         "a500": "rgb(110, 0, 112)",
+//         "a600": "rgb(109, 0, 61)",
+//         "a700": "rgb(101, 0, 0)",
+//         "a800": "rgb(83, 0, 0)",
+//         "a900": "rgb(55, 0, 0)"
 //       },
 //       "text": {
 //         "primary": {
@@ -2127,9 +2102,9 @@ console.log(data("json", dict));
 //           "x2": "1.414rem",
 //           "x3": "1.9994rem",
 //           "x4": "2.8271rem",
-//           "d2": "0.70721em",
-//           "d3": "0.50015em",
-//           "d4": "0.35371em"
+//           "d2": "0.70721rem",
+//           "d3": "0.50015rem",
+//           "d4": "0.35372rem"
 //         },
 //         "measure": {
 //           "base": "75ch",
@@ -2153,7 +2128,7 @@ console.log(data("json", dict));
 //         "x4": "2.8271ex",
 //         "d2": "0.70721ex",
 //         "d3": "0.50015ex",
-//         "d4": "0.35371ex"
+//         "d4": "0.35372ex"
 //       }
 //     }
 //   }
@@ -2162,7 +2137,7 @@ console.log(data("json", dict));
 // YAML
 console.log(data("yaml", dict));
 //
-// # Updated on 5/11/2022 at 3:33:56 PM
+// # Updated on 6/16/2022 at 6:05:31 PM
 //
 // project:
 //   name: Sample Dictionary
@@ -2185,16 +2160,16 @@ console.log(data("yaml", dict));
 //       900: rgb(24, 21, 29)
 //       bg: rgb(255, 255, 255)
 //       fg: rgb(17, 17, 17)
-//       a50: rgb(210, 244, 237)
-//       a100: rgb(156, 214, 223)
-//       a200: rgb(112, 181, 215)
-//       a300: rgb(93, 142, 206)
-//       a400: rgb(96, 99, 187)
-//       a500: rgb(100, 0, 103)
-//       a600: rgb(88, 0, 42)
-//       a700: rgb(66, 0, 0)
-//       a800: rgb(31, 0, 0)
-//       a900: rgb(0, 28, 0)
+//       a50: rgb(109, 191, 179)
+//       a100: rgb(63, 172, 186)
+//       a200: rgb(41, 147, 192)
+//       a300: rgb(60, 118, 192)
+//       a400: rgb(85, 86, 180)
+//       a500: rgb(110, 0, 112)
+//       a600: rgb(109, 0, 61)
+//       a700: rgb(101, 0, 0)
+//       a800: rgb(83, 0, 0)
+//       a900: rgb(55, 0, 0)
 //     text:
 //       primary:
 //         family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif
@@ -2210,9 +2185,9 @@ console.log(data("yaml", dict));
 //         x2: 1.414rem
 //         x3: 1.9994rem
 //         x4: 2.8271rem
-//         d2: 0.70721em
-//         d3: 0.50015em
-//         d4: 0.35371em
+//         d2: 0.70721rem
+//         d3: 0.50015rem
+//         d4: 0.35372rem
 //       measure:
 //         base: 75ch
 //         i2: 66ch
@@ -2232,17 +2207,17 @@ console.log(data("yaml", dict));
 //       x4: 2.8271ex
 //       d2: 0.70721ex
 //       d3: 0.50015ex
-//       d4: 0.35371ex
+//       d4: 0.35372ex
 //
 #+END_SRC
 
-*** interop(format, dict)
+*** schema(format, dict)
 
-An exporter that takes a complete token =dict= and translates the schema to a given =format= data spec.
+An exporter that takes a complete token =dict= and translates the data to a given =format= schema.
 
 **** Parameters
 
-+ =format: tailwindcss | styledictionary=: the target data spec
++ =format: tailwindcss | style-dictionary=: the target schema
 + =dict: {}=: the input token dictionary
 
 **** Returns
@@ -2255,48 +2230,41 @@ An exporter that takes a complete token =dict= and translates the schema to a gi
 import {
   convert,
   palette,
-  tokens: color
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 import {
   text,
-  ms,
-  tokens: content
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
-import { interop } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
+  scale,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/content.js";
+import { schema } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/exporter.js";
 
+const color = convert("rgb", "rebeccapurple");
 
-const swatch = convert("rgb", "rebeccapurple");
-const scale = ms({ ratio: 1.414, values: 4 }, 1);
+const ratio = 1.414;
+const values: 4;
 
 // Sample dictionary
 const dict = {
+  project: {
+    name: "Sample Dictionary",
+    author: "Ed N. Bacon",
+    license: "MIT",
+    version: "0.1.0"
+  },
   sd: {
-    color: color(palette({ configuration: "material", accents: true }, swatch)),
+    color: palette({ configuration: "material", accents: true }, color),
     text: {
       primary: text({ system: "sans", weights: ["regular", "bold"] }, ""),
       secondary: text({ system: "serif", weights: ["light", "bold", "black"] }, ""),
-      size: content({ type: "bidirectional", unit: "rem", inversion: "em" }, scale),
-      measure: content({
-        type: "ranged",
-        min: 45,
-        max: 75,
-        trunc: true,
-        context: "max",
-        unit: "ch",
-      }, scale),
-      leading: content({
-        type: "ranged",
-        min: 1.25,
-        max: 1.5,
-        context: "max",
-      }, scale),
+      size: scale({ configuration: "bidirectional", ratio, values }, "1rem"),
+      measure: scale({ configuration: "ranged", floor: 45, trunc: true, ratio, values }, "75ch"),
+      leading: scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5),
     },
-    spacing: content({ type: "bidirectional", unit: "ex" }, scale)
+    spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex")
   }
 };
 
 // TailwindCSS theme
-console.log(interop("tailwindcss", {
+console.log(schema("tailwindcss", {
   project: {},
   theme: {
     extend: {
@@ -2308,7 +2276,32 @@ console.log(interop("tailwindcss", {
 // {
 //   theme: {
 //     extend: {
-//       colors: { main: [Object] },
+//       colors: {
+//         main: {
+//           50: "rgb(238, 234, 246)",
+//           100: "rgb(209, 197, 228)",
+//           200: "rgb(181, 161, 210)",
+//           300: "rgb(154, 125, 192)",
+//           400: "rgb(127, 89, 173)",
+//           500: "rgb(85, 46, 126)",
+//           600: "rgb(69, 41, 100)",
+//           700: "rgb(53, 35, 75)",
+//           800: "rgb(38, 28, 52)",
+//           900: "rgb(24, 21, 29)",
+//           bg: "rgb(255, 255, 255)",
+//           fg: "rgb(17, 17, 17)",
+//           a50: "rgb(109, 191, 179)",
+//           a100: "rgb(63, 172, 186)",
+//           a200: "rgb(41, 147, 192)",
+//           a300: "rgb(60, 118, 192)",
+//           a400: "rgb(85, 86, 180)",
+//           a500: "rgb(110, 0, 112)",
+//           a600: "rgb(109, 0, 61)",
+//           a700: "rgb(101, 0, 0)",
+//           a800: "rgb(83, 0, 0)",
+//           a900: "rgb(55, 0, 0)"
+//         }
+//       },
 //       spacing: {
 //         DEFAULT: "1ex",
 //         x2: "1.414ex",
@@ -2316,63 +2309,190 @@ console.log(interop("tailwindcss", {
 //         x4: "2.8271ex",
 //         d2: "0.70721ex",
 //         d3: "0.50015ex",
-//         d4: "0.35371ex"
+//         d4: "0.35372ex"
 //       }
 //     }
 //   }
 // }
 
 // Style Dictionary tokens
-console.log(interop("styledictionary", { project: {}, ...dict }));
+console.log(schema("style-dictionary", { project: {}, ...dict }));
 // {
 //   sd: {
 //     color: {
-//       "50": { value: "rgb(238, 234, 246)" },
-//       "100": { value: "rgb(209, 197, 228)" },
-//       "200": { value: "rgb(181, 161, 210)" },
-//       "300": { value: "rgb(154, 125, 192)" },
-//       "400": { value: "rgb(127, 89, 173)" },
-//       "500": { value: "rgb(85, 46, 126)" },
-//       "600": { value: "rgb(69, 41, 100)" },
-//       "700": { value: "rgb(53, 35, 75)" },
-//       "800": { value: "rgb(38, 28, 52)" },
-//       "900": { value: "rgb(24, 21, 29)" },
-//       bg: { value: "rgb(255, 255, 255)" },
-//       fg: { value: "rgb(17, 17, 17)" },
-//       a50: { value: "rgb(210, 244, 237)" },
-//       a100: { value: "rgb(156, 214, 223)" },
-//       a200: { value: "rgb(112, 181, 215)" },
-//       a300: { value: "rgb(93, 142, 206)" },
-//       a400: { value: "rgb(96, 99, 187)" },
-//       a500: { value: "rgb(100, 0, 103)" },
-//       a600: { value: "rgb(88, 0, 42)" },
-//       a700: { value: "rgb(66, 0, 0)" },
-//       a800: { value: "rgb(31, 0, 0)" },
-//       a900: { value: "rgb(0, 28, 0)" }
+//       50: {
+//         value: "rgb(238, 234, 246)"
+//       },
+//       100: {
+//         value: "rgb(209, 197, 228)"
+//       },
+//       200: {
+//         value: "rgb(181, 161, 210)"
+//       },
+//       300: {
+//         value: "rgb(154, 125, 192)"
+//       },
+//       400: {
+//         value: "rgb(127, 89, 173)"
+//       },
+//       500: {
+//         value: "rgb(85, 46, 126)"
+//       },
+//       600: {
+//         value: "rgb(69, 41, 100)"
+//       },
+//       700: {
+//         value: "rgb(53, 35, 75)"
+//       },
+//       800: {
+//         value: "rgb(38, 28, 52)"
+//       },
+//       900: {
+//         value: "rgb(24, 21, 29)"
+//       },
+//       bg: {
+//         value: "rgb(255, 255, 255)"
+//       },
+//       fg: {
+//         value: "rgb(17, 17, 17)"
+//       },
+//       a50: {
+//         value: "rgb(109, 191, 179)"
+//       },
+//       a100: {
+//         value: "rgb(63, 172, 186)"
+//       },
+//       a200: {
+//         value: "rgb(41, 147, 192)"
+//       },
+//       a300: {
+//         value: "rgb(60, 118, 192)"
+//       },
+//       a400: {
+//         value: "rgb(85, 86, 180)"
+//       },
+//       a500: {
+//         value: "rgb(110, 0, 112)"
+//       },
+//       a600: {
+//         value: "rgb(109, 0, 61)"
+//       },
+//       a700: {
+//         value: "rgb(101, 0, 0)"
+//       },
+//       a800: {
+//         value: "rgb(83, 0, 0)"
+//       },
+//       a900: {
+//         value: "rgb(55, 0, 0)"
+//       }
 //     },
 //     text: {
-//       primary: { family: [Object], regular: [Object], bold: [Object] },
-//       secondary: { family: [Object], light: [Object], bold: [Object], black: [Object] },
-//       size: {
-//         base: [Object],
-//         x2: [Object],
-//         x3: [Object],
-//         x4: [Object],
-//         d2: [Object],
-//         d3: [Object],
-//         d4: [Object]
+//       primary: {
+//         family: {
+//           value: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif"
+//         },
+//         regular: {
+//           value: 400
+//         },
+//         bold: {
+//           value: 700
+//         }
 //       },
-//       measure: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] },
-//       leading: { base: [Object], i2: [Object], i3: [Object], i4: [Object], min: [Object] }
+//       secondary: {
+//         family: {
+//           value: "Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol"
+//         },
+//         light: {
+//           value: 300
+//         },
+//         bold: {
+//           value: 700
+//         },
+//         black: {
+//           value: 900
+//         }
+//       },
+//       size: {
+//         base: {
+//           value: "1rem"
+//         },
+//         x2: {
+//           value: "1.414rem"
+//         },
+//         x3: {
+//           value: "1.9994rem"
+//         },
+//         x4: {
+//           value: "2.8271rem"
+//         },
+//         d2: {
+//           value: "0.70721rem"
+//         },
+//         d3: {
+//           value: "0.50015rem"
+//         },
+//         d4: {
+//           value: "0.35372rem"
+//         }
+//       },
+//       measure: {
+//         base: {
+//           value: "75ch"
+//         },
+//         i2: {
+//           value: "66ch"
+//         },
+//         i3: {
+//           value: "60ch"
+//         },
+//         i4: {
+//           value: "55ch"
+//         },
+//         min: {
+//           value: "45ch"
+//         }
+//       },
+//       leading: {
+//         base: {
+//           value: 1.5
+//         },
+//         i2: {
+//           value: 1.4268
+//         },
+//         i3: {
+//           value: 1.375
+//         },
+//         i4: {
+//           value: 1.3384
+//         },
+//         min: {
+//           value: 1.25
+//         }
+//       }
 //     },
 //     spacing: {
-//       base: { value: "1ex" },
-//       x2: { value: "1.414ex" },
-//       x3: { value: "1.9994ex" },
-//       x4: { value: "2.8271ex" },
-//       d2: { value: "0.70721ex" },
-//       d3: { value: "0.50015ex" },
-//       d4: { value: "0.35371ex" }
+//       base: {
+//         value: "1ex"
+//       },
+//       x2: {
+//         value: "1.414ex"
+//       },
+//       x3: {
+//         value: "1.9994ex"
+//       },
+//       x4: {
+//         value: "2.8271ex"
+//       },
+//       d2: {
+//         value: "0.70721ex"
+//       },
+//       d3: {
+//         value: "0.50015ex"
+//       },
+//       d4: {
+//         value: "0.35372ex"
+//       }
 //     }
 //   }
 // }
@@ -2408,8 +2528,8 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
-import { preset } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
+import { preset } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2454,11 +2574,11 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js");
 import {
   preset,
   process
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js");
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/workflow.js");
 
 const swatch = "rebeccapurple";
 
@@ -2505,12 +2625,12 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 import {
   preset,
   process,
   pipeline
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2561,11 +2681,11 @@ import {
   convert,
   mix,
   harmony
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 import {
   preset,
   propagate
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 
@@ -2618,11 +2738,11 @@ import {
   convert,
   adjust,
   harmony
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/color.js";
 import {
   preset,
   delegate
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-32/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 

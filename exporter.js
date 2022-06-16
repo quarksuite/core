@@ -167,7 +167,7 @@ export function data(format, dict) {
  * filesystem API or a filesystem library of your choice.
  *
  * @example
- * Token dictionary stylesheet export example
+ * Token dictionary schema translation example
  *
  * ```js
  * import { palette } from "https://x.nest.land/quarksuite:core@2.0.0/color.js";
