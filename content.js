@@ -183,9 +183,12 @@ function generateGrid({ rows, ratio = 1.5 }, columns) {
  * Scale generation examples
  *
  * ```js
- * scale({ configuration: "bidirectional" }, "1rem"); // text size
- * scale({ configuration: "ranged", floor: "45ch", trunc: true }, "75ch"); // text measure
- * scale({ configuration: "ranged", floor: 1.25 }, 1.5) // text leading
+ * const ratio = 1.5;
+ * const values = 6;
+ *
+ * scale({ configuration: "bidirectional", ratio, values }, "1rem"); // text size
+ * scale({ configuration: "ranged", floor: "45ch", trunc: true, ratio, values }, "75ch"); // text measure
+ * scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5) // text leading
  * ```
  *
  * @remarks
