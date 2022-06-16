@@ -31,7 +31,7 @@ const dict = {
   },
   layout: {
     grid: grid({}, 3),
-    spacing: scale({}, "1rem"),
+    spacing: scale({}, "1ex"),
     dimensions: {
       width: scale({ configuration: "ranged", floor: "25vw" }, "100vw"),
       height: scale({ configuration: "ranged", floor: "25vh" }, "100vh"),
@@ -98,11 +98,11 @@ describe("data(format, dict)", () => {
               x4: "3.375rem",
               x5: "5.0625rem",
               x6: "7.5938rem",
-              d2: "0.66667em",
-              d3: "0.44444em",
-              d4: "0.2963em",
-              d5: "0.19753em",
-              d6: "0.13169em",
+              d2: "0.66667rem",
+              d3: "0.44444rem",
+              d4: "0.2963rem",
+              d5: "0.19753rem",
+              d6: "0.13169rem",
             },
             leading: {
               base: 1.5,
@@ -159,17 +159,17 @@ describe("data(format, dict)", () => {
               },
             },
             spacing: {
-              base: "1rem",
-              x2: "1.5rem",
-              x3: "2.25rem",
-              x4: "3.375rem",
-              x5: "5.0625rem",
-              x6: "7.5938rem",
-              d2: "0.66667rem",
-              d3: "0.44444rem",
-              d4: "0.2963rem",
-              d5: "0.19753rem",
-              d6: "0.13169rem",
+              base: "1ex",
+              x2: "1.5ex",
+              x3: "2.25ex",
+              x4: "3.375ex",
+              x5: "5.0625ex",
+              x6: "7.5938ex",
+              d2: "0.66667ex",
+              d3: "0.44444ex",
+              d4: "0.2963ex",
+              d5: "0.19753ex",
+              d6: "0.13169ex",
             },
             dimensions: {
               width: {
@@ -260,11 +260,11 @@ tokens:
       x4: 3.375rem
       x5: 5.0625rem
       x6: 7.5938rem
-      d2: 0.66667em
-      d3: 0.44444em
-      d4: 0.2963em
-      d5: 0.19753em
-      d6: 0.13169em
+      d2: 0.66667rem
+      d3: 0.44444rem
+      d4: 0.2963rem
+      d5: 0.19753rem
+      d6: 0.13169rem
     leading:
       base: 1.5
       i2: 1.4167
@@ -312,17 +312,17 @@ tokens:
           d2: 0.66667fr
           d3: 0.44444fr
     spacing:
-      base: 1rem
-      x2: 1.5rem
-      x3: 2.25rem
-      x4: 3.375rem
-      x5: 5.0625rem
-      x6: 7.5938rem
-      d2: 0.66667rem
-      d3: 0.44444rem
-      d4: 0.2963rem
-      d5: 0.19753rem
-      d6: 0.13169rem
+      base: 1ex
+      x2: 1.5ex
+      x3: 2.25ex
+      x4: 3.375ex
+      x5: 5.0625ex
+      x6: 7.5938ex
+      d2: 0.66667ex
+      d3: 0.44444ex
+      d4: 0.2963ex
+      d5: 0.19753ex
+      d6: 0.13169ex
     dimensions:
       width:
         base: 100vw

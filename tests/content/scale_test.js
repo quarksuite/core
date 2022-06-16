@@ -34,24 +34,6 @@ describe("scale(settings, root)", () => {
     });
   });
 
-  describe("settings.configuration = 'bidirectional'", () => {
-    it("should activate inversion setting", () => {
-      expect(scale({ inversion: "em" }, "1rem")).toEqual({
-        base: "1rem",
-        x2: "1.5rem",
-        x3: "2.25rem",
-        x4: "3.375rem",
-        x5: "5.0625rem",
-        x6: "7.5938rem",
-        d2: "0.66667em",
-        d3: "0.44444em",
-        d4: "0.2963em",
-        d5: "0.19753em",
-        d6: "0.13169em",
-      });
-    });
-  });
-
   describe("settings.configuration = 'unidirectional'", () => {
     it("should correctly build samples", () => {
       expect(scale({ configuration: "unidirectional" }, "1rem")).toEqual({
@@ -164,18 +146,15 @@ describe("scale(settings, root)", () => {
   describe("settings.values", () => {
     it("allows setting the number of scale values", () => {
       expect(
-        scale(
-          { configuration: "bidirectional", inversion: "em", values: 4 },
-          "1rem",
-        ),
+        scale({ configuration: "bidirectional", values: 4 }, "1rem"),
       ).toEqual({
         base: "1rem",
         x2: "1.5rem",
         x3: "2.25rem",
         x4: "3.375rem",
-        d2: "0.66667em",
-        d3: "0.44444em",
-        d4: "0.2963em",
+        d2: "0.66667rem",
+        d3: "0.44444rem",
+        d4: "0.2963rem",
       });
     });
   });

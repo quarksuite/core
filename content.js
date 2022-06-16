@@ -172,11 +172,9 @@ function generateGrid({ rows, ratio = 1.5 }, columns) {
  * @param {number} [settings.ratio] - the scale ratio
  * @param {number} [settings.values] - the number of scale values to generate
  *
- * @param {string} [settings.inversion] - set the output units for the inverse (bidirectional)
- *
  * @param {ScaleValue} [settings.floor] - set the range floor (ranged)
  * @param {boolean} [settings.trunc] - truncate the values? (ranged)
- * @param {boolean} [settings.reverse] - reverse the context (ranged)
+ * @param {boolean} [settings.reverse] - reverse the context? (ranged)
  *
  * @param {RootValue} root - the root value to generate from
  * @returns {ScaleTokens} the generated scale tokens
@@ -185,7 +183,7 @@ function generateGrid({ rows, ratio = 1.5 }, columns) {
  * Scale generation examples
  *
  * ```js
- * scale({ configuration: "bidirectional", inversion: "em" }, "1rem"); // text size
+ * scale({ configuration: "bidirectional" }, "1rem"); // text size
  * scale({ configuration: "ranged", floor: "45ch", trunc: true }, "75ch"); // text measure
  * scale({ configuration: "ranged", floor: 1.25 }, 1.5) // text leading
  * ```
@@ -195,12 +193,7 @@ function generateGrid({ rows, ratio = 1.5 }, columns) {
  * Otherwise, use the minimum value for directional types.
  */
 export function scale(settings, root) {
-  const {
-    configuration = "bidirectional",
-    inversion,
-    ratio = 1.5,
-    values = 6,
-  } = settings;
+  const { configuration = "bidirectional", ratio = 1.5, values = 6 } = settings;
 
   if (configuration === "ranged") {
     const { floor = 1, trunc = false, reverse = false } = settings;
@@ -210,7 +203,7 @@ export function scale(settings, root) {
     );
   }
 
-  return assemble({ configuration, inversion, ratio, values }, root);
+  return assemble({ configuration, ratio, values }, root);
 }
 
 function create({ ratio = 1.5, values = 6 }, root) {
@@ -257,12 +250,7 @@ function serialize([n, unit]) {
 function assemble(settings, root) {
   const [, unit] = parse(root);
 
-  const {
-    configuration = "bidirectional",
-    inversion = unit,
-    ratio = 1.5,
-    values = 6,
-  } = settings;
+  const { configuration = "bidirectional", ratio = 1.5, values = 6 } = settings;
   const [initial, ...x] = create({ ratio, values }, root);
 
   if (configuration === "unidirectional") {
@@ -324,7 +312,7 @@ function assemble(settings, root) {
     const [n] = parse(value);
 
     // @ts-ignore: parse() always returns a number or NaN
-    return serialize([base ** 2 / n, inversion]);
+    return serialize([base ** 2 / n, unit]);
   });
 
   return {

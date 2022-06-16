@@ -96,11 +96,9 @@ export function grid(settings: {
  * @param {number} [settings.ratio] - the scale ratio
  * @param {number} [settings.values] - the number of scale values to generate
  *
- * @param {string} [settings.inversion] - set the output units for the inverse (bidirectional)
- *
  * @param {ScaleValue} [settings.floor] - set the range floor (ranged)
  * @param {boolean} [settings.trunc] - truncate the values? (ranged)
- * @param {boolean} [settings.reverse] - reverse the context (ranged)
+ * @param {boolean} [settings.reverse] - reverse the context? (ranged)
  *
  * @param {RootValue} root - the root value to generate from
  * @returns {ScaleTokens} the generated scale tokens
@@ -109,7 +107,7 @@ export function grid(settings: {
  * Scale generation examples
  *
  * ```js
- * scale({ configuration: "bidirectional", inversion: "em" }, "1rem"); // text size
+ * scale({ configuration: "bidirectional" }, "1rem"); // text size
  * scale({ configuration: "ranged", floor: "45ch", trunc: true }, "75ch"); // text measure
  * scale({ configuration: "ranged", floor: 1.25 }, 1.5) // text leading
  * ```
@@ -122,7 +120,6 @@ export function scale(settings: {
     configuration?: ScaleConfiguration;
     ratio?: number;
     values?: number;
-    inversion?: string;
     floor?: ScaleValue;
     trunc?: boolean;
     reverse?: boolean;

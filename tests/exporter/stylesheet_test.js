@@ -23,7 +23,7 @@ const dict = {
     primary: text({}, ""),
     secondary: text({ system: "serif", weights: ["light", "black"] }, ""),
     source: text({ system: "monospace" }, ""),
-    size: scale({ inversion: "em" }, "1rem"),
+    size: scale({}, "1rem"),
     leading: scale({ configuration: "ranged", floor: 1.25 }, 1.5),
     measure: scale(
       {
@@ -36,7 +36,7 @@ const dict = {
   },
   layout: {
     grid: grid({}, 3),
-    spacing: scale({}, "1rem"),
+    spacing: scale({}, "1ex"),
     dimensions: {
       width: scale({ configuration: "ranged", floor: "25vw" }, "100vw"),
       height: scale({ configuration: "ranged", floor: "25vh" }, "100vh"),
@@ -96,11 +96,11 @@ describe("stylesheet(format, dict)", () => {
   --text-size-x4: 3.375rem;
   --text-size-x5: 5.0625rem;
   --text-size-x6: 7.5938rem;
-  --text-size-d2: 0.66667em;
-  --text-size-d3: 0.44444em;
-  --text-size-d4: 0.2963em;
-  --text-size-d5: 0.19753em;
-  --text-size-d6: 0.13169em;
+  --text-size-d2: 0.66667rem;
+  --text-size-d3: 0.44444rem;
+  --text-size-d4: 0.2963rem;
+  --text-size-d5: 0.19753rem;
+  --text-size-d6: 0.13169rem;
   --text-leading: 1.5;
   --text-leading-i2: 1.4167;
   --text-leading-i3: 1.3611;
@@ -139,17 +139,17 @@ describe("stylesheet(format, dict)", () => {
   --layout-grid-row-fr-x3: 2.25fr;
   --layout-grid-row-fr-d2: 0.66667fr;
   --layout-grid-row-fr-d3: 0.44444fr;
-  --layout-spacing: 1rem;
-  --layout-spacing-x2: 1.5rem;
-  --layout-spacing-x3: 2.25rem;
-  --layout-spacing-x4: 3.375rem;
-  --layout-spacing-x5: 5.0625rem;
-  --layout-spacing-x6: 7.5938rem;
-  --layout-spacing-d2: 0.66667rem;
-  --layout-spacing-d3: 0.44444rem;
-  --layout-spacing-d4: 0.2963rem;
-  --layout-spacing-d5: 0.19753rem;
-  --layout-spacing-d6: 0.13169rem;
+  --layout-spacing: 1ex;
+  --layout-spacing-x2: 1.5ex;
+  --layout-spacing-x3: 2.25ex;
+  --layout-spacing-x4: 3.375ex;
+  --layout-spacing-x5: 5.0625ex;
+  --layout-spacing-x6: 7.5938ex;
+  --layout-spacing-d2: 0.66667ex;
+  --layout-spacing-d3: 0.44444ex;
+  --layout-spacing-d4: 0.2963ex;
+  --layout-spacing-d5: 0.19753ex;
+  --layout-spacing-d6: 0.13169ex;
   --layout-dimensions-width: 100vw;
   --layout-dimensions-width-i2: 75vw;
   --layout-dimensions-width-i3: 58.333vw;
@@ -226,11 +226,11 @@ $text-size-x3: 2.25rem;
 $text-size-x4: 3.375rem;
 $text-size-x5: 5.0625rem;
 $text-size-x6: 7.5938rem;
-$text-size-d2: 0.66667em;
-$text-size-d3: 0.44444em;
-$text-size-d4: 0.2963em;
-$text-size-d5: 0.19753em;
-$text-size-d6: 0.13169em;
+$text-size-d2: 0.66667rem;
+$text-size-d3: 0.44444rem;
+$text-size-d4: 0.2963rem;
+$text-size-d5: 0.19753rem;
+$text-size-d6: 0.13169rem;
 $text-leading: 1.5;
 $text-leading-i2: 1.4167;
 $text-leading-i3: 1.3611;
@@ -269,17 +269,17 @@ $layout-grid-row-fr-x2: 1.5fr;
 $layout-grid-row-fr-x3: 2.25fr;
 $layout-grid-row-fr-d2: 0.66667fr;
 $layout-grid-row-fr-d3: 0.44444fr;
-$layout-spacing: 1rem;
-$layout-spacing-x2: 1.5rem;
-$layout-spacing-x3: 2.25rem;
-$layout-spacing-x4: 3.375rem;
-$layout-spacing-x5: 5.0625rem;
-$layout-spacing-x6: 7.5938rem;
-$layout-spacing-d2: 0.66667rem;
-$layout-spacing-d3: 0.44444rem;
-$layout-spacing-d4: 0.2963rem;
-$layout-spacing-d5: 0.19753rem;
-$layout-spacing-d6: 0.13169rem;
+$layout-spacing: 1ex;
+$layout-spacing-x2: 1.5ex;
+$layout-spacing-x3: 2.25ex;
+$layout-spacing-x4: 3.375ex;
+$layout-spacing-x5: 5.0625ex;
+$layout-spacing-x6: 7.5938ex;
+$layout-spacing-d2: 0.66667ex;
+$layout-spacing-d3: 0.44444ex;
+$layout-spacing-d4: 0.2963ex;
+$layout-spacing-d5: 0.19753ex;
+$layout-spacing-d6: 0.13169ex;
 $layout-dimensions-width: 100vw;
 $layout-dimensions-width-i2: 75vw;
 $layout-dimensions-width-i3: 58.333vw;
@@ -355,11 +355,11 @@ $layout-dimensions-largest-min: 25vmax;
 @text-size-x4: 3.375rem;
 @text-size-x5: 5.0625rem;
 @text-size-x6: 7.5938rem;
-@text-size-d2: 0.66667em;
-@text-size-d3: 0.44444em;
-@text-size-d4: 0.2963em;
-@text-size-d5: 0.19753em;
-@text-size-d6: 0.13169em;
+@text-size-d2: 0.66667rem;
+@text-size-d3: 0.44444rem;
+@text-size-d4: 0.2963rem;
+@text-size-d5: 0.19753rem;
+@text-size-d6: 0.13169rem;
 @text-leading: 1.5;
 @text-leading-i2: 1.4167;
 @text-leading-i3: 1.3611;
@@ -398,17 +398,17 @@ $layout-dimensions-largest-min: 25vmax;
 @layout-grid-row-fr-x3: 2.25fr;
 @layout-grid-row-fr-d2: 0.66667fr;
 @layout-grid-row-fr-d3: 0.44444fr;
-@layout-spacing: 1rem;
-@layout-spacing-x2: 1.5rem;
-@layout-spacing-x3: 2.25rem;
-@layout-spacing-x4: 3.375rem;
-@layout-spacing-x5: 5.0625rem;
-@layout-spacing-x6: 7.5938rem;
-@layout-spacing-d2: 0.66667rem;
-@layout-spacing-d3: 0.44444rem;
-@layout-spacing-d4: 0.2963rem;
-@layout-spacing-d5: 0.19753rem;
-@layout-spacing-d6: 0.13169rem;
+@layout-spacing: 1ex;
+@layout-spacing-x2: 1.5ex;
+@layout-spacing-x3: 2.25ex;
+@layout-spacing-x4: 3.375ex;
+@layout-spacing-x5: 5.0625ex;
+@layout-spacing-x6: 7.5938ex;
+@layout-spacing-d2: 0.66667ex;
+@layout-spacing-d3: 0.44444ex;
+@layout-spacing-d4: 0.2963ex;
+@layout-spacing-d5: 0.19753ex;
+@layout-spacing-d6: 0.13169ex;
 @layout-dimensions-width: 100vw;
 @layout-dimensions-width-i2: 75vw;
 @layout-dimensions-width-i3: 58.333vw;
@@ -484,11 +484,11 @@ text-size-x3 = 2.25rem
 text-size-x4 = 3.375rem
 text-size-x5 = 5.0625rem
 text-size-x6 = 7.5938rem
-text-size-d2 = 0.66667em
-text-size-d3 = 0.44444em
-text-size-d4 = 0.2963em
-text-size-d5 = 0.19753em
-text-size-d6 = 0.13169em
+text-size-d2 = 0.66667rem
+text-size-d3 = 0.44444rem
+text-size-d4 = 0.2963rem
+text-size-d5 = 0.19753rem
+text-size-d6 = 0.13169rem
 text-leading = 1.5
 text-leading-i2 = 1.4167
 text-leading-i3 = 1.3611
@@ -527,17 +527,17 @@ layout-grid-row-fr-x2 = 1.5fr
 layout-grid-row-fr-x3 = 2.25fr
 layout-grid-row-fr-d2 = 0.66667fr
 layout-grid-row-fr-d3 = 0.44444fr
-layout-spacing = 1rem
-layout-spacing-x2 = 1.5rem
-layout-spacing-x3 = 2.25rem
-layout-spacing-x4 = 3.375rem
-layout-spacing-x5 = 5.0625rem
-layout-spacing-x6 = 7.5938rem
-layout-spacing-d2 = 0.66667rem
-layout-spacing-d3 = 0.44444rem
-layout-spacing-d4 = 0.2963rem
-layout-spacing-d5 = 0.19753rem
-layout-spacing-d6 = 0.13169rem
+layout-spacing = 1ex
+layout-spacing-x2 = 1.5ex
+layout-spacing-x3 = 2.25ex
+layout-spacing-x4 = 3.375ex
+layout-spacing-x5 = 5.0625ex
+layout-spacing-x6 = 7.5938ex
+layout-spacing-d2 = 0.66667ex
+layout-spacing-d3 = 0.44444ex
+layout-spacing-d4 = 0.2963ex
+layout-spacing-d5 = 0.19753ex
+layout-spacing-d6 = 0.13169ex
 layout-dimensions-width = 100vw
 layout-dimensions-width-i2 = 75vw
 layout-dimensions-width-i3 = 58.333vw
