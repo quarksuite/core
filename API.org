@@ -20,6 +20,7 @@
     - [[#outputformat-dict][output(format, dict)]]
   - [[#content][Content]]
     - [[#textsettings-font][text(settings, font)]]
+    - [[#gridsettings-columns][grid(settings, columns)]]
     - [[#scalesettings-root][scale(settings, root)]]
   - [[#exporter-1][Exporter]]
     - [[#stylesheetformat-dict][stylesheet(format, dict)]]
@@ -141,8 +142,8 @@ console.log(convert("oklch", color)); // oklch(44.027% 0.1603 303.373)
 
 **** Notes
 
-+ Every color function in the library outputs colors in the format of the input color. The exception are named colors,
-  which will *always* be converted to hexadecimal if used as input.
+Every color function in the library outputs colors in the format of the input color. The exception are named colors,
+which will *always* be converted to hexadecimal if used as input.
 
 *** adjust(settings, color)
 
@@ -1193,8 +1194,9 @@ console.log(output("sketchpalette", dict));
 
 The =content.js= module contains all functionality around creating content tokens.
 
-Modular scales are associated with the =ms= type and the goal is to create and enforce consistency in values used for
-text sizing, content dimensions, spacing, layout, etc.
+The =scale= function handles all modular scale generation. It's greatly improved from v1's method. Instead of arbitrary
+values, you pass in *root CSS values*. Use =1rem= when you mean it or =16px= whenever you want. The rest is done for
+you.
 
 The content module also contains utilities for handling other kinds of content concerns.
 
@@ -1245,149 +1247,31 @@ console.log(text({ system: "serif", weights: ["regular", "bold"] }, "Mozilla Sla
 // }
 #+END_SRC
 
-*** scale(settings, root)
+*** grid(settings, columns)
 
-An action that takes a generated =ms= and outputs content tokens according to user =settings=.
+An action that takes a number of =columns= and outputs grid tokens according to user =settings=.
 
 **** Parameters
 
-+ =settings: {}=: content token settings
-  - =settings.type = bidirectional: bidirectional | unidirectional | ranged | grid=: set the output type
-  - =settings.unit = undefined: string | undefined=: set the output units (=bidirectional=, =unidirectional=, =ranged=)
-  - =settings.inversion = undefined: string | undefined=: set the output units for the inverse (=bidirectional=)
-  - =settings.min = 1: number=: set the minimum range value (=ranged=)
-  - =settings.max = 1: number=: set the maximum range value (=ranged=)
-  - =settings.trunc = false: boolean=: truncate the values? (=ranged=)
-  - =settings.context = min: min | max=: set the token context (=ranged=)
-+ =ms: number[]=: the input modular scale data
++ =settings: {}=: grid settings
+  + =ratio = 1.5: number=: grid fractions ratio
+  + =rows: number=: number of grid rows to generate
++ =columns: number=: number of grid columns to generate
 
 **** Returns
 
-={}=: the generated content tokens
+={}=: the generated grid tokens
 
 **** Examples
 
-***** Bidirectional
-
 #+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+import { grid } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
 
-const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
-
-// Unitless by default
-console.log(tokens({ type: "bidirectional" }, scale));
-// {
-//   base: 1,
-//   x2: 1.414,
-//   x3: 1.618,
-//   x4: 1.9994,
-//   x5: 2.6179,
-//   x6: 2.8271,
-//   d2: 0.70721,
-//   d3: 0.61805,
-//   d4: 0.50015,
-//   d5: 0.38198,
-//   d6: 0.35371
-// }
-
-// As rems
-console.log(tokens({ type: "bidirectional", unit: "rem" }, scale));
-// {
-//   base: "1rem",
-//   x2: "1.414rem",
-//   x3: "1.618rem",
-//   x4: "1.9994rem",
-//   x5: "2.6179rem",
-//   x6: "2.8271rem",
-//   d2: "0.70721rem",
-//   d3: "0.61805rem",
-//   d4: "0.50015rem",
-//   d5: "0.38198rem",
-//   d6: "0.35371rem"
-// }
-
-// As rems with em inversion
-console.log(tokens({ type: "bidirectional", unit: "rem", inversion: "em" }, scale));
-// {
-//   base: "1rem",
-//   x2: "1.414rem",
-//   x3: "1.618rem",
-//   x4: "1.9994rem",
-//   x5: "2.6179rem",
-//   x6: "2.8271rem",
-//   d2: "0.70721em",
-//   d3: "0.61805em",
-//   d4: "0.50015em",
-//   d5: "0.38198em",
-//   d6: "0.35371em"
-// }
-#+END_SRC
-
-***** Unidirectional
-
-#+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
-
-const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
-
-// Unitless by default
-console.log(tokens({ type: "unidirectional" }, scale));
-// {
-//   base: 1,
-//   x2: 1.414,
-//   x3: 1.618,
-//   x4: 1.9994,
-//   x5: 2.6179,
-//   x6: 2.8271,
-// }
-
-// As rems
-console.log(tokens({ type: "unidirectional", unit: "rem" }, scale));
-// {
-//   base: "1rem",
-//   x2: "1.414rem",
-//   x3: "1.618rem",
-//   x4: "1.9994rem",
-//   x5: "2.6179rem",
-//   x6: "2.8271rem",
-// }
-#+END_SRC
-
-***** Ranged
-
-#+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
-
-const scale = ms({ ratio: [1.414, 1.618], values: 6 }, 1);
-
-// Unitless by default
-console.log(tokens({ type: "ranged", min: 1, max: 10 }, scale));
-// { base: 1, i2: 4.1834, i3: 4.4378, i4: 5.5014, i5: 6.5624, i6: 7.3649, max: 10 }
-
-// Sample: A measure (characters per line) scale
-console.log(tokens({
-  type: "ranged",
-  min: 45,
-  max: 75,
-  unit: "ch",
-  trunc: true,
-  context: "max"
-}, scale));
-// { base: "75ch", i2: "66ch", i3: "63ch", i4: "60ch", i5: "56ch", i6: "55ch", min: "45ch" }
-#+END_SRC
-
-***** Grid
-
-#+BEGIN_SRC js
-import { ms, tokens } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
-
-const scale = ms({ ratio: 1.618, values: 5 }, 1);
-
-// Sample: Grid layout tokens
-console.log(tokens({ type: "grid" }, scale));
+// Rows will be set the same as columns if undefined
+console.log(grid({}, 5));
 // {
 //   columns: 5,
-//   rows: 3,
+//   rows: 5,
 //   col: {
 //     "1": 1,
 //     "2": 2,
@@ -1398,26 +1282,374 @@ console.log(tokens({ type: "grid" }, scale));
 //     "-2": -2,
 //     "-3": -3,
 //     "-4": -4,
-//     "-5": -5
+//     "-5": -5,
+//     fr: {
+//       base: "1fr",
+//       x2: "1.5fr",
+//       x3: "2.25fr",
+//       x4: "3.375fr",
+//       x5: "5.0625fr",
+//       d2: "0.66667fr",
+//       d3: "0.44444fr",
+//       d4: "0.2963fr",
+//       d5: "0.19753fr"
+//     }
 //   },
-//   row: { "1": 1, "2": 2, "3": 3, "-1": -1, "-2": -2, "-3": -3 }
+//   row: {
+//     "1": 1,
+//     "2": 2,
+//     "3": 3,
+//     "4": 4,
+//     "5": 5,
+//     "-1": -1,
+//     "-2": -2,
+//     "-3": -3,
+//     "-4": -4,
+//     "-5": -5,
+//     fr: {
+//       base: "1fr",
+//       x2: "1.5fr",
+//       x3: "2.25fr",
+//       x4: "3.375fr",
+//       x5: "5.0625fr",
+//       d2: "0.66667fr",
+//       d3: "0.44444fr",
+//       d4: "0.2963fr",
+//       d5: "0.19753fr"
+//     }
+//   }
+// }
+
+// Set rows explicitly
+console.log(grid({ rows: 2 }, 3));
+// {
+//   columns: 3,
+//   rows: 2,
+//   col: {
+//     "1": 1,
+//     "2": 2,
+//     "3": 3,
+//     "-1": -1,
+//     "-2": -2,
+//     "-3": -3,
+//     fr: { base: "1fr", x2: "1.5fr", x3: "2.25fr", d2: "0.66667fr", d3: "0.44444fr" }
+//   },
+//   row: {
+//     "1": 1,
+//     "2": 2,
+//     "-1": -1,
+//     "-2": -2,
+//     fr: { base: "1fr", x2: "1.5fr", d2: "0.66667fr" }
+//   }
+// }
+
+// Set grid ratio
+console.log(grid({ ratio: 1.2 }, 2))
+// {
+//   columns: 2,
+//   rows: 2,
+//   col: {
+//     "1": 1,
+//     "2": 2,
+//     "-1": -1,
+//     "-2": -2,
+//     fr: { base: "1fr", x2: "1.2fr", d2: "0.83333fr" }
+//   },
+//   row: {
+//     "1": 1,
+//     "2": 2,
+//     "-1": -1,
+//     "-2": -2,
+//     fr: { base: "1fr", x2: "1.2fr", d2: "0.83333fr" }
+//   }
+// }
+
+// Set grid ratio (multithreaded)
+console.log(grid({ rows: 4, ratio: [1.2, 1.4, 1.8] }, 10));
+// {
+//   columns: 10,
+//   rows: 4,
+//   col: {
+//     "1": 1,
+//     "2": 2,
+//     "3": 3,
+//     "4": 4,
+//     "5": 5,
+//     "6": 6,
+//     "7": 7,
+//     "8": 8,
+//     "9": 9,
+//     "10": 10,
+//     "-1": -1,
+//     "-2": -2,
+//     "-3": -3,
+//     "-4": -4,
+//     "-5": -5,
+//     "-6": -6,
+//     "-7": -7,
+//     "-8": -8,
+//     "-9": -9,
+//     "-10": -10,
+//     fr: {
+//       base: "1fr",
+//       x2: "1.2fr",
+//       x3: "1.4fr",
+//       x4: "1.8fr",
+//       x5: "1.44fr",
+//       x6: "1.96fr",
+//       x7: "3.24fr",
+//       x8: "1.728fr",
+//       x9: "2.744fr",
+//       x10: "5.832fr",
+//       d2: "0.83333fr",
+//       d3: "0.71429fr",
+//       d4: "0.55556fr",
+//       d5: "0.69444fr",
+//       d6: "0.5102fr",
+//       d7: "0.30864fr",
+//       d8: "0.5787fr",
+//       d9: "0.36443fr",
+//       d10: "0.17147fr"
+//     }
+//   },
+//   row: {
+//     "1": 1,
+//     "2": 2,
+//     "3": 3,
+//     "4": 4,
+//     "-1": -1,
+//     "-2": -2,
+//     "-3": -3,
+//     "-4": -4,
+//     fr: {
+//       base: "1fr",
+//       x2: "1.2fr",
+//       x3: "1.4fr",
+//       x4: "1.8fr",
+//       d2: "0.83333fr",
+//       d3: "0.71429fr",
+//       d4: "0.55556fr"
+//     }
+//   }
 // }
 #+END_SRC
 
 **** Notes
 
-=tokens()= is designed to generate (mostly) content modular scale tokens, but it can be used for /any/ kind of numeric
-scale data. This means you can use it to generate tokens for, say, animation durations.
+This function has your back for grid/subgrid value generation. Get as granular as you like.
 
-If you're coming from v1, this means that the content =tokens()= utility completely replaces formulas because it builds
-on the fact that (generally) modular scales for content will be one of three configurations:
+*** scale(settings, root)
 
-+ Bidirectional (=<- base ->=): base value, multiples, and inverse
-+ Unidirectional (=base ->=): base value, multiples
-+ Ranged (=min <-> max=): minimum value, generated intervals, maximum value
+An action that takes a =root= CSS value and outputs a modular scale according to user =settings=.
 
-The =grid= type generates columns and rows as CSS grid tracks where columns are equivalent to the number of scale values
-and rows are derived from the =columns / ratio=.
+**** Parameters
+
++ =settings: {}=: scale token settings
+  + =settings.configuration = bidirectional: bidirectional | unidirectional | ranged=: set the scale configuration
+  + =settings.ratio = 1.5: number=: set the scale ratio
+  + =settings.values = 6: number=: the number of scale values to generate
+  + =settings.floor = 1: string | number=: set the range floor (=ranged=)
+  + =settings.trunc = false: boolean=: truncate the values? (=ranged=)
+  + =settings.reverse = false: boolean=: reverse the context? (=ranged=)
+
++ =root: string | number=: the generated scale tokens
+
+**** Returns
+
+={}=: the generated scale tokens
+
+**** Examples
+
+***** Bidirectional/Unidirectional
+
+#+BEGIN_SRC js
+import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+
+// Roots can be unitless
+console.log(scale({ configuration: "bidirectional" }, 1));
+// {
+//   base: 1,
+//   x2: 1.5,
+//   x3: 2.25,
+//   x4: 3.375,
+//   x5: 5.0625,
+//   x6: 7.5938,
+//   d2: 0.66667,
+//   d3: 0.44444,
+//   d4: 0.2963,
+//   d5: 0.19753,
+//   d6: 0.13169
+// }
+
+console.log(scale({ configuration: "unidirectional" }, 1));
+// {
+//   base: 1,
+//   x2: 1.5,
+//   x3: 2.25,
+//   x4: 3.375,
+//   x5: 5.0625,
+//   x6: 7.5938,
+// }
+
+// As rems
+console.log(scale({ configuration: "bidirectional" }, "1rem"));
+// {
+//   base: "1rem",
+//   x2: "1.5rem",
+//   x3: "2.25rem",
+//   x4: "3.375rem",
+//   x5: "5.0625rem",
+//   x6: "7.5938rem",
+//   d2: "0.66667rem",
+//   d3: "0.44444rem",
+//   d4: "0.2963rem",
+//   d5: "0.19753rem",
+//   d6: "0.13169rem"
+// }
+
+console.log(scale({ configuration: "unidirectional" }, "1rem"));
+// {
+//   base: "1rem",
+//   x2: "1.5rem",
+//   x3: "2.25rem",
+//   x4: "3.375rem",
+//   x5: "5.0625rem",
+//   x6: "7.5938rem",
+// }
+
+// Set ratio
+console.log(scale({ configuration: "bidirectional", ratio: 2 }, "1ex"))
+// {
+//   base: "1ex",
+//   x2: "2ex",
+//   x3: "4ex",
+//   x4: "8ex",
+//   x5: "16ex",
+//   x6: "32ex",
+//   d2: "0.5ex",
+//   d3: "0.25ex",
+//   d4: "0.125ex",
+//   d5: "0.0625ex",
+//   d6: "0.03125ex"
+// }
+
+// Set ratio (multithread)
+console.log(scale({ configuration: "bidirectional", ratio: [1.618, 2] }, "1ex"));
+// {
+//   base: "1ex",
+//   x2: "1.618ex",
+//   x3: "2ex",
+//   x4: "2.6179ex",
+//   x5: "4ex",
+//   x6: "4.2358ex",
+//   d2: "0.61805ex",
+//   d3: "0.5ex",
+//   d4: "0.38199ex",
+//   d5: "0.25ex",
+//   d6: "0.23608ex"
+// }
+
+// Set values
+console.log(scale({ configuration: "bidirectional", values: 4 }, "16px"));
+// {
+//   base: "16px",
+//   x2: "24px",
+//   x3: "36px",
+//   x4: "54px",
+//   d2: "10.667px",
+//   d3: "7.1111px",
+//   d4: "4.7407px"
+// }
+#+END_SRC
+
+***** Ranged
+
+#+BEGIN_SRC js
+import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+
+// IMPORTANT: pass in the maximum value as the root and set a floor
+console.log(scale({ configuration: "ranged", floor: 2 }, "8px"));
+// {
+//   base: "8px",
+//   i2: "6px",
+//   i3: "4.6667px",
+//   i4: "3.7778px",
+//   i5: "3.1852px",
+//   i6: "2.7901px",
+//   min: "2px"
+// }
+
+// truncate the result
+console.log(scale({ configuration: "ranged", floor: 45, trunc: true }, "75ch"));
+// { base: "75ch", i2: "65ch", i3: "58ch", i4: "53ch", i5: "50ch", i6: "48ch", min: "45ch" }
+
+// reverse the context
+console.log(scale({ configuration: "ranged", floor: 10, reverse: true }, "100%"));
+// {
+//   base: "10%",
+//   i2: "21.852%",
+//   i3: "27.778%",
+//   i4: "36.667%",
+//   i5: "50%",
+//   i6: "70%",
+//   max: "100%"
+// }
+
+// Set the ratio
+console.log(scale({ configuration: "ranged", floor: 4, ratio: 2 }, "8px"));
+// {
+//   base: "8px",
+//   i2: "6px",
+//   i3: "5px",
+//   i4: "4.5px",
+//   i5: "4.25px",
+//   i6: "4.125px",
+//   min: "4px"
+// }
+
+// Set the ratio (multithread)
+console.log(scale({ configuration: "ranged", floor: 4, ratio: [1.618, 2] }, "8px"));
+// {
+//   base: "8px",
+//   i2: "6.4722px",
+//   i3: "6px",
+//   i4: "5.5279px",
+//   i5: "5px",
+//   i6: "4.9443px",
+//   min: "4px"
+// }
+
+// Set values
+console.log(scale({ configuration: "ranged", floor: 250, values: 10 }, "1000ms"));
+// {
+//   base: "1000ms",
+//   i2: "750ms",
+//   i3: "583.33ms",
+//   i4: "472.22ms",
+//   i5: "398.15ms",
+//   i6: "348.76ms",
+//   i7: "315.84ms",
+//   i8: "293.9ms",
+//   i9: "279.26ms",
+//   i10: "269.51ms",
+//   min: "250ms"
+// }
+#+END_SRC
+
+**** Notes
+
+The context of the root value changes depending on the configuration. In =unidirectional/bidirectional= configurations,
+the root is simply the initial value, but in the =ranged= configuration, the root is the range target.
+
+In addition, the floor can be unitless. This is powerful because it means the range values will take on the unit of the
+root value instead. If it has one.
+
+Finally, be careful about how far apart your root and floor are. Also be aware of how many values you generate. Too many
+and the values won't be distinct enough to use. If the root and floor are too close, same thing.
+
+And if they're far apart, you could end up with outrageous values.
+
+Experiment and tweak the results until you get it just the way you want.
 
 ** Exporter
 
