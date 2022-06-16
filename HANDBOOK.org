@@ -794,13 +794,11 @@ the meaning of our rules. How can we do that?
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/color-recipe.js"
 import {
   convert,
-  adjust,
   harmony,
   palette,
 } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
 import {
   preset,
-  process,
   pipeline,
   delegate
 } from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
@@ -861,13 +859,6 @@ export default function(color, scheme = "analogous", format = "rgb") {
 
 First, create a new file named =content-recipes.js=.
 
-We'll also need our global settings here.
-
-#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/content-recipes.js"
-const ratio = 1.32;
-const values = 4;
-#+END_SRC
-
 Now we're going to modularize one category at a time.
 
 *** Modules
@@ -910,6 +901,9 @@ export function Font(font, bodyFallback = "sans", headingFallback = "serif") {
 
   return delegate([font, font], bodyTokens, headingTokens);
 }
+
+const ratio = 1.32;
+const values = 4;
 
 export function Content([size, leading, measure], measureFloor = 48, leadingFloor = 1.2) {
   const sizeTokens = preset(scale, {
