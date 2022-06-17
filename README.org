@@ -12,6 +12,7 @@
   - [[#offline][Offline]]
 - [[#handbook][Handbook]]
 - [[#api][API]]
+- [[#demos][Demos]]
 - [[#contributing][Contributing]]
 - [[#concept][Concept]]
 - [[#project-objectives][Project Objectives]]
@@ -146,6 +147,11 @@ that next.
 
 The [[https://github.com/quarksuite/core/blob/main/API.org][QuarkSuite Core API]] is a technical overview of the library that also serves as documentation of its functions. It
 may make more sense after reading the handbook, but some of you may get more out of reading it beforehand.
+
+* Demos
+
+I maintain a [[https://glitch.com/@quarksuite][growing collection of demos]] for QuarkSuite at various stages of development on Glitch. It includes rough
+experiments, workflow samples, and practical usage examples, so be sure to check it out.
 
 * Contributing
 
