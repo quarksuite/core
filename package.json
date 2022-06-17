@@ -1,5 +1,5 @@
 {
-  "name": "@quarksuite/core",
+  "name": "@quarksuite-two/core",
   "description": "A web-focused toolkit for creating, assembling and distributing design tokens for custom design systems.",
   "version": "2.0.0",
   "license": "Unlicense",

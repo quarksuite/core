@@ -59,7 +59,7 @@ QuarkSuite Core is written in vanilla JavaScript (ES2017+).
 + [[https://jsdelivr.com][JSDelivr]]: =https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/[module]=
 + [[https://statically.io][Statically]]: =https://cdn.statically.io/gh/quarksuite/core/2.0.0/[module]=
 + [[https://nest.land][Nest.land]]: =https://x.nest.land/quarksuite:core@2.0.0/[module]=
-+ [[https://nodejs.org/][Node]] (NPM): =@quarksuite/core@2.0.0=
++ [[https://nodejs.org/][Node]] (NPM): =@quarksuite-two/core@2.0.0=
 
 In general, prefer the JSDelivr/Statically CDN for availability, features, and speed. The Nest.land package is a
 failsafe for the repo disappearing or GitHub going down.
@@ -97,15 +97,20 @@ import {
 
 *** Node
 
-Ensure that =type: module= is set in your =package.json= so that Node is set for
-ES Modules. Then install the package.
+#+BEGIN_QUOTE
+The now defunct =@quarksuite/core= was originally published on NPM, but I started the project over and unpublished the
+package. The core is now in a state where I feel comfortable putting it back on NPM and exposing it to the wider
+JavaScript ecosystem.
+#+END_QUOTE
+
+Ensure that =type: module= is set in your =package.json= so that Node is set for ES Modules. Then install the package.
 
 #+BEGIN_SRC shell
-npm install @quarksuite/core@2.0.0
+npm install @quarksuite-two/core@2.0.0
 
 # OR
 
-yarn add @quarksuite/core@2.0.0
+yarn add @quarksuite-two/core@2.0.0
 #+END_SRC
 
 And then in your source files:
@@ -116,7 +121,7 @@ import {
   content,
   exporter,
   workflow
-} from "@quarksuite/core";
+} from "@quarksuite-two/core";
 #+END_SRC
 
 ** Offline
