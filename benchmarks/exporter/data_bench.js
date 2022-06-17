@@ -1,79 +1,75 @@
-import { adjust, palette, tokens as color } from "../../color.js";
-import { ms, tokens as content } from "../../content.js";
+import { adjust, palette } from "../../color.js";
+import { grid, scale } from "../../content.js";
 import { pipeline, preset, propagate } from "../../workflow.js";
 import { data } from "../../exporter.js";
 
-const warmup = 10;
-const n = 1000;
+const warmup = 5;
+const n = 100;
 
 const swatches = adjust({ hue: 360, steps: 26 }, "#7ea"); // a-z categorization
 const material = preset(palette, {
   contrast: 90,
-  accented: true,
-  stated: true,
+  accents: true,
+  states: true,
 });
 
 function paletteFactory(data) {
   const generate = preset(propagate, material);
-  const assemble = preset(propagate, color);
   const categorize = (data) =>
     data.reduce(
       (acc, tokens, i) => ({ ...acc, [String.fromCharCode(97 + i)]: tokens }),
       {},
     );
 
-  return pipeline(data, generate, assemble, categorize);
+  return pipeline(data, generate, categorize);
 }
 
 const ratio = [1.25, 1.5, 1.75, 2];
-const scale = ms({ ratio, values: 25 }, 1);
+const values = 250;
 
-const size = content({ unit: "rem", inversion: "em" }, scale);
-const measure = content(
+const size = scale({ ratio, values }, "1rem");
+const measure = scale(
   {
-    type: "ranged",
-    unit: "ch",
-    min: 45,
-    max: 75,
+    configuration: "ranged",
+    floor: 45,
     trunc: true,
-    context: "max",
+    ratio,
+    values,
   },
-  scale,
+  "75ch",
 );
-const leading = content(
-  { type: "ranged", min: 1.25, max: 1.5, context: "max" },
-  scale,
+const leading = scale(
+  { configuration: "ranged", floor: 1.25, ratio, values },
+  1.5,
 );
 
-const spacing = content({ unit: "ex" }, scale);
+const spacing = scale({ ratio, values }, "1ex");
 
-const grid = content({ type: "grid" }, scale);
-const fr = content({ unit: "fr" }, scale);
+const gridOut = grid({ ratio }, values);
 
 const dim = ["w", "h", "min", "max"].reduce(
   (acc, context) => ({
     ...acc,
-    [context]: content(
+    [context]: scale(
       {
-        type: "ranged",
-        unit: `v${context}`,
-        min: 5,
-        max: 100,
-        context: "max",
+        configuration: "ranged",
+        floor: 5,
+        ratio,
+        values,
       },
-      scale,
+      `100v${context}`,
     ),
   }),
   {},
 );
 
-const duration = content(
-  { type: "ranged", unit: "ms", min: 250, max: 750 },
-  scale,
+const duration = scale(
+  { configuration: "ranged", floor: 250, ratio, values },
+  "750ms",
 );
 const [x, y] = [
-  content({ type: "ranged", min: 0, max: 1 }, scale),
-  content({ type: "ranged", min: -4, max: 4 }, scale),
+  scale({ configuration: "ranged", floor: 0, ratio, values }, 1),
+  scale({ configuration: "ranged", floor: -4, max: 4 }, 4),
 ];
 
 const dict = {
@@ -88,10 +84,7 @@ const dict = {
   },
   layout: {
     spacing,
-    grid: {
-      fr,
-      ...grid,
-    },
+    grid: gridOut,
     dim,
   },
   animation: {
@@ -100,10 +93,10 @@ const dict = {
   },
 };
 
-Deno.bench({ warmup, n }, function dataJsonExporterStress() {
+Deno.bench({ warmup, n }, function json_stress() {
   return data("json", dict);
 });
 
-Deno.bench({ warmup, n }, function dataYamlExporterStress() {
+Deno.bench({ warmup, n }, function yaml_stress() {
   return data("yaml", dict);
 });

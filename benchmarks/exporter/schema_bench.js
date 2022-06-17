@@ -1,7 +1,7 @@
 import { adjust, palette } from "../../color.js";
 import { grid, scale } from "../../content.js";
 import { pipeline, preset, propagate } from "../../workflow.js";
-import { stylesheet } from "../../exporter.js";
+import { schema } from "../../exporter.js";
 
 const warmup = 5;
 const n = 100;
@@ -93,18 +93,10 @@ const dict = {
   },
 };
 
-Deno.bench({ warmup, n }, function css_stress() {
-  return stylesheet("css", dict);
+Deno.bench({ warmup, n }, function tailwindcss_stress() {
+  return schema("tailwindcss", dict);
 });
 
-Deno.bench({ warmup, n }, function scss_stress() {
-  return stylesheet("scss", dict);
-});
-
-Deno.bench({ warmup, n }, function less_stress() {
-  return stylesheet("less", dict);
-});
-
-Deno.bench({ warmup, n }, function styl_stress() {
-  return stylesheet("styl", dict);
+Deno.bench({ warmup, n }, function style_dictionary_stress() {
+  return schema("style-dictionary", dict);
 });
