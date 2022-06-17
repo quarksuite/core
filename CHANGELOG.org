@@ -150,6 +150,53 @@ The API is drilled down to 12 actions and 5 workflow helpers:
 Core v2 brings significant performance improvements. The benchmarks against v1 are simply incomparable. Color and
 palette generation in particular is now an *order of magnitude* faster than the last stable version.
 
+Here's the run of benchmarks right before launch.
+
+#+begin_src shell
+running 1 bench from file:///home/cr-jr/Code/quarksuite:core/benchmarks/color/adjust_bench.js
+bench adjust_stress ... 100 iterations 31,059,348 ns/iter (27,543,853..62,799,329 ns/iter) ok (3s)
+
+running 1 bench from file:///home/cr-jr/Code/quarksuite:core/benchmarks/color/convert_bench.js
+bench convert_stress ... 100 iterations 3,716,583 ns/iter (3,013,710..7,516,550 ns/iter) ok (469ms)
+
+running 1 bench from file:///home/cr-jr/Code/quarksuite:core/benchmarks/color/harmony_bench.js
+bench harmony_stress ... 100 iterations 667,102,923 ns/iter (657,087,747..697,010,684 ns/iter) ok (1m10s)
+
+running 1 bench from file:///home/cr-jr/Code/quarksuite:core/benchmarks/color/mix_bench.js
+bench mix_stress ... 100 iterations 30,014,753 ns/iter (26,078,073..55,965,712 ns/iter) ok (3s)
+
+running 2 benches from file:///home/cr-jr/Code/quarksuite:core/benchmarks/color/output_bench.js
+bench gpl_stress ... 100 iterations 7,152,389 ns/iter (5,780,415..23,781,011 ns/iter) ok (842ms)
+bench sketchpalette_stress ... 100 iterations 8,240,688 ns/iter (7,713,674..14,122,728 ns/iter) ok (904ms)
+
+running 1 bench from file:///home/cr-jr/Code/quarksuite:core/benchmarks/color/palette_bench.js
+bench palette_stress ... 100 iterations 119,840,106 ns/iter (114,942,695..137,234,079 ns/iter) ok (13s)
+
+running 1 bench from file:///home/cr-jr/Code/quarksuite:core/benchmarks/content/grid_bench.js
+bench grid_stress ... 100 iterations 112,581,195 ns/iter (111,258,202..119,756,184 ns/iter) ok (11s)
+
+running 1 bench from file:///home/cr-jr/Code/quarksuite:core/benchmarks/content/scale_bench.js
+bench scale_stress ... 100 iterations 16,586,855 ns/iter (15,783,908..19,464,515 ns/iter) ok (1s)
+
+running 2 benches from file:///home/cr-jr/Code/quarksuite:core/benchmarks/exporter/data_bench.js
+bench json_stress ... 100 iterations 1,573,172 ns/iter (1,421,585..2,103,778 ns/iter) ok (176ms)
+bench yaml_stress ... 100 iterations 5,096,098 ns/iter (4,015,251..9,644,907 ns/iter) ok (555ms)
+
+running 2 benches from file:///home/cr-jr/Code/quarksuite:core/benchmarks/exporter/schema_bench.js
+bench tailwindcss_stress ... 100 iterations 340,207,906 ns/iter (338,373,124..351,732,590 ns/iter) ok (35s)
+bench style_dictionary_stress ... 100 iterations 342,807,761 ns/iter (340,656,522..356,422,199 ns/iter) ok (36s)
+
+running 4 benches from file:///home/cr-jr/Code/quarksuite:core/benchmarks/exporter/stylesheet_bench.js
+bench css_stress ... 100 iterations 8,507,013 ns/iter (7,272,616..13,305,865 ns/iter) ok (963ms)
+bench scss_stress ... 100 iterations 8,034,568 ns/iter (7,224,880..11,457,692 ns/iter) ok (853ms)
+bench less_stress ... 100 iterations 8,134,869 ns/iter (7,228,801..12,678,502 ns/iter) ok (865ms)
+bench styl_stress ... 100 iterations 7,561,211 ns/iter (7,084,911..10,677,659 ns/iter) ok (804ms)
+
+bench result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (3m5s)
+#+end_src
+
+And this is on a PC with a /Celeron/ processor and 3GB of RAM. It'll surely be even faster on many developers' machines.
+
 *** color accessibility enhancements
 
 Core v2 adds refinements to checking and filtering your palettes for accessibility.
