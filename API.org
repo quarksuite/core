@@ -1,4 +1,4 @@
-#+TITLE: QuarkSuite Core API (v2.0.0)
+#+TITLE: QuarkSuite Core API (v2.0.1)
 #+PROPERTY: header-args:deno :results output replace code :allow 'net :tangle no
 #+PROPERTY: header-args:js :tangle no
 
@@ -123,7 +123,7 @@ An action that takes any valid CSS =color= and converts it =to= a given target f
 **** Example
 
 #+BEGIN_SRC js
-import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = "rebeccapurple";
 
@@ -167,7 +167,7 @@ An action that takes any valid CSS =color= and adjusts its properties according 
 **** Example
 
 #+BEGIN_SRC js
-import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert, adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -221,7 +221,7 @@ An action that takes any valid CSS =color= and mixes it according to user =setti
 **** Example
 
 #+BEGIN_SRC js
-import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert, mix } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("hsl", "rebeccapurple");
 const target = "crimson";
@@ -274,7 +274,7 @@ An action that takes any valid CSS =color= and a generates an artistic color har
 **** Example
 
 #+BEGIN_SRC js
-import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert, harmony } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -347,7 +347,7 @@ An action that takes any valid CSS =color= and generates a palette according to 
 ***** Material Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -467,7 +467,7 @@ console.log(palette({
 ***** Artistic Configuration
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -579,7 +579,7 @@ console.log(palette({
 ***** Color Accessibility
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -779,7 +779,7 @@ console.log(palette({
 ***** Color Perception
 
 #+BEGIN_SRC js
-import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+import { convert, palette } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -1126,7 +1126,7 @@ import {
   convert,
   palette,
   output
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 
 const color = convert("hex", "rebeccapurple");
 
@@ -1220,7 +1220,7 @@ An action that takes a =font= string and generates text tokens according to user
 **** Example
 
 #+BEGIN_SRC js
-import { text } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
+import { text } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
 
 // Change the system stack
 console.log(text({ system: "serif", weights: ["regular", "bold"] }, ""));
@@ -1266,7 +1266,7 @@ An action that takes a number of =columns= and outputs grid tokens according to 
 **** Examples
 
 #+BEGIN_SRC js
-import { grid } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
+import { grid } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
 
 // Rows will be set the same as columns if undefined
 console.log(grid({}, 5));
@@ -1464,7 +1464,7 @@ An action that takes a =root= CSS value and outputs a modular scale according to
 ***** Bidirectional/Unidirectional
 
 #+BEGIN_SRC js
-import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
+import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
 
 // Roots can be unitless
 console.log(scale({ configuration: "bidirectional" }, 1));
@@ -1566,7 +1566,7 @@ console.log(scale({ configuration: "bidirectional", values: 4 }, "16px"));
 ***** Ranged
 
 #+BEGIN_SRC js
-import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
+import { scale } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
 
 // IMPORTANT: pass in the maximum value as the root and set a floor
 console.log(scale({ configuration: "ranged", floor: 2 }, "8px"));
@@ -1683,12 +1683,12 @@ An exporter that takes a complete token =dict= and prepares a file-ready templat
 import {
   convert,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 import {
   text,
   scale,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
-import { stylesheet } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+import { stylesheet } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/exporter.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -2017,12 +2017,12 @@ An exporter that takes a complete token =dict= and prepares a file-ready templat
 import {
   convert,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 import {
   text,
   scale,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
-import { data } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+import { data } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/exporter.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -2230,12 +2230,12 @@ An exporter that takes a complete token =dict= and translates the data to a give
 import {
   convert,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 import {
   text,
   scale,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
-import { schema } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+import { schema } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/exporter.js";
 
 const color = convert("rgb", "rebeccapurple");
 
@@ -2528,8 +2528,8 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
-import { preset } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
+import { preset } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2574,11 +2574,11 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 import {
   preset,
   process
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2623,12 +2623,12 @@ import {
   convert,
   adjust,
   mix
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 import {
   preset,
   process,
   pipeline
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/workflow.js";
 
 const swatch = "rebeccapurple";
 
@@ -2674,11 +2674,11 @@ import {
   convert,
   mix,
   harmony
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 import {
   preset,
   propagate
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 
@@ -2731,11 +2731,11 @@ import {
   convert,
   adjust,
   harmony
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
 import {
   preset,
   delegate
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/workflow.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/workflow.js";
 
 const swatch = convert("hex", "rebeccapurple");
 

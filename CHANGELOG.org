@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v201---2022-06-17][v2.0.1 - 2022-06-17]]
+  - [[#fixed][Fixed]]
 - [[#v200---2022-06-17][v2.0.0 - 2022-06-17]]
   - [[#added][Added]]
     - [[#simplified-workflow][simplified workflow]]
@@ -17,23 +19,23 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#added-1][Added]]
   - [[#changed][Changed]]
 - [[#v121---2022-02-24][v1.2.1 - 2022-02-24]]
-  - [[#fixed][Fixed]]
+  - [[#fixed-1][Fixed]]
 - [[#v120---2022-02-21][v1.2.0 - 2022-02-21]]
   - [[#changed-1][Changed]]
-  - [[#fixed-1][Fixed]]
+  - [[#fixed-2][Fixed]]
 - [[#v110---2022-02-16][v1.1.0 - 2022-02-16]]
   - [[#added-2][Added]]
   - [[#changed-2][Changed]]
 - [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
   - [[#added-3][Added]]
-  - [[#fixed-2][Fixed]]
+  - [[#fixed-3][Fixed]]
 - [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
   - [[#added-4][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
 - [[#v021---2020-06-07][v0.2.1 - 2020-06-07]]
-  - [[#fixed-3][Fixed]]
+  - [[#fixed-4][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
   - [[#added-5][Added]]
@@ -57,6 +59,12 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v2.0.1 - 2022-06-17
+
+** Fixed
+
++ The =severity= setting was inactive for illuminant simulation
 
 * v2.0.0 - 2022-06-17
 
