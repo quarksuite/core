@@ -5,22 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
-- [[#v130---2021-02-25][v1.3.0 - 2021-02-25]]
+- [[#v200---2022-06-17][v2.0.0 - 2022-06-17]]
   - [[#added][Added]]
+    - [[#simplified-workflow][simplified workflow]]
+    - [[#independent-modules][independent modules]]
+    - [[#tightened-api][tightened API]]
+    - [[#faster-performance][faster performance]]
+    - [[#color-accessibility-enhancements][color accessibility enhancements]]
+    - [[#improved-developer-experience][improved developer experience]]
+- [[#v130---2022-02-25][v1.3.0 - 2022-02-25]]
+  - [[#added-1][Added]]
   - [[#changed][Changed]]
-- [[#v121---2021-02-24][v1.2.1 - 2021-02-24]]
+- [[#v121---2022-02-24][v1.2.1 - 2022-02-24]]
   - [[#fixed][Fixed]]
-- [[#v120---2021-02-21][v1.2.0 - 2021-02-21]]
+- [[#v120---2022-02-21][v1.2.0 - 2022-02-21]]
   - [[#changed-1][Changed]]
   - [[#fixed-1][Fixed]]
-- [[#v110---2021-02-16][v1.1.0 - 2021-02-16]]
-  - [[#added-1][Added]]
+- [[#v110---2022-02-16][v1.1.0 - 2022-02-16]]
+  - [[#added-2][Added]]
   - [[#changed-2][Changed]]
 - [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
-  - [[#added-2][Added]]
+  - [[#added-3][Added]]
   - [[#fixed-2][Fixed]]
 - [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
-  - [[#added-3][Added]]
+  - [[#added-4][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
@@ -28,7 +36,7 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#fixed-3][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
-  - [[#added-4][Added]]
+  - [[#added-5][Added]]
     - [[#color-conversion][color conversion]]
   - [[#changed-3][Changed]]
     - [[#color-adjustment-1][color adjustment]]
@@ -39,7 +47,7 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#changed-4][Changed]]
     - [[#color-conversion-1][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
-  - [[#added-5][Added]]
+  - [[#added-6][Added]]
     - [[#functional-utilities][functional utilities]]
     - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
@@ -50,7 +58,118 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
 
-* v1.3.0 - 2021-02-25
+* v2.0.0 - 2022-06-17
+
+QuarkSuite Core v2 is another complete rewrite of the library architecture that focuses on simplifying and tightening
+the workflow introduced in v1. It also includes a significant performance boost and improves the developer experience.
+
+For example:
+
+#+BEGIN_SRC js
+const color = convert("rgb", "dodgerblue");
+
+const paletteOpts = { configuration: "material", accents: true };
+const a11yOpts = { mode: "standard", rating: "AA" };
+
+const font = "Work Sans";
+
+const ratio = 1.618;
+const values = 4;
+
+const tokens = {
+  color: {
+    ui: palette({ ...paletteOpts, a11y: { ...a11yOpts, large: true } }, color),
+    text: palette({ ...paletteOpts, a11y: a11yOpts }, color)
+  },
+  text: {
+    body: text({ system: "sans", weights: ["regular", "bold" ]}, font),
+    heading: text({ system: "serif", weights: ["light", "black"]}, font),
+    size: scale({ configuration: "bidirectional", ratio, values }, "1rem"),
+    measure: scale({ configuration: "ranged", floor: 45, trunc: true, ratio, values }, "75ch"),
+    leading: scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5)
+  },
+  spacing: scale({ configuration: "bidirectional", ratio, values }, "1ex"),
+  grid: grid({ rows: 3, ratio }, 5),
+  lengths: {
+    width: scale({ configuration: "ranged", floor: 10, ratio, values }, "100vw"),
+    height: scale({ configuration: "ranged", floor: 10, ratio, values }, "100vh"),
+    shortest: scale({ configuration: "ranged", floor: 10, ratio, values }, "100vmin"),
+    longest: scale({ configuration: "ranged", floor: 10, ratio, values }, "100vmax"),
+  }
+};
+#+END_SRC
+
+You can [[https://github.com/quarksuite/core/blob/main/HANDBOOK.org][read the new handbook]] for a practical introduction and then [[https://github.com/quarksuite/core/blob/main/API.org][dive into the API]] for the technical details.
+
+** Added
+
+*** simplified workflow
+
+Core v2 reworks the utilities -> configurations -> formulas -> bootstrappers layered workflow into a more compact yet
+powerful one based around actions and emitters.
+
+*** independent modules
+
+Core v2 still prioritizes portability but goes about it by exposing independent, complete modules instead of a single
+entry point.
+
++ =color.js=: handles all color and palette generation actions
++ =content.js=: handles all content and modular scale generation actions
++ =exporter.js=: handles all token exporting actions
++ =workflow.js=: handles all advanced functionality
+
+*** tightened API
+
+The API is drilled down to 12 actions and 5 workflow helpers:
+
++ =color.js=
+  + =convert(to, color)=
+  + =adjust(settings, color)=
+  + =mix(settings, color)=
+  + =harmony(settings, color)=
+  + =palette(settings, color)=
+  + =output(format, dict)=
++ =content.js=
+  + =text(settings, font)=
+  + =grid(settings, columns)=
+  + =scale(settings, root)=
++ =exporter.js=
+  + =stylesheet(format, dict)=
+  + =data(format, dict)=
+  + =schema(settings, root)=
+
++ =workflow.js=
+  + =preset(action, y)=
+  + =process(...emitters)=
+  + =pipeline(x, ...emitters)=
+  + =propagate(emitter, xs)=
+  + =delegate(xs, ...emitters)=
+
+*** faster performance
+
+Core v2 brings significant performance improvements. The benchmarks against v1 are simply incomparable. Color and
+palette generation in particular is now an *order of magnitude* faster than the last stable version.
+
+*** color accessibility enhancements
+
+Core v2 adds refinements to checking and filtering your palettes for accessibility.
+
++ perception simulators
+  + check various forms of colorblindness
+  + check contrast sensitivity
+  + check illuminants (light sources)
++ custom colorimetric contrast tuning in addition with WCAG accessibility standards
+
+*** improved developer experience
+
+Core v2 includes important quality-of-life updates to make it more straightforward and enjoyable to use.
+
++ properly documented types and generated for all modules
++ updated NPM package
++ support for JSDelivr and Statically CDNs in addition to the Nest.land package
++ less boilerplate when generating data
+
+* v1.3.0 - 2022-02-25
 
 This minor release updates the implementation of OKLab and OKLCH to [[https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch][adhere to the currently defined spec]].
 
@@ -79,7 +198,7 @@ Specifically:
 + =color_to_oklab= output takes over =oklab= prefix
 + OKLCH color prefix now =oklch=
 
-* v1.2.1 - 2021-02-24
+* v1.2.1 - 2022-02-24
 
 Fixes =color_adjust= and =color_filter= and improves chromatic accuracy for color generation in general.
 
@@ -88,7 +207,7 @@ Fixes =color_adjust= and =color_filter= and improves chromatic accuracy for colo
 + chromatic adjustment through the OKLab color space was /not/ bound to a range 0-0.5. This threw off chromatic accuracy
   and made chroma impossible to filter for
 
-* v1.2.0 - 2021-02-21
+* v1.2.0 - 2022-02-21
 
 This release updates the /object factory/ workflow with more consistent names and better propagation over values and
 scales.
@@ -141,7 +260,7 @@ const { data: secondaryPalette } = Color(swatch).$_adjust({ hue: 120 });
 
 + errors with data propagation when the method expected a scale (now handled by =$$_= methods)
 
-* v1.1.0 - 2021-02-16
+* v1.1.0 - 2022-02-16
 
 This release adds support for a factory object workflow. It makes working with low level utilities a little easier by
 allowing you to bind them as methods on discrete data types. You can set up this workflow with a few extra lines of
