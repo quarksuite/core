@@ -7,6 +7,7 @@
 - [[#getting-started][Getting Started]]
   - [[#live][Live]]
   - [[#local-development][Local Development]]
+    - [[#browserdeno][Browser/Deno]]
     - [[#node][Node]]
   - [[#offline][Offline]]
 - [[#handbook][Handbook]]
@@ -83,6 +84,8 @@ const {
 For local dev, it's recommended that you [[https://buildless.site/][use a buildless stack]] or work in the browser. QuarkSuite Core is designed
 especially for that.
 
+*** Browser/Deno
+
 #+BEGIN_SRC js
 import {
   color,
@@ -131,12 +134,12 @@ wget https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/[module]
 
 * Handbook
 
-The [[https://github.com/quarksuite/core/blob/v2-workspace/HANDBOOK.org][QuarkSuite Core Handbook]] introduces the features of the library from a user perspective. It's recommended you read
+The [[https://github.com/quarksuite/core/blob/main/HANDBOOK.org][QuarkSuite Core Handbook]] introduces the features of the library from a user perspective. It's recommended you read
 that next.
 
 * API
 
-The [[https://github.com/quarksuite/core/blob/v2-workspace/API.org][QuarkSuite Core API]] is a technical overview of the library that also serves as documentation of its functions. It
+The [[https://github.com/quarksuite/core/blob/main/API.org][QuarkSuite Core API]] is a technical overview of the library that also serves as documentation of its functions. It
 may make more sense after reading the handbook, but some of you may get more out of reading it beforehand.
 
 * Contributing

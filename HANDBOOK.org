@@ -71,9 +71,9 @@
 * Summary
 
 This document is a practical guide to QuarkSuite Core. It's intended to introduce you, the reader, to the library and
-its purpose from a user perspective. For a technical overview, [[https://github.com/quarksuite/core/blob/v2-workspace/API.org][refer to the API]].
+its purpose from a user perspective. For a technical overview, [[https://github.com/quarksuite/core/blob/main/API.org][refer to the API]].
 
-This document /intentionally/ skips setup and environment details (see the README) to focus instead on a working
+This document /intentionally/ skips setup and environment details (see the [[https://github.com/quarksuite/core/blob/main/README.org][README]]) to focus instead on a working
 example.
 
 We'll be covering three workflows in order of complexity:
@@ -106,12 +106,12 @@ export {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
 export {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
 #+END_SRC
 
 ** Color
@@ -275,12 +275,12 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
 
 const swatch = convert("rgb", "#7ea");
 const base = adjust({ chroma: -5, hue: 60 }, swatch);
@@ -412,17 +412,17 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
 import {
   preset,
   pipeline,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0/workflow.js";
 #+END_SRC
 
 ** Color
@@ -652,17 +652,17 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
 import {
   preset,
   pipeline
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0/workflow.js";
 
 const toRgb = preset(convert, "rgb");
 
@@ -796,12 +796,12 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
 import {
   preset,
   pipeline,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0/workflow.js";
 #+END_SRC
 
 *** Constants
@@ -868,11 +868,11 @@ import {
   grid,
   scale,
   text
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/content.js";
 import {
   preset,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0-31/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.0/workflow.js";
 #+END_SRC
 
 *** Text
@@ -995,7 +995,7 @@ export function Dimensions(
 Finally, let's reassemble our tokens using the recipes we just made.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/tokens.js"
-import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/color.js";
+import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/color.js";
 import Palette from "./color-recipe.js";
 import { Font, Content, Spacing, Grid, Dimensions } from "./content-recipes.js";
 
@@ -1058,7 +1058,7 @@ First, we have to pull in the exporters themselves before we can do anything.
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/exporter.js";
 #+END_SRC
 
 ** 2. Import the generated tokens
@@ -1162,7 +1162,7 @@ Our build file is now complete and we won't need to touch it again for a good wh
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0-31/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.0/exporter.js";
 
 import tokens from "./tokens.js";
 
@@ -1201,7 +1201,7 @@ think I've provided a good foundation for the experimental reader to build on.
 
 If I missed the mark, submit an issue as always.
 
-If you've read the handbook but you haven't read the API, I recommend doing that because it [[https://github.com/quarksuite/core/blob/v2-workspace/API.org][expands on the technical
+If you've read the handbook but you haven't read the API, I recommend doing that because it [[https://github.com/quarksuite/core/blob/main/API.org][expands on the technical
 details]] not clarified here.
 
 To those who have already read both documents by now: thank you for your time. I hope you got something out of it even
