@@ -3,7 +3,7 @@
   "name": "quarksuite:core",
   "description": "A web-focused toolkit for creating, assembling and distributing design tokens for custom design systems.",
   "homepage": "https://github.com/quarksuite/core",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "releaseType": "patch",
   "stable": "true",
   "unlisted": true,

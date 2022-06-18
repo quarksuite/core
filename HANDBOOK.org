@@ -1,4 +1,4 @@
-#+TITLE: QuarkSuite Core Handbook (v2.0.1)
+#+TITLE: QuarkSuite Core Handbook (v2.0.2)
 #+PROPERTY: header-args:js :results silent :tangle no :comments none :mkdirp yes
 
 * Table of Contents :TOC@5:
@@ -106,12 +106,12 @@ export {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
 export {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
 #+END_SRC
 
 ** Color
@@ -275,12 +275,12 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
 
 const swatch = convert("rgb", "#7ea");
 const base = adjust({ chroma: -5, hue: 60 }, swatch);
@@ -412,17 +412,17 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
 import {
   preset,
   pipeline,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.1/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
 #+END_SRC
 
 ** Color
@@ -652,17 +652,17 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
 import {
   preset,
   pipeline
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.1/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
 
 const toRgb = preset(convert, "rgb");
 
@@ -796,12 +796,12 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
 import {
   preset,
   pipeline,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.1/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
 #+END_SRC
 
 *** Constants
@@ -868,11 +868,11 @@ import {
   grid,
   scale,
   text
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
 import {
   preset,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.1/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
 #+END_SRC
 
 *** Text
@@ -995,7 +995,7 @@ export function Dimensions(
 Finally, let's reassemble our tokens using the recipes we just made.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/tokens.js"
-import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/color.js";
+import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
 import Palette from "./color-recipe.js";
 import { Font, Content, Spacing, Grid, Dimensions } from "./content-recipes.js";
 
@@ -1058,7 +1058,7 @@ First, we have to pull in the exporters themselves before we can do anything.
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/exporter.js";
 #+END_SRC
 
 ** 2. Import the generated tokens
@@ -1162,7 +1162,7 @@ Our build file is now complete and we won't need to touch it again for a good wh
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/exporter.js";
 
 import tokens from "./tokens.js";
 

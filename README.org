@@ -1,4 +1,4 @@
-#+TITLE: QuarkSuite Core (v2.0.1)
+#+TITLE: QuarkSuite Core (v2.0.2)
 
 * Table of Contents :TOC@4:
 - [[#introduction][Introduction]]
@@ -57,10 +57,10 @@ QuarkSuite Core is written in vanilla JavaScript (ES2017+).
 
 * Packages
 
-+ [[https://jsdelivr.com][JSDelivr]]: =https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/[module]=
-+ [[https://statically.io][Statically]]: =https://cdn.statically.io/gh/quarksuite/core/2.0.1/[module]=
-+ [[https://nest.land][Nest.land]]: =https://x.nest.land/quarksuite:core@2.0.1/[module]=
-+ [[https://nodejs.org/][Node]] (NPM): =@quarksuite-two/core@2.0.1=
++ [[https://jsdelivr.com][JSDelivr]]: =https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/[module]=
++ [[https://statically.io][Statically]]: =https://cdn.statically.io/gh/quarksuite/core/2.0.2/[module]=
++ [[https://nest.land][Nest.land]]: =https://x.nest.land/quarksuite:core@2.0.2/[module]=
++ [[https://nodejs.org/][Node]] (NPM): =@quarksuite-two/core@2.0.2=
 
 In general, prefer the JSDelivr/Statically CDN for availability, features, and speed. The Nest.land package is a
 failsafe for the repo disappearing or GitHub going down.
@@ -77,7 +77,7 @@ const {
   content,
   exporter,
   workflow
-} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/mod.js");
+} = await import("https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/mod.js");
 #+END_SRC
 
 ** Local Development
@@ -93,7 +93,7 @@ import {
   content,
   exporter,
   workflow
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/mod.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/mod.js";
 #+END_SRC
 
 *** Node
@@ -107,11 +107,11 @@ JavaScript ecosystem.
 Ensure that =type: module= is set in your =package.json= so that Node is set for ES Modules. Then install the package.
 
 #+BEGIN_SRC shell
-npm install @quarksuite-two/core@2.0.1
+npm install @quarksuite-two/core@2.0.2
 
 # OR
 
-yarn add @quarksuite-two/core@2.0.1
+yarn add @quarksuite-two/core@2.0.2
 #+END_SRC
 
 And then in your source files:
@@ -131,11 +131,11 @@ Some engines (like QuickJS) support ES Modules but don't allow importing from UR
 the modules you need directly.
 
 #+BEGIN_SRC shell
-curl -o [module] https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/[module]
+curl -o [module] https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/[module]
 
 # OR
 
-wget https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.1/[module]
+wget https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/[module]
 #+END_SRC
 
 * Handbook
