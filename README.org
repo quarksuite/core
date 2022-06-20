@@ -58,9 +58,11 @@ QuarkSuite Core is written in vanilla JavaScript (ES2017+).
 * Packages
 
 + [[https://jsdelivr.com][JSDelivr]]: =https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/[module]=
-+ [[https://statically.io][Statically]]: =https://cdn.statically.io/gh/quarksuite/core/2.0.2/[module]=
++ [[https://statically.io][Statically]]: =https://cdn.statically.io/gh/quarksuite/core/v2.0.2/[module]=
 + [[https://nest.land][Nest.land]]: =https://x.nest.land/quarksuite:core@2.0.2/[module]=
 + [[https://nodejs.org/][Node]] (NPM): =@quarksuite-two/core@2.0.2=
+  + [[https://skypack.dev][Skypack]]: =https://cdn.skypack.dev/@quarksuite-two/core@2.0.2/[module]=
+  + [[https://esm.sh][esm.sh]]: =https://esm.sh/@quarksuite-two/core@2.0.2/[module]=
 
 In general, prefer the JSDelivr/Statically CDN for availability, features, and speed. The Nest.land package is a
 failsafe for the repo disappearing or GitHub going down.
