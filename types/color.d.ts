@@ -142,10 +142,6 @@ export function harmony(settings: {
     accented?: boolean;
 }, color: string): [string, string, string?, string?];
 /**
- * @typedef {"prot" | "deuter" | "trit"} CVD
- * @typedef {"brettel" | "vienot"} CVDMethod
- * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
- *
  * @typedef {{ bg: string; fg: string }} SurfaceTokens - BG, FG
  *
  * @typedef {Partial<{
@@ -205,26 +201,6 @@ export function harmony(settings: {
  * @param {number} [settings.tones] - set number of tones to generate (artistic)
  * @param {number} [settings.shades] - set number of shades to generate (artistic)
  *
- * @param {object} [settings.perception] - color perception simulation settings
- * @param {"vision" | "contrast" | "illuminant"} [settings.perception.check] - set simulation target
- * @param {number} [settings.perception.severity] - set severity of simulation (where applicable)
- *
- * @param {ColorVision} [settings.perception.as] - set colorblindness to target
- * @param {CVDMethod} [settings.perception.method] - set colorblindness algorithm to use
- *
- * @param {number} [settings.perception.factor] - set contrast sensitivity gray factor
- *
- * @param {number} [settings.perception.K] - set illuminant temperature
- *
- * @param {object} [settings.a11y] - color accessibility filter settings
- * @param {"standard" | "custom"} [settings.a11y.mode] - set color accessibility mode
- *
- * @param {"AA" | "AAA"} [settings.a11y.rating] - set color contrast rating
- * @param {boolean} [settings.a11y.large] - use large text rating?
- *
- * @param {number} [settings.a11y.min] - set minimum contrast from background (as a percentage)
- * @param {number} [settings.a11y.max] - set maximum contrast from background (as a percentage)
- *
  * @param {string} color - the input color
  * @returns {PaletteTokens} the generated palette
  */
@@ -237,22 +213,61 @@ export function palette(settings: {
     tints?: number;
     tones?: number;
     shades?: number;
-    perception?: {
-        check?: "vision" | "contrast" | "illuminant";
-        severity?: number;
-        as?: ColorVision;
-        method?: CVDMethod;
-        factor?: number;
-        K?: number;
-    };
-    a11y?: {
-        mode?: "standard" | "custom";
-        rating?: "AA" | "AAA";
-        large?: boolean;
-        min?: number;
-        max?: number;
-    };
 }, color: string): PaletteTokens;
+/**
+ * An action that takes a generated `palette` and filters it for accessibility
+ * according to user `settings`.
+ *
+ * @param {object} settings - accessibility settings
+ * @param {"standard" | "custom"} [settings.mode] - set the accesibility mode
+ *
+ * @param {"AA" | "AAA"} [settings.rating] - set color contrast rating
+ * @param {boolean} [settings.large] - use large text rating?
+ *
+ * @param {number} [settings.min] - set minimum contrast from background (as a percentage)
+ * @param {number} [settings.max] - set maximum contrast from background (as a percentage)
+ *
+ * @param {PaletteTokens} palette - generated palette
+ * @returns {PaletteTokens} the filtered palette
+ */
+export function a11y(settings: {
+    mode?: "standard" | "custom";
+    rating?: "AA" | "AAA";
+    large?: boolean;
+    min?: number;
+    max?: number;
+}, palette: PaletteTokens): PaletteTokens;
+/**
+ * @typedef {"prot" | "deuter" | "trit"} CVD
+ * @typedef {"brettel" | "vienot"} CVDMethod
+ * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
+ */
+/**
+ * An action that takes a generated `palette` and overlays a color perception
+ * simulator according to user `settings`.
+ *
+ * @param {object} [settings] - color perception simulation settings
+ * @param {"vision" | "contrast" | "illuminant"} [settings.check] - set simulation target
+ * @param {number} [settings.severity] - set severity of simulation (where applicable)
+ *
+ * @param {ColorVision} [settings.as] - set colorblindness to target
+ * @param {CVDMethod} [settings.method] - set colorblindness algorithm to use
+ *
+ * @param {number} [settings.factor] - set contrast sensitivity gray factor
+ *
+ * @param {number} [settings.K] - set illuminant temperature
+ *
+ * @param {PaletteTokens} palette - generated palette
+ * @returns {PaletteTokens} the simulated palette
+ */
+export function perception(settings?: {
+    check?: "vision" | "contrast" | "illuminant";
+    severity?: number;
+    as?: ColorVision;
+    method?: CVDMethod;
+    factor?: number;
+    K?: number;
+}, palette: PaletteTokens): PaletteTokens;
 /**
  * @typedef {Partial<{
  *   name: string;
@@ -331,9 +346,6 @@ export function palette(settings: {
 export function output(format: PaletteFormat, dict: ColorDictionary): string;
 export type CSSColorFormats = "hex" | "rgb" | "hsl" | "cmyk" | "hwb" | "lab" | "lch" | "oklab" | "oklch";
 export type ColorHarmonies = "dyadic" | "complementary" | "analogous" | "split" | "clash" | "triadic" | "double" | "tetradic" | "square";
-export type CVD = "prot" | "deuter" | "trit";
-export type CVDMethod = "brettel" | "vienot";
-export type ColorVision = "achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`;
 /**
  * - BG, FG
  */
@@ -399,6 +411,9 @@ export type ArtisticTokens = SurfaceTokens & ArtisticVariantTokens & ArtisticAcc
  * - assembled palette token object
  */
 export type PaletteTokens = MaterialTokens | ArtisticTokens;
+export type CVD = "prot" | "deuter" | "trit";
+export type CVDMethod = "brettel" | "vienot";
+export type ColorVision = "achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`;
 export type ProjectSettings = Partial<{
     name: string;
     author: string;
