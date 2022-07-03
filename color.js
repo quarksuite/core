@@ -1617,10 +1617,6 @@ function colorHarmonies({ type, accented = false }, color) {
 }
 
 /**
- * @typedef {"prot" | "deuter" | "trit"} CVD
- * @typedef {"brettel" | "vienot"} CVDMethod
- * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
- *
  * @typedef {{ bg: string; fg: string }} SurfaceTokens - BG, FG
  *
  * @typedef {Partial<{
@@ -1685,7 +1681,7 @@ function colorHarmonies({ type, accented = false }, color) {
  * @returns {PaletteTokens} the generated palette
  */
 export function palette(settings, color) {
-  // Set default configuration and settings and exclude interface states until requested
+  // Set defaults
   const {
     configuration = "material",
     contrast = 100,
@@ -1905,18 +1901,136 @@ function artisticPalette(
   };
 }
 
-function accessibility(settings, palette) {
-  // Set action defaults
+/**
+ * An action that takes a generated `palette` and filters it for accessibility
+ * according to user `settings`.
+ *
+ * @param {object} settings - accessibility settings
+ * @param {"standard" | "custom"} [settings.mode] - set the accesibility mode
+ *
+ * @param {"AA" | "AAA"} [settings.rating] - set color contrast rating
+ * @param {boolean} [settings.large] - use large text rating?
+ *
+ * @param {number} [settings.min] - set minimum contrast from background (as a percentage)
+ * @param {number} [settings.max] - set maximum contrast from background (as a percentage)
+ *
+ * @param {PaletteTokens} palette - generated palette
+ * @returns {PaletteTokens} the filtered palette
+ */
+export function a11y(settings, palette) {
+  // Set defaults
   const { mode = "standard", rating = "AA", large = false } = settings;
 
   // If mode is custom
   if (mode === "custom") {
     const { min = 85, max } = settings;
 
-    return paletteColorimetricContrast({ min, max }, palette);
+    return a11yColorimetric({ min, max }, palette);
   }
 
-  return paletteWcagContrast({ rating, large }, palette);
+  return a11yWcag({ rating, large }, palette);
+}
+
+function a11yWcag({ rating, large }, palette) {
+  if (
+    ["light", "muted", "dark", "accent"].some((category) =>
+      Object.hasOwn(palette, category)
+    )
+  ) {
+    const { bg, fg, ...variants } = palette;
+
+    const valid = (collection) =>
+      collection.filter((fg) => {
+        const ratio = calculateWCAGContrastRatio(bg, fg);
+        return wcagContrastCriteria({ rating, large }, ratio);
+      });
+
+    return {
+      bg,
+      fg,
+      ...Object.entries(variants).reduce((acc, [category, data]) => {
+        const results = valid(Object.values(data));
+
+        return {
+          ...acc,
+          ...(results.length
+            ? { [category]: assembleArtisticData(results) }
+            : {}),
+        };
+      }, {}),
+    };
+  }
+
+  const { bg, fg, state, ...variants } = palette;
+  const valid = Object.entries(variants).filter(([, fg]) => {
+    const ratio = calculateWCAGContrastRatio(bg, fg);
+    return wcagContrastCriteria({ rating, large }, ratio);
+  });
+
+  const main = valid.filter(([key]) => !key.startsWith("a"));
+  const accents = valid.filter(([key]) => key.startsWith("a"));
+
+  return {
+    bg,
+    fg,
+    ...assembleMaterialData(main.map(([, color]) => color)),
+    ...assembleMaterialData(
+      accents.map(([, color]) => color),
+      "a"
+    ),
+    ...(state ? { state } : {}),
+  };
+}
+
+function a11yColorimetric({ min, max }, palette) {
+  if (
+    ["light", "muted", "dark", "accent"].some((category) =>
+      Object.hasOwn(palette, category)
+    )
+  ) {
+    const { bg, fg, ...variants } = palette;
+
+    const valid = (collection) =>
+      collection.filter((fg) => {
+        const difference = comparePerceptualLightness(bg, fg);
+        return filterCondition({ min, max }, difference);
+      });
+
+    return {
+      bg,
+      fg,
+      ...Object.entries(variants).reduce((acc, [category, data]) => {
+        const results = valid(Object.values(data));
+
+        return {
+          ...acc,
+          ...(results.length
+            ? { [category]: assembleArtisticData(results) }
+            : {}),
+        };
+      }, {}),
+    };
+  }
+
+  const { bg, fg, state, ...variants } = palette;
+  const valid = Object.entries(variants).filter(([, fg]) => {
+    const difference = comparePerceptualLightness(bg, fg);
+    return filterCondition({ min, max }, difference);
+  });
+
+  const main = valid.filter(([key]) => !key.startsWith("a"));
+  const accents = valid.filter(([key]) => key.startsWith("a"));
+
+  return {
+    bg,
+    fg,
+    ...assembleMaterialData(main.map(([, color]) => color)),
+    ...assembleMaterialData(
+      accents.map(([, color]) => color),
+      "a"
+    ),
+    ...(state ? { state } : {}),
+  };
 }
 
 // Accessibility Internals
@@ -1948,41 +2062,6 @@ function wcagContrastCriteria({ rating, large }, ratio) {
   ]).get(rating);
 }
 
-function contrastWcag({ rating, large, background }, [variants, special]) {
-  const valid = (collection) =>
-    collection.filter((foreground) => {
-      const ratio = calculateWCAGContrastRatio(background, foreground);
-      return wcagContrastCriteria({ rating, large }, ratio);
-    });
-
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
-
-  if (variants.length === 2) {
-    const [main, accents] = variants;
-
-    return [[valid(main), optional(valid, accents)], special];
-  }
-
-  const [tints, tones, shades] = variants;
-
-  return [
-    [optional(valid, tints), optional(valid, tones), optional(valid, shades)],
-    valid(special),
-  ];
-}
-
-function paletteWcagContrast({ rating = "AA", large = false }, palette) {
-  // Extract palette datasets
-  const [ui, variants, special] = palette;
-  const [background] = ui;
-
-  return [
-    ui,
-    ...contrastWcag({ rating, large, background }, [variants, special]),
-  ];
-}
-
 function comparePerceptualLightness(bg, fg) {
   const [, bgValues] = extractor([
     "oklch",
@@ -2003,39 +2082,65 @@ function filterCondition({ min, max }, difference) {
   return max ? difference >= min && difference <= max : difference >= min;
 }
 
-function colorimetricContrast({ min, max, background }, [variants, special]) {
-  const valid = (collection) =>
-    collection.filter((foreground) => {
-      const difference = comparePerceptualLightness(background, foreground);
+/**
+ * @typedef {"prot" | "deuter" | "trit"} CVD
+ * @typedef {"brettel" | "vienot"} CVDMethod
+ * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
+ */
 
-      return filterCondition({ min, max }, difference);
-    });
+/**
+ * An action that takes a generated `palette` and overlays a color perception
+ * simulator according to user `settings`.
+ *
+ * @param {object} [settings] - color perception simulation settings
+ * @param {"vision" | "contrast" | "illuminant"} [settings.check] - set simulation target
+ * @param {number} [settings.severity] - set severity of simulation (where applicable)
+ *
+ * @param {ColorVision} [settings.as] - set colorblindness to target
+ * @param {CVDMethod} [settings.method] - set colorblindness algorithm to use
+ *
+ * @param {number} [settings.factor] - set contrast sensitivity gray factor
+ *
+ * @param {number} [settings.K] - set illuminant temperature
+ *
+ * @param {PaletteTokens} palette - generated palette
+ * @returns {PaletteTokens} the simulated palette
+ */
+export function perception(settings, palette) {
+  // Set defaults
+  const {
+    check = "vision",
+    as = "protanopia",
+    method = "brettel",
+    severity = 50,
+  } = settings;
 
-  const optional = (fn, collection) =>
-    collection.length ? fn(collection) : [];
+  if (check === "contrast") {
+    const { factor = 0 } = settings;
 
-  if (variants.length === 2) {
-    const [main, accents] = variants;
-
-    return [[valid(main), optional(valid, accents)], special];
+    return simulate(contrast, { factor, severity }, palette);
   }
 
-  const [tints, tones, shades] = variants;
+  if (check === "illuminant") {
+    const { K = 1850 } = settings;
 
-  return [
-    [optional(valid, tints), optional(valid, tones), optional(valid, shades)],
-    valid(special),
-  ];
+    return simulate(illuminant, { K, severity }, palette);
+  }
+
+  return simulate(vision, { as, method, severity }, palette);
 }
 
-function paletteColorimetricContrast({ min = 75, max }, palette) {
-  const [ui, variants, special] = palette;
-  const [background] = ui;
+function simulate(action, settings, palette) {
+  const overlay = (palette) =>
+    Object.entries(palette).reduce((acc, [key, value]) => {
+      return {
+        ...acc,
+        [key]:
+          typeof value === "object" ? overlay(value) : action(settings, value),
+      };
+    }, {});
 
-  return [
-    ui,
-    ...colorimetricContrast({ min, max, background }, [variants, special]),
-  ];
+  return overlay(palette);
 }
 
 function vision(
