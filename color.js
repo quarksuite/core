@@ -43,380 +43,137 @@ export function convert(to, color) {
   return serialize(conversion(color, to));
 }
 
-/**
- * An action that takes any valid CSS `color` and adjusts its properties
- * according to user `settings`.
- *
- * @param {object} settings - color adjustment settings
- * @param {number} [settings.lightness] - adjust the color lightness (as a percentage)
- * @param {number} [settings.chroma] - adjust the color chroma/intensity (as a percentage)
- * @param {number} [settings.hue] - adjust the color hue (in degrees)
- * @param {number} [settings.alpha] - adjust the color alpha/transparency (as a percentage)
- * @param {number} [settings.steps] - activates interpolated color adjustment (up to number of steps)
- *
- * @param {string} color - the color to adjust
- * @returns {string | string[]} the adjusted color or interpolation results
- *
- * @example
- * Some sample color adjustments
- *
- * ```js
- * const swatch = "rebeccapurple";
- *
- * // Positive values increase
- * adjust({ lightness: 20 }, swatch);
- * adjust({ chroma: 8 }, swatch);
- * adjust({ hue: 90 }, swatch);
- *
- * // Negative values decrease
- * adjust({ lightness: -36 }, swatch);
- * adjust({ chroma: -15 }, swatch);
- * adjust({ hue: -220 }, swatch);
- * adjust({ alpha: -25 }, swatch);
- *
- * // Multiple adjustments allowed
- * adjust({ lightness: 25, chroma: -8, hue: 240 }, swatch);
- *
- * // Interpolated
- * adjust({ lightness: -75, steps: 6 }, swatch);
- * ```
- */
-export function adjust(settings, color) {
-  // Do nothing by default
-  const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
+function validator(input) {
+  const formats = [
+    namedValidator,
+    hexValidator,
+    rgbValidator,
+    hslValidator,
+    cmykValidator,
+    hwbValidator,
+    cielabValidator,
+    cielchValidator,
+    oklabValidator,
+    oklchValidator,
+  ];
 
-  if (steps) {
-    return colorInterpolation(
-      colorAdjustment,
-      {
-        lightness,
-        chroma,
-        hue,
-        alpha,
-        steps,
-      },
-      color,
-    );
+  const [format] = formats
+        .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
+        .find(([, fn]) => fn(input));
+
+  if (!format) {
+    return InvalidColorError(input);
   }
 
-  return colorAdjustment({ lightness, chroma, hue, alpha }, color);
+  return [format, input];
 }
 
-/**
- * An action that takes any valid CSS `color` and mixes it according to user `settings`.
- *
- * @param {object} settings - color blending settings
- * @param {string} [settings.target] - set the blend target
- * @param {number} [settings.strength] - set the blend strength (as a percentage)
- * @param {number} [settings.steps] - activates interpolated color blending (up to number of steps)
- *
- * @param {string} color - the input color
- * @returns {string | string[]} the blended color or interpolation results
- *
- * @example
- * Some sample color blends
- *
- * ```js
- * const swatch = "dodgerblue";
- * const target = "crimson";
- *
- * // Positive strength blends toward target
- * mix({ target, strength: 72 }, swatch);
- *
- * // Negative strength blends from target
- * mix({ target, strength: -64 }, swatch);
- *
- * // Interpolated
- * mix({ target, strength: 50, steps: 6 }, swatch);
- * ```
- */
-export function mix(settings, color) {
-  // Do nothing by default
-  const { target = color, strength = 0, steps } = settings;
+class InvalidColor extends Error {
+  constructor(input, ...params) {
+    super(...params);
 
-  if (steps) {
-    return colorInterpolation(colorMix, { target, strength, steps }, color);
+    // Stack trace (for v8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, InvalidColor);
+    }
+
+    this.name = "Invalid Color Format";
+    this.message = `
+${"-".repeat(100)}
+"${input}" is not a valid color.
+${"-".repeat(100)}
+
+Supported color formats:
+
+- Named colors
+- RGB Hex
+- Functional RGB
+- Functional HSL
+- Functional CMYK
+- Functional HWB
+- Functional CIELAB/CIELCH
+- Functional OKLab/OKLCH
+
+Read more about these formats at: https://www.w3.org/TR/css-color-4/
+${"=".repeat(100)}
+`;
   }
-
-  return colorMix({ target, strength }, color);
 }
 
-/** @typedef {"dyadic" | "complementary" | "analogous" | "split" | "clash" | "triadic" | "double" | "tetradic" | "square"} ColorHarmonies */
-
-/**
- * An action that takes any valid CSS `color` and generates an artistic color
- * harmony according to user `settings`.
- *
- * @param {object} settings - color harmony settings
- * @param {ColorHarmonies} [settings.configuration] - set the artistic color harmony
- * @param {boolean} [settings.accented] - include the complement as an accent?
- *
- * @param {string} color - the input color
- * @returns {[string, string, string?, string?]} the generated color harmony
- *
- * @example
- * Generating an analogous harmony from a color
- *
- * ```js
- * const swatch = "#bada55";
- *
- * harmony({ configuration: "analogous" }, swatch);
- * ```
- *
- * @example
- * Generating an accented split complementary harmony from a color
- *
- * ```js
- * const swatch = "#deaded";
- *
- * harmony({ configuration: "split" accented: true }, swatch);
- * ```
- */
-export function harmony(settings, color) {
-  // Set defaults
-  const { configuration = "complementary", accented = false } = settings;
-
-  return colorHarmonies({ type: configuration, accented }, color);
+function InvalidColorError(input) {
+  return new InvalidColor(input);
 }
 
-/**
- * @typedef {"prot" | "deuter" | "trit"} CVD
- * @typedef {"brettel" | "vienot"} CVDMethod
- * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
- *
- * @typedef {{ bg: string; fg: string }} SurfaceTokens - BG, FG
- *
- * @typedef {Partial<{
- *   50: string;
- *   100: string;
- *   200: string;
- *   300: string;
- *   400: string;
- *   500: string;
- *   600: string;
- *   700: string;
- *   800: string;
- *   900: string;
- *   a50: string;
- *   a100: string;
- *   a200: string;
- *   a300: string;
- *   a400: string;
- *   a500: string;
- *   a600: string;
- *   a700: string;
- *   a800: string;
- *   a900: string; }>} MaterialVariantTokens - MAIN, ACCENTS?
- *
- * @typedef {Partial<{
- *   light: { [key: string]: string };
- *   muted: { [key: string]: string };
- *   dark: { [key: string]: string }; }>} ArtisticVariantTokens - LIGHT?, MUTED?, DARK?
- *
- * @typedef {Partial<{ accent: { [key: string]: string; } }>} ArtisticAccentTokens
- *
- * @typedef {Partial<{
- *  state: {
- *    pending: string;
- *    success: string;
- *    warning: string;
- *    error: string;
- *  } }>} StateTokens
- *
- * @typedef {SurfaceTokens & MaterialVariantTokens & StateTokens} MaterialTokens
- * @typedef {SurfaceTokens & ArtisticVariantTokens & ArtisticAccentTokens} ArtisticTokens
- * @typedef {MaterialTokens | ArtisticTokens} PaletteTokens - assembled palette token object
- */
+function parser(extracted) {
+  const [format] = extracted;
 
-/**
- * An action that takes any valid CSS `color` and generates color tokens
- * according to user settings.
- *
- * @param {object} settings - palette settings
- * @param {"material" | "artistic"} [settings.configuration] - set the palette configuration
- * @param {number} [settings.contrast] - set the overall palette contrast
- * @param {boolean} [settings.accents] - generate accent colors?
- * @param {boolean} [settings.dark] - using dark mode?
- *
- * @param {boolean} [settings.states] - generate interface states? (material)
- *
- * @param {number} [settings.tints] - set number of tints to generate (artistic)
- * @param {number} [settings.tones] - set number of tones to generate (artistic)
- * @param {number} [settings.shades] - set number of shades to generate (artistic)
- *
- * @param {object} [settings.perception] - color perception simulation settings
- * @param {"vision" | "contrast" | "illuminant"} [settings.perception.check] - set simulation target
- * @param {number} [settings.perception.severity] - set severity of simulation (where applicable)
- *
- * @param {ColorVision} [settings.perception.as] - set colorblindness to target
- * @param {CVDMethod} [settings.perception.method] - set colorblindness algorithm to use
- *
- * @param {number} [settings.perception.factor] - set contrast sensitivity gray factor
- *
- * @param {number} [settings.perception.K] - set illuminant temperature
- *
- * @param {object} [settings.a11y] - color accessibility filter settings
- * @param {"standard" | "custom"} [settings.a11y.mode] - set color accessibility mode
- *
- * @param {"AA" | "AAA"} [settings.a11y.rating] - set color contrast rating
- * @param {boolean} [settings.a11y.large] - use large text rating?
- *
- * @param {number} [settings.a11y.min] - set minimum contrast from background (as a percentage)
- * @param {number} [settings.a11y.max] - set maximum contrast from background (as a percentage)
- *
- * @param {string} color - the input color
- * @returns {PaletteTokens} the generated palette
- */
-export function palette(settings, color) {
-  const { configuration = "material", perception = {}, a11y = {} } = settings;
+  const parsers = [
+    hexParser,
+    rgbParser,
+    hslParser,
+    cmykParser,
+    cielabParser,
+    cielchParser,
+    oklabParser,
+    oklchParser,
+  ];
 
-  let swatch = color;
-
-  // Generate palette
-  let palette = generatePalette(configuration, settings, swatch);
-
-  // Accessibility filter
-  if (a11y.mode === "standard") {
-    const { mode, rating = "AA", large = false } = a11y;
-    palette = accessibility({ mode, rating, large }, palette);
+  if (format === "hwb") {
+    return hslParser(extracted);
   }
 
-  if (a11y.mode === "custom") {
-    const { mode, min = 85, max } = a11y;
-    palette = accessibility({ mode, min, max }, palette);
-  }
+  const parse = parsers.find((fn) => fn.name.replace(/Parser/, "") === format);
 
-  // Perceptual simulations
-  const simulate = (check, settings, data) => {
-    return data.map((value) => {
-      if (Array.isArray(value)) return simulate(check, settings, value);
-      return check(settings, value);
-    });
-  };
-
-  if (perception.check === "vision") {
-    const { as = "protanopia", method = "brettel", severity = 50 } = perception;
-    palette = simulate(vision, { as, method, severity }, palette);
-  }
-
-  if (perception.check === "contrast") {
-    const { factor = 0, severity = 50 } = perception;
-    palette = simulate(contrast, { factor, severity }, palette);
-  }
-
-  if (perception.check === "illuminant") {
-    const { K = 1850, severity = 50 } = perception;
-    palette = simulate(illuminant, { K, severity }, palette);
-  }
-
-  // Output tokens
-  return tokens(palette);
+  return parse(extracted);
 }
 
-/**
- * @typedef {Partial<{
- *   name: string;
- *   author: string;
- *   version: string;
- *   license: string;
- *   bump: string;
- *   metadata: {
- *     description?: string;
- *     comments?: string;
- *   }
- * }>} ProjectSettings
- *
- * @typedef {string} ColorValue
- *
- * @typedef {{ [variant: string]: ColorValue | ColorSubcategory }} ColorSubcategory
- *
- * @typedef {{ [category: string]: ColorValue | ColorSubcategory | {} | ColorSchema }} ColorSchema
- *
- * @typedef {{
- *   project: ProjectSettings;
- *   [palettes: string]: ColorSchema;
- * }} ColorDictionary
- */
-
-/** @typedef {"gpl" | "sketchpalette"} PaletteFormat */
-
-/**
- * An exporter that takes a complete color `dict` and prepares it for a given
- * palette `format`.
- *
- * @param {PaletteFormat} format - the target palette format
- * @param {ColorDictionary} dict - the input color dictionary
- * @returns {string} file-ready palette output
- *
- * @remarks
- * As a rule, exporter functions do *not* assume read/write access to your system.
- * The output of an exporter will either be a prepared file-ready template string
- * (or stringified JSON) or an object according to its return type.
- *
- * You can then write this data to a file using your environment's native
- * filesystem API or a filesystem library of your choice.
- *
- * @example
- * Exporting a color dictionary as GIMP/Inkscape palette
- *
- * ```js
- * const swatch = "dodgerblue";
- *
- * const color = palette({
- *   configuration: "artistic",
- *   contrast: 95,
- *   tints: 9,
- *   tones: 9,
- *     shades: 9
- * }, swatch);
- *
- * output("gpl", { project: {}, ...color }); // project required by every exporter
- * ```
- *
- * @example
- * Exporting a color dictionary as a Sketch palette
- *
- * ```js
- * const swatch = "dodgerblue";
- *
- * const color = palette({
- *   configuration: "artistic",
- *   contrast: 95,
- *   tints: 9,
- *   tones: 9,
- *     shades: 9
- * }, swatch);
- *
- * output("sketchpalette", { project: {}, ...color }); // project required by every exporter
- * ```
- */
-export function output(format, dict) {
-  return format === "sketchpalette" ? sketchpalette(dict) : gpl(dict);
+function conversion(color, to) {
+  return outputFromRgb(to, inputToRgb(color));
 }
 
-// Internals
+function serialize(results) {
+  const [format] = results;
+
+  const serializers = [
+    hexSerializer,
+    rgbSerializer,
+    hslSerializer,
+    cmykSerializer,
+    hwbSerializer,
+    cielabSerializer,
+    cielchSerializer,
+    oklabSerializer,
+    oklchSerializer,
+  ];
+
+  const matched = serializers.find(
+    (fn) => fn.name.replace(/Serializer/, "") === format
+  );
+
+  return matched(results);
+}
 
 // Color Tokenization
 
 const NUMBER_TOKEN = /(?:-?(?!0\d)\d+(?:\.\d+)?)/;
 const PERCENTAGE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "%)"].join(""),
+  ["(?:", NUMBER_TOKEN.source, "%)"].join("")
 );
 
 const LEGACY_DELIMITER = /(?:[\s,]+)/;
 const LEGACY_ALPHA_DELIMITER = new RegExp(
-  LEGACY_DELIMITER.source.replace(",", ",/"),
+  LEGACY_DELIMITER.source.replace(",", ",/")
 );
 const MODERN_DELIMITER = new RegExp(LEGACY_DELIMITER.source.replace(",", ""));
 const MODERN_ALPHA_DELIMITER = new RegExp(
-  LEGACY_ALPHA_DELIMITER.source.replace(",", ""),
+  LEGACY_ALPHA_DELIMITER.source.replace(",", "")
 );
 
 const COMPONENT_TOKEN = new RegExp(
-  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join(""),
+  ["(?:", PERCENTAGE_TOKEN.source, "|", NUMBER_TOKEN.source, ")"].join("")
 );
 const HUE_TOKEN = new RegExp(
-  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join(""),
+  ["(?:", NUMBER_TOKEN.source, "(?:deg|g?rad|turn)?)"].join("")
 );
 
 // Color Validation
@@ -598,15 +355,15 @@ function matchFunctionalFormat({ prefix, legacy = true }, tokens) {
   return new RegExp(
     `(?:^${prefix}\\(`.concat(
       VALUES.join(DELIMITER),
-      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`,
-    ),
+      `(?:${[ALPHA_DELIMITER, COMPONENT_TOKEN.source].join("")})?\\))`
+    )
   );
 }
 
 function rgbValidator(color) {
   return matchFunctionalFormat(
     { prefix: "rgba?" },
-    Array(3).fill(COMPONENT_TOKEN),
+    Array(3).fill(COMPONENT_TOKEN)
   ).test(color);
 }
 
@@ -620,7 +377,7 @@ function hslValidator(color) {
 function cmykValidator(color) {
   return matchFunctionalFormat(
     { prefix: "device-cmyk", legacy: false },
-    Array(4).fill(COMPONENT_TOKEN),
+    Array(4).fill(COMPONENT_TOKEN)
   ).test(color);
 }
 
@@ -660,67 +417,6 @@ function oklchValidator(color) {
     NUMBER_TOKEN,
     HUE_TOKEN,
   ]).test(color);
-}
-
-function validator(input) {
-  const formats = [
-    namedValidator,
-    hexValidator,
-    rgbValidator,
-    hslValidator,
-    cmykValidator,
-    hwbValidator,
-    cielabValidator,
-    cielchValidator,
-    oklabValidator,
-    oklchValidator,
-  ];
-
-  const [format] = formats
-    .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
-    .find(([, fn]) => fn(input));
-
-  if (!format) {
-    return InvalidColorError(input);
-  }
-
-  return [format, input];
-}
-
-class InvalidColor extends Error {
-  constructor(input, ...params) {
-    super(...params);
-
-    // Stack trace (for v8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, InvalidColor);
-    }
-
-    this.name = "Invalid Color Format";
-    this.message = `
-${"-".repeat(100)}
-"${input}" is not a valid color.
-${"-".repeat(100)}
-
-Supported color formats:
-
-- Named colors
-- RGB Hex
-- Functional RGB
-- Functional HSL
-- Functional CMYK
-- Functional HWB
-- Functional CIELAB/CIELCH
-- Functional OKLab/OKLCH
-
-Read more about these formats at: https://www.w3.org/TR/css-color-4/
-${"=".repeat(100)}
-`;
-  }
-}
-
-function InvalidColorError(input) {
-  return new InvalidColor(input);
 }
 
 // Color Value Extraction
@@ -964,29 +660,6 @@ function oklchParser([format, components]) {
   return [format, [L, C, H, 1]];
 }
 
-function parser(extracted) {
-  const [format] = extracted;
-
-  const parsers = [
-    hexParser,
-    rgbParser,
-    hslParser,
-    cmykParser,
-    cielabParser,
-    cielchParser,
-    oklabParser,
-    oklchParser,
-  ];
-
-  if (format === "hwb") {
-    return hslParser(extracted);
-  }
-
-  const parse = parsers.find((fn) => fn.name.replace(/Parser/, "") === format);
-
-  return parse(extracted);
-}
-
 // Input -> RGB
 
 function rgbInputIdentity([, values]) {
@@ -1094,11 +767,11 @@ function ciexyzToLrgb([X, Y, Z]) {
   ];
 
   const [CX, CY, CZ] = D65_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3,
+    ([V1, V2, V3]) => X * V1 + Y * V2 + Z * V3
   );
 
   const [LR, LG, LB] = LINEAR_RGB_TRANSFORMATION_MATRIX.map(
-    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3,
+    ([V1, V2, V3]) => CX * V1 + CY * V2 + CZ * V3
   );
 
   return [LR, LG, LB];
@@ -1114,7 +787,7 @@ function cielabToRgb([, values]) {
   const [L, a, b, A] = values;
 
   const [R, G, B] = lrgbToRgb(ciexyzToLrgb(cielabToCiexyz([L, a, b]))).map(
-    (n) => numberToChannel(n),
+    (n) => numberToChannel(n)
   );
 
   return ["rgb", [R, G, B, A]];
@@ -1197,7 +870,7 @@ function hslFromRgb([, rgbValues]) {
 
   const L = calculateLightness(cmin, cmax);
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition,
+    ([, condition]) => condition
   );
   const S = calculateSaturation(delta, L);
 
@@ -1225,7 +898,7 @@ function hwbFromRgb([, rgbValues]) {
   const delta = cmax - cmin;
 
   const [H] = Array.from(calculateHue(R, G, B, cmax, delta)).find(
-    ([, condition]) => condition,
+    ([, condition]) => condition
   );
 
   const [W, BLK] = [cmin, 1 - cmax];
@@ -1253,11 +926,11 @@ function lrgbToCiexyz([LR, LG, LB]) {
   ];
 
   const [x, y, z] = D65_REFERENCE_WHITE.map(
-    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3,
+    ([V1, V2, V3]) => LR * V1 + LG * V2 + LB * V3
   );
 
   const [X, Y, Z] = D50_CHROMATIC_ADAPTATION.map(
-    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3,
+    ([V1, V2, V3]) => x * V1 + y * V2 + z * V3
   );
 
   return [X, Y, Z];
@@ -1302,7 +975,7 @@ function lrgbToOklab([LR, LG, LB]) {
   ];
 
   const [L, M, S] = NONLINEAR_LMS_CONE_ACTIVATIONS.map(
-    ([L, M, S]) => L * LR + M * LG + S * LB,
+    ([L, M, S]) => L * LR + M * LG + S * LB
   ).map((V) => Math.cbrt(V));
 
   return RGB_OKLAB_MATRIX.map(([V1, V2, V3], pos) => {
@@ -1424,10 +1097,6 @@ function outputFromRgb(target, data) {
   return output(RGB);
 }
 
-function conversion(color, to) {
-  return outputFromRgb(to, inputToRgb(color));
-}
-
 // Color Serialization
 
 function hexSerializer([, hexResult]) {
@@ -1451,7 +1120,7 @@ function serializeFunctionalFormat({ prefix, legacy = true }, components) {
   return (legacy && !isOpaque ? `${prefix}a(` : `${prefix}(`).concat(
     values.join(DELIMITER),
     isOpaque ? "" : ALPHA_DELIMITER.concat(+alpha),
-    ")",
+    ")"
   );
 }
 
@@ -1460,7 +1129,7 @@ function rgbSerializer([, rgbResult]) {
 
   // Clamp RGB channels 0-255
   const [R, G, B] = [r, g, b].map(
-    (component) => +clamp(component, 0, 255).toFixed(3),
+    (component) => +clamp(component, 0, 255).toFixed(3)
   );
 
   return serializeFunctionalFormat({ prefix: "rgb" }, [R, G, B, A]);
@@ -1474,8 +1143,7 @@ function hslSerializer([, hslResult]) {
 
   // format saturation, lightness to percentages
   const [S, L] = [s, l].map(
-    (n) =>
-      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
+    (n) => `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`
   );
 
   return serializeFunctionalFormat({ prefix: "hsl" }, [H, S, L, A]);
@@ -1486,8 +1154,7 @@ function cmykSerializer([, cmykResult]) {
 
   // Format to percentage, cap at 0-100
   const [C, M, Y, K] = [c, m, y, k].map(
-    (n) =>
-      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
+    (n) => `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`
   );
 
   return serializeFunctionalFormat({ prefix: "device-cmyk", legacy: false }, [
@@ -1507,8 +1174,7 @@ function hwbSerializer([, hslResult]) {
 
   // format white, black to percentages
   const [W, BLK] = [w, blk].map(
-    (n) =>
-      `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`,
+    (n) => `${+clamp(numberToPercentage(isNaN(n) ? 0 : n), 0, 100).toFixed(3)}%`
   );
 
   return serializeFunctionalFormat({ prefix: "hwb", legacy: false }, [
@@ -1607,26 +1273,63 @@ function oklchSerializer([, oklchValues]) {
   ]);
 }
 
-function serialize(results) {
-  const [format] = results;
+/**
+ * An action that takes any valid CSS `color` and adjusts its properties
+ * according to user `settings`.
+ *
+ * @param {object} settings - color adjustment settings
+ * @param {number} [settings.lightness] - adjust the color lightness (as a percentage)
+ * @param {number} [settings.chroma] - adjust the color chroma/intensity (as a percentage)
+ * @param {number} [settings.hue] - adjust the color hue (in degrees)
+ * @param {number} [settings.alpha] - adjust the color alpha/transparency (as a percentage)
+ * @param {number} [settings.steps] - activates interpolated color adjustment (up to number of steps)
+ *
+ * @param {string} color - the color to adjust
+ * @returns {string | string[]} the adjusted color or interpolation results
+ *
+ * @example
+ * Some sample color adjustments
+ *
+ * ```js
+ * const swatch = "rebeccapurple";
+ *
+ * // Positive values increase
+ * adjust({ lightness: 20 }, swatch);
+ * adjust({ chroma: 8 }, swatch);
+ * adjust({ hue: 90 }, swatch);
+ *
+ * // Negative values decrease
+ * adjust({ lightness: -36 }, swatch);
+ * adjust({ chroma: -15 }, swatch);
+ * adjust({ hue: -220 }, swatch);
+ * adjust({ alpha: -25 }, swatch);
+ *
+ * // Multiple adjustments allowed
+ * adjust({ lightness: 25, chroma: -8, hue: 240 }, swatch);
+ *
+ * // Interpolated
+ * adjust({ lightness: -75, steps: 6 }, swatch);
+ * ```
+ */
+export function adjust(settings, color) {
+  // Do nothing by default
+  const { lightness = 0, chroma = 0, hue = 0, alpha = 0, steps } = settings;
 
-  const serializers = [
-    hexSerializer,
-    rgbSerializer,
-    hslSerializer,
-    cmykSerializer,
-    hwbSerializer,
-    cielabSerializer,
-    cielchSerializer,
-    oklabSerializer,
-    oklchSerializer,
-  ];
+  if (steps) {
+    return colorInterpolation(
+      colorAdjustment,
+      {
+        lightness,
+        chroma,
+        hue,
+        alpha,
+        steps,
+      },
+      color
+    );
+  }
 
-  const matched = serializers.find(
-    (fn) => fn.name.replace(/Serializer/, "") === format,
-  );
-
-  return matched(results);
+  return colorAdjustment({ lightness, chroma, hue, alpha }, color);
 }
 
 // Color Adjustment Internals
@@ -1640,7 +1343,7 @@ function extractOklchValues(color) {
 
 function adjustColorProperties(
   { lightness, chroma, hue, alpha },
-  [l, c, h, a],
+  [l, c, h, a]
 ) {
   // Adjust properties only if defined, make values parseable
   const L = numberFromPercentage(lightness ? l + lightness : l);
@@ -1654,7 +1357,7 @@ function adjustColorProperties(
 
 function colorAdjustment(
   { lightness = 0, chroma = 0, hue = 0, alpha = 0 },
-  color,
+  color
 ) {
   // Ensure color is valid and store its format
   const [format] = validator(color);
@@ -1665,7 +1368,7 @@ function colorAdjustment(
   // Adjust target properties
   const [L, C, H, A] = adjustColorProperties(
     { lightness, chroma, hue, alpha },
-    values,
+    values
   );
 
   // Serialize oklch result
@@ -1678,6 +1381,96 @@ function colorAdjustment(
 
   // Otherwise use input format
   return serialize(conversion(oklch, format));
+}
+
+// Color Interpolation Behavior
+
+function colorInterpolation(action, settings, input) {
+  // Set default for shared step property
+  const { steps = 1 } = settings;
+
+  // Fill an array with a length of steps with the input color
+  return [
+    ...new Set(
+      Array(steps)
+        .fill(input)
+        .map((color, pos) => {
+          // General interpolation formula
+          const interpolate = (property, index) =>
+            property - (property / steps) * index;
+
+          // Store result
+          let result = "";
+
+          // Now, we vary the behavior here based on the name of the action
+          if (action.name === "colorAdjustment") {
+            // Destructure unique properties
+            const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = settings;
+
+            result = colorAdjustment(
+              {
+                lightness: interpolate(lightness, pos),
+                chroma: interpolate(chroma, pos),
+                hue: interpolate(hue, pos),
+                alpha: interpolate(alpha, pos),
+              },
+              color
+            );
+          }
+
+          if (action.name === "colorMix") {
+            // Destructure unique properties
+            const { strength = 0, target = color } = settings;
+
+            result = colorMix(
+              { strength: interpolate(strength, pos), target },
+              color
+            );
+          }
+
+          return result;
+        })
+    ),
+  ].reverse();
+}
+
+/**
+ * An action that takes any valid CSS `color` and mixes it according to user `settings`.
+ *
+ * @param {object} settings - color blending settings
+ * @param {string} [settings.target] - set the blend target
+ * @param {number} [settings.strength] - set the blend strength (as a percentage)
+ * @param {number} [settings.steps] - activates interpolated color blending (up to number of steps)
+ *
+ * @param {string} color - the input color
+ * @returns {string | string[]} the blended color or interpolation results
+ *
+ * @example
+ * Some sample color blends
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ * const target = "crimson";
+ *
+ * // Positive strength blends toward target
+ * mix({ target, strength: 72 }, swatch);
+ *
+ * // Negative strength blends from target
+ * mix({ target, strength: -64 }, swatch);
+ *
+ * // Interpolated
+ * mix({ target, strength: 50, steps: 6 }, swatch);
+ * ```
+ */
+export function mix(settings, color) {
+  // Do nothing by default
+  const { target = color, strength = 0, steps } = settings;
+
+  if (steps) {
+    return colorInterpolation(colorMix, { target, strength, steps }, color);
+  }
+
+  return colorMix({ target, strength }, color);
 }
 
 // Color Mixture Internals
@@ -1724,7 +1517,7 @@ function colorMix({ target, strength = 0 }, color) {
   const [L, a, b, A] = calculateMixture(
     color,
     target,
-    numberFromPercentage(strength),
+    numberFromPercentage(strength)
   );
 
   // Serialize the blend result
@@ -1737,361 +1530,42 @@ function colorMix({ target, strength = 0 }, color) {
   return serialize(conversion(oklab, format));
 }
 
-// Color Vision Internals
+/** @typedef {"dyadic" | "complementary" | "analogous" | "split" | "clash" | "triadic" | "double" | "tetradic" | "square"} ColorHarmonies */
 
-function cvdBrettelSimulation({ type, strength = 100 }, color) {
-  // Parse values from RGB
-  const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serialize(conversion(color, "rgb"))]),
-  );
+/**
+ * An action that takes any valid CSS `color` and generates an artistic color
+ * harmony according to user `settings`.
+ *
+ * @param {object} settings - color harmony settings
+ * @param {ColorHarmonies} [settings.configuration] - set the artistic color harmony
+ * @param {boolean} [settings.accented] - include the complement as an accent?
+ *
+ * @param {string} color - the input color
+ * @returns {[string, string, string?, string?]} the generated color harmony
+ *
+ * @example
+ * Generating an analogous harmony from a color
+ *
+ * ```js
+ * const swatch = "#bada55";
+ *
+ * harmony({ configuration: "analogous" }, swatch);
+ * ```
+ *
+ * @example
+ * Generating an accented split complementary harmony from a color
+ *
+ * ```js
+ * const swatch = "#deaded";
+ *
+ * harmony({ configuration: "split" accented: true }, swatch);
+ * ```
+ */
+export function harmony(settings, color) {
+  // Set defaults
+  const { configuration = "complementary", accented = false } = settings;
 
-  // Format RGB to linear RGB
-  const [LR, LG, LB] = rgbToLrgb([r, g, b]);
-
-  // Set up the Brettel simulation matrices
-  const brettel = {
-    protanope: {
-      a: [
-        0.1498,
-        1.19548,
-        -0.34528,
-        0.10764,
-        0.84864,
-        0.04372,
-        0.00384,
-        -0.0054,
-        1.00156,
-      ],
-      b: [
-        0.1457,
-        1.16172,
-        -0.30742,
-        0.10816,
-        0.85291,
-        0.03892,
-        0.00386,
-        -0.00524,
-        1.00139,
-      ],
-      n: [0.00048, 0.00393, -0.00441],
-    },
-    deuteranope: {
-      a: [
-        0.36477,
-        0.86381,
-        -0.22858,
-        0.26294,
-        0.64245,
-        0.09462,
-        -0.02006,
-        0.02728,
-        0.99278,
-      ],
-      b: [
-        0.37298,
-        0.88166,
-        -0.25464,
-        0.25954,
-        0.63506,
-        0.1054,
-        -0.0198,
-        0.02784,
-        0.99196,
-      ],
-      n: [-0.00281, -0.00611, 0.00892],
-    },
-    tritanope: {
-      a: [
-        1.01277,
-        0.13548,
-        -0.14826,
-        -0.01243,
-        0.86812,
-        0.14431,
-        0.07589,
-        0.805,
-        0.11911,
-      ],
-      b: [
-        0.93678,
-        0.18979,
-        -0.12657,
-        0.06154,
-        0.81526,
-        0.1232,
-        -0.37562,
-        1.12767,
-        0.24796,
-      ],
-      n: [0.03901, -0.02788, -0.01113],
-    },
-  };
-
-  // Determine which plane to use
-  const { a: $a, b: $b, n } = brettel[type];
-  const dotWithSepPlane = LR * n[0] + LG * n[1] + LB * n[2];
-  const p = dotWithSepPlane >= 0 ? $a : $b;
-
-  // Apply the dichromatic confusion line adjusted for severity,
-  // then format back to sRGB
-  const [R, G, B] = lrgbToRgb(
-    [
-      [p[0] * LR + p[1] * LG + p[2] * LB, LR],
-      [p[3] * LR + p[4] * LG + p[5] * LB, LG],
-      [p[6] * LR + p[7] * LG + p[8] * LB, LB],
-    ].map(([cvdComponent, component]) => {
-      const severity = numberFromPercentage(strength);
-
-      return cvdComponent * severity + component * (1 - severity);
-    }),
-  );
-
-  return [R, G, B, A];
-}
-
-function cvdVienotSimulation({ type, strength = 100 }, color) {
-  // Parse values from RGB
-  const [, [r, g, b, A]] = parser(
-    extractor(["rgb", serialize(conversion(color, "rgb"))]),
-  );
-
-  // Format RGB to linear RGB
-  const [LR, LG, LB] = rgbToLrgb([r, g, b]);
-
-  // Right off the bat, if the type is "tritanope", use the Brettel method
-  if (type === "tritanope") {
-    return cvdBrettelSimulation({ type, strength }, color);
-  }
-
-  // Otherwise use the correct transformation matrix
-
-  const vienot = {
-    protanope: [
-      0.11238,
-      0.88762,
-      0.0,
-      0.11238,
-      0.88762,
-      -0.0,
-      0.00401,
-      -0.00401,
-      1.0,
-    ],
-    deuteranope: [
-      0.29275,
-      0.70725,
-      0.0,
-      0.29275,
-      0.70725,
-      -0.0,
-      -0.02234,
-      0.02234,
-      1.0,
-    ],
-  };
-
-  // Vienot 1999 uses a single plane
-  const p = vienot[type];
-
-  // Apply the dichromatic confusion line adjusted for severity,
-  // then format back to sRGB
-  const [R, G, B] = lrgbToRgb(
-    [
-      [p[0] * LR + p[1] * LG + p[2] * LB, LR],
-      [p[3] * LR + p[4] * LG + p[5] * LB, LG],
-      [p[6] * LR + p[7] * LG + p[8] * LB, LB],
-    ].map(([cvdComponent, component]) => {
-      const severity = numberFromPercentage(strength);
-
-      return cvdComponent * severity + component * (1 - severity);
-    }),
-  );
-
-  return [R, G, B, A];
-}
-
-function checkColorblindness(
-  { method = "brettel", type, strength = 0 },
-  color,
-) {
-  // Validate input color and store result
-  const [format] = validator(color);
-
-  let values = [];
-
-  // Prefer the "brettel" method for accuracy
-  if (method === "brettel") {
-    values = cvdBrettelSimulation({ type, strength }, color);
-  }
-
-  // Prefer "vienot" under special cases and for performance
-  if (method === "vienot") {
-    values = cvdVienotSimulation({ type, strength }, color);
-  }
-
-  // Serialize RGB, but leave the alpha alone
-  const rgb = serialize([
-    "rgb",
-    values.map((component, index) =>
-      index !== 3 ? numberToChannel(component) : component
-    ),
-  ]);
-
-  if (format === "named") {
-    return serialize(conversion(rgb, "hex"));
-  }
-
-  return serialize(conversion(rgb, format));
-}
-
-// Contrast Sensitivity Internals
-
-function checkSensitivity({ contrast = 0, strength = 0 }, color) {
-  // Derive contrast from a shade of gray
-  const GRAY = colorMix(
-    {
-      target: "white",
-      strength: 100 * numberFromPercentage(contrast),
-    },
-    "black",
-  );
-
-  // Mix resultant gray with input color
-  return colorMix(
-    {
-      target: GRAY,
-      strength: 100 * numberFromPercentage(strength),
-    },
-    color,
-  );
-}
-
-// Illuminant Internals
-
-function kelvinToRgb(temperature) {
-  // The accurate range for this algorithm is 1000-40000K
-  // and K / 100 is required
-  const K = clamp(temperature, 1000, 40000) / 100;
-
-  // Initialize RGB
-  let R = 0;
-  let G = 0;
-  let B = 0;
-
-  // If K <66, R locks at 255
-  if (K <= 66) {
-    R = 255;
-    G = 99.4708025861 * Math.log(K) - 161.1195681661;
-
-    // B locks at 0 when K <19
-    if (K <= 19) {
-      B = 0;
-    } else {
-      B = 138.577412231 * Math.log(K - 10) - 305.0447927307;
-    }
-  } else {
-    // Otherwise K >66
-    R = 329.698727446 * (K - 60) ** -0.1332047592;
-    G = 288.1221695283 * (K - 60) ** -0.0755148492;
-    B = 255;
-  }
-
-  // Serialize RGB
-  return serialize(["rgb", [R, G, B, 1]]);
-}
-
-function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
-  const target = kelvinToRgb(temperature);
-
-  return colorMix({ target, strength }, color);
-}
-
-// Color Interpolation Behavior
-
-function colorInterpolation(action, settings, input) {
-  // Set default for shared step property
-  const { steps = 1 } = settings;
-
-  // Fill an array with a length of steps with the input color
-  return [
-    ...new Set(
-      Array(steps)
-        .fill(input)
-        .map((color, pos) => {
-          // General interpolation formula
-          const interpolate = (property, index) =>
-            property - (property / steps) * index;
-
-          // Store result
-          let result = "";
-
-          // Now, we vary the behavior here based on the name of the action
-          if (action.name === "colorAdjustment") {
-            // Destructure unique properties
-            const { lightness = 0, chroma = 0, hue = 0, alpha = 0 } = settings;
-
-            result = colorAdjustment(
-              {
-                lightness: interpolate(lightness, pos),
-                chroma: interpolate(chroma, pos),
-                hue: interpolate(hue, pos),
-                alpha: interpolate(alpha, pos),
-              },
-              color,
-            );
-          }
-
-          if (action.name === "colorMix") {
-            // Destructure unique properties
-            const { strength = 0, target = color } = settings;
-
-            result = colorMix(
-              { strength: interpolate(strength, pos), target },
-              color,
-            );
-          }
-
-          if (action.name === "checkColorblindness") {
-            const { method = "brettel", type, strength = 0 } = settings;
-
-            result = checkColorblindness(
-              {
-                method,
-                type,
-                strength: interpolate(strength, pos),
-              },
-              color,
-            );
-          }
-
-          if (action.name === "checkSensitivity") {
-            const { contrast = 0, strength = 0 } = settings;
-
-            result = checkSensitivity(
-              {
-                contrast: interpolate(contrast, pos),
-                strength: interpolate(strength, pos),
-              },
-              color,
-            );
-          }
-
-          if (action.name === "checkIlluminant") {
-            const { temperature = 1000, strength = 0 } = settings;
-
-            result = checkIlluminant(
-              {
-                temperature: interpolate(temperature, pos),
-                strength: interpolate(strength, pos),
-              },
-              color,
-            );
-          }
-
-          return result;
-        }),
-    ),
-  ].reverse();
+  return colorHarmonies({ type: configuration, accented }, color);
 }
 
 // Color Harmony Internals
@@ -2142,6 +1616,171 @@ function colorHarmonies({ type, accented = false }, color) {
   return harmonies[type] || color;
 }
 
+/**
+ * @typedef {"prot" | "deuter" | "trit"} CVD
+ * @typedef {"brettel" | "vienot"} CVDMethod
+ * @typedef {"achromatopsia" | `${CVD}anomaly` | `${CVD}anopia`} ColorVision
+ *
+ * @typedef {{ bg: string; fg: string }} SurfaceTokens - BG, FG
+ *
+ * @typedef {Partial<{
+ *   50: string;
+ *   100: string;
+ *   200: string;
+ *   300: string;
+ *   400: string;
+ *   500: string;
+ *   600: string;
+ *   700: string;
+ *   800: string;
+ *   900: string;
+ *   a50: string;
+ *   a100: string;
+ *   a200: string;
+ *   a300: string;
+ *   a400: string;
+ *   a500: string;
+ *   a600: string;
+ *   a700: string;
+ *   a800: string;
+ *   a900: string; }>} MaterialVariantTokens - MAIN, ACCENTS?
+ *
+ * @typedef {Partial<{
+ *   light: { [key: string]: string };
+ *   muted: { [key: string]: string };
+ *   dark: { [key: string]: string }; }>} ArtisticVariantTokens - LIGHT?, MUTED?, DARK?
+ *
+ * @typedef {Partial<{ accent: { [key: string]: string; } }>} ArtisticAccentTokens
+ *
+ * @typedef {Partial<{
+ *  state: {
+ *    pending: string;
+ *    success: string;
+ *    warning: string;
+ *    error: string;
+ *  } }>} StateTokens
+ *
+ * @typedef {SurfaceTokens & MaterialVariantTokens & StateTokens} MaterialTokens
+ * @typedef {SurfaceTokens & ArtisticVariantTokens & ArtisticAccentTokens} ArtisticTokens
+ * @typedef {MaterialTokens | ArtisticTokens} PaletteTokens - assembled palette token object
+ */
+
+/**
+ * An action that takes any valid CSS `color` and generates color tokens
+ * according to user settings.
+ *
+ * @param {object} settings - palette settings
+ * @param {"material" | "artistic"} [settings.configuration] - set the palette configuration
+ * @param {number} [settings.contrast] - set the overall palette contrast
+ * @param {boolean} [settings.accents] - generate accent colors?
+ * @param {boolean} [settings.dark] - using dark mode?
+ *
+ * @param {boolean} [settings.states] - generate interface states? (material)
+ *
+ * @param {number} [settings.tints] - set number of tints to generate (artistic)
+ * @param {number} [settings.tones] - set number of tones to generate (artistic)
+ * @param {number} [settings.shades] - set number of shades to generate (artistic)
+ *
+ * @param {object} [settings.perception] - color perception simulation settings
+ * @param {"vision" | "contrast" | "illuminant"} [settings.perception.check] - set simulation target
+ * @param {number} [settings.perception.severity] - set severity of simulation (where applicable)
+ *
+ * @param {ColorVision} [settings.perception.as] - set colorblindness to target
+ * @param {CVDMethod} [settings.perception.method] - set colorblindness algorithm to use
+ *
+ * @param {number} [settings.perception.factor] - set contrast sensitivity gray factor
+ *
+ * @param {number} [settings.perception.K] - set illuminant temperature
+ *
+ * @param {object} [settings.a11y] - color accessibility filter settings
+ * @param {"standard" | "custom"} [settings.a11y.mode] - set color accessibility mode
+ *
+ * @param {"AA" | "AAA"} [settings.a11y.rating] - set color contrast rating
+ * @param {boolean} [settings.a11y.large] - use large text rating?
+ *
+ * @param {number} [settings.a11y.min] - set minimum contrast from background (as a percentage)
+ * @param {number} [settings.a11y.max] - set maximum contrast from background (as a percentage)
+ *
+ * @param {string} color - the input color
+ * @returns {PaletteTokens} the generated palette
+ */
+export function palette(settings, color) {
+  const { configuration = "material", perception = {}, a11y = {} } = settings;
+
+  let swatch = color;
+
+  // Generate palette
+  let palette = generatePalette(configuration, settings, swatch);
+
+  // Accessibility filter
+  if (a11y.mode === "standard") {
+    const { mode, rating = "AA", large = false } = a11y;
+    palette = accessibility({ mode, rating, large }, palette);
+  }
+
+  if (a11y.mode === "custom") {
+    const { mode, min = 85, max } = a11y;
+    palette = accessibility({ mode, min, max }, palette);
+  }
+
+  // Perceptual simulations
+  const simulate = (check, settings, data) => {
+    return data.map((value) => {
+      if (Array.isArray(value)) return simulate(check, settings, value);
+      return check(settings, value);
+    });
+  };
+
+  if (perception.check === "vision") {
+    const { as = "protanopia", method = "brettel", severity = 50 } = perception;
+    palette = simulate(vision, { as, method, severity }, palette);
+  }
+
+  if (perception.check === "contrast") {
+    const { factor = 0, severity = 50 } = perception;
+    palette = simulate(contrast, { factor, severity }, palette);
+  }
+
+  if (perception.check === "illuminant") {
+    const { K = 1850, severity = 50 } = perception;
+    palette = simulate(illuminant, { K, severity }, palette);
+  }
+
+  // Output tokens
+  return tokens(palette);
+}
+
+function create(settings, color) {
+  // Set default configuration and settings and exclude interface states until requested
+  const {
+    configuration = "material",
+    contrast = 100,
+    accents = false,
+    states = false,
+    dark = false,
+  } = settings;
+
+  // Generate from material-esque or artistic configuration depending on configuration
+  if (configuration === "artistic") {
+    const { tints = 3, tones = 3, shades = 3 } = settings;
+
+    return artisticConfiguration(
+      { contrast, tints, tones, shades, accented: accents, dark },
+      color
+    );
+  }
+
+  return materialConfiguration(
+    {
+      contrast,
+      accented: accents,
+      stated: states,
+      dark,
+    },
+    color
+  );
+}
+
 // Color Palette Internals
 
 function generateSurface(contrast, color, dark = false) {
@@ -2167,7 +1806,7 @@ function generateMaterialAccents(
   variants,
   color,
   accented = false,
-  dark = false,
+  dark = false
 ) {
   const PERCENTAGE = 50 / 1.618;
   const HUE = 120;
@@ -2180,19 +1819,19 @@ function generateMaterialAccents(
 
   return accented
     ? [
-      ...interpolate({
-        lightness: limit(dark ? -PERCENTAGE : PERCENTAGE),
-        chroma: limit(-PERCENTAGE),
-        hue: limit(-HUE),
-        steps: 5,
-      }).reverse(),
-      ...interpolate({
-        lightness: limit(dark ? PERCENTAGE : -PERCENTAGE),
-        chroma: limit(PERCENTAGE),
-        hue: limit(HUE),
-        steps: 5,
-      }),
-    ]
+        ...interpolate({
+          lightness: limit(dark ? -PERCENTAGE : PERCENTAGE),
+          chroma: limit(-PERCENTAGE),
+          hue: limit(-HUE),
+          steps: 5,
+        }).reverse(),
+        ...interpolate({
+          lightness: limit(dark ? PERCENTAGE : -PERCENTAGE),
+          chroma: limit(PERCENTAGE),
+          hue: limit(HUE),
+          steps: 5,
+        }),
+      ]
     : [];
 }
 
@@ -2212,7 +1851,7 @@ function generateArtisticAccents(
   contrast,
   color,
   accented = false,
-  dark = false,
+  dark = false
 ) {
   const PERCENTAGE = 50 / 1.618;
   const HUE = 120;
@@ -2223,19 +1862,19 @@ function generateArtisticAccents(
 
   return accented
     ? [
-      ...interpolate({
-        lightness: limit(dark ? -PERCENTAGE : PERCENTAGE),
-        chroma: limit(-PERCENTAGE),
-        hue: limit(-HUE),
-        steps: 5,
-      }).reverse(),
-      ...interpolate({
-        lightness: limit(dark ? PERCENTAGE : -PERCENTAGE),
-        chroma: limit(PERCENTAGE),
-        hue: limit(HUE),
-        steps: 4,
-      }),
-    ]
+        ...interpolate({
+          lightness: limit(dark ? -PERCENTAGE : PERCENTAGE),
+          chroma: limit(-PERCENTAGE),
+          hue: limit(-HUE),
+          steps: 5,
+        }).reverse(),
+        ...interpolate({
+          lightness: limit(dark ? PERCENTAGE : -PERCENTAGE),
+          chroma: limit(PERCENTAGE),
+          hue: limit(HUE),
+          steps: 4,
+        }),
+      ]
     : [];
 }
 
@@ -2243,17 +1882,19 @@ function generateStates(contrast, [, fg], color, stated = false) {
   const strength = 80 * numberFromPercentage(contrast);
   return stated
     ? [
-      colorMix({ target: "#dddddd", strength }, color),
-      colorMix({ target: "#2ecc40", strength }, color),
-      colorMix({ target: "#ffdc00", strength }, color),
-      colorMix({ target: "#ff4136", strength }, color),
-    ].map((states) => colorMix({ target: fg, strength: strength / 2 }, states))
+        colorMix({ target: "#dddddd", strength }, color),
+        colorMix({ target: "#2ecc40", strength }, color),
+        colorMix({ target: "#ffdc00", strength }, color),
+        colorMix({ target: "#ff4136", strength }, color),
+      ].map((states) =>
+        colorMix({ target: fg, strength: strength / 2 }, states)
+      )
     : [];
 }
 
 function materialConfiguration(
   { contrast = 100, accented = false, stated = false, dark = false },
-  color,
+  color
 ) {
   // [bg, fg]
   const ui = generateSurface(contrast, color, dark);
@@ -2267,7 +1908,7 @@ function materialConfiguration(
     variants,
     color,
     accented,
-    dark,
+    dark
   );
 
   // [PENDING, SUCCESS, WARNING, ERROR]
@@ -2285,7 +1926,7 @@ function artisticConfiguration(
     accented = false,
     dark = false,
   },
-  color,
+  color
 ) {
   // [bg, fg]
   const ui = generateSurface(contrast, color, dark);
@@ -2294,7 +1935,7 @@ function artisticConfiguration(
   const variants = generateArtisticVariants(
     contrast,
     { tints, tones, shades },
-    color,
+    color
   );
 
   // [100, 200, 300, 400, 500, 600, 700, 800, 900]
@@ -2303,11 +1944,145 @@ function artisticConfiguration(
   return [ui, variants, accents];
 }
 
+function generatePalette(configuration, settings, color) {
+  const {
+    contrast = 100,
+    accents = false,
+    states = false,
+    dark = false,
+  } = settings;
+
+  if (configuration === "material") {
+    return create(
+      {
+        configuration,
+        contrast,
+        accents,
+        states,
+        dark,
+      },
+      color
+    );
+  }
+
+  if (configuration === "artistic") {
+    const { tints = 3, tones = 3, shades = 3 } = settings;
+    return create(
+      {
+        configuration,
+        contrast,
+        tints,
+        tones,
+        shades,
+        accents,
+        dark,
+      },
+      color
+    );
+  }
+}
+
+function tokens(palette) {
+  return tokenizePalette(palette);
+}
+
+// Color Token Internals
+
+function tokenizeMaterial(variants, states) {
+  // Extract [main[], accents[]]
+  const [main, accents] = variants;
+  const materialCategorization =
+    (prefix = "") =>
+    (acc, color, index) => {
+      if (index === 0) return { ...acc, [prefix.concat(50)]: color };
+      return { ...acc, [`${prefix.concat(index)}00`]: color };
+    };
+
+  return {
+    // 50-900
+    ...main.reduce(materialCategorization(), {}),
+    // a50-a900
+    ...(accents.length ? accents.reduce(materialCategorization("a"), {}) : {}),
+    ...(states.length
+      ? {
+          state: {
+            pending: states[0],
+            success: states[1],
+            warning: states[2],
+            error: states[3],
+          },
+        }
+      : {}),
+  };
+}
+
+function tokenizeArtistic(variants, accents) {
+  const [tints, tones, shades] = variants;
+
+  const numericScale = (acc, color, i) => ({
+    ...acc,
+    [`${++i}00`]: color,
+  });
+
+  const numericVariantScale = (acc, [category, data]) => {
+    return {
+      ...acc,
+      [category]: data.reduce(numericScale, {}),
+    };
+  };
+
+  return {
+    // Here, we check the variants that contain data and filter out any that don't before assembling the tokens
+    ...Object.entries({ light: tints, muted: tones, dark: shades })
+      .filter(([, data]) => data.length)
+      .reduce(numericVariantScale, {}),
+    // Then assemble he accents if they exist
+    ...(accents.length ? { accent: accents.reduce(numericScale, {}) } : {}),
+  };
+}
+
+function tokenizePalette(palette) {
+  // Standard palettes share internal structure
+  const [[bg, fg], variants, special] = palette;
+
+  let unique = {};
+
+  // Material palettes contain two kinds of variants
+  if (variants.length === 2) {
+    unique = tokenizeMaterial(variants, special);
+  }
+
+  // Otherwise it's artistic
+  if (variants.length === 3) {
+    unique = tokenizeArtistic(variants, special);
+  }
+
+  return {
+    bg,
+    fg,
+    ...unique,
+  };
+}
+
+function accessibility(settings, palette) {
+  // Set action defaults
+  const { mode = "standard", rating = "AA", large = false } = settings;
+
+  // If mode is custom
+  if (mode === "custom") {
+    const { min = 85, max } = settings;
+
+    return paletteColorimetricContrast({ min, max }, palette);
+  }
+
+  return paletteWcagContrast({ rating, large }, palette);
+}
+
 // Accessibility Internals
 
 function calculateRelativeLuminance(color) {
   const [, [R, G, B]] = parser(
-    extractor(["rgb", rgbSerializer(conversion(color, "rgb"))]),
+    extractor(["rgb", rgbSerializer(conversion(color, "rgb"))])
   );
 
   const [LR, LG, LB] = rgbToLrgb([R, G, B]);
@@ -2339,7 +2114,8 @@ function contrastWcag({ rating, large, background }, [variants, special]) {
       return wcagContrastCriteria({ rating, large }, ratio);
     });
 
-  const optional = (fn, collection) => collection.length ? fn(collection) : [];
+  const optional = (fn, collection) =>
+    collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2394,7 +2170,8 @@ function colorimetricContrast({ min, max, background }, [variants, special]) {
       return filterCondition({ min, max }, difference);
     });
 
-  const optional = (fn, collection) => collection.length ? fn(collection) : [];
+  const optional = (fn, collection) =>
+        collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2420,81 +2197,328 @@ function paletteColorimetricContrast({ min = 75, max }, palette) {
   ];
 }
 
-// Color Token Internals
+function vision(
+  { as = "protanopia", method = "brettel", severity = 50 },
+  color
+) {
+  // Achromatopsia through reducing the chroma to zero
+  if (as === "achromatopsia") {
+    const chroma = -100;
 
-function tokenizeMaterial(variants, states) {
-  // Extract [main[], accents[]]
-  const [main, accents] = variants;
-  const materialCategorization = (prefix = "") =>
-    (acc, color, index) => {
-      if (index === 0) return { ...acc, [prefix.concat(50)]: color };
-      return { ...acc, [`${prefix.concat(index)}00`]: color };
-    };
-
-  return {
-    // 50-900
-    ...main.reduce(materialCategorization(), {}),
-    // a50-a900
-    ...(accents.length ? accents.reduce(materialCategorization("a"), {}) : {}),
-    ...(states.length
-      ? {
-        state: {
-          pending: states[0],
-          success: states[1],
-          warning: states[2],
-          error: states[3],
-        },
-      }
-      : {}),
-  };
-}
-
-function tokenizeArtistic(variants, accents) {
-  const [tints, tones, shades] = variants;
-
-  const numericScale = (acc, color, i) => ({
-    ...acc,
-    [`${++i}00`]: color,
-  });
-
-  const numericVariantScale = (acc, [category, data]) => {
-    return {
-      ...acc,
-      [category]: data.reduce(numericScale, {}),
-    };
-  };
-
-  return {
-    // Here, we check the variants that contain data and filter out any that don't before assembling the tokens
-    ...Object.entries({ light: tints, muted: tones, dark: shades })
-      .filter(([, data]) => data.length)
-      .reduce(numericVariantScale, {}),
-    // Then assemble he accents if they exist
-    ...(accents.length ? { accent: accents.reduce(numericScale, {}) } : {}),
-  };
-}
-
-function tokenizePalette(palette) {
-  // Standard palettes share internal structure
-  const [[bg, fg], variants, special] = palette;
-
-  let unique = {};
-
-  // Material palettes contain two kinds of variants
-  if (variants.length === 2) {
-    unique = tokenizeMaterial(variants, special);
+    return colorAdjustment({ chroma }, color);
   }
 
-  // Otherwise it's artistic
-  if (variants.length === 3) {
-    unique = tokenizeArtistic(variants, special);
+  // Protanomaly, Deuteranomaly, and Tritanomaly have a severity setting
+  if (as.endsWith("anomaly")) {
+    const type = as.replace(/anomaly/g, "anope");
+
+    return checkColorblindness({ method, type, strength: severity }, color);
   }
 
-  return {
-    bg,
-    fg,
-    ...unique,
+  // Protanopia, Deuteranopia, Tritanopia by definition do not
+  const type = as.replace(/anopia/g, "anope");
+
+  return checkColorblindness({ method, type, strength: 100 }, color);
+}
+
+function contrast({ factor = 0, severity = 50 }, color) {
+  return checkSensitivity({ contrast: factor, strength: severity }, color);
+}
+
+function illuminant({ K = 1850, severity = 50 }, color) {
+  return checkIlluminant({ temperature: K, strength: severity }, color);
+}
+
+// Color Vision Internals
+
+function cvdBrettelSimulation({ type, strength = 100 }, color) {
+  // Parse values from RGB
+  const [, [r, g, b, A]] = parser(
+    extractor(["rgb", serialize(conversion(color, "rgb"))])
+  );
+
+  // Format RGB to linear RGB
+  const [LR, LG, LB] = rgbToLrgb([r, g, b]);
+
+  // Set up the Brettel simulation matrices
+  const brettel = {
+    protanope: {
+      a: [
+        0.1498, 1.19548, -0.34528, 0.10764, 0.84864, 0.04372, 0.00384, -0.0054,
+        1.00156,
+      ],
+      b: [
+        0.1457, 1.16172, -0.30742, 0.10816, 0.85291, 0.03892, 0.00386, -0.00524,
+        1.00139,
+      ],
+      n: [0.00048, 0.00393, -0.00441],
+    },
+    deuteranope: {
+      a: [
+        0.36477, 0.86381, -0.22858, 0.26294, 0.64245, 0.09462, -0.02006,
+        0.02728, 0.99278,
+      ],
+      b: [
+        0.37298, 0.88166, -0.25464, 0.25954, 0.63506, 0.1054, -0.0198, 0.02784,
+        0.99196,
+      ],
+      n: [-0.00281, -0.00611, 0.00892],
+    },
+    tritanope: {
+      a: [
+        1.01277, 0.13548, -0.14826, -0.01243, 0.86812, 0.14431, 0.07589, 0.805,
+        0.11911,
+      ],
+      b: [
+        0.93678, 0.18979, -0.12657, 0.06154, 0.81526, 0.1232, -0.37562, 1.12767,
+        0.24796,
+      ],
+      n: [0.03901, -0.02788, -0.01113],
+    },
   };
+
+  // Determine which plane to use
+  const { a: $a, b: $b, n } = brettel[type];
+  const dotWithSepPlane = LR * n[0] + LG * n[1] + LB * n[2];
+  const p = dotWithSepPlane >= 0 ? $a : $b;
+
+  // Apply the dichromatic confusion line adjusted for severity,
+  // then format back to sRGB
+  const [R, G, B] = lrgbToRgb(
+    [
+      [p[0] * LR + p[1] * LG + p[2] * LB, LR],
+      [p[3] * LR + p[4] * LG + p[5] * LB, LG],
+      [p[6] * LR + p[7] * LG + p[8] * LB, LB],
+    ].map(([cvdComponent, component]) => {
+      const severity = numberFromPercentage(strength);
+
+      return cvdComponent * severity + component * (1 - severity);
+    })
+  );
+
+  return [R, G, B, A];
+}
+
+function cvdVienotSimulation({ type, strength = 100 }, color) {
+  // Parse values from RGB
+  const [, [r, g, b, A]] = parser(
+    extractor(["rgb", serialize(conversion(color, "rgb"))])
+  );
+
+  // Format RGB to linear RGB
+  const [LR, LG, LB] = rgbToLrgb([r, g, b]);
+
+  // Right off the bat, if the type is "tritanope", use the Brettel method
+  if (type === "tritanope") {
+    return cvdBrettelSimulation({ type, strength }, color);
+  }
+
+  // Otherwise use the correct transformation matrix
+
+  const vienot = {
+    protanope: [
+      0.11238, 0.88762, 0.0, 0.11238, 0.88762, -0.0, 0.00401, -0.00401, 1.0,
+    ],
+    deuteranope: [
+      0.29275, 0.70725, 0.0, 0.29275, 0.70725, -0.0, -0.02234, 0.02234, 1.0,
+    ],
+  };
+
+  // Vienot 1999 uses a single plane
+  const p = vienot[type];
+
+  // Apply the dichromatic confusion line adjusted for severity,
+  // then format back to sRGB
+  const [R, G, B] = lrgbToRgb(
+    [
+      [p[0] * LR + p[1] * LG + p[2] * LB, LR],
+      [p[3] * LR + p[4] * LG + p[5] * LB, LG],
+      [p[6] * LR + p[7] * LG + p[8] * LB, LB],
+    ].map(([cvdComponent, component]) => {
+      const severity = numberFromPercentage(strength);
+
+      return cvdComponent * severity + component * (1 - severity);
+    })
+  );
+
+  return [R, G, B, A];
+}
+
+function checkColorblindness(
+  { method = "brettel", type, strength = 0 },
+  color
+) {
+  // Validate input color and store result
+  const [format] = validator(color);
+
+  let values = [];
+
+  // Prefer the "brettel" method for accuracy
+  if (method === "brettel") {
+    values = cvdBrettelSimulation({ type, strength }, color);
+  }
+
+  // Prefer "vienot" under special cases and for performance
+  if (method === "vienot") {
+    values = cvdVienotSimulation({ type, strength }, color);
+  }
+
+  // Serialize RGB, but leave the alpha alone
+  const rgb = serialize([
+    "rgb",
+    values.map((component, index) =>
+      index !== 3 ? numberToChannel(component) : component
+    ),
+  ]);
+
+  if (format === "named") {
+    return serialize(conversion(rgb, "hex"));
+  }
+
+  return serialize(conversion(rgb, format));
+}
+
+// Contrast Sensitivity Internals
+
+function checkSensitivity({ contrast = 0, strength = 0 }, color) {
+  // Derive contrast from a shade of gray
+  const GRAY = colorMix(
+    {
+      target: "white",
+      strength: 100 * numberFromPercentage(contrast),
+    },
+    "black"
+  );
+
+  // Mix resultant gray with input color
+  return colorMix(
+    {
+      target: GRAY,
+      strength: 100 * numberFromPercentage(strength),
+    },
+    color
+  );
+}
+
+// Illuminant Internals
+
+function kelvinToRgb(temperature) {
+  // The accurate range for this algorithm is 1000-40000K
+  // and K / 100 is required
+  const K = clamp(temperature, 1000, 40000) / 100;
+
+  // Initialize RGB
+  let R = 0;
+  let G = 0;
+  let B = 0;
+
+  // If K <66, R locks at 255
+  if (K <= 66) {
+    R = 255;
+    G = 99.4708025861 * Math.log(K) - 161.1195681661;
+
+    // B locks at 0 when K <19
+    if (K <= 19) {
+      B = 0;
+    } else {
+      B = 138.577412231 * Math.log(K - 10) - 305.0447927307;
+    }
+  } else {
+    // Otherwise K >66
+    R = 329.698727446 * (K - 60) ** -0.1332047592;
+    G = 288.1221695283 * (K - 60) ** -0.0755148492;
+    B = 255;
+  }
+
+  // Serialize RGB
+  return serialize(["rgb", [R, G, B, 1]]);
+}
+
+function checkIlluminant({ temperature = 1000, strength = 0 }, color) {
+  const target = kelvinToRgb(temperature);
+
+  return colorMix({ target, strength }, color);
+}
+
+/**
+ * @typedef {Partial<{
+ *   name: string;
+ *   author: string;
+ *   version: string;
+ *   license: string;
+ *   bump: string;
+ *   metadata: {
+ *     description?: string;
+ *     comments?: string;
+ *   }
+ * }>} ProjectSettings
+ *
+ * @typedef {string} ColorValue
+ *
+ * @typedef {{ [variant: string]: ColorValue | ColorSubcategory }} ColorSubcategory
+ *
+ * @typedef {{ [category: string]: ColorValue | ColorSubcategory | {} | ColorSchema }} ColorSchema
+ *
+ * @typedef {{
+ *   project: ProjectSettings;
+ *   [palettes: string]: ColorSchema;
+ * }} ColorDictionary
+ */
+
+/** @typedef {"gpl" | "sketchpalette"} PaletteFormat */
+
+/**
+ * An exporter that takes a complete color `dict` and prepares it for a given
+ * palette `format`.
+ *
+ * @param {PaletteFormat} format - the target palette format
+ * @param {ColorDictionary} dict - the input color dictionary
+ * @returns {string} file-ready palette output
+ *
+ * @remarks
+ * As a rule, exporter functions do *not* assume read/write access to your system.
+ * The output of an exporter will either be a prepared file-ready template string
+ * (or stringified JSON) or an object according to its return type.
+ *
+ * You can then write this data to a file using your environment's native
+ * filesystem API or a filesystem library of your choice.
+ *
+ * @example
+ * Exporting a color dictionary as GIMP/Inkscape palette
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ *
+ * const color = palette({
+ *   configuration: "artistic",
+ *   contrast: 95,
+ *   tints: 9,
+ *   tones: 9,
+ *     shades: 9
+ * }, swatch);
+ *
+ * output("gpl", { project: {}, ...color }); // project required by every exporter
+ * ```
+ *
+ * @example
+ * Exporting a color dictionary as a Sketch palette
+ *
+ * ```js
+ * const swatch = "dodgerblue";
+ *
+ * const color = palette({
+ *   configuration: "artistic",
+ *   contrast: 95,
+ *   tints: 9,
+ *   tones: 9,
+ *     shades: 9
+ * }, swatch);
+ *
+ * output("sketchpalette", { project: {}, ...color }); // project required by every exporter
+ * ```
+ */
+export function output(format, dict) {
+  return format === "sketchpalette" ? sketchpalette(dict) : gpl(dict);
 }
 
 // Color Output Internals
@@ -2519,7 +2543,7 @@ function gpl(dict) {
 
   // Check if bump matches an automation keyword
   const autobump = ["major", "minor", "patch", "pre", "build"].some(
-    (keyword) => keyword === bump,
+    (keyword) => keyword === bump
   );
 
   const identifier = (collected, current, delim) => {
@@ -2535,23 +2559,23 @@ function gpl(dict) {
   };
 
   const assemble = (head, node) =>
-    Object.entries(node).reduce((str, [key, value]) => {
-      const KEY = key.toUpperCase();
+        Object.entries(node).reduce((str, [key, value]) => {
+          const KEY = key.toUpperCase();
 
-      // Ignore metadata
-      if (key === "metadata") {
-        return str;
-      }
+          // Ignore metadata
+          if (key === "metadata") {
+            return str;
+          }
 
-      if (typeof value === "object") {
-        return str.concat(assemble(identifier(head, KEY, " "), value));
-      }
-      return str.concat(
+          if (typeof value === "object") {
+            return str.concat(assemble(identifier(head, KEY, " "), value));
+          }
+          return str.concat(
         gplSwatch(value),
         "\t",
         identifier(head, KEY, " "),
         ` (${hexSerializer(conversion(value, "hex"))})`,
-        "\n",
+        "\n"
       );
     }, "");
 
@@ -2586,15 +2610,15 @@ function sketchpalette(dict) {
   const { project: _, ...palette } = dict;
 
   const assemble = (tree) =>
-    Object.entries(tree).reduce((acc, [key, data]) => {
-      // Ignore metadata
-      if (key === "metadata") return acc;
+        Object.entries(tree).reduce((acc, [key, data]) => {
+          // Ignore metadata
+          if (key === "metadata") return acc;
 
-      if (typeof data === "object") {
-        return acc.concat(assemble(data));
-      }
+          if (typeof data === "object") {
+            return acc.concat(assemble(data));
+          }
 
-      return acc.concat(sketchpaletteSwatch(data));
+          return acc.concat(sketchpaletteSwatch(data));
     }, []);
 
   return JSON.stringify({
@@ -2602,123 +2626,4 @@ function sketchpalette(dict) {
     pluginVersion: "1.4",
     compatibleVersion: "1.4",
   });
-}
-
-function vision(
-  { as = "protanopia", method = "brettel", severity = 50 },
-  color,
-) {
-  // Achromatopsia through reducing the chroma to zero
-  if (as === "achromatopsia") {
-    const chroma = -100;
-
-    return colorAdjustment({ chroma }, color);
-  }
-
-  // Protanomaly, Deuteranomaly, and Tritanomaly have a severity setting
-  if (as.endsWith("anomaly")) {
-    const type = as.replace(/anomaly/g, "anope");
-
-    return checkColorblindness({ method, type, strength: severity }, color);
-  }
-
-  // Protanopia, Deuteranopia, Tritanopia by definition do not
-  const type = as.replace(/anopia/g, "anope");
-
-  return checkColorblindness({ method, type, strength: 100 }, color);
-}
-
-function contrast({ factor = 0, severity = 50 }, color) {
-  return checkSensitivity({ contrast: factor, strength: severity }, color);
-}
-
-function illuminant({ K = 1850, severity = 50 }, color) {
-  return checkIlluminant({ temperature: K, strength: severity }, color);
-}
-
-function create(settings, color) {
-  // Set default configuration and settings and exclude interface states until requested
-  const {
-    configuration = "material",
-    contrast = 100,
-    accents = false,
-    states = false,
-    dark = false,
-  } = settings;
-
-  // Generate from material-esque or artistic configuration depending on configuration
-  if (configuration === "artistic") {
-    const { tints = 3, tones = 3, shades = 3 } = settings;
-
-    return artisticConfiguration(
-      { contrast, tints, tones, shades, accented: accents, dark },
-      color,
-    );
-  }
-
-  return materialConfiguration(
-    {
-      contrast,
-      accented: accents,
-      stated: states,
-      dark,
-    },
-    color,
-  );
-}
-
-function generatePalette(configuration, settings, color) {
-  const {
-    contrast = 100,
-    accents = false,
-    states = false,
-    dark = false,
-  } = settings;
-
-  if (configuration === "material") {
-    return create(
-      {
-        configuration,
-        contrast,
-        accents,
-        states,
-        dark,
-      },
-      color,
-    );
-  }
-
-  if (configuration === "artistic") {
-    const { tints = 3, tones = 3, shades = 3 } = settings;
-    return create(
-      {
-        configuration,
-        contrast,
-        tints,
-        tones,
-        shades,
-        accents,
-        dark,
-      },
-      color,
-    );
-  }
-}
-
-function accessibility(settings, palette) {
-  // Set action defaults
-  const { mode = "standard", rating = "AA", large = false } = settings;
-
-  // If mode is custom
-  if (mode === "custom") {
-    const { min = 85, max } = settings;
-
-    return paletteColorimetricContrast({ min, max }, palette);
-  }
-
-  return paletteWcagContrast({ rating, large }, palette);
-}
-
-function tokens(palette) {
-  return tokenizePalette(palette);
 }
