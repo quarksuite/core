@@ -58,8 +58,8 @@ function validator(input) {
   ];
 
   const [format] = formats
-        .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
-        .find(([, fn]) => fn(input));
+    .map((fn) => [fn.name.replace(/Validator/, ""), fn.bind(null)])
+    .find(([, fn]) => fn(input));
 
   if (!format) {
     return InvalidColorError(input);
@@ -1681,76 +1681,10 @@ function colorHarmonies({ type, accented = false }, color) {
  * @param {number} [settings.tones] - set number of tones to generate (artistic)
  * @param {number} [settings.shades] - set number of shades to generate (artistic)
  *
- * @param {object} [settings.perception] - color perception simulation settings
- * @param {"vision" | "contrast" | "illuminant"} [settings.perception.check] - set simulation target
- * @param {number} [settings.perception.severity] - set severity of simulation (where applicable)
- *
- * @param {ColorVision} [settings.perception.as] - set colorblindness to target
- * @param {CVDMethod} [settings.perception.method] - set colorblindness algorithm to use
- *
- * @param {number} [settings.perception.factor] - set contrast sensitivity gray factor
- *
- * @param {number} [settings.perception.K] - set illuminant temperature
- *
- * @param {object} [settings.a11y] - color accessibility filter settings
- * @param {"standard" | "custom"} [settings.a11y.mode] - set color accessibility mode
- *
- * @param {"AA" | "AAA"} [settings.a11y.rating] - set color contrast rating
- * @param {boolean} [settings.a11y.large] - use large text rating?
- *
- * @param {number} [settings.a11y.min] - set minimum contrast from background (as a percentage)
- * @param {number} [settings.a11y.max] - set maximum contrast from background (as a percentage)
- *
  * @param {string} color - the input color
  * @returns {PaletteTokens} the generated palette
  */
 export function palette(settings, color) {
-  const { configuration = "material", perception = {}, a11y = {} } = settings;
-
-  let swatch = color;
-
-  // Generate palette
-  let palette = generatePalette(configuration, settings, swatch);
-
-  // Accessibility filter
-  if (a11y.mode === "standard") {
-    const { mode, rating = "AA", large = false } = a11y;
-    palette = accessibility({ mode, rating, large }, palette);
-  }
-
-  if (a11y.mode === "custom") {
-    const { mode, min = 85, max } = a11y;
-    palette = accessibility({ mode, min, max }, palette);
-  }
-
-  // Perceptual simulations
-  const simulate = (check, settings, data) => {
-    return data.map((value) => {
-      if (Array.isArray(value)) return simulate(check, settings, value);
-      return check(settings, value);
-    });
-  };
-
-  if (perception.check === "vision") {
-    const { as = "protanopia", method = "brettel", severity = 50 } = perception;
-    palette = simulate(vision, { as, method, severity }, palette);
-  }
-
-  if (perception.check === "contrast") {
-    const { factor = 0, severity = 50 } = perception;
-    palette = simulate(contrast, { factor, severity }, palette);
-  }
-
-  if (perception.check === "illuminant") {
-    const { K = 1850, severity = 50 } = perception;
-    palette = simulate(illuminant, { K, severity }, palette);
-  }
-
-  // Output tokens
-  return tokens(palette);
-}
-
-function create(settings, color) {
   // Set default configuration and settings and exclude interface states until requested
   const {
     configuration = "material",
@@ -1760,17 +1694,17 @@ function create(settings, color) {
     dark = false,
   } = settings;
 
-  // Generate from material-esque or artistic configuration depending on configuration
+  // Generate material-esque or artistic palette depending on configuration
   if (configuration === "artistic") {
     const { tints = 3, tones = 3, shades = 3 } = settings;
 
-    return artisticConfiguration(
+    return artisticPalette(
       { contrast, tints, tones, shades, accented: accents, dark },
       color
     );
   }
 
-  return materialConfiguration(
+  return materialPalette(
     {
       contrast,
       accented: accents,
@@ -1785,12 +1719,12 @@ function create(settings, color) {
 
 function generateSurface(contrast, color, dark = false) {
   const strength = 100 * numberFromPercentage(contrast);
-  const surface = [
+  const [bg, fg] = [
     colorMix({ target: "#ffffff", strength }, color),
     colorMix({ target: "#111111", strength }, color),
   ];
 
-  return dark ? surface.reverse() : surface;
+  return dark ? { bg: fg, fg: bg } : { bg, fg };
 }
 
 function generateMaterialVariants(contrast, [bg, fg], color) {
@@ -1892,15 +1826,21 @@ function generateStates(contrast, [, fg], color, stated = false) {
     : [];
 }
 
-function materialConfiguration(
+function assembleMaterialData(data, prefix = "") {
+  return data.reduce((acc, color, index) => {
+    if (index === 0) return { ...acc, [prefix.concat(50)]: color };
+    return { ...acc, [`${prefix.concat(index)}00`]: color };
+  }, {});
+}
+
+function materialPalette(
   { contrast = 100, accented = false, stated = false, dark = false },
   color
 ) {
-  // [bg, fg]
-  const ui = generateSurface(contrast, color, dark);
+  const { bg, fg } = generateSurface(contrast, color, dark);
 
   // [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
-  const variants = generateMaterialVariants(contrast, ui, color);
+  const variants = generateMaterialVariants(contrast, [bg, fg], color);
 
   // [A100, A200, A300, A400, A500, A600, A700, A800, A900]
   const accents = generateMaterialAccents(
@@ -1911,13 +1851,29 @@ function materialConfiguration(
     dark
   );
 
-  // [PENDING, SUCCESS, WARNING, ERROR]
-  const states = generateStates(contrast, ui, color, stated);
+  const [pending, success, warning, error] = generateStates(
+    contrast,
+    [bg, fg],
+    color,
+    stated
+  );
 
-  return [ui, [variants, accents], states];
+  return {
+    bg,
+    fg,
+    ...assembleMaterialData(variants),
+    ...assembleMaterialData(accents, "a"),
+    ...(stated ? { state: { pending, success, warning, error } } : {}),
+  };
 }
 
-function artisticConfiguration(
+function assembleArtisticData(data) {
+  return data.reduce((acc, color, index) => {
+    return { ...acc, [`${++index}00`]: color };
+  }, {});
+}
+
+function artisticPalette(
   {
     contrast = 100,
     tints = 3,
@@ -1928,11 +1884,9 @@ function artisticConfiguration(
   },
   color
 ) {
-  // [bg, fg]
-  const ui = generateSurface(contrast, color, dark);
+  const { bg, fg } = generateSurface(contrast, color, dark);
 
-  // [tints[], tones[], shades[]]
-  const variants = generateArtisticVariants(
+  const [l, m, d] = generateArtisticVariants(
     contrast,
     { tints, tones, shades },
     color
@@ -1941,126 +1895,13 @@ function artisticConfiguration(
   // [100, 200, 300, 400, 500, 600, 700, 800, 900]
   const accents = generateArtisticAccents(contrast, color, accented, dark);
 
-  return [ui, variants, accents];
-}
-
-function generatePalette(configuration, settings, color) {
-  const {
-    contrast = 100,
-    accents = false,
-    states = false,
-    dark = false,
-  } = settings;
-
-  if (configuration === "material") {
-    return create(
-      {
-        configuration,
-        contrast,
-        accents,
-        states,
-        dark,
-      },
-      color
-    );
-  }
-
-  if (configuration === "artistic") {
-    const { tints = 3, tones = 3, shades = 3 } = settings;
-    return create(
-      {
-        configuration,
-        contrast,
-        tints,
-        tones,
-        shades,
-        accents,
-        dark,
-      },
-      color
-    );
-  }
-}
-
-function tokens(palette) {
-  return tokenizePalette(palette);
-}
-
-// Color Token Internals
-
-function tokenizeMaterial(variants, states) {
-  // Extract [main[], accents[]]
-  const [main, accents] = variants;
-  const materialCategorization =
-    (prefix = "") =>
-    (acc, color, index) => {
-      if (index === 0) return { ...acc, [prefix.concat(50)]: color };
-      return { ...acc, [`${prefix.concat(index)}00`]: color };
-    };
-
-  return {
-    // 50-900
-    ...main.reduce(materialCategorization(), {}),
-    // a50-a900
-    ...(accents.length ? accents.reduce(materialCategorization("a"), {}) : {}),
-    ...(states.length
-      ? {
-          state: {
-            pending: states[0],
-            success: states[1],
-            warning: states[2],
-            error: states[3],
-          },
-        }
-      : {}),
-  };
-}
-
-function tokenizeArtistic(variants, accents) {
-  const [tints, tones, shades] = variants;
-
-  const numericScale = (acc, color, i) => ({
-    ...acc,
-    [`${++i}00`]: color,
-  });
-
-  const numericVariantScale = (acc, [category, data]) => {
-    return {
-      ...acc,
-      [category]: data.reduce(numericScale, {}),
-    };
-  };
-
-  return {
-    // Here, we check the variants that contain data and filter out any that don't before assembling the tokens
-    ...Object.entries({ light: tints, muted: tones, dark: shades })
-      .filter(([, data]) => data.length)
-      .reduce(numericVariantScale, {}),
-    // Then assemble he accents if they exist
-    ...(accents.length ? { accent: accents.reduce(numericScale, {}) } : {}),
-  };
-}
-
-function tokenizePalette(palette) {
-  // Standard palettes share internal structure
-  const [[bg, fg], variants, special] = palette;
-
-  let unique = {};
-
-  // Material palettes contain two kinds of variants
-  if (variants.length === 2) {
-    unique = tokenizeMaterial(variants, special);
-  }
-
-  // Otherwise it's artistic
-  if (variants.length === 3) {
-    unique = tokenizeArtistic(variants, special);
-  }
-
   return {
     bg,
     fg,
-    ...unique,
+    ...(l.length ? { light: assembleArtisticData(l) } : {}),
+    ...(m.length ? { muted: assembleArtisticData(m) } : {}),
+    ...(d.length ? { dark: assembleArtisticData(d) } : {}),
+    ...(accented ? { accent: assembleArtisticData(accents) } : {}),
   };
 }
 
@@ -2171,7 +2012,7 @@ function colorimetricContrast({ min, max, background }, [variants, special]) {
     });
 
   const optional = (fn, collection) =>
-        collection.length ? fn(collection) : [];
+    collection.length ? fn(collection) : [];
 
   if (variants.length === 2) {
     const [main, accents] = variants;
@@ -2559,18 +2400,18 @@ function gpl(dict) {
   };
 
   const assemble = (head, node) =>
-        Object.entries(node).reduce((str, [key, value]) => {
-          const KEY = key.toUpperCase();
+    Object.entries(node).reduce((str, [key, value]) => {
+      const KEY = key.toUpperCase();
 
-          // Ignore metadata
-          if (key === "metadata") {
-            return str;
-          }
+      // Ignore metadata
+      if (key === "metadata") {
+        return str;
+      }
 
-          if (typeof value === "object") {
-            return str.concat(assemble(identifier(head, KEY, " "), value));
-          }
-          return str.concat(
+      if (typeof value === "object") {
+        return str.concat(assemble(identifier(head, KEY, " "), value));
+      }
+      return str.concat(
         gplSwatch(value),
         "\t",
         identifier(head, KEY, " "),
@@ -2610,15 +2451,15 @@ function sketchpalette(dict) {
   const { project: _, ...palette } = dict;
 
   const assemble = (tree) =>
-        Object.entries(tree).reduce((acc, [key, data]) => {
-          // Ignore metadata
-          if (key === "metadata") return acc;
+    Object.entries(tree).reduce((acc, [key, data]) => {
+      // Ignore metadata
+      if (key === "metadata") return acc;
 
-          if (typeof data === "object") {
-            return acc.concat(assemble(data));
-          }
+      if (typeof data === "object") {
+        return acc.concat(assemble(data));
+      }
 
-          return acc.concat(sketchpaletteSwatch(data));
+      return acc.concat(sketchpaletteSwatch(data));
     }, []);
 
   return JSON.stringify({
