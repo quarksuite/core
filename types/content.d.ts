@@ -103,6 +103,10 @@ export function grid(settings: {
  * @param {RootValue} root - the root value to generate from
  * @returns {ScaleTokens} the generated scale tokens
  *
+ * @remarks
+ * When using the ranged type, you must set your *maximum* value as the root.
+ * Otherwise, use the minimum value for directional types.
+ *
  * @example
  * Scale generation examples
  *
@@ -114,10 +118,6 @@ export function grid(settings: {
  * scale({ configuration: "ranged", floor: "45ch", trunc: true, ratio, values }, "75ch"); // text measure
  * scale({ configuration: "ranged", floor: 1.25, ratio, values }, 1.5) // text leading
  * ```
- *
- * @remarks
- * When using the ranged type, you must set your *maximum* value as the root.
- * Otherwise, use the minimum value for directional types.
  */
 export function scale(settings: {
     configuration?: ScaleConfiguration;
