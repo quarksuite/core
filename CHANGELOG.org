@@ -5,12 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]] and this project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
 * Table of Contents :TOC@3:
+- [[#v210---2022-07-04][v2.1.0 - 2022-07-04]]
+  - [[#added][Added]]
+  - [[#changed][Changed]]
 - [[#v202---2022-06-18][v2.0.2 - 2022-06-18]]
   - [[#fixed][Fixed]]
 - [[#v201---2022-06-17][v2.0.1 - 2022-06-17]]
   - [[#fixed-1][Fixed]]
 - [[#v200---2022-06-17][v2.0.0 - 2022-06-17]]
-  - [[#added][Added]]
+  - [[#added-1][Added]]
     - [[#simplified-workflow][simplified workflow]]
     - [[#independent-modules][independent modules]]
     - [[#tightened-api][tightened API]]
@@ -18,21 +21,21 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - [[#color-accessibility-enhancements][color accessibility enhancements]]
     - [[#improved-developer-experience][improved developer experience]]
 - [[#v130---2022-02-25][v1.3.0 - 2022-02-25]]
-  - [[#added-1][Added]]
-  - [[#changed][Changed]]
+  - [[#added-2][Added]]
+  - [[#changed-1][Changed]]
 - [[#v121---2022-02-24][v1.2.1 - 2022-02-24]]
   - [[#fixed-2][Fixed]]
 - [[#v120---2022-02-21][v1.2.0 - 2022-02-21]]
-  - [[#changed-1][Changed]]
+  - [[#changed-2][Changed]]
   - [[#fixed-3][Fixed]]
 - [[#v110---2022-02-16][v1.1.0 - 2022-02-16]]
-  - [[#added-2][Added]]
-  - [[#changed-2][Changed]]
-- [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
   - [[#added-3][Added]]
+  - [[#changed-3][Changed]]
+- [[#v101---2021-12-17][v1.0.1 - 2021-12-17]]
+  - [[#added-4][Added]]
   - [[#fixed-4][Fixed]]
 - [[#v100---2021-12-16][v1.0.0 - 2021-12-16]]
-  - [[#added-4][Added]]
+  - [[#added-5][Added]]
     - [[#revamped-workflow][revamped workflow]]
     - [[#explicit-naming-conventions][explicit naming conventions]]
     - [[#overhauled-api][overhauled API]]
@@ -40,27 +43,59 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
   - [[#fixed-5][Fixed]]
     - [[#color-adjustment][color adjustment]]
 - [[#v020---2020-05-27][v0.2.0 - 2020-05-27]]
-  - [[#added-5][Added]]
+  - [[#added-6][Added]]
     - [[#color-conversion][color conversion]]
-  - [[#changed-3][Changed]]
+  - [[#changed-4][Changed]]
     - [[#color-adjustment-1][color adjustment]]
     - [[#color-mixture][color mixture]]
     - [[#color-schemes][color schemes]]
     - [[#color-palette-color-scale][+color palette+ color scale]]
 - [[#v011---2020-04-29][v0.1.1 - 2020-04-29]]
-  - [[#changed-4][Changed]]
+  - [[#changed-5][Changed]]
     - [[#color-conversion-1][color conversion]]
 - [[#v010---2021-04-13][v0.1.0 - 2021-04-13]]
-  - [[#added-6][Added]]
+  - [[#added-7][Added]]
     - [[#functional-utilities][functional utilities]]
     - [[#color-conversion-2][color conversion]]
     - [[#scheme-functions][scheme functions]]
     - [[#color-accessibility][color accessibility]]
-  - [[#changed-5][Changed]]
+  - [[#changed-6][Changed]]
     - [[#scheme-functions-1][scheme functions]]
     - [[#output-functions][output functions]]
   - [[#removed][Removed]]
     - [[#functional-utilities-1][functional utilities]]
+
+* v2.1.0 - 2022-07-04
+
+This minor version moves palette accessibility and color perception simulation out of =palette()= as separate palette
+actions. This makes them explicit operations to run /after/ creating a palette collection.
+
+#+BEGIN_SRC js
+import {
+  palette,
+  a11y,
+  perception
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/color.js";
+
+const main = palette({ configuration: "material", accents: true }, "dodgerblue");
+
+const ui = a11y({ mode: "standard", rating: "AA", large: true }, main);
+const text = a11y({ mode: "standard", rating: "AA" }, main);
+
+const checkUiProtanopia = perception({ check: "vision", as: "protanopia" }, ui);
+#+END_SRC
+
+See the updated handbook and [[https://github.com/quarksuite/core/blob/main/API.org][API documentation]].
+
+** Added
+
++ =a11y(settings, palette)=
++ =perception(settings, palette)=
+
+** Changed
+
+=palette()= action now exclusively handles palette generation. Color accessibility and perception simulators are handled
+by the above new palette actions.
 
 * v2.0.2 - 2022-06-18
 
