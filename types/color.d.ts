@@ -203,6 +203,48 @@ export function harmony(settings: {
  *
  * @param {string} color - the input color
  * @returns {PaletteTokens} the generated palette
+ *
+ * @example
+ * Generating a material-esque palette
+ *
+ * ```js
+ * const swatch = "#feb07f";
+ *
+ * palette({ configuration: "material" }, swatch);
+ *
+ * // adjust contrast
+ * palette({ configuration: "material", contrast: 90 }, swatch);
+ *
+ * // with accents
+ * palette({ configuration: "material", accents: true }, swatch);
+ *
+ * // with interface states
+ * palette({ configuration: "material", states: true }, swatch);
+ *
+ * // dark mode
+ * palette({ configuration: "material", dark: true }, swatch);
+ * ```
+ *
+ * @example
+ * Generating an artistic palette
+ *
+ * ```js
+ * const swatch = "#3a0ffa";
+ *
+ * palette({ configuration: "artistic" }, swatch);
+ *
+ * // adjust contrast
+ * palette({ configuration: "artistic", contrast: 95 }, swatch);
+ *
+ * // with accents
+ * palette({ configuration: "artistic", accents: true }, swatch);
+ *
+ * // adjust generated variants (tints, tones, shades)
+ * palette({ configuration: "artistic", tints: 2, tones: 0, shades: 4 }, swatch);
+ *
+ * // dark mode
+ * palette({ configuration: "artistic", dark: true }, swatch);
+ * ```
  */
 export function palette(settings: {
     configuration?: "material" | "artistic";
@@ -229,6 +271,37 @@ export function palette(settings: {
  *
  * @param {PaletteTokens} palette - generated palette
  * @returns {PaletteTokens} the filtered palette
+ *
+ * @example
+ * WCAG standard mode
+ *
+ * ```js
+ * const swatch = "#eca0ff";
+ * const tokens = palette({ configuration: "material", contrast: 95 }, swatch);
+ *
+ * // AA
+ * a11y({ mode: "standard", rating: "AA" }, tokens);
+ *
+ * // AA (large)
+ * a11y({ mode: "standard", rating: "AA", large: true }, tokens);
+ *
+ * // AAA
+ * a11y({ mode: "standard", rating: "AAA" }, tokens);
+ * ```
+ *
+ * @example
+ * Custom colorimetric comparison mode
+ *
+ * ```js
+ * const swatch = "#0ca08f";
+ * const tokens = palette({ configuration: "material", contrast: 95 }, swatch);
+ *
+ * // valid if perceptual lightness has a 60% difference from background
+ * a11y({ mode: "custom", min: 60 }, tokens);
+ *
+ * // valid if perceptual lightness has a 60-75% difference from background
+ * a11y({ mode: "standard", min: 60, max: 75 }, tokens);
+ * ```
  */
 export function a11y(settings: {
     mode?: "standard" | "custom";
@@ -259,6 +332,64 @@ export function a11y(settings: {
  *
  * @param {PaletteTokens} palette - generated palette
  * @returns {PaletteTokens} the simulated palette
+ *
+ * @example
+ * Color vision simulator
+ *
+ * ```js
+ * const swatch = "#ccf02f";
+ * const tokens = palette({ configuration: "material", contrast: 95 }, swatch);
+ *
+ * // Achromatopsia
+ * perception({ check: "vision", as: "achromatopsia" }, tokens);
+ *
+ * // Protanopia
+ * perception({ check: "vision", as: "protanopia" }, tokens);
+ *
+ * // Deuteranopia
+ * perception({ check: "vision", as: "deuteranopia" }, tokens);
+ *
+ * // Tritanopia
+ * perception({ check: "vision", as: "tritanopia" }, tokens);
+ *
+ * // with severity (anomalous trichromacy simulations)
+ * perception({ check: "vision", as: "protanomaly", severity: 40 }, tokens);
+ * perception({ check: "vision", as: "deuteranomaly", severity: 60 }, tokens);
+ * perception({ check: "vision", as: "tritanomaly", severity: 80 }, tokens);
+ * ```
+ *
+ * @example
+ * Contrast sensitivity simulator
+ *
+ * ```js
+ * const swatch = "#ffa02f";
+ * const tokens = palette({ configuration: "material", contrast: 95 }, swatch);
+ *
+ * // factor: 0-100% (black -> gray -> white)
+ * perception({ check: "contrast", factor: 0 }, tokens);
+ * perception({ check: "contrast", factor: 50 }, tokens);
+ * perception({ check: "contrast", factor: 100 }, tokens);
+ *
+ * // with severity
+ * perception({ check: "contrast", factor: 48, severity: 60 }, tokens);
+ * ```
+ *
+ * @example
+ * Illuminant simulator
+ *
+ * ```js
+ * const swatch = "#ff5caf";
+ * const tokens = palette({ configuration: "material", contrast: 95 }, swatch);
+ *
+ * // K: 1850-6600K (candlelight -> incandescent bulb -> studio lamp -> lcd)
+ * perception({ check: "illuminant", K: 1850 }, tokens);
+ * perception({ check: "illuminant", K: 2400 }, tokens);
+ * perception({ check: "illuminant", K: 3200 }, tokens);
+ * perception({ check: "illuminant", K: 6600 }, tokens);
+ *
+ * // with severity
+ * perception({ check: "illuminant", K: 5000, severity: 75 }, tokens);
+ * ```
  */
 export function perception(settings?: {
     check?: "vision" | "contrast" | "illuminant";
@@ -320,7 +451,7 @@ export function perception(settings?: {
  *   contrast: 95,
  *   tints: 9,
  *   tones: 9,
- *     shades: 9
+ *   shades: 9
  * }, swatch);
  *
  * output("gpl", { project: {}, ...color }); // project required by every exporter
@@ -337,7 +468,7 @@ export function perception(settings?: {
  *   contrast: 95,
  *   tints: 9,
  *   tones: 9,
- *     shades: 9
+ *   shades: 9
  * }, swatch);
  *
  * output("sketchpalette", { project: {}, ...color }); // project required by every exporter
