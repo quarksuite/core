@@ -1,4 +1,4 @@
-#+TITLE: QuarkSuite Core Handbook (v2.0.2)
+#+TITLE: QuarkSuite Core Handbook (v2.1.0)
 #+PROPERTY: header-args:js :results silent :tangle no :comments none :mkdirp yes
 
 * Table of Contents :TOC@5:
@@ -22,6 +22,7 @@
         - [[#1c-color-should-be-scaled-to-an-analogous-harmony][1c. Color should be scaled to an analogous harmony]]
       - [[#2-palette][2. Palette]]
         - [[#2a-generate-material-palettes-for-ui-and-text-with-accents-and-state][2a. Generate material palettes for UI and text (with accents and state)]]
+        - [[#2b-palettes-should-be-filtered-to-meet-desired-wcag-accessibility-standards][2b. Palettes should be filtered to meet desired WCAG accessibility standards]]
     - [[#result][Result]]
   - [[#content-1][Content]]
     - [[#rules-1][Rules]]
@@ -101,17 +102,18 @@ QuarkSuite allows a lot of flexibility in how you can work, but for our purposes
 For our project, we'll need specific functionality from the =color.js= and =content.js= modules.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
-export {
+import {
   adjust,
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
-export {
+  a11y
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/color.js";
+import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/content.js";
 #+END_SRC
 
 ** Color
@@ -137,33 +139,30 @@ const scheme = harmony({ configuration: "analogous" }, base);
 
 *** 3. Generate palettes
 
-The next step is to generate palettes for our desired contexts. In this case, we'll create a =ui= and =body= palette
+The next step is to generate palettes for our desired contexts. In this case, we'll create a =main= and =accent= palette
 from the first and second colors in our scheme.
 
 Assuming our web project is an app, we'll want to generate a =material= configuration.
 
 We'll also limit our palette to the most accessible colors for our contexts. In our example, that's AA large adherence
-for the =ui= palette and a AA adherence for the =body= palette.
+for the =ui= and a AA adherence for the =body= text.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
-const ui = palette(
-  {
-    configuration: "material",
-    accents: true,
-    states: true,
-    a11y: { mode: "standard", rating: "AA", large: true },
-  },
-  scheme[0],
-);
+const main = palette({
+  configuration: "material",
+  contrast: 95,
+  accents: true,
+  states: true
+}, scheme[0]);
 
-const body = palette(
-  {
-    configuration: "material",
-    accents: true,
-    a11y: { mode: "standard", rating: "AA" },
-  },
-  scheme[1],
-);
+const accent = palette({
+  configuration: "material",
+  contrast: 95,
+  accents: true,
+}, scheme[1]);
+
+const ui = a11y({ mode: "standard", rating: "AA", large: true }, main);
+const body = a11y({ mode: "standard", rating: "AA" }, accent);
 #+END_SRC
 
 ** Content
@@ -171,7 +170,7 @@ const body = palette(
 The main concern for our content at this point is to set a global =ratio= and =values= that the content modular scales
 can use to generate their data later.
 
-You see that we want our ratio to be =1.32= and for our scales to output =5= values.
+You see that we want our ratio to be =1.32= and for our scales to output =4= values.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/basic-workflow/tokens.js"
 const ratio = 1.32;
@@ -275,36 +274,34 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
+  a11y
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/content.js";
 
 const swatch = convert("rgb", "#7ea");
 const base = adjust({ chroma: -5, hue: 60 }, swatch);
 
 const scheme = harmony({ configuration: "analogous" }, base);
 
-const ui = palette(
-  {
-    configuration: "material",
-    accents: true,
-    states: true,
-    a11y: { mode: "standard", rating: "AA", large: true },
-  },
-  scheme[0],
-);
+const main = palette({
+  configuration: "material",
+  contrast: 95,
+  accents: true,
+  states: true
+}, scheme[0]);
 
-const body = palette(
-  {
-    configuration: "material",
-    accents: true,
-    a11y: { mode: "standard", rating: "AA" },
-  },
-  scheme[1],
-);
+const accent = palette({
+  configuration: "material",
+  contrast: 95,
+  accents: true,
+}, scheme[1]);
+
+const ui = a11y({ mode: "standard", rating: "AA", large: true }, main);
+const body = a11y({ mode: "standard", rating: "AA" }, accent);
 
 const ratio = 1.32;
 const values = 4;
@@ -397,10 +394,10 @@ The basic workflow is great for small projects that need a singular data set.
 The cracks in this approach starts to show the second you want to work with /multiple/ data sets.
 
 The library provides a =workflow.js= module to handle these advanced use cases. Its only purpose is altering the way
-library functions work to unlock design patterns that will be valuable for the user who needs to scale.
+library functions work to unlock design patterns that will be valuable for the developer who needs to scale.
 
 If the basic workflow is a bottom-up procedure where we assemble data from a known value, then advanced usage dictates a
-top-down *set of rules* for the expected result to an unknown value.
+top-down *set of rules* for unknown values.
 
 ** Modules
 
@@ -412,17 +409,19 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
+  a11y
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/content.js";
 import {
   preset,
+  process,
   pipeline,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.1.0/workflow.js";
 #+END_SRC
 
 ** Color
@@ -457,17 +456,30 @@ const scaleToAnalogous = preset(harmony, { configuration: "analogous" });
 ***** 2a. Generate material palettes for UI and text (with accents and state)
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const paletteOpts = { configuration: "material", accents: true };
-
-const generatePaletteTokens = preset(palette, {
-  ...paletteOpts,
-  states: true,
-  a11y: { mode: "standard", rating: "AA", large: true },
+const generateUiPalette = preset(palette, {
+  configuration: "material",
+  accents: true,
+  states: true
 });
 
-const generateTextPaletteTokens = preset(palette, {
-  ...paletteOpts,
-  a11y: { mode: "standard", rating: "AA" }
+const generateTextPalette = preset(palette, {
+  configuration: "material",
+  accents: true
+});
+#+END_SRC
+
+***** 2b. Palettes should be filtered to meet desired WCAG accessibility standards
+
+#+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
+const filterUiContext = preset(a11y, {
+  mode: "standard",
+  rating: "AA",
+  large: true
+});
+
+const filterTextContext = preset(a11y, {
+  mode: "standard",
+  rating: "AA"
 });
 #+END_SRC
 
@@ -493,8 +505,9 @@ const scheme = pipeline(
 
 const [main, accent, splash] = delegate(
   scheme,
-  generatePaletteTokens,
-  generateTextPaletteTokens
+  process(generateUiPalette, filterUiContext),
+  process(generateTextPalette, filterTextContext),
+  undefined
 );
 #+END_SRC
 
@@ -618,7 +631,7 @@ const gridOut = gridTokens(values);
 Finally, we apply the length rules to four subcategories.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/advanced-workflow/tokens.js"
-const [w, h, smallest, largest] = delegate(
+const [width, height, smallest, largest] = delegate(
   ["100vw", "100vh", "100vmin", "100vmax"],
   ...lengthTokens
 );
@@ -637,7 +650,7 @@ export default {
     text: { body, heading, size, leading, measure },
     spacing,
     grid: gridOut,
-    viewport: { w, h, smallest, largest }
+    lengths: { width, height, smallest, largest }
   }
 }
 #+END_SRC
@@ -652,17 +665,19 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
+  a11y,
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/color.js";
 import {
   grid,
   scale,
   text,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/content.js";
 import {
   preset,
+  process,
   pipeline
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.1.0/workflow.js";
 
 const toRgb = preset(convert, "rgb");
 
@@ -671,17 +686,26 @@ const shiftHueRight60 = preset(adjust, { hue: 60 });
 
 const scaleToAnalogous = preset(harmony, { configuration: "analogous" });
 
-const paletteOpts = { configuration: "material", accents: true };
-
-const generatePaletteTokens = preset(palette, {
-  ...paletteOpts,
-  states: true,
-  a11y: { mode: "standard", rating: "AA", large: true },
+const generateUiPalette = preset(palette, {
+  configuration: "material",
+  accents: true,
+  states: true
 });
 
-const generateTextPaletteTokens = preset(palette, {
-  ...paletteOpts,
-  a11y: { mode: "standard", rating: "AA" }
+const generateTextPalette = preset(palette, {
+  configuration: "material",
+  accents: true
+});
+
+const filterUiContext = preset(a11y, {
+  mode: "standard",
+  rating: "AA",
+  large: true
+});
+
+const filterTextContext = preset(a11y, {
+  mode: "standard",
+  rating: "AA"
 });
 
 const scheme = pipeline(
@@ -694,8 +718,9 @@ const scheme = pipeline(
 
 const [main, accent, splash] = delegate(
   scheme,
-  generatePaletteTokens,
-  generateTextPaletteTokens
+  process(generateUiPalette, filterUiContext),
+  process(generateTextPalette, filterTextContext),
+  undefined
 );
 
 const ratio = 1.32;
@@ -750,7 +775,7 @@ const spacing = spacingTokens("1ex");
 
 const gridOut = gridTokens(values);
 
-const [w, h, smallest, largest] = delegate(
+const [width, height, smallest, largest] = delegate(
   ["100vw", "100vh", "100vmin", "100vmax"],
   ...lengthTokens
 );
@@ -761,7 +786,7 @@ export default {
     text: { body, heading, size, leading, measure },
     spacing,
     grid: gridOut,
-    viewport: { w, h, smallest, largest }
+    lengths: { width, height, smallest, largest }
   }
 }
 #+END_SRC
@@ -796,12 +821,14 @@ import {
   convert,
   harmony,
   palette,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
+  a11y
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/color.js";
 import {
   preset,
+  process,
   pipeline,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.1.0/workflow.js";
 #+END_SRC
 
 *** Constants
@@ -816,17 +843,26 @@ We look at our constants:
 + Any remaining indexes are left untouched
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/color-recipe.js"
-const paletteOpts = { configuration: "material", accents: true };
-
-const generatePaletteTokens = preset(palette, {
-  ...paletteOpts,
-  states: true,
-  a11y: { mode: "standard", rating: "AA", large: true },
+const generateUiPalette = preset(palette, {
+  configuration: "material",
+  accents: true,
+  states: true
 });
 
-const generateTextPaletteTokens = preset(palette, {
-  ...paletteOpts,
-  a11y: { mode: "standard", rating: "AA" }
+const generateTextPalette = preset(palette, {
+  configuration: "material",
+  accents: true
+});
+
+const filterUiContext = preset(a11y, {
+  mode: "standard",
+  rating: "AA",
+  large: true
+});
+
+const filterTextContext = preset(a11y, {
+  mode: "standard",
+  rating: "AA"
 });
 #+END_SRC
 
@@ -849,8 +885,10 @@ export default function(color, scheme = "analogous", format = "rgb") {
     Array.isArray(base)
       ? base
       : [base, base],
-    generatePaletteTokens,
-    generateTextPaletteTokens
+    process(generateUiPalette, filterUiContext),
+    process(generateTextPalette, filterTextContext),
+    undefined,
+    undefined
   );
 }
 #+END_SRC
@@ -868,11 +906,11 @@ import {
   grid,
   scale,
   text
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/content.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/content.js";
 import {
   preset,
   delegate
-} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.0.2/workflow.js";
+} from "https://cdn.jsdelvr.net/gh/quarksuite/core@2.1.0/workflow.js";
 #+END_SRC
 
 *** Text
@@ -995,7 +1033,7 @@ export function Dimensions(
 Finally, let's reassemble our tokens using the recipes we just made.
 
 #+BEGIN_SRC js :tangle "../quarksuite:examples/handbook/modular-workflow/tokens.js"
-import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/color.js";
+import { adjust } from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/color.js";
 import Palette from "./color-recipe.js";
 import { Font, Content, Spacing, Grid, Dimensions } from "./content-recipes.js";
 
@@ -1012,7 +1050,7 @@ const spacing = Spacing("1ex");
 
 const grid = Grid();
 
-const [w, h, smallest, largest] = Dimensions(100);
+const [width, height, smallest, largest] = Dimensions(100);
 
 export default {
   hb: {
@@ -1020,7 +1058,7 @@ export default {
     text: { body, heading, size, leading, measure },
     spacing,
     grid,
-    lengths: { w, h, smallest, largest }
+    lengths: { width, height, smallest, largest }
   }
 }
 #+END_SRC
@@ -1058,7 +1096,7 @@ First, we have to pull in the exporters themselves before we can do anything.
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/exporter.js";
 #+END_SRC
 
 ** 2. Import the generated tokens
@@ -1162,7 +1200,7 @@ Our build file is now complete and we won't need to touch it again for a good wh
 import {
   stylesheet,
   data,
-} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.0.2/exporter.js";
+} from "https://cdn.jsdelivr.net/gh/quarksuite/core@2.1.0/exporter.js";
 
 import tokens from "./tokens.js";
 
